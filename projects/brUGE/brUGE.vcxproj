@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5E4A476A-5FFE-41E9-B6C4-100616FA7A10}</ProjectGuid>
+    <RootNamespace>brUGE_v011</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\hlsl_shader.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\Output\$(Configuration)\$(ProjectName)\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\Output\$(Configuration)\$(ProjectName)\obj\</IntDir>
+    <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</PreBuildEventUseInBuild>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Output\$(Configuration)\$(ProjectName)\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Output\$(Configuration)\$(ProjectName)\obj\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path>$(IntDir)BuildLog.htm</Path>
+    </BuildLog>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\sources;..\..\external\include;..\..\external\include\bullet;..\..\external\include\FreeType;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc80.pdb</ProgramDataBaseFileName>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <ResourceOutputFileName>$(OutDir)$(TargetName).res</ResourceOutputFileName>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalOptions>/NODEFAULTLIB:libc.lib
+/NODEFAULTLIB:libcmt.lib
+/NODEFAULTLIB:msvcrt.lib
+/NODEFAULTLIB:libcd.lib
+/NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>DevIL.lib;freetype239.lib;pugixml_sd.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
+      <TargetMachine>MachineX86</TargetMachine>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\sources;..\..\external\include;..\..\external\include\FreeType;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Full</Optimization>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>DevIL.lib;freetype239.lib;pugixml_s.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Lib>
+    <BuildLog>
+      <Path>$(IntDir)BuildLog.htm</Path>
+    </BuildLog>
+    <ResourceCompile>
+      <ResourceOutputFileName>$(OutDir)$(TargetName).res</ResourceOutputFileName>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sources\console\Console.cpp" />
+    <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
+    <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
+    <ClCompile Include="..\..\sources\engine\Engine.cpp" />
+    <ClCompile Include="..\..\sources\loader\LwoLoader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\MD5Loader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\ObjLoader.cpp" />
+    <ClCompile Include="..\..\sources\loader\ResourcesManager.cpp" />
+    <ClCompile Include="..\..\sources\loader\TextureLoader.cpp" />
+    <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
+    <ClCompile Include="..\..\sources\os\win_message_func.cpp" />
+    <ClCompile Include="..\..\sources\os\WinApp.cpp" />
+    <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
+    <ClCompile Include="..\..\sources\render\IRenderDevice.cpp" />
+    <ClCompile Include="..\..\sources\render\IShader.cpp" />
+    <ClCompile Include="..\..\sources\render\game_world.cpp" />
+    <ClCompile Include="..\..\sources\render\Camera.cpp" />
+    <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
+    <ClCompile Include="..\..\sources\render\Font.cpp" />
+    <ClCompile Include="..\..\sources\render\Frustum.cpp" />
+    <ClCompile Include="..\..\sources\render\Mesh.cpp" />
+    <ClCompile Include="..\..\sources\render\physic_world.cpp" />
+    <ClCompile Include="..\..\sources\render\render_system.cpp" />
+    <ClCompile Include="..\..\sources\render\render_world.cpp" />
+    <ClCompile Include="..\..\sources\render\animation_engine.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_QuadTreeNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_SceneManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_StaticObject.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sources\console\Console.h" />
+    <ClInclude Include="..\..\sources\console\Functors.h" />
+    <ClInclude Include="..\..\sources\console\TimingPanel.h" />
+    <ClInclude Include="..\..\sources\console\WatchersPanel.h" />
+    <ClInclude Include="..\..\sources\engine\Engine.h" />
+    <ClInclude Include="..\..\sources\engine\IDemo.h" />
+    <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="..\..\sources\loader\ObjLoader.h" />
+    <ClInclude Include="..\..\sources\loader\ResourcesManager.h" />
+    <ClInclude Include="..\..\sources\loader\TextureLoader.h" />
+    <ClInclude Include="..\..\sources\os\FileSystem.h" />
+    <ClInclude Include="..\..\sources\os\WinApp.h" />
+    <ClInclude Include="..\..\sources\render\FreeCamera.h" />
+    <ClInclude Include="..\..\sources\render\Color.h" />
+    <ClInclude Include="..\..\sources\render\IBuffer.h" />
+    <ClInclude Include="..\..\sources\render\IRenderDevice.h" />
+    <ClInclude Include="..\..\sources\render\IShader.h" />
+    <ClInclude Include="..\..\sources\render\ITexture.h" />
+    <ClInclude Include="..\..\sources\render\render_common.h" />
+    <ClInclude Include="..\..\sources\render\state_objects.h" />
+    <ClInclude Include="..\..\sources\render\game_world.hpp" />
+    <ClInclude Include="..\..\sources\render\physic_world.hpp" />
+    <ClInclude Include="..\..\sources\render\Camera.h" />
+    <ClInclude Include="..\..\sources\render\DebugDrawer.h" />
+    <ClInclude Include="..\..\sources\render\Font.h" />
+    <ClInclude Include="..\..\sources\render\Frustum.h" />
+    <ClInclude Include="..\..\sources\render\Mesh.hpp" />
+    <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />
+    <ClInclude Include="..\..\sources\render\render_system.hpp" />
+    <ClInclude Include="..\..\sources\render\render_world.hpp" />
+    <ClInclude Include="..\..\sources\render\animation_engine.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <CustomBuildStep Include="..\..\sources\scene\br_QuadTree.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_QuadTreeNode.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_SceneManager.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_StaticObject.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="..\..\sources\build_time.h" />
+    <ClInclude Include="..\..\sources\Exception.h" />
+    <ClInclude Include="..\..\sources\prerequisites.h" />
+    <ClInclude Include="..\..\sources\win32Res\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\sources\win32Res\brUGE_icon.ico" />
+    <None Include="..\..\sources\win32Res\brUGE_image.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{6d301912-935e-4de6-9249-65bb47fafc5d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\control\control.vcxproj">
+      <Project>{81f476da-88d5-4821-96af-f96705d23ed1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\hlsl_shader.targets" />
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="\! not Work\workcopy_161108\sources\win32Res\brUGE.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="new">
+      <UniqueIdentifier>{86233941-54c2-4397-bad3-1549ed12a269}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sources\render\GL3\br_GLFrameBuffer.cpp">
+      <Filter>new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\GL3\GL_common.cpp">
+      <Filter>new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\GL3\GLBuffer.cpp">
+      <Filter>new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\GL3\GLSwapChain.cpp">
+      <Filter>new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\GL3\br_GLBufferManager.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLCgContext.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLCgShader.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLCgShadingProgram.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLDLLInterface.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLFont.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLRenderDevice.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLSLShader.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLStateObjects.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLStateObjectsManager.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLSwapChain.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLTexture.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_GLVertexLayout.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLCgContext.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLCgShader.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLCgShaderManager.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLCgUniform.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLCommon.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLDLLInterface.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLFont.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLFragmentProgram.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLIndexBuffer.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLPBuffer.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLRender.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLRenderDevice.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLVertexBuffer.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLVertexLayout.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_OGLVertexProgram.cpp" />
+    <ClCompile Include="..\..\sources\render\GL3\br_VBO.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sources\render\GL3\br_GLFrameBuffer.hpp">
+      <Filter>new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\GL3\GL_common.hpp">
+      <Filter>new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\GL3\GLBuffer.hpp">
+      <Filter>new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\GL3\GLSwapChain.hpp">
+      <Filter>new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\GL3\br_GLBufferManager.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLCgContext.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLCgShader.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLCgShadingProgram.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLFont.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLRenderDevice.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLSLShader.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLStateObjects.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLStateObjectsManager.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLSwapChain.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLTexture.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_GLVertexLayout.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLCgContext.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLCgShader.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLCgShaderManager.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLCgUniform.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLCommon.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLFont.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLFragmentProgram.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLIndexBuffer.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLPBuffer.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLRender.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLRenderDevice.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLVertexBuffer.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLVertexLayout.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_OGLVertexProgram.h" />
+    <ClInclude Include="..\..\sources\render\GL3\br_VBO.h" />
+  </ItemGroup>
+</Project>

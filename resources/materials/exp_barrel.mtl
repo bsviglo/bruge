@@ -1,0 +1,6 @@
+<material>
+  <shader name="diffuse" isSkinned="0" isBumped="0" isOpaque="1"/>
+  <properties>
+	  <property name="diffuse" type="texture" value="textures/exp_barrel.dds"/>
+  </properties>
+</material>

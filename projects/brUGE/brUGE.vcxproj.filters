@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="console">
+      <UniqueIdentifier>{408741a5-482c-4ff0-891a-32ad363f9893}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine">
+      <UniqueIdentifier>{ae1275d7-ba6a-45e0-b8bb-ea2832a7b627}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="loader">
+      <UniqueIdentifier>{7a71f29d-e152-40ad-b181-735d0e9350ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="os">
+      <UniqueIdentifier>{2f07c48d-f451-4d96-824d-86bb662f0d57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render">
+      <UniqueIdentifier>{6f2a7ab2-0e5f-4c21-9f28-f1d888691af0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\core">
+      <UniqueIdentifier>{ec27bc08-babc-4d0e-858a-d8afddfbd37e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\worlds">
+      <UniqueIdentifier>{486fca96-6a2f-439b-bbdc-0894b72284dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\framework">
+      <UniqueIdentifier>{a9a07619-6458-4208-809c-295c47946504}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\framework\animation">
+      <UniqueIdentifier>{49e52257-81b3-48fc-8940-0adaeae3c79d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{cb7e4a53-7559-49dc-835c-6db3fb27d74b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{c43b6593-0e01-4773-a28b-ee97341581e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sources\console\Console.cpp">
+      <Filter>console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\console\TimingPanel.cpp">
+      <Filter>console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\console\WatchersPanel.cpp">
+      <Filter>console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\engine\Engine.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\LwoLoader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\MD5Loader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\ObjLoader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\ResourcesManager.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\loader\TextureLoader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\os\FileSystem.cpp">
+      <Filter>os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\os\win_message_func.cpp">
+      <Filter>os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\os\WinApp.cpp">
+      <Filter>os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\FreeCamera.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
+      <Filter>render\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\IShader.cpp">
+      <Filter>render\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\game_world.cpp">
+      <Filter>render\worlds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Camera.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\DebugDrawer.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Font.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Frustum.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Mesh.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\render_system.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\render_world.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\animation_engine.cpp">
+      <Filter>render\framework\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_QuadTreeNode.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_SceneManager.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\br_StaticObject.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\physic_world.cpp">
+      <Filter>render\worlds</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sources\console\Console.h">
+      <Filter>console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\console\Functors.h">
+      <Filter>console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\console\TimingPanel.h">
+      <Filter>console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\console\WatchersPanel.h">
+      <Filter>console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\engine\Engine.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\engine\IDemo.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\loader\ObjLoader.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\loader\ResourcesManager.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\loader\TextureLoader.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\os\FileSystem.h">
+      <Filter>os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\os\WinApp.h">
+      <Filter>os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\FreeCamera.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Color.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\IBuffer.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\IRenderDevice.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\IShader.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\ITexture.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\render_common.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\state_objects.h">
+      <Filter>render\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\game_world.hpp">
+      <Filter>render\worlds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\physic_world.hpp">
+      <Filter>render\worlds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Camera.h">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\DebugDrawer.h">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Font.h">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Frustum.h">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Mesh.hpp">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\render_dll_Interface.h">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\render_system.hpp">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\render_world.hpp">
+      <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\animation_engine.hpp">
+      <Filter>render\framework\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\build_time.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\Exception.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\prerequisites.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\win32Res\resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\sources\win32Res\brUGE_icon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\sources\win32Res\brUGE_image.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">
+      <Filter>loader</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_QuadTree.h">
+      <Filter>scene</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_QuadTreeNode.h">
+      <Filter>scene</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_SceneManager.h">
+      <Filter>scene</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\..\sources\scene\br_StaticObject.h">
+      <Filter>scene</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+</Project>
