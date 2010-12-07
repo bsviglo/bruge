@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="HLSL Build Rule"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="hlsl_builder"
+			DisplayName="HLSL brUGE Builder"
+			CommandLine="echo ----------------------- fragment shader ---------------------&#10;
+                   fxc /nologo /T ps_4_0 /D _FRAGMENT_SHADER_ = 1 $(InputPath)&#10;
+                   echo ----------------------- vertex shader ---------------------&#10;
+                   fxc /nologo /T vs_4_0 /D _VERTEX_SHADER_ = 1 $(InputPath)&#10;
+                   "
+			Outputs="$(InputName).hlsl"
+      ExecutionDescription="-------------------------- compiles hlsl files ------------------------"
+			FileExtensions="*.hlsl"
+      BatchingSeparator=" ;"
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

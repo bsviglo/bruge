@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="hlsl_builder">
+      <Targets>_hlsl_builder</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="hlsl_builder"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_hlsl_builder"
+    BeforeTargets="$(hlsl_builderBeforeTargets)"
+    AfterTargets="$(hlsl_builderAfterTargets)"
+    Condition="'@(hlsl_builder)' != ''"
+    DependsOnTargets="$(hlsl_builderDependsOn);Computehlsl_builderOutput"
+    Outputs="%(hlsl_builder.Outputs)"
+    Inputs="%(hlsl_builder.Identity);%(hlsl_builder.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <hlsl_builder
+        Remove="@(hlsl_builder)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <hlsl_builder_tlog
+        Include="%(hlsl_builder.Outputs)"
+        Condition="'%(hlsl_builder.Outputs)' != '' and '%(hlsl_builder.ExcludedFromBuild)' != 'true'">
+        <Source>@(hlsl_builder, '|')</Source>
+      </hlsl_builder_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(hlsl_builder.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(hlsl_builder_tlog)' != '' and '%(hlsl_builder_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(hlsl_builder_tlog.Source);@(hlsl_builder_tlog-&gt;'%(Fullpath)')" />
+    <hlsl_builder
+      Condition="'@(hlsl_builder)' != '' and '%(hlsl_builder.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(hlsl_builder.CommandLineTemplate)"
+      AdditionalOptions="%(hlsl_builder.AdditionalOptions)"
+      Inputs="%(hlsl_builder.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            Computehlsl_builderOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            Computehlsl_builderOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="Computehlsl_builderOutput"
+    Condition="'@(hlsl_builder)' != ''">
+    <ItemGroup>
+      <hlsl_builderDirsToMake
+        Condition="'@(hlsl_builder)' != '' and '%(hlsl_builder.ExcludedFromBuild)' != 'true'"
+        Include="%(hlsl_builder.Outputs)" />
+      <Link
+        Include="%(hlsl_builderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(hlsl_builderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(hlsl_builderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(hlsl_builderDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

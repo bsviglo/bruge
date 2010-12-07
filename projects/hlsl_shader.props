@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(hlsl_builderBeforeTargets)' == '' and '$(hlsl_builderAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <hlsl_builderBeforeTargets>Midl</hlsl_builderBeforeTargets>
+    <hlsl_builderAfterTargets>CustomBuild</hlsl_builderAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <hlsl_builderDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(hlsl_builderDependsOn)</hlsl_builderDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <hlsl_builder>
+      <CommandLineTemplate>echo ----------------------- fragment shader ---------------------
+                    fxc /nologo /T ps_4_0 /D _FRAGMENT_SHADER_ = 1 %(FullPath)
+                    echo ----------------------- vertex shader ---------------------
+                    fxc /nologo /T vs_4_0 /D _VERTEX_SHADER_ = 1 %(FullPath)
+                    </CommandLineTemplate>
+      <Outputs>%(Filename).hlsl</Outputs>
+      <ExecutionDescription>-------------------------- compiles hlsl files ------------------------</ExecutionDescription>
+    </hlsl_builder>
+  </ItemDefinitionGroup>
+</Project>
