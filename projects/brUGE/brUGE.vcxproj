@@ -98,7 +98,7 @@
 /NODEFAULTLIB:msvcrt.lib
 /NODEFAULTLIB:libcd.lib
 /NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>DevIL.lib;freetype239.lib;pugixml_sd.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DevIL.lib;freetype244_d.lib;pugixml_sd.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
@@ -122,7 +122,7 @@
       <Optimization>Full</Optimization>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>DevIL.lib;freetype239.lib;pugixml_s.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DevIL.lib;freetype244.lib;pugixml_s.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
