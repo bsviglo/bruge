@@ -476,7 +476,7 @@ namespace render
 	bool ShaderContext::init()
 	{
 		//-- create ShaderInclude interface.
-		m_shaderIncludes.reset(new ShaderIncludeImpl("resources/shaders/new/"));
+		m_shaderIncludes.reset(new ShaderIncludeImpl("resources/shaders/"));
 		rd()->setShaderIncludes(m_shaderIncludes.get());
 
 		//-- register auto-constants.
@@ -505,7 +505,7 @@ namespace render
 	{
 		FileSystem& fs = FileSystem::instance();
 
-		RODataPtr data = fs.readFile(makeStr("resources/shaders/new/%s.%s",
+		RODataPtr data = fs.readFile(makeStr("resources/shaders/%s.%s",
 			name, g_renderDesc[rs().gapi()].shaderExt).c_str()
 			);
 		if (!data.get())

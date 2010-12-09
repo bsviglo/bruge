@@ -162,14 +162,14 @@ namespace physic
 		int _drawAABB(bool flag);
 
 	private:
-		btDynamicsWorld*					m_dynamicsWorld;
-		btBroadphaseInterface*				m_broadphase;
-		btCollisionDispatcher*				m_dispatcher;
-		btConstraintSolver*					m_solver;
-		btDefaultCollisionConfiguration*	m_collisionCfg;
-		PhysDebugDrawer						m_debugDrawer;
+		std::unique_ptr<btDynamicsWorld>					m_dynamicsWorld;
+		std::unique_ptr<btBroadphaseInterface>				m_broadphase;
+		std::unique_ptr<btCollisionDispatcher>				m_dispatcher;
+		std::unique_ptr<btConstraintSolver>					m_solver;
+		std::unique_ptr<btDefaultCollisionConfiguration>	m_collisionCfg;
+		PhysDebugDrawer										m_debugDrawer;
 
-		std::map<std::string, PhysObjDesc*>	m_physObjDescs;
+		std::map<std::string, PhysObjDesc*>					m_physObjDescs;
 	};
 
 } //-- physic

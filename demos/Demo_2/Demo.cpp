@@ -61,7 +61,7 @@ bool Demo::init()
 		{
 			for (uint k = 0; k < 10; ++k)
 			{
-				mat.setTranslation(i * 4.f, k * 4.f, j * 4.f);
+				mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 				Engine::instance().gameWorld().addGameObj("resources/models/metalbox1.xml", &mat);
 			}
 		}
@@ -74,7 +74,7 @@ bool Demo::init()
 			for (uint k = 0; k < 8; ++k)
 			{
 				mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
-				mat.postTranslation(0, 10, 0);
+				mat.postTranslation(15, 10, 15);
 				Engine::instance().gameWorld().addGameObj("resources/models/exp_barrel.xml", &mat);
 			}
 		}

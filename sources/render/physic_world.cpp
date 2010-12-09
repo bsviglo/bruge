@@ -28,21 +28,12 @@ namespace
 		const btVector3& row2 = transform.getBasis()[1];
 		const btVector3& row3 = transform.getBasis()[2];
 
-		//-- set identity.
-		ret.setIdentity();
-		
-		//-- set orientation.
-		ret.m00 = row1.x(); ret.m10 = row1.y(); ret.m20 = row1.z();
-		ret.m01 = row2.x(); ret.m11 = row2.y(); ret.m21 = row2.z();
-		ret.m02 = row3.x(); ret.m12 = row3.y(); ret.m22 = row3.z();
-		
-		//-- set translation
-		ret.m30 = orgn.x(); ret.m31 = orgn.y(); ret.m32 = orgn.z();
-
-		mat4f mat;
-		mat.setLookAt(vec3f(0,0,0), vec3f(0,0,-1), vec3f(0,1,0));
-
-		ret.postMultiply(mat);
+		//-- from the right-handed coordinate system to left-handed with additional respect to
+		//-- conversion from column-major matrix layout to row-major.
+		ret.m00 = -row1.x(); ret.m01 = +row2.x(); ret.m02 = -row3.x(); ret.m03 = 0.0f;
+		ret.m10 = -row1.y(); ret.m11 = +row2.y(); ret.m12 = -row3.y(); ret.m13 = 0.0f;
+		ret.m20 = -row1.z(); ret.m21 = +row2.z(); ret.m22 = -row3.z(); ret.m23 = 0.0f;
+		ret.m30 = -orgn.x(); ret.m31 = +orgn.y(); ret.m32 = -orgn.z(); ret.m33 = 1.0f;
 
 		return ret;
 	}
@@ -53,13 +44,13 @@ namespace
 		btTransform ret;
 
 		btMatrix3x3 basis(
-			t.m00, t.m10, t.m20,
-			t.m01, t.m11, t.m21,
-			t.m02, t.m12, t.m22
+			-t.m00, -t.m10, -t.m20,
+			+t.m01, +t.m11, +t.m21,
+			-t.m02, -t.m12, -t.m22
 			);
 
 		btVector3 origin(
-			t.m30, t.m31, -t.m32
+			-t.m30, t.m31, -t.m32
 			);
 
 		ret.setOrigin(origin);
@@ -67,6 +58,7 @@ namespace
 
 		return ret;
 	}
+
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -95,21 +87,21 @@ namespace physic
 	bool PhysicWorld::init()
 	{
 		//-- 1. create configuration contains default setup for memory, collision setup.
-		m_collisionCfg = new btDefaultCollisionConfiguration();
+		m_collisionCfg.reset(new btDefaultCollisionConfiguration());
 
 		//-- 2. use the default collision dispatcher.
-		m_dispatcher = new btCollisionDispatcher(m_collisionCfg);
+		m_dispatcher.reset(new btCollisionDispatcher(m_collisionCfg.get()));
 
 		//-- 3. create broad phase. 
-		m_broadphase = new btDbvtBroadphase();
+		m_broadphase.reset(new btDbvtBroadphase());
 
 		//-- 4. use the default constraint solver.
-		m_solver = new btSequentialImpulseConstraintSolver;
+		m_solver.reset(new btSequentialImpulseConstraintSolver);
 
 		//-- 5. create dynamic world.
-		m_dynamicsWorld = new btDiscreteDynamicsWorld(
-			m_dispatcher, m_broadphase, m_solver, m_collisionCfg
-			);
+		m_dynamicsWorld.reset(new btDiscreteDynamicsWorld(
+			m_dispatcher.get(), m_broadphase.get(), m_solver.get(), m_collisionCfg.get()
+			));
 
 		//-- 6. set default gravity.
 		m_dynamicsWorld->setGravity(btVector3(0.0f, -10.0f, 0.0f));
@@ -145,11 +137,11 @@ namespace physic
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 			delete i->second;
 
-		delete m_dynamicsWorld;
-		delete m_solver;
-		delete m_broadphase;
-		delete m_dispatcher;
-		delete m_collisionCfg;
+		m_dynamicsWorld.reset();
+		m_solver.reset();
+		m_broadphase.reset();
+		m_dispatcher.reset();
+		m_collisionCfg.reset();
 
 		return true;
 	}
@@ -169,7 +161,7 @@ namespace physic
 			RODataPtr data = FileSystem::instance().readFile("resources/" + std::string(desc));	
 
 			std::unique_ptr<PhysObjDesc> physDesc(new PhysObjDesc());
-			if (!data.isValid() || !physDesc->load(*data.get(), m_dynamicsWorld))
+			if (!data.isValid() || !physDesc->load(*data.get(), m_dynamicsWorld.get()))
 			{
 				return nullptr;
 			}
@@ -459,12 +451,9 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	void PhysDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
 	{
-		mat4f mat;
-		mat.setLookAt(vec3f(0,0,0), vec3f(0,0,-1), vec3f(0,1,0));
-
 		DebugDrawer::instance().drawLine(
-			mat.applyToPoint(vec3f(from.x(), from.y(), from.z())),
-			mat.applyToPoint(vec3f(to.x(), to.y(), to.z())),
+			vec3f(-from.x(), from.y(), -from.z()),
+			vec3f(-to.x(), to.y(), -to.z()),
 			Color(color.x(), color.y(), color.z())
 			);
 	}
