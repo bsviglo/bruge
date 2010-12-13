@@ -6,6 +6,7 @@
 #include "utils/ArgParser.h"
 #include "os/FileSystem.h"
 #include "render/DebugDrawer.h"
+#include "render/Color.h"
 #include "console/Console.h"
 
 using namespace brUGE;
@@ -18,6 +19,7 @@ using namespace brUGE::render;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
+
 	//----------------------------------------------------------------------------------------------
 	inline mat4f bullet2bruge(const btTransform& transform)
 	{
@@ -59,6 +61,23 @@ namespace
 		return ret;
 	}
 
+	//----------------------------------------------------------------------------------------------
+	inline btVector3 bruge2bullet(const vec3f& v3)
+	{
+		return btVector3(-v3.x, v3.y, -v3.z);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	inline vec3f bullet2bruge(const btVector3& v3)
+	{
+		return vec3f(-v3.x(), v3.y(), -v3.z());
+	}
+
+	//----------------------------------------------------------------------------------------------
+	inline vec3f bullet2vec3f(const btVector3& v3)
+	{
+		return vec3f(v3.x(), v3.y(), v3.z());
+	}
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -108,24 +127,6 @@ namespace physic
 
 		//-- 7. set debug drawer.
 		m_dynamicsWorld->setDebugDrawer(&m_debugDrawer);
-
-		//-- test.
-		{
-			btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0),50);
-			btVector3 localInertia(0,0,0);
-
-			btTransform groundTransform;
-			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(0,-80,0));
-
-			//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-			btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-			btRigidBody::btRigidBodyConstructionInfo rbInfo(0.0,myMotionState,groundShape,localInertia);
-			btRigidBody* body = new btRigidBody(rbInfo);
-
-			//add the body to the dynamics world
-			m_dynamicsWorld->addRigidBody(body);
-		}
 
 		return true;
 	}
@@ -197,6 +198,62 @@ namespace physic
 	{
 		m_dynamicsWorld->stepSimulation(dt);
 		m_dynamicsWorld->debugDrawWorld();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::collide(const vec3f& origin, const vec3f& dir) const
+	{
+		btVector3 start = bruge2bullet(origin);
+		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+
+		btCollisionWorld::ClosestRayResultCallback cb(start, end);
+		m_dynamicsWorld->rayTest(start, end, cb);
+
+		return cb.hasHit();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::collide(vec3f& out, const vec3f& origin, const vec3f& dir) const
+	{
+		btVector3 start = bruge2bullet(origin);
+		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+
+		btCollisionWorld::ClosestRayResultCallback cb(start, end);
+		m_dynamicsWorld->rayTest(start, end, cb);
+
+		if (cb.hasHit())
+		{
+			out = bullet2bruge(cb.m_hitPointWorld);
+			return true;
+		}
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::collide(mat4f& localMat, Node*& node, const vec3f& origin, const vec3f& dir) const
+	{
+		btVector3 start = bruge2bullet(origin);
+		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+
+		btCollisionWorld::ClosestRayResultCallback cb(start, end);
+		m_dynamicsWorld->rayTest(start, end, cb);
+
+		if (cb.hasHit())
+		{
+			auto body  = static_cast<PhysObjDesc::RigidBody*>(cb.m_collisionObject->getUserPointer());
+			auto world = cb.m_collisionObject->getWorldTransform();
+
+			//vec3f localPoint = bullet2bruge(world.invXform(cb.m_hitPointWorld));
+			vec3f localPoint = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
+
+			localMat.setTranslation(localPoint);
+			node = body->m_node;
+
+			return true;
+		}
+
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -341,7 +398,10 @@ namespace physic
 				btVector3(i->m_localInertia.x, i->m_localInertia.y, i->m_localInertia.z)
 				);
 
-			body->m_body = new btRigidBody(rbInfo);
+			body->m_body.reset(new btRigidBody(rbInfo));
+
+			//-- set user pointer as a pointer to the PhysObj object.
+			body->m_body->setUserPointer(body);
 
 			physObj->m_bodies.push_back(body);
 		}
@@ -404,27 +464,34 @@ namespace physic
 	{
 		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
 		{
-			world->addRigidBody((*i)->m_body);
+			world->addRigidBody((*i)->m_body.get());
 		}
 
 		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->addConstraint((*i)->m_constraint, true);
+			world->addConstraint((*i)->m_constraint.get(), true);
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PhysObj::delFromWorld(btDynamicsWorld* world)
 	{
 		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
-			world->removeRigidBody((*i)->m_body);
+			world->removeRigidBody((*i)->m_body.get());
 
 		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->removeConstraint((*i)->m_constraint);
+			world->removeConstraint((*i)->m_constraint.get());
 	}
 
+	//----------------------------------------------------------------------------------------------
+	void PhysObj::addImpulse(const vec3f& dir, const vec3f& relPos)
+	{
+		m_bodies[0]->m_body->applyImpulse(
+			bruge2bullet(dir), bruge2bullet(relPos)
+			);
+	}
 
 	//----------------------------------------------------------------------------------------------
 	PhysObjDesc::RigidBody::RigidBody()
-		: m_name(nullptr), m_node(nullptr), m_owner(CONST_INVALID_HANDLE), m_body(nullptr)
+		: m_name(nullptr), m_node(nullptr), m_owner(CONST_INVALID_HANDLE)
 	{
 
 	}
@@ -432,8 +499,7 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	PhysObjDesc::RigidBody::~RigidBody()
 	{
-		delete m_body;
-		m_body = nullptr;
+
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -452,8 +518,7 @@ namespace physic
 	void PhysDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
 	{
 		DebugDrawer::instance().drawLine(
-			vec3f(-from.x(), from.y(), -from.z()),
-			vec3f(-to.x(), to.y(), -to.z()),
+			bullet2bruge(from), bullet2bruge(to),
 			Color(color.x(), color.y(), color.z())
 			);
 	}
@@ -461,7 +526,7 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	void PhysDebugDrawer::reportErrorWarning(const char* warningString)
 	{
-		ConWarning(warningString);
+		ConWarning (warningString);
 		WARNING_MSG(warningString);
 	}
 

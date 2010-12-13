@@ -49,10 +49,10 @@ namespace physic
 			virtual void getWorldTransform(btTransform& worldTrans) const;
 			virtual void setWorldTransform(const btTransform& worldTrans);
 
-			const char*  m_name;
-			Node*		 m_node;
-			Handle		 m_owner;
-			btRigidBody* m_body;
+			const char*					 m_name; //-- pointed at the managed object. No needed explicit deletion.
+			Node*						 m_node;
+			Handle						 m_owner;
+			std::unique_ptr<btRigidBody> m_body;
 		};
 		typedef std::vector<RigidBody*>	RigidBodies;
 
@@ -70,8 +70,8 @@ namespace physic
 			Constraint()  {}
 			~Constraint() {}
 
-			const char*		   m_name;
-			btTypedConstraint* m_constraint;
+			const char*						   m_name; //-- pointed at the managed object. No needed explicit deletion.
+			std::unique_ptr<btTypedConstraint> m_constraint;
 		};
 		typedef std::vector<Constraint*> Constraints;
 
@@ -92,7 +92,7 @@ namespace physic
 		ConstraintDescs			m_constraintDescs;
 		Shapes					m_shapes;
 		std::vector<PhysObj*>	m_physObjs;
-		btDynamicsWorld*		m_dynamicsWorld;
+		btDynamicsWorld*		m_dynamicsWorld;  //-- pointed at the managed object. No needed explicit deletion.
 	};
 
 
@@ -105,6 +105,8 @@ namespace physic
 
 		void addToWorld  (btDynamicsWorld* world);
 		void delFromWorld(btDynamicsWorld* world);
+
+		void addImpulse(const vec3f& dir, const vec3f& relPos);
 
 		Transform*				 m_transform;
 		PhysObjDesc::RigidBodies m_bodies;
@@ -153,8 +155,8 @@ namespace physic
 		bool		delPhysicDef(PhysObj* physObj);
 
 		bool		collide(const vec3f& origin, const vec3f& dir) const;
-		bool		collide(float& dist, vec3f& out, const vec3f& origin, const vec3f& dir) const;
-		bool		collide(mat4f& localMat, Node& node, const vec3f& origin, const vec3f& dir) const;
+		bool		collide(vec3f& out, const vec3f& origin, const vec3f& dir) const;
+		bool		collide(mat4f& localMat, Node*& node, const vec3f& origin, const vec3f& dir) const;
 
 	private:
 		//-- console functions.
@@ -170,6 +172,10 @@ namespace physic
 		PhysDebugDrawer										m_debugDrawer;
 
 		std::map<std::string, PhysObjDesc*>					m_physObjDescs;
+
+	private:
+		PhysicWorld(const PhysicWorld&);
+		PhysicWorld& operator = (const PhysicWorld&);
 	};
 
 } //-- physic

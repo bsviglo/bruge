@@ -1,0 +1,9 @@
+<phys>
+  <rigidBodies>
+    <rigidBody name="root" node="root" mass="0.0">
+      <shape type="box">
+        <params size="vec3f(25.014,0.252,25.0)" />
+      </shape>      
+    </rigidBody>
+  </rigidBodies>
+</phys>

@@ -1,0 +1,7 @@
+<game_object>
+
+  <render file="models\plane.obj"/>
+  <physics file="physics\plane.phys"/>
+  <audio/>
+
+</game_object>
