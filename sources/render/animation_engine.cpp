@@ -1,4 +1,9 @@
 #include "animation_engine.hpp"
+#include "os/FileSystem.h"
+#include "console/Console.h"
+
+using namespace brUGE::os;
+using namespace brUGE::utils;
 
 namespace brUGE
 {
@@ -14,18 +19,21 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::fini()
 	{
-		for (uint i = 0; i < m_animCtrls.size(); ++i)
-			delete m_animCtrls[i];
-
 		m_animCtrls.clear();
-
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::animate(float dt)
 	{
-
+		for (uint i = 0; i < m_animCtrls.size(); ++i)
+		{
+			AnimationData* data = m_animCtrls[i].get();
+			if (data)
+			{
+				//-- ToDo: implement.
+			}
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -35,15 +43,33 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle AnimationEngine::addAnimDef(const AnimationData* animCtrl)
+	Handle AnimationEngine::addAnimDef(const char* idleAnim)
 	{
+		std::unique_ptr<AnimationData> animData;
+		if (idleAnim)
+		{
+			AnimationData::AnimLayer layer;
+			layer.m_anim	 = getAnim(idleAnim);
+			layer.m_blend	 = 1.0f;
+			layer.m_time	 = 0.0f;
+			layer.m_isLooped = true;
+			
+			animData->m_animLayers.push_back(layer);
+		}
 
+		m_animCtrls.push_back(animData);
+		return m_animCtrls.size() - 1;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::delAnimDef(Handle handle)
 	{
+		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 
+		//-- reset to empty.
+		m_animCtrls[handle].reset();
+
+		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -51,14 +77,16 @@ namespace render
 	{
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 		
-		AnimationData& data = *m_animCtrls[id];
-
+		AnimationData* data = m_animCtrls[id].get();
+		assert(data);
+		
 		AnimationData::AnimLayer layer;
-		layer.m_anim  = getAnim(name);
-		layer.m_blend = 1.0f;
-		layer.m_time  = 0.0f;
+		layer.m_anim	 = getAnim(name);
+		layer.m_blend	 = 1.0f;
+		layer.m_time	 = 0.0f;
+		layer.m_isLooped = isLooped;
 
-		data.m_animLayers.push_back(layer);
+		data->m_animLayers.push_back(layer);
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -66,14 +94,18 @@ namespace render
 	{
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 
+		//-- reset to empty.
+		m_animCtrls[id].reset();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::blendAnim(
-		Handle id, float srcBlend, float dstBlend, const char* name, bool isLooped, uint rate)
+		Handle id, float /*srcBlend*/, float /*dstBlend*/, const char* /*name*/,
+		bool /*isLooped*/, uint /*rate*/)
 	{
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 
+		//-- ToDo:
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -103,6 +135,135 @@ namespace render
 			}
 			return result;
 		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Animation::Animation()
+		:	m_animComponents(0), m_jointCount(0), m_frameCount(0)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Animation::~Animation()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::setupFrame(Joint::Transform& transf, uint frame, uint joint)
+	{
+		//-- set base transformation.
+		transf = m_baseFrame[joint];
+
+		FrameData&	data  = m_frames[frame];
+		int			flags = m_hierarchy[joint].flags;
+		int			pos   = m_hierarchy[joint].startIdx;
+
+		//-- update transformation specific for current frame.
+		if (flags & 1 )	transf.pos.x	= data[pos++];
+		if (flags & 2 )	transf.pos.y	= data[pos++];
+		if (flags & 4 ) transf.pos.z	= data[pos++];
+		if (flags & 8 ) transf.orient.x = data[pos++];
+		if (flags & 16) transf.orient.y = data[pos++];
+		if (flags & 32) transf.orient.z = data[pos++];
+
+		renormalize(transf.orient);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::updateJoints(Joint::Transforms& skeleton, uint _1st, uint _2nd, float blend)
+	{
+		Joint::Transform first, second;
+
+		for (uint i = 0; i < m_jointCount; ++i)
+		{
+			//-- find joint transformation at the fist and the second frames.
+			setupFrame(first,  _1st, i);
+			setupFrame(second, _2nd, i);
+
+			//-- blend results using blend factor.
+			skeleton[i].orient = slerp(first.orient, second.orient, blend);
+			skeleton[i].pos    = lerp (first.pos, second.pos, blend);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::updateBounds(AABB& bound, uint _1st, uint _2nd, float blend)
+	{
+		//-- smoothly change one AABB to another.
+		bound.min = lerp(m_bounds[_1st].min, m_bounds[_2nd].min, blend);
+		bound.max = lerp(m_bounds[_1st].max, m_bounds[_2nd].max, blend);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::tick(
+		float time, const Joints& skeleton, Joint::Transforms& oSkeleton, AABB& oBound,
+		uint frameRate, bool isLooped, bool isLocal)
+	{
+		//-- calculate total time for the desired frame rate and frame count.
+		float totalTime = (m_frameCount - 1) / static_cast<float>(frameRate);
+		
+		//-- adjust animation time in case the looped animation.
+		if (isLooped)
+		{
+			while (time > totalTime)
+				time -= totalTime;
+		}
+		else
+		{
+			time = math::min(time, totalTime);
+		}
+
+		//-- calculate blend frame parameters.
+		float _blendFrame  = frameRate * time;
+		uint  _1st   	   = floorf(_blendFrame);
+		uint  _2nd   	   = ceilf(_blendFrame);
+		float _blendFactor = _blendFrame - _1st;
+
+		//--ConPrint("Animation: time = %f; frame1 = %d; frame2 = %d; blend = %f",
+		//--	time, _1st, _2nd, _blendFactor
+		//--	);
+
+		//-- calculate blended results.
+		updateJoints(oSkeleton, _1st, _2nd, _blendFactor);		
+		updateBounds(oBound   , _1st, _2nd, _blendFactor);
+
+		//-- reconstruct absolute transformation of the skeleton nodes.
+		buildAbsoluteTransforms(oSkeleton, skeleton, isLocal);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::buildAbsoluteTransforms(
+		Joint::Transforms& oTransforms, const Joints& skeleton, bool isLocal)
+	{
+		//-- set position of the root node to zero if isLocal flag specified.
+		if (isLocal)
+		{
+			oTransforms[0].pos.setZero();
+		}
+		
+		//-- iterate over the all nodes and apply parent's transformation for every node.
+		for (uint i = 1; i < skeleton.size(); ++i)
+		{
+			int						idx			 = skeleton[i].m_parentIdx;
+			Joint::Transform&		transf		 = oTransforms[i];
+			const Joint::Transform& parentTransf = oTransforms[idx];
+
+			transf.pos    = parentTransf.pos + parentTransf.orient.rotate(transf.pos);
+			transf.orient = parentTransf.orient * transf.orient;
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::goToFrame(uint frame, Joint::Transforms& skeleton, AABB& bound)
+	{
+		for (uint i = 0; i < m_jointCount; ++i)
+		{
+			setupFrame(skeleton[i], frame, i);
+		}
+
+		bound = m_bounds[frame];
 	}
 
 } //-- render

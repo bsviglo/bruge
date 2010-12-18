@@ -416,7 +416,7 @@ namespace render
 		tangentVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
 		IB		  = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	   faces.size() * 3, sizeof(uint16));
 
-		//-- Note: Be careful with texture buffer, because it have to be 16 bytes aligned.
+		//-- Note: Be careful with texture buffer, because it has to be 16 bytes aligned.
 		{
 			std::vector<GPUWeight> tmp(weights.size());
 			for (uint i = 0; i < weights.size(); ++i)
