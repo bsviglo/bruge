@@ -145,7 +145,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\loader\MD5Loader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\sources\loader\ObjLoader.cpp" />
     <ClCompile Include="..\..\sources\loader\ResourcesManager.cpp" />

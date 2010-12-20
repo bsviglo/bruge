@@ -125,7 +125,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	const LightInstance* RenderWorld::getLightDef(Handle handle)
+	LightInstance* RenderWorld::getLightDef(Handle handle)
 	{
 		if (handle == CONST_INVALID_HANDLE || static_cast<size_t>(handle) >= m_lightInstances.size())
 			return nullptr;
@@ -159,7 +159,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	const MeshInstance* RenderWorld::getMeshDef(Handle handle)
+	MeshInstance* RenderWorld::getMeshDef(Handle handle)
 	{
 		if (handle == CONST_INVALID_HANDLE || static_cast<size_t>(handle) >= m_meshInstances.size())
 			return nullptr;

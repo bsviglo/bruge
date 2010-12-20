@@ -136,12 +136,30 @@ namespace brUGE
 
 		//-- 2. setup transform of the game object.
 		{
+			MeshInstance* meshInst = Engine::instance().renderWorld().getMeshDef(m_meshInst);
+
 			//-- 2.1. setup root matrix.
 			if (orient)	m_transform.m_worldMat = *orient;
 			else		m_transform.m_worldMat.setIdentity();
 
 			//-- 2.2. setup nodes bucket.
 			m_transform.m_nodes.push_back(new Node("root", m_transform.m_worldMat));
+
+			//-- 2.3. if model is animated, then gather all the skeleton bones as nodes.
+			if (meshInst->m_skinnedMesh)
+			{
+				//-- 2.3.1. resize mesh world palette to match the bones count in the skinned mesh.
+				meshInst->m_worldPalette.resize(meshInst->m_skinnedMesh->skeleton().size());
+
+				//-- 2.3.2. initialize nodes. 
+				for (uint i = 0; i < meshInst->m_worldPalette.size(); ++i)
+				{
+					const Joint& joint   = meshInst->m_skinnedMesh->skeleton()[i];
+					mat4f&		 nodeMat = meshInst->m_worldPalette[i];
+
+					m_transform.m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
+				}
+			}
 		}
 
 		//-- 3. parse physics/collision data of the game object.
@@ -220,6 +238,21 @@ namespace brUGE
 	{
 		assert(0);
 		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Transform::Transform()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Transform::~Transform()
+	{
+		for (uint i = 0; i < m_nodes.size(); ++i)
+			delete m_nodes[i];
+
+		m_nodes.clear();
 	}
 
 } //-- brUGE

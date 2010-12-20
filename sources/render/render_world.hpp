@@ -16,8 +16,6 @@ namespace brUGE
 namespace render
 {
 	class  Camera;
-	class  SkinnedMesh;
-	class  Mesh;
 
 	//----------------------------------------------------------------------------------------------
 	struct LightInstance
@@ -67,12 +65,12 @@ namespace render
 		//-- lights.
 		Handle				 addLightDef	(const LightInstance::Desc& lInst);
 		bool				 delLightDef	(Handle handle);
-		const LightInstance* getLightDef	(Handle handle);	
+		LightInstance*		 getLightDef	(Handle handle);	
 
 		//-- models.
 		Handle				 addMeshDef		(const MeshInstance::Desc& desc, Transform* transform);
 		bool				 delMeshDef		(Handle handle);
-		const MeshInstance*  getMeshDef		(Handle handle);	
+		MeshInstance*		 getMeshDef		(Handle handle);	
 		
 	private:
 		MeshInstance* setupMeshInst(const MeshInstance::Desc& desc, Transform* transform);

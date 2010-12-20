@@ -17,6 +17,7 @@
 
 #include "render/render_system.hpp"
 #include "render/render_world.hpp"
+#include "render/animation_engine.hpp"
 #include "render/game_world.hpp"
 #include "render/physic_world.hpp"
 
@@ -68,11 +69,11 @@ namespace brUGE
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
 
 
-		GameWorld&					gameWorld()    { return m_gameWorld; }
-		render::RenderWorld&		renderWorld()  { return m_renderWorld; }
-		render::RenderSystem&		renderSystem() { return m_renderSys; }
-		physic::PhysicWorld&		physicWorld()  { return m_physicWorld; }
-		//render::AnimationEngine&	animationEngine() const { return m_animEngine; }
+		GameWorld&					gameWorld()			{ return m_gameWorld; }
+		render::RenderWorld&		renderWorld()		{ return m_renderWorld; }
+		render::RenderSystem&		renderSystem()		{ return m_renderSys; }
+		physic::PhysicWorld&		physicWorld()		{ return m_physicWorld; }
+		render::AnimationEngine&	animationEngine()	{ return m_animEngine; }
 
 	private:
 		// Функция вторичного потока, она генерирует новое сообщение каждые 20 милесекунд
@@ -120,7 +121,7 @@ namespace brUGE
 		GameWorld						m_gameWorld;
 		render::RenderWorld				m_renderWorld;
 		physic::PhysicWorld				m_physicWorld;
-		//render::AnimationEngine			m_animEngine;
+		render::AnimationEngine			m_animEngine;
 		//render::CollisionWorld			m_collisionWorld;
 		
 		float				 			m_fps;

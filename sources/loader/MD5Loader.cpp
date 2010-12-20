@@ -1,4 +1,5 @@
 #include "render/Mesh.hpp"
+#include "render/animation_engine.hpp"
 #include "utils/Data.hpp"
 #include "utils/string_utils.h"
 #include "math/math_types.h"
@@ -191,7 +192,7 @@ namespace brUGE
 			else if (cmd == "commandline")				{ }
 			else if (cmd == "numFrames")				{ m_frameCount = strToInt(args); m_frames.resize(m_frameCount); }
 			else if (cmd == "numJoints")				{ m_jointCount = strToInt(args); }
-			else if (cmd == "frameRate")				{ m_frameRate = strToInt(args); }
+			else if (cmd == "frameRate")				{ /*m_frameRate = strToInt(args); */ }
 			else if (cmd == "numAnimatedComponents")	{ m_animComponents = strToInt(args); }
 			else if (cmd == "hierarchy")				{ success &= loadHierarchy(data); }
 			else if (cmd == "bounds")					{ success &= loadBounds(data); }
@@ -201,7 +202,8 @@ namespace brUGE
 
 		if (success)
 		{
-			m_animTime = (m_frameCount - 1) / (float)m_frameRate;
+			//-- reconsider.
+			//m_animTime = (m_frameCount - 1) / (float)m_frameRate;
 		}
 
 		return success;

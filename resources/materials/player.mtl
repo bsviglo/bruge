@@ -1,0 +1,6 @@
+<material>
+  <shader name="diffuse_skinned" isSkinned="1" isBumped="0" isOpaque="1"/>
+  <properties>
+	  <property name="diffuse" type="texture" value="textures/body_d.dds"/>
+  </properties>
+</material>

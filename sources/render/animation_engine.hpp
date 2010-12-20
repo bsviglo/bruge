@@ -4,13 +4,16 @@
 #include "utils/Data.hpp"
 #include "render/Mesh.hpp"
 
+#include <memory>
+#include <vector>
+
 namespace brUGE
 {
-	class Transform;
+	struct Transform;
 
 namespace render
 {
-	class MeshInstance;
+	struct MeshInstance;
 	
 
 	//-- For each particular animation we have only one instance of this class. It contains only
@@ -75,7 +78,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	struct AnimationData
 	{
-		AnimationData() : m_totalTime(0) { }
+		AnimationData() { }
 
 		//-- Represents one particular layer of the animation.
 		//------------------------------------------------------------------------------------------
@@ -84,13 +87,12 @@ namespace render
 			AnimLayer() : m_isLooped(false), m_time(0), m_blend(0.0f) { }
 
 			bool		   m_isLooped;
-			uint		   m_time;
+			float		   m_time;
 			float		   m_blend;
 			Ptr<Animation> m_anim;
 		};
 		typedef std::vector<AnimLayer> AnimLayers;
 
-		uint			  m_totalTime;
 		Joint::Transforms m_localPositions;
 		AnimLayers		  m_animLayers;
 		Transform*		  m_transform;
@@ -105,29 +107,29 @@ namespace render
 	class AnimationEngine
 	{
 	public:
-		bool init();
-		bool fini();
+		bool			init();
+		bool			fini();
 
 		//-- animate all the requested animations.
-		void	animate		(float dt);
+		void			animate		(float dt);
 		//-- calculate all the world palettes for appropriate meshes.
-		void	postAnimate	();
+		void			postAnimate	();
 
 		//-- animation controllers.
-		Handle	addAnimDef	(const char* idleAnim = nullptr);
-		bool	delAnimDef	(Handle handle);
+		Handle			addAnimDef	(const char* idleAnim = nullptr);
+		bool			delAnimDef	(Handle handle);
 		
 		//-- some animation controlling functions.
-		void	playAnim	(Handle id, const char* name, bool isLooped = false, uint rate = 24);
-		void	stopAnim	(Handle id);
-		void	blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name, bool isLooped = false, uint rate = 24);
+		void			playAnim	(Handle id, const char* name, bool isLooped = false, uint rate = 24);
+		void			stopAnim	(Handle id);
+		void			blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name, bool isLooped = false, uint rate = 24);
 
 	private:
 		Ptr<Animation> getAnim(const char* name);
 
 	private:
-		typedef std::vector<std::unique_ptr<AnimationData>>	AnimationInsts;
-		typedef std::map<std::string, Ptr<Animation>>		AnimationsMap;
+		typedef std::vector<AnimationData*>				AnimationInsts;
+		typedef std::map<std::string, Ptr<Animation>>	AnimationsMap;
 
 		AnimationInsts	m_animCtrls;
 		AnimationsMap	m_animations;

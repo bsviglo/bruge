@@ -97,26 +97,29 @@ namespace
 	class MatrixPaletteProperty : public IProperty
 	{
 	public:
-		MatrixPaletteProperty(ShaderContext& sc) : m_sc(sc) { }
+		MatrixPaletteProperty(ShaderContext& sc) : m_sc(sc)
+		{
+			m_matrixPaletteTB = rd()->createBuffer(IBuffer::TYPE_TEXTURE, 0,
+				256 * 4, sizeof(vec4f)
+				);
+		}
 		virtual ~MatrixPaletteProperty() { }
 
-		virtual bool apply(IShader& /*shader*/) const
+		virtual bool apply(IShader& shader) const
 		{
-			/*
 			const RenderOp& ro = m_sc.renderOp();
 
-			if (mat4f* mp = m_sc.m_matrixPaletteTB->map<mat4f>(IBuffer::ACCESS_WRITE_DISCARD))
+			if (mat4f* mp = m_matrixPaletteTB->map<mat4f>(IBuffer::ACCESS_WRITE_DISCARD))
 			{
 				memcpy(mp, ro.m_matrixPalette, sizeof(mat4f) * ro.m_matrixPaletteCount);
-				m_sc.m_matrixPaletteTB->unmap();
+				m_matrixPaletteTB->unmap();
 			}
 
-			return shader.setTextureBuffer("tb_auto_MatrixPalette", m_sc.m_matrixPaletteTB.get());
-			*/
-			return true;
+			return shader.setTextureBuffer("tb_auto_MatrixPalette", m_matrixPaletteTB.get());
 		}
 
 	private:
+		Ptr<IBuffer>   m_matrixPaletteTB;
 		ShaderContext& m_sc;
 	};
 
@@ -684,7 +687,7 @@ namespace render
 			if (m_includes[i].first == data)
 			{
 				m_includes[i] = m_includes.back();
-				m_includes.erase(m_includes.end() - 1);
+				m_includes.pop_back();
 				return true;
 			}
 		}

@@ -49,13 +49,17 @@ bool Demo::init()
 		m_camera = new FreeCamera(&proj);
 	}
 
+	Engine&			 engine     = Engine::instance();
+	GameWorld&		 gameWorld  = engine.gameWorld();
+	AnimationEngine& animEngine = engine.animationEngine();
+
 	mat4f mat;
 	mat.setIdentity();
 
-	Engine::instance().renderWorld().setCamera(m_camera);
+	engine.renderWorld().setCamera(m_camera);
 	
 	//-- plane.
-	Engine::instance().gameWorld().addGameObj("resources/models/plane.xml", &mat);
+	gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
 	for (uint i = 0; i < 5; ++i)
@@ -66,7 +70,7 @@ bool Demo::init()
 			{
 				mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 				mat.postTranslation(-15, 25, -15);
-				Engine::instance().gameWorld().addGameObj("resources/models/metalbox1.xml", &mat);
+				gameWorld.addGameObj("resources/models/metalbox1.xml", &mat);
 			}
 		}
 	}
@@ -79,10 +83,17 @@ bool Demo::init()
 			{
 				mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
 				mat.postTranslation(-5, 50, -5);
-				Engine::instance().gameWorld().addGameObj("resources/models/exp_barrel.xml", &mat);
+				gameWorld.addGameObj("resources/models/exp_barrel.xml", &mat);
 			}
 		}
 	}
+
+	mat.setIdentity();
+	Handle playerID  = gameWorld.addGameObj("resources/models/player.xml", &mat);
+	IGameObj* player = gameWorld.getGameObj(playerID);
+
+	//-- loop idle animation.
+	animEngine.playAnim(player->m_animCtrl, "idle", true);
 
 	return true;
 }

@@ -204,7 +204,7 @@ namespace render
 		SkinnedMesh();
 		~SkinnedMesh();
 
-		bool		  load(const utils::ROData& /*data*/) { return false; }
+		bool		  load(const utils::ROData& data);
 		bool		  build();
 		const AABB&   bounds() const	 { return m_originAABB; }
 		const Joints& skeleton() const   { return m_joints; }

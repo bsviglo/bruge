@@ -1,9 +1,38 @@
 #include "animation_engine.hpp"
 #include "os/FileSystem.h"
 #include "console/Console.h"
+#include "math/Matrix4x4.h"
+#include "math/Quaternion.hpp"
+#include "game_world.hpp"
+#include "render_world.hpp"
 
 using namespace brUGE::os;
 using namespace brUGE::utils;
+using namespace brUGE::math;
+
+//-- start unnamed namespace.
+//--------------------------------------------------------------------------------------------------
+namespace
+{
+
+	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
+	//----------------------------------------------------------------------------------------------
+	inline mat4f quatToMat4x4(const quat& q, const vec3f& pos)
+	{
+		mat4f out;
+		
+		//-- 1. rotation part.
+		out = q.toMat4();
+
+		//-- 2. translation part.
+		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
+
+		return out;
+	}
+
+}
+//--------------------------------------------------------------------------------------------------
+//-- end unnamed namespace.
 
 namespace brUGE
 {
@@ -19,6 +48,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::fini()
 	{
+		for (uint i = 0; i < m_animCtrls.size(); ++i)
+			delete m_animCtrls[i];
+
 		m_animCtrls.clear();
 		return true;
 	}
@@ -28,10 +60,39 @@ namespace render
 	{
 		for (uint i = 0; i < m_animCtrls.size(); ++i)
 		{
-			AnimationData* data = m_animCtrls[i].get();
+			AnimationData* data = m_animCtrls[i];
 			if (data)
 			{
-				//-- ToDo: implement.
+				MeshInstance* mesh = data->m_meshInst;
+				for (uint j = 0; j < data->m_animLayers.size(); ++j)
+				{
+					AABB aabb;
+					AnimationData::AnimLayer& layer = data->m_animLayers[j];
+
+					//-- increment timing.
+					layer.m_time += dt;
+
+					//-- extract local transformations of the node.
+					layer.m_anim->tick(
+						layer.m_time, mesh->m_skinnedMesh->skeleton(),
+						data->m_localPositions, aabb, 24, layer.m_isLooped, true
+						);
+
+					//-- ToDo: blend skeleton.
+				}
+
+				//-- translate it to the world space. Needed for physics.
+				Nodes& nodes = mesh->m_transform->m_nodes;
+				for (uint i = 0; i < nodes.size(); ++i)
+				{
+					Joint::Transform& transf = data->m_localPositions[i];
+					Node&			  node   = *nodes[i + 1];
+					
+					mat4f worldTransf = quatToMat4x4(transf.orient, transf.pos);
+					worldTransf.postMultiply(mesh->m_transform->m_worldMat);
+
+					node.matrix(worldTransf);
+				}
 			}
 		}
 	}
@@ -45,7 +106,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	Handle AnimationEngine::addAnimDef(const char* idleAnim)
 	{
-		std::unique_ptr<AnimationData> animData;
+		std::unique_ptr<AnimationData> animData(new AnimationData);
 		if (idleAnim)
 		{
 			AnimationData::AnimLayer layer;
@@ -57,7 +118,7 @@ namespace render
 			animData->m_animLayers.push_back(layer);
 		}
 
-		m_animCtrls.push_back(animData);
+		m_animCtrls.push_back(animData.release());
 		return m_animCtrls.size() - 1;
 	}
 
@@ -67,17 +128,17 @@ namespace render
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 
 		//-- reset to empty.
-		m_animCtrls[handle].reset();
+		m_animCtrls[handle] = nullptr;
 
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::playAnim(Handle id, const char* name, bool isLooped, uint rate)
+	void AnimationEngine::playAnim(Handle id, const char* name, bool isLooped, uint /*rate*/)
 	{
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 		
-		AnimationData* data = m_animCtrls[id].get();
+		AnimationData* data = m_animCtrls[id];
 		assert(data);
 		
 		AnimationData::AnimLayer layer;
@@ -95,7 +156,7 @@ namespace render
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
 
 		//-- reset to empty.
-		m_animCtrls[id].reset();
+		m_animCtrls[id] = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -104,6 +165,7 @@ namespace render
 		bool /*isLooped*/, uint /*rate*/)
 	{
 		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
+		id;
 
 		//-- ToDo:
 	}

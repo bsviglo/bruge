@@ -231,7 +231,7 @@ namespace render
 
 		Camera*				m_camera; //-- ToDo: use render camera instead.
 		EPassType			m_pass;
-		RenderOps			m_renderOps;		
+		RenderOps			m_renderOps;
 
 		//-- some addition resources for different render passes.
 		PassDesc			m_passes[PASS_COUNT];

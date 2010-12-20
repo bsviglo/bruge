@@ -22,9 +22,9 @@ namespace brUGE
 		Node(const char* name, mat4f& matrix) : m_name(name), m_matrix(matrix) { }
 		~Node() { }
 
-		void		 matrix(const mat4f& mat) { m_matrix = mat; }
-		const mat4f& matrix() const { return m_matrix; }
-		const char*  name() const	{ return m_name; }
+		void		 matrix	(const mat4f& mat) { m_matrix = mat; }
+		const mat4f& matrix	() const			  { return m_matrix; }
+		const char*  name	() const			  { return m_name; }
 
 	private:
 		const char* m_name;
@@ -41,6 +41,9 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	struct Transform
 	{
+		Transform();
+		~Transform();
+
 		AABB  m_localBounds;
 		mat4f m_worldMat;
 		Nodes m_nodes;
@@ -85,22 +88,23 @@ namespace brUGE
 	class GameWorld
 	{
 	public:
-		bool	init();
-		bool	fini();
+		bool		init();
+		bool		fini();
 
 		//-- load and save map.
-		bool	loadMap(const char* mapName);
-		bool	saveMap(const char* mapName);
+		bool		loadMap(const char* mapName);
+		bool		saveMap(const char* mapName);
 
 		//-- add/delete some game objects to/from game world.
-		Handle	addGameObj(const char* desc, const mat4f* orient = NULL);
-		bool	delGameObj(Handle handle);
+		Handle		addGameObj(const char* desc, const mat4f* orient = NULL);
+		bool		delGameObj(Handle handle);
+		IGameObj*	getGameObj(Handle handle) { return m_objs[handle]; }
 
 		//-- update functions bucket.
-		void	beginUpdate(float /*dt*/);
-		void	preAnimUpdate();
-		void	postAnimUpdate();
-		void	endUpdate();
+		void		beginUpdate(float /*dt*/);
+		void		preAnimUpdate();
+		void		postAnimUpdate();
+		void		endUpdate();
 
 	private:
 		typedef std::vector<IGameObj*> GameObjs;
