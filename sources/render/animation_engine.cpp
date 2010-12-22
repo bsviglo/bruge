@@ -83,7 +83,7 @@ namespace render
 
 				//-- translate it to the world space. Needed for physics.
 				Nodes& nodes = mesh->m_transform->m_nodes;
-				for (uint i = 0; i < nodes.size(); ++i)
+				for (uint i = 0; i < nodes.size() - 1; ++i)
 				{
 					Joint::Transform& transf = data->m_localPositions[i];
 					Node&			  node   = *nodes[i + 1];
@@ -92,6 +92,25 @@ namespace render
 					worldTransf.postMultiply(mesh->m_transform->m_worldMat);
 
 					node.matrix(worldTransf);
+				}
+
+				//-- ToDo: draw skeleton.
+				{
+					//const mat4f&  worldMat = mesh->m_transform->m_worldMat;
+					const Joints& joints   = mesh->m_skinnedMesh->skeleton();
+					for (uint i = 0; i < joints.size(); ++i)
+					{
+						if (joints[i].m_parentIdx != -1)
+						{
+							//const vec3f& startPos = worldMat.applyToPoint(data->m_localPositions[i].pos);
+							//const vec3f& endPos   = worldMat.applyToPoint(data->m_localPositions[joints[i].m_parentIdx].pos);
+
+							const vec3f& startPos = nodes[i + 1]->matrix().applyToOrigin();
+							const vec3f& endPos   = nodes[joints[i].m_parentIdx + 1]->matrix().applyToOrigin();
+
+							DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
+						}
+					}
 				}
 			}
 		}
@@ -104,13 +123,13 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle AnimationEngine::addAnimDef(const char* idleAnim)
+	Handle AnimationEngine::addAnimDef(AnimationData::Desc& desc)
 	{
-		std::unique_ptr<AnimationData> animData(new AnimationData);
-		if (idleAnim)
+		std::unique_ptr<AnimationData> animData(new AnimationData(desc));
+		if (desc.m_idleAnim)
 		{
 			AnimationData::AnimLayer layer;
-			layer.m_anim	 = getAnim(idleAnim);
+			layer.m_anim	 = getAnim(desc.m_idleAnim);
 			layer.m_blend	 = 1.0f;
 			layer.m_time	 = 0.0f;
 			layer.m_isLooped = true;
@@ -123,12 +142,12 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool AnimationEngine::delAnimDef(Handle handle)
+	bool AnimationEngine::delAnimDef(Handle id)
 	{
-		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
+		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
-		m_animCtrls[handle] = nullptr;
+		m_animCtrls[id] = nullptr;
 
 		return true;
 	}
@@ -136,7 +155,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::playAnim(Handle id, const char* name, bool isLooped, uint /*rate*/)
 	{
-		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
+		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		
 		AnimationData* data = m_animCtrls[id];
 		assert(data);
@@ -153,7 +172,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::stopAnim(Handle id)
 	{
-		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
+		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
 		m_animCtrls[id] = nullptr;
@@ -164,7 +183,7 @@ namespace render
 		Handle id, float /*srcBlend*/, float /*dstBlend*/, const char* /*name*/,
 		bool /*isLooped*/, uint /*rate*/)
 	{
-		assert(id != BR_INVALID_HANDLE && id < m_animCtrls.size());
+		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		id;
 
 		//-- ToDo:
@@ -180,7 +199,7 @@ namespace render
 		}
 		else
 		{
-			RODataPtr data = FileSystem::instance().readFile("resources/" + std::string(name));
+			RODataPtr data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".md5anim");
 			if (!data.get())
 			{
 				return NULL;
@@ -326,6 +345,13 @@ namespace render
 		}
 
 		bound = m_bounds[frame];
+	}
+
+	//----------------------------------------------------------------------------------------------
+	AnimationData::AnimationData(AnimationData::Desc& desc)
+		: m_transform(desc.m_transform), m_meshInst(desc.m_meshInst)
+	{
+		m_localPositions.resize(m_meshInst->m_skinnedMesh->skeleton().size());
 	}
 
 } //-- render

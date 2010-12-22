@@ -88,12 +88,14 @@ bool Demo::init()
 		}
 	}
 
+	//mat.setScale(0.1f, 0.1f, 0.1f);
+	//mat.postRotateX(degToRad(-90.0f));
 	mat.setIdentity();
 	Handle playerID  = gameWorld.addGameObj("resources/models/player.xml", &mat);
 	IGameObj* player = gameWorld.getGameObj(playerID);
 
 	//-- loop idle animation.
-	animEngine.playAnim(player->m_animCtrl, "idle", true);
+	animEngine.playAnim(player->animCtrl(), "run", true);
 
 	return true;
 }

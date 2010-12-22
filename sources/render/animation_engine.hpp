@@ -78,7 +78,16 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	struct AnimationData
 	{
-		AnimationData() { }
+		struct Desc
+		{
+			Desc() : m_idleAnim(nullptr), m_transform(nullptr), m_meshInst(nullptr) { }
+
+			const char*	   m_idleAnim;
+			Transform*	   m_transform;
+			MeshInstance*  m_meshInst;
+		};
+
+		AnimationData(Desc& desc);
 
 		//-- Represents one particular layer of the animation.
 		//------------------------------------------------------------------------------------------
@@ -116,7 +125,7 @@ namespace render
 		void			postAnimate	();
 
 		//-- animation controllers.
-		Handle			addAnimDef	(const char* idleAnim = nullptr);
+		Handle			addAnimDef	(AnimationData::Desc& desc);
 		bool			delAnimDef	(Handle handle);
 		
 		//-- some animation controlling functions.

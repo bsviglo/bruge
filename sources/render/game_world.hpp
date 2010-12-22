@@ -67,6 +67,9 @@ namespace brUGE
 		virtual void postAnimUpdate() { }
 		virtual void endUpdate() { }
 
+		//-- ToDo: remove.
+		Handle animCtrl() { return m_animCtrl; }
+
 	private:
 		Handle				m_self;
 		Handle				m_meshInst;

@@ -177,8 +177,24 @@ namespace brUGE
 			}
 		}
 
-		//-- ToDo:
-		m_animCtrl = CONST_INVALID_HANDLE;
+		//-- 4. setup animation part.
+		{
+			MeshInstance* meshInst = Engine::instance().renderWorld().getMeshDef(m_meshInst);
+
+			if (meshInst->m_skinnedMesh)
+			{
+				AnimationData::Desc desc;
+				desc.m_idleAnim  = nullptr;
+				desc.m_meshInst  = meshInst;
+				desc.m_transform = &m_transform;
+
+				m_animCtrl = Engine::instance().animationEngine().addAnimDef(desc);
+			}
+			else
+			{
+				m_animCtrl = CONST_INVALID_HANDLE;
+			}
+		}
 
 		//-- store its own unique handle in the world after complete successfully initialization.
 		m_self = objID;

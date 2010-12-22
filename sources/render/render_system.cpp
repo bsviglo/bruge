@@ -100,13 +100,16 @@ namespace
 		MatrixPaletteProperty(ShaderContext& sc) : m_sc(sc)
 		{
 			m_matrixPaletteTB = rd()->createBuffer(IBuffer::TYPE_TEXTURE, 0,
-				256 * 4, sizeof(vec4f)
+				256 * 4, sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 				);
 		}
 		virtual ~MatrixPaletteProperty() { }
 
 		virtual bool apply(IShader& shader) const
 		{
+			//-- ToDo:
+			if (!m_sc.renderOp().m_matrixPaletteCount) return false;
+
 			const RenderOp& ro = m_sc.renderOp();
 
 			if (mat4f* mp = m_matrixPaletteTB->map<mat4f>(IBuffer::ACCESS_WRITE_DISCARD))

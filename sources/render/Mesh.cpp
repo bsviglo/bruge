@@ -366,12 +366,12 @@ namespace render
 		{
 			const SkinnedMesh::SubMesh& sm = *m_submeshes[i];
 
+			op.m_primTopolpgy	= PRIM_TOPOLOGY_TRIANGLE_LIST;
 			op.m_IB				= &*sm.IB;
 			op.m_mainVB			= &*sm.mainVB;
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_weightsTB		= &*sm.weightsTB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_primTopolpgy	= sm.primTopolpgy;
 			op.m_material		= sm.material.renderFx();
 
 			ops.push_back(op);

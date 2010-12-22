@@ -118,7 +118,7 @@ namespace brUGE
 				m_renderWorld.resolveVisibility();
 
 				//m_collisionWorld.update(dt);
-				//m_animEngine.animate(dt);
+				m_animEngine.animate(dt);
 
 				m_gameWorld.endUpdate();
 

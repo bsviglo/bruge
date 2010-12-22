@@ -1,4 +1,3 @@
-
 //-- Note: we can experiment with data packing. This is far from ideal data packing rules.
 //--	   It looks like it look only for simplicity to undestading what is going here.
 struct vs_out
@@ -15,31 +14,39 @@ struct Weight
 };
 
 //-- 4 byte aligned.
-tbuffer tb_weights
+tbuffer tb_auto_Weights
 {
 	Weight g_weights[2048];
 };
 
 //-- 64 byte aligned.
-tbuffer tb_skeleton
+tbuffer tb_auto_MatrixPalette
 {
 	float4x4 g_bones[256];
 };
+
+//-- per frame auto variables.
+cbuffer cb_auto_PerFrame
+{
+	float4x4 g_viewMat;
+	float4x4 g_viewProjMat;
+};
+
+//-- per instance auto variables.
+cbuffer cb_auto_PerInstance
+{
+	float4x4 g_worldMat;
+	float4x4 g_MVPMat;
+};
+
+#ifdef _VERTEX_SHADER_
 
 //--------------------------------------------------------------------------------------------------
 float3 boneTransf(in uint idx, in float3 pos)
 {
 	float4x4 bone = g_bones[idx];
-    return mul(pos, bone);
+    return mul(float4(pos, 1.0f), bone).xyz;
 }
-
-cbuffer cb_uniforms
-{
-	float4x4 g_worldMat;
-	float4x4 g_viewProjMat;
-};
-
-#ifdef _VERTEX_SHADER_
 
 struct vs_in
 {                                           
@@ -61,7 +68,7 @@ vs_out main(vs_in input)
 		worldPos += weight.pos.w * boneTransf(weight.joint.x, weight.pos.xyz); 
     }
     
-	o.pos = mul(worldPos, g_viewProjMat);
+	o.pos = mul(float4(worldPos, 1.0f), g_viewProjMat);
 	o.tc  = input.tc;
 
     return o;

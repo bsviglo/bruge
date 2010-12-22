@@ -54,6 +54,19 @@ namespace
 		cmd  = str.substr(0, pos);
 		args = replaceTabs(trim(str.substr(pos)));
 	}
+
+	//----------------------------------------------------------------------------------------------
+	std::string adjustArgs(const std::string& str)
+	{
+		std::string out = str;
+		std::string::size_type first = str.find_first_of("\"");
+		std::string::size_type last  = str.find_last_of("\"");
+
+		if (first == std::string::npos || last == std::string::npos)
+			return str;
+
+		return str.substr(first + 1, last - first - 1);
+	}
 }
 //--------------------------------------------------------------------------------------------------
 // end unnamed namespace.
@@ -112,7 +125,7 @@ namespace brUGE
 
 			Joint& joint = m_joints[i];
 
-			joint.m_name			 = cmd;
+			joint.m_name			 = adjustArgs(cmd);
 			joint.m_parentIdx		 = idx;
 			joint.m_transform.pos	 = pos;
 			joint.m_transform.orient = q;
@@ -136,7 +149,16 @@ namespace brUGE
 
 			if		(cmd.empty())			{ continue; } 
 			else if (cmd == "}")			{ break; }
-			else if	(cmd == "shader")		{ }
+			else if	(cmd == "shader")
+			{
+				//-- ToDo: try to load material for this submesh.
+				RODataPtr mData = os::FileSystem::instance().readFile("resources/" + adjustArgs(args));
+				if (!mData.get() || (mData && !submesh->material.load(*mData.get())))
+				{
+					ERROR_MSG("Can't load submesh material %s.", adjustArgs(args).c_str());
+					return false;
+				}
+			}
 			else if (cmd == "numverts")		{ submesh->vertices.resize(strToInt(args)); }
 			else if (cmd == "numtris")		{ submesh->faces.resize(strToInt(args)); }
 			else if (cmd == "numweights" )	{ submesh->weights.resize(strToInt(args)); }
