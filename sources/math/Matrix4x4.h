@@ -106,6 +106,7 @@ namespace math
 		inline Matrix4x4<T>& postScale			(const Vector3<T>& scl)						{ Matrix4x4<T> m; m.setScale(scl); 				return ( *this = mult(*this, m)); }
 
 		inline Vector3<T>	applyToPoint		(const Vector3<T>& point) const;
+		inline Vector4<T>	applyToPoint		(const Vector4<T>& point) const;
 		inline Vector3<T>	applyToVector		(const Vector3<T>& vec) const;
 
 		inline const Vector3<T>& applyToUnitAxis(uint axis) const							{ assert(axis < 3); return *reinterpret_cast<const Vector3<T>* >(&data[axis * 4]); }
@@ -456,6 +457,17 @@ namespace math
 		op.x = ip.x * m00 + ip.y * m10 + ip.z * m20 + m30;
 		op.y = ip.x * m01 + ip.y * m11 + ip.z * m21 + m31;
 		op.z = ip.x * m02 + ip.y * m12 + ip.z * m22 + m32;
+		return op;
+	}
+
+	template <class T>
+	inline Vector4<T>	Matrix4x4<T>::applyToPoint(const Vector4<T>& ip) const
+	{
+		Vector4<T> op;
+		op.x = ip.x * m00 + ip.y * m10 + ip.z * m20 + ip.w * m30;
+		op.y = ip.x * m01 + ip.y * m11 + ip.z * m21 + ip.w * m31;
+		op.z = ip.x * m02 + ip.y * m12 + ip.z * m22 + ip.w * m32;
+		op.w = ip.x * m03 + ip.y * m13 + ip.z * m23 + ip.w * m33;
 		return op;
 	}
 

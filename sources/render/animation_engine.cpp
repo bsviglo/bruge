@@ -23,6 +23,7 @@ namespace
 		
 		//-- 1. rotation part.
 		out = q.toMat4();
+		out.transpose();
 
 		//-- 2. translation part.
 		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
@@ -97,17 +98,18 @@ namespace render
 				//-- ToDo: draw skeleton.
 				{
 					//const mat4f&  worldMat = mesh->m_transform->m_worldMat;
-					const Joints& joints   = mesh->m_skinnedMesh->skeleton();
+					const Joints& joints = mesh->m_skinnedMesh->skeleton();
 					for (uint i = 0; i < joints.size(); ++i)
 					{
+						const vec3f& startPos = nodes[i + 1]->matrix().applyToOrigin();
+						DebugDrawer::instance().drawText2D(joints[i].m_name.c_str(), startPos, Color(1,1,0,1));
+
 						if (joints[i].m_parentIdx != -1)
 						{
 							//const vec3f& startPos = worldMat.applyToPoint(data->m_localPositions[i].pos);
 							//const vec3f& endPos   = worldMat.applyToPoint(data->m_localPositions[joints[i].m_parentIdx].pos);
-
-							const vec3f& startPos = nodes[i + 1]->matrix().applyToOrigin();
-							const vec3f& endPos   = nodes[joints[i].m_parentIdx + 1]->matrix().applyToOrigin();
-
+						
+							const vec3f& endPos = nodes[joints[i].m_parentIdx + 1]->matrix().applyToOrigin();
 							DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
 						}
 					}
@@ -242,9 +244,9 @@ namespace render
 		int			pos   = m_hierarchy[joint].startIdx;
 
 		//-- update transformation specific for current frame.
-		if (flags & 1 )	transf.pos.x	= data[pos++];
-		if (flags & 2 )	transf.pos.y	= data[pos++];
-		if (flags & 4 ) transf.pos.z	= data[pos++];
+		if (flags & 1 )	transf.pos.x	= data[pos++] * 0.1f;
+		if (flags & 2 )	transf.pos.y	= data[pos++] * 0.1f;
+		if (flags & 4 ) transf.pos.z	= data[pos++] * 0.1f;
 		if (flags & 8 ) transf.orient.x = data[pos++];
 		if (flags & 16) transf.orient.y = data[pos++];
 		if (flags & 32) transf.orient.z = data[pos++];

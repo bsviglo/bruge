@@ -8,6 +8,7 @@
 #include "render/DebugDrawer.h"
 #include "render/Color.h"
 #include "console/Console.h"
+#include <algorithm>
 
 using namespace brUGE;
 using namespace brUGE::os;
@@ -298,9 +299,11 @@ namespace physic
 			{
 				RigidBody::Desc bodyDesc;
 
-				bodyDesc.m_name = elem.attribute("name").value();
-				bodyDesc.m_node = elem.attribute("node").value();
-				bodyDesc.m_mass = elem.attribute("mass").as_float();
+				bodyDesc.m_name			= elem.attribute("name").value();
+				bodyDesc.m_node			= elem.attribute("node").value();
+				bodyDesc.m_mass			= elem.attribute("mass").as_float();
+				bodyDesc.m_offset		= parseTo<vec3f>(elem.attribute("offset").value());
+				bodyDesc.m_isKinematic	= elem.attribute("kinematic").as_bool();
 
 				//-- create new shape.
 				{
@@ -330,6 +333,22 @@ namespace physic
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
 						btShape = new btCylinderShape(
+							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
+							);
+					}
+					else if (strcmp(type, "cylinderX") == 0)
+					{
+						auto size = parseTo<vec3f>(params.attribute("size").value());
+
+						btShape = new btCylinderShapeX(
+							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
+							);
+					}
+					else if (strcmp(type, "cylinderZ") == 0)
+					{
+						auto size = parseTo<vec3f>(params.attribute("size").value());
+
+						btShape = new btCylinderShapeZ(
 							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
 							);
 					}
@@ -389,9 +408,23 @@ namespace physic
 		{
 			RigidBody* body = new RigidBody();
 
-			body->m_name  = i->m_name.c_str();
-			body->m_owner = owner;
-			body->m_node  = transform->m_nodes[0]; //-- ToDo: load needed node.
+			body->m_name   = i->m_name.c_str();
+			body->m_owner  = owner;
+			body->m_offset = &i->m_offset;
+
+			//-- find anchor joint.
+			{
+				Nodes& nodes = transform->m_nodes;
+
+				auto iter = std::find_if(nodes.begin(), nodes.end(), [i](Node* node) {
+					return (i->m_node == node->name());
+				});
+
+				assert(iter != transform->m_nodes.end());
+				
+				body->m_node = *iter;
+			}
+			//body->m_node = transform->m_nodes[0]; //-- ToDo: load needed node.
 
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(
 				i->m_mass, body, m_shapes[i->m_shape],
@@ -402,6 +435,15 @@ namespace physic
 
 			//-- set user pointer as a pointer to the PhysObj object.
 			body->m_body->setUserPointer(body);
+
+			//-- make it kinematic if needed.
+			if (i->m_isKinematic)
+			{
+				body->m_body->setCollisionFlags(
+					body->m_body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT
+					);  
+				body->m_body->setActivationState(DISABLE_DEACTIVATION); 
+			}
 
 			physObj->m_bodies.push_back(body);
 		}
@@ -505,13 +547,21 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	void PhysObjDesc::RigidBody::getWorldTransform(btTransform& worldTrans) const
 	{
-		worldTrans = bruge2bullet(m_node->matrix());
+		//-- apply offset.
+		mat4f transform(m_node->matrix());
+		transform.preTranslation(*m_offset);
+
+		worldTrans = bruge2bullet(transform);
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PhysObjDesc::RigidBody::setWorldTransform(const btTransform& worldTrans)
 	{
-		m_node->matrix(bullet2bruge(worldTrans));
+		//-- apply transform
+		mat4f transform = bullet2bruge(worldTrans);
+		transform.postTranslation(m_offset->scale(-1));
+
+		m_node->matrix(transform);
 	}
 
 	//----------------------------------------------------------------------------------------------

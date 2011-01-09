@@ -7,6 +7,7 @@
 #include "math/OBB.hpp"
 #include "IBuffer.h"
 #include "IShader.h"
+#include "Font.h"
 
 #include <vector>
 
@@ -38,6 +39,8 @@ namespace render
 		void drawAABB		(const AABB& aabb, const Color& color, const mat4f& transform);
 
 		void drawOBB		(const OBB& obb, const Color& color);
+
+		void drawText2D		(const char* text, const vec3f& pos, const Color& color);
 		
 		//-- this method performs actual drawing.
 		void draw(const mat4f& viewProjMat, float dt);
@@ -66,6 +69,16 @@ namespace render
 		Ptr<IShader>			m_shader;
 		DepthStencilStateID		m_stateDS;
 		RasterizerStateID		m_stateR;
+
+		//-- text drawing
+		struct TextData
+		{
+			vec3f		m_pos;
+			std::string m_text;
+			Color		m_color;
+		};
+		Ptr<Font>				m_font;
+		std::vector<TextData>	m_textDataVec;
 	};
 
 } // render

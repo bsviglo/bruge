@@ -93,6 +93,10 @@
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <Profile>true</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>echo copy file $(TargetFileName) from $(TargetDir) to ..\..\Output\
+copy $(TargetDir)$(TargetFileName) ..\..\Output\$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -123,6 +127,10 @@
       <TargetMachine>MachineX86</TargetMachine>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
     </Link>
+    <PostBuildEvent>
+      <Command>echo copy file $(TargetFileName) from $(TargetDir) to ..\..\Output\
+copy $(TargetDir)$(TargetFileName) ..\..\Output\$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\render\DX10\Dx_common.hpp" />

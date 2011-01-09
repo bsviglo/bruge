@@ -18,6 +18,9 @@ using namespace brUGE::math;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
+	//-- scale every vertex and joints by this scale factor.
+	const float g_vertexScale = 0.1f;
+
 	//----------------------------------------------------------------------------------------------
 	string replaceTabs(const string& str)
 	{
@@ -127,7 +130,7 @@ namespace brUGE
 
 			joint.m_name			 = adjustArgs(cmd);
 			joint.m_parentIdx		 = idx;
-			joint.m_transform.pos	 = pos;
+			joint.m_transform.pos	 = pos.scale(g_vertexScale);
 			joint.m_transform.orient = q;
 		}
 	}
@@ -190,6 +193,7 @@ namespace brUGE
 					&idx, &weight.joint, &weight.weight, &weight.pos.x, &weight.pos.y, &weight.pos.z
 					);
 
+				weight.pos = weight.pos.scale(g_vertexScale);
 				submesh->weights[idx] = weight;
 			}
 		}
@@ -277,6 +281,9 @@ namespace brUGE
 				&aabb.min.x, &aabb.min.y, &aabb.min.z,
 				&aabb.max.x, &aabb.max.y, &aabb.max.z
 				);
+
+			aabb.min = aabb.min.scale(g_vertexScale);
+			aabb.max = aabb.max.scale(g_vertexScale);
 		}
 		return true;
 	}
@@ -299,7 +306,7 @@ namespace brUGE
 				&pos.x, &pos.y, &pos.z, &q.x, &q.y, &q.z
 				);
 
-			m_baseFrame[i].pos    = pos;
+			m_baseFrame[i].pos    = pos.scale(g_vertexScale);
 			m_baseFrame[i].orient = quat(q, 0.0f);
 			renormalize(m_baseFrame[i].orient);
 		}

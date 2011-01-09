@@ -8,6 +8,8 @@
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
 
+using namespace brUGE::math;
+
 namespace brUGE
 {
 	DEFINE_SINGLETON(render::DebugDrawer)
@@ -35,6 +37,7 @@ namespace render
 		//-- release render resources.
 		m_VB.reset();
 		m_shader.reset();
+		m_font.reset();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -269,6 +272,19 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawText2D(const char* text, const vec3f& pos, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		TextData data;
+		data.m_pos	 = pos;
+		data.m_text  = text;
+		data.m_color = color;
+
+		m_textDataVec.push_back(data);
+	}
+
+	//---------------------------------------------------------------------------------------------
 	bool DebugDrawer::_setupRender()
 	{
 		//-- shader.
@@ -301,6 +317,12 @@ namespace render
 
 			RasterizerStateDesc rDesc;
 			m_stateR = rd()->createRasterizedState(rDesc);
+		}
+
+		//-- font.
+		{
+			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
+			assert(m_font.isValid());
 		}
 		
 		return true;
@@ -349,6 +371,31 @@ namespace render
 		rd()->draw(PRIM_TOPOLOGY_LINE_LIST, 0, m_vertices.size());
 
 		m_vertices.clear();
+
+		if (!m_textDataVec.empty())
+		{
+			m_font->beginDraw();
+			for (uint i = 0; i < m_textDataVec.size(); ++i)
+			{
+				const TextData& data = m_textDataVec[i];
+				
+				vec4f projPos = viewProjMat.applyToPoint(data.m_pos.toVec4());
+				if (!almostZero(projPos.w) && projPos.w > 0)
+				{
+					vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
+					vec2f curPos(
+						(0.5f * (1.0f + clipPos.x)) * rs().screenRes().width,
+						(0.5f * (1.0f - clipPos.y)) * rs().screenRes().height
+						);
+
+					m_font->draw2D(curPos, data.m_color, data.m_text);
+				}
+			}
+			m_font->endDraw();
+
+			//-- clear text data list.
+			m_textDataVec.clear();
+		}
 	}
 	
 	//---------------------------------------------------------------------------------------------

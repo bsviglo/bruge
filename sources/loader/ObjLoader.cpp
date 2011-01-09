@@ -244,7 +244,7 @@ namespace brUGE
 				
 				{
 					TexCoord texCoord;
-					texCoord = t;
+					texCoord = vec2f(t.x, 1.0f - t.y); //-- ToDo: invert mirror uv along y-axis.
 					texCoords.push_back(texCoord);
 				}
 			}
@@ -265,16 +265,16 @@ namespace brUGE
 				{
 					Mesh::Face face;
 					face.index[0] = vi[i]   - startVertex;
-					face.index[1] = vi[i+1] - startVertex;
-					face.index[2] = vi[i+2] - startVertex;
+					face.index[1] = vi[i+2] - startVertex; //-- ToDo: was inverted 23 -> 32
+					face.index[2] = vi[i+1] - startVertex;
 					faces.push_back(face);
 
 					if (hasTexCoords)
 					{
 						Mesh::Face texFace;
 						texFace.index[0] = ti[i]   - startTexCoord;
-						texFace.index[1] = ti[i+1] - startTexCoord;
-						texFace.index[2] = ti[i+2] - startTexCoord;
+						texFace.index[1] = ti[i+2] - startTexCoord; //-- ToDo: was inverted 23 -> 32
+						texFace.index[2] = ti[i+1] - startTexCoord;
 						texFaces.push_back(texFace);
 					}
 				}

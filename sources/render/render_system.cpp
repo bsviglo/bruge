@@ -255,7 +255,7 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode = RasterizerStateDesc::CULL_FRONT;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 	
 			BlendStateDesc bDesc;

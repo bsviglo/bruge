@@ -115,11 +115,11 @@ namespace brUGE
 			ilEnable(IL_ORIGIN_SET);
 			ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
 		}
-		else
-		{
-			ilEnable(IL_ORIGIN_SET);
-			ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_LOWER_LEFT);
-		}
+		//else
+		//{
+		//	ilEnable(IL_ORIGIN_SET);
+		//	ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_LOWER_LEFT);
+		//}
 
 		if(!ilLoadL(IL_TYPE_UNKNOWN, data.ptr(), data.length()))
 			return NULL;

@@ -62,6 +62,7 @@ bool Demo::init()
 	gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
+	/*
 	for (uint i = 0; i < 5; ++i)
 	{
 		for (uint j = 0; j < 5; ++j)
@@ -87,15 +88,17 @@ bool Demo::init()
 			}
 		}
 	}
+	*/
 
 	//mat.setScale(0.1f, 0.1f, 0.1f);
-	//mat.postRotateX(degToRad(-90.0f));
-	mat.setIdentity();
+	mat.postRotateX(degToRad(-90.0f));
+	mat.postTranslation(0.0f, 0.5f, 0.0f);
+	//mat.setIdentity();
 	Handle playerID  = gameWorld.addGameObj("resources/models/player.xml", &mat);
 	IGameObj* player = gameWorld.getGameObj(playerID);
 
 	//-- loop idle animation.
-	animEngine.playAnim(player->animCtrl(), "run", true);
+	animEngine.playAnim(player->animCtrl(), "idle", true);
 
 	return true;
 }

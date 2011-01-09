@@ -1,0 +1,67 @@
+<phys>
+	<rigidBodies>
+	
+    <rigidBody name="body" node="origin" mass="0" offset="vec3f(0,5.2,0)" kinematic="1">
+		<shape type="cylinder">
+			<params size="vec3f(0.7,1.5,0.6)" />
+		</shape>      
+	</rigidBody>
+
+	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0.3,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.6,0.25,0.2)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="l_low_arm" node="l_elbo_tweak" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.5,0.25,0.2)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0.3,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.6,0.25,0.2)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="r_low_arm" node="r_elbo_tweak" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.5,0.25,0.0)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="l_up_leg" node="l_upleg" mass="0" offset="vec3f(0.5,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(1.0,0.3,0.0)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="l_low_leg" node="l_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.8,0.3,0.0)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="r_up_leg" node="r_upleg" mass="0" offset="vec3f(0.5,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(1.0,0.3,0.0)" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="r_low_leg" node="r_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+		<shape type="cylinderX">
+			<params size="vec3f(0.8,0.3,0.0)" />
+		</shape>    
+	</rigidBody>
+
+	</rigidBodies>
+  
+	<!--
+	<constraints>
+		<constraint name="simple" type="p2p" objA="root" objB="root">
+		<params strength="0.67" />
+		</constraint>
+	</constraints>
+	-->
+</phys>

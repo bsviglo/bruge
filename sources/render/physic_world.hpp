@@ -37,8 +37,10 @@ namespace physic
 			{
 				std::string m_name;
 				std::string m_node;
+				bool		m_isKinematic;
 				float		m_mass;
 				vec3f		m_localInertia;
+				vec3f		m_offset;
 				uint		m_shape;
 			};
 
@@ -52,6 +54,7 @@ namespace physic
 			const char*					 m_name; //-- pointed at the managed object. No needed explicit deletion.
 			Node*						 m_node;
 			Handle						 m_owner;
+			vec3f*						 m_offset;
 			std::unique_ptr<btRigidBody> m_body;
 		};
 		typedef std::vector<RigidBody*>	RigidBodies;

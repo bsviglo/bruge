@@ -1,7 +1,7 @@
 <game_object>
 
   <render file="models\player.md5mesh"/>
-  <physics/>
+  <physics file="physics\player.phys"/>
   <audio/>
   
 </game_object>

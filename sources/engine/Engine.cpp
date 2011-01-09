@@ -113,12 +113,12 @@ namespace brUGE
 				m_renderSys.beginFrame();
 				m_gameWorld.beginUpdate(dt);
 
+				m_animEngine.animate(dt);
 				m_physicWorld.simulateDynamics(dt);
 
 				m_renderWorld.resolveVisibility();
 
 				//m_collisionWorld.update(dt);
-				m_animEngine.animate(dt);
 
 				m_gameWorld.endUpdate();
 
