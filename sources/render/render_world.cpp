@@ -99,6 +99,11 @@ namespace render
 		rs.addRenderOps(m_renderOps);
 		rs.endPass();
 
+		//-- ToDo: reconsider.
+		//-- update debug drawer.
+		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
+		DebugDrawer::instance().draw();
+
 		m_renderOps.clear();
 	}
 

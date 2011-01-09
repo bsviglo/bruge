@@ -1,13 +1,15 @@
 #include "DebugDrawer.h"
-#include "render_system.hpp"
+#include "Camera.h"
 #include "IRenderDevice.h"
 #include "IBuffer.h"
 #include "IShader.h"
 #include "state_objects.h"
+#include "os/FileSystem.h"
 #include "console/Console.h"
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
 
+using namespace brUGE::os;
 using namespace brUGE::math;
 
 namespace brUGE
@@ -28,7 +30,52 @@ namespace render
 		REGISTER_CONSOLE_METHOD("r_drawDebugInfo", _drawDebugInfo, DebugDrawer);
 		m_vertices.reserve(1024);
 
-		return _setupRender();
+		//-- create wire geometry vertex buffer.
+		{
+			m_VB = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 2048, sizeof(VertDesc),
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE);
+		}
+
+		//-- load wire material.
+		{
+			m_wireMaterial.reset(new Material());
+			//-- ToDo:
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/debug_wire.mtl");
+			if (file.get())
+			{
+				if (!m_wireMaterial->load(*file))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+
+			//-- create rops for drawing.
+			{
+				RenderOp op;
+				op.m_primTopolpgy = PRIM_TOPOLOGY_LINE_LIST;
+				op.m_mainVB		  = &*m_VB;
+				op.m_indicesCount = 0;
+				op.m_material	  = m_wireMaterial->renderFx();
+
+				m_wireROPs.push_back(op);
+			}
+		}
+
+		//-- font.
+		{
+			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
+			if (!m_font.isValid())
+				return false;
+		}
+
+		//-- ToDo: delete.
+		//return _setupRender();
+
+		return true;
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -36,7 +83,6 @@ namespace render
 	{
 		//-- release render resources.
 		m_VB.reset();
-		m_shader.reset();
 		m_font.reset();
 	}
 
@@ -287,6 +333,7 @@ namespace render
 	//---------------------------------------------------------------------------------------------
 	bool DebugDrawer::_setupRender()
 	{
+		/*
 		//-- shader.
 		{
 			m_shader = ResourcesManager::instance().loadShader("debug");
@@ -324,7 +371,8 @@ namespace render
 			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
 			assert(m_font.isValid());
 		}
-		
+		*/
+
 		return true;
 	}
 
@@ -347,7 +395,7 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::draw(const mat4f& viewProjMat, float /*dt*/)
+	void DebugDrawer::draw()
 	{
 		SCOPED_TIME_MEASURER_EX("DebugDrawer draw")
 
@@ -356,22 +404,18 @@ namespace render
 		//-- load vertices into GPU's VB.
 		_swapBuffers();
 		
-		rd()->setDepthStencilState(m_stateDS, 0);
-		rd()->setRasterizerState(m_stateR);
-		rd()->setBlendState(NULL, NULL, 0xffffffff);
-
-		rd()->setVertexLayout(m_VL);
-		rd()->setVertexBuffer(0, m_VB.get());
-
-		rd()->setShader(m_shader.get());
-		{
-			m_shader->setMat4f("g_viewProjMat", viewProjMat);
-		}
-
-		rd()->draw(PRIM_TOPOLOGY_LINE_LIST, 0, m_vertices.size());
+		//-- update some rop's information.
+		m_wireROPs[0].m_indicesCount = m_vertices.size();
+		
+		//-- do wire geometry drawing.
+		rs().beginPass(RenderSystem::PASS_DEBUG_WIRE);
+		rs().addRenderOps(m_wireROPs);
+		rs().endPass();
 
 		m_vertices.clear();
 
+		//-- ToDo: reconsider.
+		//-- do font drawing.
 		if (!m_textDataVec.empty())
 		{
 			m_font->beginDraw();
@@ -379,7 +423,7 @@ namespace render
 			{
 				const TextData& data = m_textDataVec[i];
 				
-				vec4f projPos = viewProjMat.applyToPoint(data.m_pos.toVec4());
+				vec4f projPos = rs().camera().viewProjMatrix().applyToPoint(data.m_pos.toVec4());
 				if (!almostZero(projPos.w) && projPos.w > 0)
 				{
 					vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
@@ -396,6 +440,9 @@ namespace render
 			//-- clear text data list.
 			m_textDataVec.clear();
 		}
+
+		//-- ToDo: implement.
+		//-- do solid geometry drawing.
 	}
 	
 	//---------------------------------------------------------------------------------------------

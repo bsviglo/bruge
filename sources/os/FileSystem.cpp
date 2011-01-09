@@ -230,6 +230,13 @@ namespace os
 			memcpy(buffer, &tmpBuffer[0], readedBytes);
 		}
 
+		//-- close file.
+		if (!CloseHandle(hFile))
+		{
+			ERROR_MSG("Could not close the file '%s' (error %d).", fullName.c_str(), GetLastError());
+			return RODataPtr(NULL);
+		}
+
 		return RODataPtr(new utils::ROData(buffer, readedBytes));
 	}
 
@@ -260,6 +267,13 @@ namespace os
 		if (!success || writedBytes != data.length())
 		{
 			ERROR_MSG("Could not write data to file '%s' (error %d).", fullName.c_str(), GetLastError());
+			return false;
+		}
+
+		//-- close file.
+		if (!CloseHandle(hFile))
+		{
+			ERROR_MSG("Could not close the file '%s' (error %d).", fullName.c_str(), GetLastError());
 			return false;
 		}
 

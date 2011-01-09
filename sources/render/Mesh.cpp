@@ -576,12 +576,13 @@ namespace render
 		{
 			pugi::xml_node shaderNode = matNode.child("shader");
 			const char* shader = shaderNode.attribute("name").value();
+			const char* vertex = shaderNode.attribute("vertex").value();
 			
 			m_fx.m_isBumped   = shaderNode.attribute("isBumped").as_bool();
 			m_fx.m_isSkinned  = shaderNode.attribute("isSkinned").as_bool();
 			m_fx.m_isOpaque   = shaderNode.attribute("isOpaque").as_bool();
 			m_fx.m_shader     = rs().shaderContext()->getShader(shader);
-			m_fx.m_vrtsLayout = rs().shaderContext()->getVertexLayout(m_fx.m_shader, m_fx.m_isSkinned, m_fx.m_isBumped);
+			m_fx.m_vrtsLayout = rs().shaderContext()->getVertexLayout(m_fx.m_shader, vertex);
 		}
 
 		//-- parse shader properties.

@@ -1,5 +1,5 @@
 <material>
-  <shader name="ambient" isSkinned="0" isBumped="0" isOpaque="1"/>
+  <shader name="ambient" vertex="xyztcn" isSkinned="0" isBumped="0" isOpaque="1"/>
   <properties>
   </properties>
 </material>

@@ -6,15 +6,17 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
+//-- per frame auto variables.
+cbuffer cb_auto_PerFrame
+{
+	float4x4 g_viewMat;
+	float4x4 g_viewProjMat;
+};
+
 struct vs_in
 {                                           
 	float3 pos	 : POSITION;
-	float4 color : COLOR0;
-};
-
-cbuffer common
-{
-	float4x4 g_viewProjMat;		
+	float4 color : TEXCOORD0;
 };
 
 vs_out main(vs_in i)

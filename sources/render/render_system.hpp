@@ -83,7 +83,8 @@ namespace render
 	{
 		RenderOp()
 			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_mainVB(0), m_tangentVB(0), m_IB(0),
-				m_weightsTB(0), m_matrixPaletteCount(0), m_matrixPalette(0), m_indicesCount(0)
+				m_weightsTB(0), m_matrixPaletteCount(0), m_matrixPalette(0), m_indicesCount(0),
+				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr)
 		{ }
 
 		//-- primitive topology of geometry.
@@ -101,6 +102,9 @@ namespace render
 		const RenderFx*		m_material;
 		//-- world transformation.
 		const mat4f*		m_worldMat;
+		//-- instance data.
+		IBuffer*			m_instanceTB;
+		uint16				m_instanceCount;
 	};
 	typedef std::vector<RenderOp> RenderOps;
 
@@ -140,7 +144,7 @@ namespace render
 
 		//-- load shader.
 		Handle			getShader(const char* name);
-		VertexLayoutID	getVertexLayout(Handle shader, bool isSkinned, bool isBumped);
+		VertexLayoutID	getVertexLayout(Handle shader, const std::string& desc);
 		
 		const RenderOp& renderOp() const { return *m_renderOp; }
 		const Camera&   camera() const   { return *m_camera; }
@@ -181,7 +185,8 @@ namespace render
 			PASS_LIGHT,
 			PASS_MAIN_COLOR,
 			PASS_POST_PROCESSING,
-			PASS_DEBUG,
+			PASS_DEBUG_WIRE,
+			PASS_DEBUG_SOLID,
 			PASS_COUNT
 		};
 
@@ -208,6 +213,7 @@ namespace render
 		void addRenderOps(const RenderOps& ops);
 		bool endPass();
 
+		const Camera&		camera()		const { return *m_camera; }
 		ERenderAPIType		gapi()			const { return m_renderAPI; }
 		ScreenResolution	screenRes()		const { return m_screenRes;  }
 		Projection			projection()	const { return m_projection; }

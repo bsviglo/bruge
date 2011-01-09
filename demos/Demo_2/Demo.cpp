@@ -122,7 +122,7 @@ void Demo::update(float dt)
 }
 
 //-------------------------------------------------------------------------------------------------
-void Demo::render(float dt)
+void Demo::render(float /*dt*/)
 {
 	mat4f indentity;
 	indentity.setIdentity();
@@ -130,9 +130,6 @@ void Demo::render(float dt)
 
 	for (uint i = 0; i < m_collisions.size(); ++i)
 		DebugDrawer::instance().drawCoordAxis(m_collisions[i], 0.25f);
-
-	//-- update debug drawer.
-	DebugDrawer::instance().draw(m_camera->viewProjMatrix(), dt);
 }
 
 //-------------------------------------------------------------------------------------------------

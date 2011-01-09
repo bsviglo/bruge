@@ -1,5 +1,5 @@
 <material>
-  <shader name="diffuse" isSkinned="0" isBumped="0" isOpaque="1"/>
+  <shader name="diffuse" vertex="xyztcn" isSkinned="0" isBumped="0" isOpaque="1"/>
   <properties>
 	  <property name="diffuse" type="texture" value="textures/metalbox1.dds"/>
   </properties>

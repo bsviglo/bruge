@@ -59,6 +59,9 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
+			//-- ToDo:
+			if (!m_sc.renderOp().m_worldMat) return false;
+
 			m_value.worldMat = *m_sc.renderOp().m_worldMat;
 			m_value.MVPMat   = mult(m_value.worldMat, m_sc.camera().viewProjMatrix());
 
@@ -127,6 +130,26 @@ namespace
 	};
 
 
+	//----------------------------------------------------------------------------------------------
+	class InstancingProperty : public IProperty
+	{
+	public:
+		InstancingProperty(ShaderContext& sc) : m_sc(sc) { }
+		virtual ~InstancingProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			//-- ToDo:
+			if (!m_sc.renderOp().m_instanceCount) return false;
+
+			return shader.setTextureBuffer("tb_auto_Instancing", m_sc.renderOp().m_instanceTB);
+		}
+
+	private:
+		ShaderContext& m_sc;
+	};
+
+
 	//-- 
 	struct RenderDesc
 	{
@@ -146,7 +169,6 @@ namespace
 		{ "DX10Render.dll",		"DirectX 10",	"hlsl"}
 #endif //-- _DEBUG
 	};
-
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -296,7 +318,7 @@ namespace render
 
 		//-- 3. PASS_DEBUG
 		{
-			PassDesc& pass = m_passes[PASS_DEBUG];
+			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
 			DepthStencilStateDesc dsDesc;
 			dsDesc.depthWriteMask = false;
@@ -376,7 +398,7 @@ namespace render
 			}
 		case PASS_MAIN_COLOR:
 			{
-				PassDesc& pass = m_passes[PASS_Z_ONLY];
+				PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
 				m_device->backToMainFrameBuffer();
 				m_device->clear(CLEAR_COLOR, Color(0,0,0,0), 0.0f, 0);
@@ -392,12 +414,24 @@ namespace render
 			{
 				break;
 			}
-		case PASS_DEBUG:
+		case PASS_DEBUG_WIRE:
 			{
-				PassDesc& pass = m_passes[PASS_Z_ONLY];
+				PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
 				m_device->backToMainFrameBuffer();
-				m_device->clear(CLEAR_COLOR, Color(0,0,0,0), 0.0f, 0);
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				break;
+			}
+		case PASS_DEBUG_SOLID:
+			{
+				PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
+
+				m_device->backToMainFrameBuffer();
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
@@ -442,15 +476,36 @@ namespace render
 
 			m_device->setVertexLayout(ro.m_material->m_vrtsLayout);
 			m_device->setVertexBuffer(0, ro.m_mainVB);
+
 			if (ro.m_material->m_isBumped)
 			{
 				m_device->setVertexBuffer(1, ro.m_tangentVB);
 			}
-			m_device->setIndexBuffer(ro.m_IB);
+			if (ro.m_IB)
+			{
+				m_device->setIndexBuffer(ro.m_IB);
+			}
 
 			m_shaderContext.applyFor(&ro);
 
-			m_device->drawIndexed(ro.m_primTopolpgy, 0, ro.m_indicesCount);
+			if (ro.m_instanceCount != 0)
+			{
+				assert(ro.m_instanceTB);
+				m_device->drawIndexedInstanced(
+					ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
+					);	
+			}
+			else
+			{
+				if (ro.m_IB)
+				{
+					m_device->drawIndexed(ro.m_primTopolpgy, 0, ro.m_indicesCount);
+				}
+				else
+				{
+					m_device->draw(ro.m_primTopolpgy, 0, ro.m_indicesCount);
+				}
+			}
 		}
 
 		return true;
@@ -562,10 +617,9 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	VertexLayoutID ShaderContext::getVertexLayout(Handle shaderID, bool isSkinned, bool isBumped)
+	VertexLayoutID ShaderContext::getVertexLayout(Handle shaderID, const std::string& desc)
 	{
 		IShader* shader = NULL;
-
 		if (shaderID == CONST_INVALID_HANDLE)
 		{
 			return CONST_INVALID_HANDLE;
@@ -575,40 +629,51 @@ namespace render
 			shader = m_shaderCashe[shaderID].first.get();
 		}
 
-		if (isSkinned)
+		if		(desc == "xyzc")
 		{
-			if (isBumped)
+			VertexDesc desc[] = 
 			{
-				//-- ToDo:
-			}
-			else
+				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
+				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 4}
+			};
+			return rd()->createVertexLayout(desc, 2, *shader);
+		}
+		else if (desc == "xyztcn")
+		{
+			VertexDesc desc[] = 
 			{
-				VertexDesc desc[] = 
-				{
-					{ 0, TYPE_NORMAL,	 FORMAT_FLOAT, 3},
-					{ 0, TYPE_TEXCOORD0, FORMAT_FLOAT, 2},
-					{ 0, TYPE_TEXCOORD1, FORMAT_UINT,  1},
-					{ 0, TYPE_TEXCOORD2, FORMAT_UINT,  1}
-				};
-				return rd()->createVertexLayout(desc, 4, *shader);
-			}	
+				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
+				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 2},
+				{ 0, TYPE_NORMAL,   FORMAT_FLOAT, 3}
+			};
+			return rd()->createVertexLayout(desc, 3, *shader);
+		}
+		else if (desc == "xyztcntb")
+		{
+			VertexDesc desc[] = 
+			{
+				{ 0, TYPE_POSITION,	 FORMAT_FLOAT, 3},
+				{ 0, TYPE_TEXCOORD,  FORMAT_FLOAT, 2},
+				{ 0, TYPE_NORMAL,    FORMAT_FLOAT, 3},
+				{ 1, TYPE_TEXCOORD1, FORMAT_FLOAT, 3},
+				{ 1, TYPE_TEXCOORD1, FORMAT_FLOAT, 3}
+			};
+			return rd()->createVertexLayout(desc, 5, *shader);
+		}
+		else if (desc == "ntc2ui")
+		{
+			VertexDesc desc[] = 
+			{
+				{ 0, TYPE_NORMAL,	 FORMAT_FLOAT, 3},
+				{ 0, TYPE_TEXCOORD0, FORMAT_FLOAT, 2},
+				{ 0, TYPE_TEXCOORD1, FORMAT_UINT,  1},
+				{ 0, TYPE_TEXCOORD2, FORMAT_UINT,  1}
+			};
+			return rd()->createVertexLayout(desc, 4, *shader);
 		}
 		else
 		{
-			if (isBumped)
-			{
-				//-- ToDo:
-			}
-			else
-			{
-				VertexDesc desc[] = 
-				{
-					{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
-					{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 2},
-					{ 0, TYPE_NORMAL,   FORMAT_FLOAT, 3}
-				};
-				return rd()->createVertexLayout(desc, 3, *shader);
-			}
+			assert(0 && "not implemented yet.");
 		}
 
 		return CONST_INVALID_HANDLE;
