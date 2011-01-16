@@ -105,16 +105,19 @@ namespace brUGE
 			//{
 			m_timingPanel->start();
 			{
-				m_inputSystem.update();
+				//-- update timing panel.
+				m_timingPanel->update(dt);
 
-				//-- ToDo: some old stuff.
-				updateFrame(dt);
+				m_inputSystem.update();
 
 				m_renderSys.beginFrame();
 				m_gameWorld.beginUpdate(dt);
 
 				m_animEngine.animate(dt);
 				m_physicWorld.simulateDynamics(dt);
+
+				//-- ToDo: some old stuff.
+				updateFrame(dt);
 
 				m_renderWorld.resolveVisibility();
 
@@ -289,6 +292,11 @@ namespace brUGE
 			BR_EXCEPT("Can't init render world.");
 		}
 
+		if (!m_animEngine.init())
+		{
+			BR_EXCEPT("Can't init animation engine.");
+		}
+
 		if (!m_gameWorld.init())
 		{
 			BR_EXCEPT("Can't init game world.");
@@ -337,6 +345,7 @@ namespace brUGE
 		}
 
 		m_gameWorld.fini();
+		m_animEngine.fini();
 		m_renderWorld.fini();
 		m_physicWorld.fini();
 
@@ -390,7 +399,6 @@ namespace brUGE
 	
 		m_demo->update(dt);
 		m_watchersPanel->update(dt);
-		m_timingPanel->update(dt);
 	}
 
 	//-- ToDo: reconsider. Old stuff.

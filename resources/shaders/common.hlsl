@@ -1,6 +1,9 @@
 #ifndef _COMMON_HLSL_
 #define _COMMON_HLSL_
 
+//-- ToDo: reconsider.
+static const float3 g_worldLightPos = {4.0f, 30.0f, 50.0f};
+
 //-- per frame auto variables.
 cbuffer cb_auto_PerFrame
 {
@@ -16,7 +19,7 @@ cbuffer cb_auto_PerInstance
 };
 
 //-- vertex 2 fragment.
-struct vs_out
+struct vs_out_common
 {
 	float4 pos		: SV_POSITION;	
 	float2 texCoord	: TEXCOORD0;
@@ -26,16 +29,16 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
-struct vs_in
+struct vs_in_common
 {                                           
 	float3 pos		: POSITION;
 	float2 texCoord	: TEXCOORD0;
 	float3 normal	: NORMAL;
 };
 
-vs_out vs_common(vs_in i)
+vs_out_common vs_common(vs_in_common i)
 {
-    vs_out o;
+    vs_out_common o;
 	
 	float4 wPos	= mul(float4(i.pos, 1), g_worldMat);
 	o.wPos		= wPos.xyz;
@@ -49,9 +52,6 @@ vs_out vs_common(vs_in i)
 #endif
 
 #ifdef _FRAGMENT_SHADER_
-
-	//-- ToDo: reconsider.
-	static const float3 g_worldLightPos = {4.0f, 30.0f, 50.0f};
 
 	//-- pass
 	

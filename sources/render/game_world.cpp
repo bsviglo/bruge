@@ -9,6 +9,33 @@
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
 
+using namespace brUGE::math;
+
+//-- start unnamed namespace.
+//--------------------------------------------------------------------------------------------------
+namespace
+{
+
+	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
+	//----------------------------------------------------------------------------------------------
+	inline mat4f quatToMat4x4(const quat& q, const vec3f& pos)
+	{
+		mat4f out;
+
+		//-- 1. rotation part.
+		out = q.toMat4();
+		out.transpose();
+
+		//-- 2. translation part.
+		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
+
+		return out;
+	}
+
+}
+//--------------------------------------------------------------------------------------------------
+//-- end unnamed namespace.
+
 
 namespace brUGE
 {
@@ -156,6 +183,9 @@ namespace brUGE
 				{
 					const Joint& joint   = meshInst->m_skinnedMesh->skeleton()[i];
 					mat4f&		 nodeMat = meshInst->m_worldPalette[i];
+
+					//-- set default initial value.
+					nodeMat = quatToMat4x4(joint.m_transform.orient, joint.m_transform.pos);
 
 					m_transform.m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
 				}

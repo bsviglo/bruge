@@ -79,6 +79,18 @@ namespace
 	{
 		return vec3f(v3.x(), v3.y(), v3.z());
 	}
+
+	//----------------------------------------------------------------------------------------------
+	Node* findNode(const std::string& name, Nodes& nodes)
+	{
+		auto iter = std::find_if(nodes.begin(), nodes.end(), [name](Node* node) {
+			return (name == node->name());
+		});
+
+		assert(iter != nodes.end());
+
+		return *iter;
+	}
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -163,7 +175,7 @@ namespace physic
 			RODataPtr data = FileSystem::instance().readFile("resources/" + std::string(desc));	
 
 			std::unique_ptr<PhysObjDesc> physDesc(new PhysObjDesc());
-			if (!data.isValid() || !physDesc->load(*data.get(), m_dynamicsWorld.get()))
+			if (!data.isValid() || !physDesc->load(*data.get(), m_dynamicsWorld.get(), transform))
 			{
 				return nullptr;
 			}
@@ -248,6 +260,9 @@ namespace physic
 			//vec3f localPoint = bullet2bruge(world.invXform(cb.m_hitPointWorld));
 			vec3f localPoint = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
 
+			//-- apply offset to local point.
+			localPoint += *body->m_offset;
+
 			localMat.setTranslation(localPoint);
 			node = body->m_node;
 
@@ -277,7 +292,7 @@ namespace physic
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::load(const ROData& data, btDynamicsWorld* world)
+	bool PhysObjDesc::load(const ROData& data, btDynamicsWorld* world, Transform* transform)
 	{
 		m_dynamicsWorld = world;
 
@@ -311,7 +326,7 @@ namespace physic
 					if (shape.empty())
 						return false;
 
-					auto type = shape.attribute("type").value();
+					std::string type = shape.attribute("type").value();
 
 					auto params = shape.child("params");
 					if (params.empty())
@@ -320,37 +335,42 @@ namespace physic
 					btCollisionShape* btShape = nullptr;
 
 					//-- create desired collision shape.
-					if (strcmp(type, "box") == 0)
+					if (type == "box")
 					{
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
-						btShape = new btBoxShape(
-							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
-							);
+						btShape = new btBoxShape(btVector3(size.x, size.y, size.z));
 					}
-					else if (strcmp(type, "cylinder") == 0)
+					else if (type == "cylinder" || type == "cylinderX" || type == "cylinderZ")
 					{
-						auto size = parseTo<vec3f>(params.attribute("size").value());
+						vec2f lr(0,0);
 
-						btShape = new btCylinderShape(
-							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
-							);
-					}
-					else if (strcmp(type, "cylinderX") == 0)
-					{
-						auto size = parseTo<vec3f>(params.attribute("size").value());
+						auto attr = params.attribute("size");
+						if (attr.empty())
+						{
+							auto bone1  = params.attribute("bone1").value();
+							auto bone2  = params.attribute("bone2").value();
 
-						btShape = new btCylinderShapeX(
-							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
-							);
-					}
-					else if (strcmp(type, "cylinderZ") == 0)
-					{
-						auto size = parseTo<vec3f>(params.attribute("size").value());
+							Node* node1 = findNode(bone1, transform->m_nodes);
+							Node* node2 = findNode(bone2, transform->m_nodes);
 
-						btShape = new btCylinderShapeZ(
-							btVector3(btScalar(size.x), btScalar(size.y), btScalar(size.z))
-							);
+							vec3f dir = node2->matrix().applyToOrigin() - node1->matrix().applyToOrigin();
+
+							lr.x = params.attribute("radius").as_float();
+							lr.y = dir.length() * 0.5f;
+							
+							//-- make calculated offset.
+							dir = node1->matrix().getInverted().applyToVector(dir);
+							bodyDesc.m_offset = dir.scale(0.5f);
+						}
+						else
+						{
+							lr = parseTo<vec2f>(attr.value());
+						}
+
+						if		(type == "cylinder")	btShape = new btCylinderShape (btVector3(lr.x, lr.y, lr.x));
+						else if (type == "cylinderX")	btShape = new btCylinderShapeX(btVector3(lr.y, lr.x, lr.x));
+						else							btShape = new btCylinderShapeZ(btVector3(lr.x, lr.x, lr.y));
 					}
 					else
 					{
@@ -362,7 +382,7 @@ namespace physic
 					if (bodyDesc.m_mass != 0.0f)
 						btShape->calculateLocalInertia(bodyDesc.m_mass, lInertia);
 
-					bodyDesc.m_localInertia = vec3f(lInertia.x(), lInertia.y(), lInertia.z());
+					bodyDesc.m_localInertia = vec3f(lInertia);
 
 					//-- add new shape to cache.
 					m_shapes.push_back(btShape);
@@ -413,18 +433,7 @@ namespace physic
 			body->m_offset = &i->m_offset;
 
 			//-- find anchor joint.
-			{
-				Nodes& nodes = transform->m_nodes;
-
-				auto iter = std::find_if(nodes.begin(), nodes.end(), [i](Node* node) {
-					return (i->m_node == node->name());
-				});
-
-				assert(iter != transform->m_nodes.end());
-				
-				body->m_node = *iter;
-			}
-			//body->m_node = transform->m_nodes[0]; //-- ToDo: load needed node.
+			body->m_node = findNode(i->m_node, transform->m_nodes);
 
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(
 				i->m_mass, body, m_shapes[i->m_shape],

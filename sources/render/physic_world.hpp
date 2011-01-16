@@ -82,7 +82,7 @@ namespace physic
 		PhysObjDesc();
 		~PhysObjDesc();
 
-		bool load	(const utils::ROData& desc, btDynamicsWorld* dynamicsWorld);
+		bool load	(const utils::ROData& desc, btDynamicsWorld* dynamicsWorld, Transform* transform);
 		bool create	(PhysObj*& obj, Transform* transform, Handle owner);
 		bool destroy(PhysObj* obj);
 

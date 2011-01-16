@@ -39,16 +39,8 @@ namespace render
 		//-- load wire material.
 		{
 			m_wireMaterial.reset(new Material());
-			//-- ToDo:
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/debug_wire.mtl");
-			if (file.get())
-			{
-				if (!m_wireMaterial->load(*file))
-				{
-					return false;
-				}
-			}
-			else
+			if (!file.get() || !m_wireMaterial->load(*file))
 			{
 				return false;
 			}
@@ -65,15 +57,39 @@ namespace render
 			}
 		}
 
+		//-- create solid geometry instancing buffer
+		{
+			m_instancingTB = rd()->createBuffer(
+				IBuffer::TYPE_TEXTURE, NULL, 512 * sizeof(MeshInstance) / sizeof(vec4f),
+				sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+				);
+		}
+
+		//-- load all standard system meshes.
+		{
+			ResourcesManager& rm = ResourcesManager::instance();
+						
+			m_meshes[MT_BOX]	  = rm.loadMesh("system/meshes/box.obj");
+			m_meshes[MT_CYLINDER] = rm.loadMesh("system/meshes/cylinder.obj");
+			m_meshes[MT_SPHERE]   = rm.loadMesh("system/meshes/sphere.obj");
+
+			//-- check result.
+			for (uint i = 0; i < MT_COUNT; ++i)
+			{
+				if (!m_meshes[i].isValid())
+				{
+					ERROR_MSG("Failed to load one of the system models.");
+					return false;
+				}
+			}
+		}
+
 		//-- font.
 		{
 			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
 			if (!m_font.isValid())
 				return false;
 		}
-
-		//-- ToDo: delete.
-		//return _setupRender();
 
 		return true;
 	}
@@ -82,7 +98,17 @@ namespace render
 	void DebugDrawer::destroy()
 	{
 		//-- release render resources.
+
+		//-- wire geometry.
 		m_VB.reset();
+		m_wireMaterial.reset();
+
+		//-- solid geometry.
+		m_instancingTB.reset();
+		for (uint i = 0; i < MT_COUNT; ++i)
+			m_meshes[i].reset();
+
+		//-- text rendering.
 		m_font.reset();
 	}
 
@@ -331,50 +357,86 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	bool DebugDrawer::_setupRender()
+	void DebugDrawer::drawBox(const vec3f& size, const mat4f& world, const Color& color)
 	{
-		/*
-		//-- shader.
-		{
-			m_shader = ResourcesManager::instance().loadShader("debug");
-			if (!m_shader)
-				return false;
-		}
-		
-		//-- create vertex input and vertex buffer.
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION, FORMAT_FLOAT, 3 },
-				{ 0, TYPE_COLOR,	FORMAT_FLOAT, 4 }
-			};
-			m_VL = rd()->createVertexLayout(desc, 2, *m_shader.get());
+		if (!m_isEnabled) return;
 
-			m_VB = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 2048, sizeof(VertDesc),
-				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE);
-		}
-		
-		//-- create render states.
-		{
-			DepthStencilStateDesc dsDesc;
-			dsDesc.depthEnable    = true;
-			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_ALWAYS;
-			dsDesc.depthWriteMask = false;
-			m_stateDS = rd()->createDepthStencilState(dsDesc);
+		MeshInstance instance(world, color);
+		instance.m_world.preScale(size);
 
-			RasterizerStateDesc rDesc;
-			m_stateR = rd()->createRasterizedState(rDesc);
-		}
-
-		//-- font.
-		{
-			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
-			assert(m_font.isValid());
-		}
-		*/
-
-		return true;
+		m_meshCaches[MT_BOX].push_back(instance);
 	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCylinderY(float radius, float height, const mat4f& world, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.preScale(vec3f(radius, height, radius));
+
+		m_meshCaches[MT_CYLINDER].push_back(instance);
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCylinderX(float radius, float height, const mat4f& world, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.postRotateZ(degToRad(90.0f));
+		instance.m_world.preScale(vec3f(radius, height, radius));
+
+		m_meshCaches[MT_CYLINDER].push_back(instance);
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCylinderZ(float radius, float height, const mat4f& world, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.postRotateX(degToRad(90.0f));
+		instance.m_world.preScale(vec3f(radius, height, radius));
+
+		m_meshCaches[MT_CYLINDER].push_back(instance);
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawSphere(float radius, const mat4f& world, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.preScale(radius, radius, radius);
+
+		m_meshCaches[MT_SPHERE].push_back(instance);
+	}
+
+	/*
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCapsuleX(float radius, float height, const mat4f& world, const Color& color)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.preScale(radius, radius, radius);
+
+		m_meshCaches[MT_CYLINDER].push_back(instance);
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCapsuleY(float radius, float height, const mat4f& world, const Color& color)
+	{
+
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawCapsuleZ(float radius, float height, const mat4f& world, const Color& color)
+	{
+
+	}
+	*/
 
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::_swapBuffers()
@@ -391,7 +453,9 @@ namespace render
 
 		void* vb = m_VB->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
 			memcpy(vb, &m_vertices[0], sizeof(VertDesc) * m_vertices.size());
-		m_VB->unmap();		
+		m_VB->unmap();
+
+		m_wireROPs[0].m_mainVB = m_VB.get();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -401,48 +465,76 @@ namespace render
 
 		if (!m_isEnabled) return;
 		
-		//-- load vertices into GPU's VB.
-		_swapBuffers();
-		
-		//-- update some rop's information.
-		m_wireROPs[0].m_indicesCount = m_vertices.size();
-		
-		//-- do wire geometry drawing.
-		rs().beginPass(RenderSystem::PASS_DEBUG_WIRE);
-		rs().addRenderOps(m_wireROPs);
-		rs().endPass();
-
-		m_vertices.clear();
-
-		//-- ToDo: reconsider.
-		//-- do font drawing.
-		if (!m_textDataVec.empty())
+		//-- 1. do solid geometry drawing.
 		{
-			m_font->beginDraw();
-			for (uint i = 0; i < m_textDataVec.size(); ++i)
+			//-- gather all render operations.
+			RenderOps rops;
+			for (uint i = 0; i < MT_COUNT; ++i)
 			{
-				const TextData& data = m_textDataVec[i];
-				
-				vec4f projPos = rs().camera().viewProjMatrix().applyToPoint(data.m_pos.toVec4());
-				if (!almostZero(projPos.w) && projPos.w > 0)
+				if (m_meshCaches[i].size())
 				{
-					vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
-					vec2f curPos(
-						(0.5f * (1.0f + clipPos.x)) * rs().screenRes().width,
-						(0.5f * (1.0f - clipPos.y)) * rs().screenRes().height
-						);
+					m_meshes[i]->gatherRenderOps(rops);
 
-					m_font->draw2D(curPos, data.m_color, data.m_text);
+					rops.back().m_instanceTB	= m_instancingTB.get();
+					rops.back().m_instanceSize  = sizeof(MeshInstance);
+					rops.back().m_instanceCount = m_meshCaches[i].size();
+					rops.back().m_instanceData  = &m_meshCaches[i].front();
 				}
 			}
-			m_font->endDraw();
 
-			//-- clear text data list.
-			m_textDataVec.clear();
+			rs().beginPass(RenderSystem::PASS_DEBUG_SOLID);
+			rs().addRenderOps(rops);
+			rs().endPass();
+
+			//-- clear caches.
+			for (uint i = 0; i < MT_COUNT; ++i)
+				m_meshCaches[i].clear();
 		}
+		
+		//-- 2. do wire geometry drawing.
+		{
+			//-- load vertices into GPU's VB.
+			_swapBuffers();
 
-		//-- ToDo: implement.
-		//-- do solid geometry drawing.
+			//-- update some rop's information.
+			m_wireROPs[0].m_indicesCount = m_vertices.size();
+
+			rs().beginPass(RenderSystem::PASS_DEBUG_WIRE);
+			rs().addRenderOps(m_wireROPs);
+			rs().endPass();
+
+			//-- clear caches.
+			m_vertices.clear();
+		}
+		
+		//-- ToDo: reconsider.
+		//-- 3. do text drawing.
+		{
+			if (!m_textDataVec.empty())
+			{
+				m_font->beginDraw();
+				for (uint i = 0; i < m_textDataVec.size(); ++i)
+				{
+					const TextData& data = m_textDataVec[i];
+
+					vec4f projPos = rs().camera().viewProjMatrix().applyToPoint(data.m_pos.toVec4());
+					if (!almostZero(projPos.w) && projPos.w > 0)
+					{
+						vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
+						vec2f curPos(
+							(0.5f * (1.0f + clipPos.x)) * rs().screenRes().width,
+							(0.5f * (1.0f - clipPos.y)) * rs().screenRes().height
+							);
+
+						m_font->draw2D(curPos, data.m_color, data.m_text);
+					}
+				}
+				m_font->endDraw();
+
+				//-- clear text data list.
+				m_textDataVec.clear();
+			}
+		}
 	}
 	
 	//---------------------------------------------------------------------------------------------

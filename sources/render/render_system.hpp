@@ -84,7 +84,8 @@ namespace render
 		RenderOp()
 			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_mainVB(0), m_tangentVB(0), m_IB(0),
 				m_weightsTB(0), m_matrixPaletteCount(0), m_matrixPalette(0), m_indicesCount(0),
-				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr)
+				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr),
+				m_instanceData(nullptr), m_instanceSize(0)
 		{ }
 
 		//-- primitive topology of geometry.
@@ -104,6 +105,8 @@ namespace render
 		const mat4f*		m_worldMat;
 		//-- instance data.
 		IBuffer*			m_instanceTB;
+		const void*			m_instanceData;
+		uint16				m_instanceSize;
 		uint16				m_instanceCount;
 	};
 	typedef std::vector<RenderOp> RenderOps;

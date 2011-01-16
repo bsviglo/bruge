@@ -31,6 +31,24 @@ namespace
 		return out;
 	}
 
+	//----------------------------------------------------------------------------------------------
+	bool g_drawSkeletons = false;
+	bool g_drawNodes = false;
+	
+	//----------------------------------------------------------------------------------------------
+	int drawSkeletons(bool flag)
+	{
+		g_drawSkeletons = flag;
+		return 0;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	int drawNodes(bool flag)
+	{
+		g_drawNodes = flag;
+		return 0;
+	}
+
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -43,6 +61,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::init()
 	{
+		//-- register console funcs.
+		REGISTER_CONSOLE_FUNC("anim_drawSkeletons",  drawSkeletons);
+		REGISTER_CONSOLE_FUNC("anim_drawNodes", drawNodes);
+
 		return true;
 	}
 
@@ -96,13 +118,15 @@ namespace render
 				}
 
 				//-- ToDo: draw skeleton.
+				if (g_drawNodes || g_drawSkeletons)
 				{
 					//const mat4f&  worldMat = mesh->m_transform->m_worldMat;
 					const Joints& joints = mesh->m_skinnedMesh->skeleton();
 					for (uint i = 0; i < joints.size(); ++i)
 					{
 						const vec3f& startPos = nodes[i + 1]->matrix().applyToOrigin();
-						DebugDrawer::instance().drawText2D(joints[i].m_name.c_str(), startPos, Color(1,1,0,1));
+						if (g_drawNodes)
+							DebugDrawer::instance().drawText2D(joints[i].m_name.c_str(), startPos, Color(1,1,0,1));
 
 						if (joints[i].m_parentIdx != -1)
 						{
@@ -110,7 +134,8 @@ namespace render
 							//const vec3f& endPos   = worldMat.applyToPoint(data->m_localPositions[joints[i].m_parentIdx].pos);
 						
 							const vec3f& endPos = nodes[joints[i].m_parentIdx + 1]->matrix().applyToOrigin();
-							DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
+							if (g_drawSkeletons)
+								DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
 						}
 					}
 				}

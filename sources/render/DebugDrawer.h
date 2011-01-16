@@ -31,6 +31,7 @@ namespace render
 		bool init();
 		void destroy();
 
+		//-- wire meshes.
 		void drawLine		(const vec3f& start, const vec3f& end, const Color& color);
 		void drawCoordAxis	(const mat4f& orient, float scale = 1.0f);
 		
@@ -43,19 +44,23 @@ namespace render
 
 		void drawOBB		(const OBB& obb, const Color& color);
 
-		void drawText2D		(const char* text, const vec3f& pos, const Color& color);
-
 		//-- solid meshes.
-		void drawBox		(const vec3f& scale, const mat4f& orient);
-		void drawSphere		(float radius, const mat4f& orient);
-		void drawCylinder	(float radius, float height, const mat4f& orient);
-		void drawCapsule	(float radius, float height, const mat4f& orient);
+		void drawBox		(const vec3f& size, const mat4f& world, const Color& color);
+		void drawSphere		(float radius, const mat4f& world, const Color& color);
+		void drawCylinderX	(float radius, float height, const mat4f& world, const Color& color);
+		void drawCylinderY	(float radius, float height, const mat4f& world, const Color& color);
+		void drawCylinderZ	(float radius, float height, const mat4f& world, const Color& color);
+		void drawCapsuleX	(float radius, float height, const mat4f& world, const Color& color);
+		void drawCapsuleY	(float radius, float height, const mat4f& world, const Color& color);
+		void drawCapsuleZ	(float radius, float height, const mat4f& world, const Color& color);
+
+		//-- text drawing.
+		void drawText2D		(const char* text, const vec3f& pos, const Color& color);
 		
 		//-- this method performs actual drawing.
 		void draw();
 
 	private:
-		bool _setupRender();
 		void _swapBuffers();
 		
 		//-- console functions.
@@ -99,11 +104,15 @@ namespace render
 
 		struct MeshInstance
 		{
+			MeshInstance(const mat4f& world, const Color& color)
+				: m_world(world), m_color(color) { }
+
+			mat4f m_world;
 			Color m_color;
-			mat4f m_matrix;
 		};
 		std::vector<MeshInstance>	m_meshCaches[MT_COUNT];
-		//Ptr<Mesh>					m_meshes[MT_COUNT];
+		Ptr<Mesh>					m_meshes[MT_COUNT];
+		Ptr<IBuffer>				m_instancingTB;
 	};
 
 } // render

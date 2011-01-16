@@ -1,3 +1,5 @@
+#include "common.hlsl"
+
 struct vs_out
 {
 	float4 pos	 : SV_POSITION;	
@@ -5,13 +7,6 @@ struct vs_out
 };
 
 #ifdef _VERTEX_SHADER_
-
-//-- per frame auto variables.
-cbuffer cb_auto_PerFrame
-{
-	float4x4 g_viewMat;
-	float4x4 g_viewProjMat;
-};
 
 struct vs_in
 {                                           

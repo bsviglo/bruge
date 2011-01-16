@@ -2,7 +2,7 @@
 
 #ifdef _VERTEX_SHADER_
 
-	vs_out main(vs_in i)
+	vs_out_common main(vs_in_common i)
 	{
 		return vs_common(i);
 	};
@@ -15,7 +15,7 @@
 sampler 		  diffuse_sml;
 Texture2D<float4> diffuse_tex;
 
-	float4 main(vs_out i) : SV_TARGET
+	float4 main(vs_out_common i) : SV_TARGET
 	{
 		float3 dir = g_worldLightPos - i.wPos;
 

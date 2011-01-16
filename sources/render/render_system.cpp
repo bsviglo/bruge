@@ -142,6 +142,14 @@ namespace
 			//-- ToDo:
 			if (!m_sc.renderOp().m_instanceCount) return false;
 
+			const RenderOp& ro = m_sc.renderOp();
+
+			if (void* mp = ro.m_instanceTB->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
+			{
+				memcpy(mp, ro.m_instanceData, ro.m_instanceSize * ro.m_instanceCount);
+				ro.m_instanceTB->unmap();
+			}
+
 			return shader.setTextureBuffer("tb_auto_Instancing", m_sc.renderOp().m_instanceTB);
 		}
 
@@ -316,7 +324,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 3. PASS_DEBUG
+		//-- 3. PASS_DEBUG_WIRE
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
@@ -327,6 +335,24 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- 3. PASS_DEBUG_SOLID
+		{
+			PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = true;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
@@ -545,6 +571,7 @@ namespace render
 		m_autoProperties["cb_auto_PerInstance"]		= new PerInstanceProperty(*this);
 		m_autoProperties["tb_auto_Weights"]			= new WeightsProperty(*this);
 		m_autoProperties["tb_auto_MatrixPalette"]	= new MatrixPaletteProperty(*this);
+		m_autoProperties["tb_auto_Instancing"]		= new InstancingProperty(*this);
 
 		return true;
 	}
@@ -635,6 +662,15 @@ namespace render
 			{
 				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
 				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 4}
+			};
+			return rd()->createVertexLayout(desc, 2, *shader);
+		}
+		else if (desc == "xyzn")
+		{
+			VertexDesc desc[] = 
+			{
+				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
+				{ 0, TYPE_NORMAL,	FORMAT_FLOAT, 3}
 			};
 			return rd()->createVertexLayout(desc, 2, *shader);
 		}

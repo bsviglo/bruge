@@ -17,6 +17,12 @@ namespace
 		return rand() / float(RAND_MAX + 1);
 	}
 
+	//----------------------------------------------------------------------------------------------
+	uint random(uint maxValue)
+	{
+		return uint((rand() / float(RAND_MAX + 1)) * maxValue);
+	}
+
 	//---------------------------------------------------------------------------------------------
 	template<typename Type, size_t size>
 	inline size_t array_size(Type (&) [size]) { return size; }
@@ -62,7 +68,6 @@ bool Demo::init()
 	gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
-	/*
 	for (uint i = 0; i < 5; ++i)
 	{
 		for (uint j = 0; j < 5; ++j)
@@ -88,17 +93,39 @@ bool Demo::init()
 			}
 		}
 	}
-	*/
+
 
 	//mat.setScale(0.1f, 0.1f, 0.1f);
+	mat.setIdentity();
 	mat.postRotateX(degToRad(-90.0f));
-	mat.postTranslation(0.0f, 0.5f, 0.0f);
+	mat.postTranslation(-25.0f, 0.5f, 0.0f);
 	//mat.setIdentity();
 	Handle playerID  = gameWorld.addGameObj("resources/models/player.xml", &mat);
 	IGameObj* player = gameWorld.getGameObj(playerID);
 
 	//-- loop idle animation.
-	animEngine.playAnim(player->animCtrl(), "idle", true);
+	animEngine.playAnim(player->animCtrl(), "af_pose", true);
+
+	const char* anims[] = 
+	{
+		"idle", "run", "pain", "fall", "crouch", "cheer", "grab_a", "grab_b", "jump"
+	};
+
+	for (uint i = 0; i < 10; ++i)
+	{
+		for (uint j = 0; j < 10; ++j)
+		{
+			mat.setIdentity();
+			mat.postRotateX(degToRad(-90.0f));
+			mat.postTranslation(i * 4, 0, 4 * j);
+
+			Handle playerID  = gameWorld.addGameObj("resources/models/player.xml", &mat);
+			IGameObj* player = gameWorld.getGameObj(playerID);
+
+			//-- loop idle animation.
+			animEngine.playAnim(player->animCtrl(),	anims[random(array_size(anims))] , true);
+		}
+	}
 
 	return true;
 }
@@ -129,7 +156,35 @@ void Demo::render(float /*dt*/)
 	DebugDrawer::instance().drawCoordAxis(indentity);
 
 	for (uint i = 0; i < m_collisions.size(); ++i)
-		DebugDrawer::instance().drawCoordAxis(m_collisions[i], 0.25f);
+		DebugDrawer::instance().drawCoordAxis(m_collisions[i], 0.125f);
+
+	mat4f mat;
+	for (uint i = 0; i < 4; ++i)
+	{
+		mat.setTranslation(i * 3.f, 3.f, 3.f);
+		mat.postTranslation(-5, 10, -5);
+
+		DebugDrawer::instance().drawCylinderY(1.5f, 2.0f, mat, Color(1,1,0,1));
+		DebugDrawer::instance().drawCoordAxis(mat, 0.25f);
+	}
+
+	for (uint i = 0; i < 4; ++i)
+	{
+		mat.setTranslation(13.f, i * 3.f, 3.f);
+		mat.postTranslation(-5, 10, -5);
+
+		DebugDrawer::instance().drawSphere(1.5f, mat, Color(1,1,0,1));
+		DebugDrawer::instance().drawCoordAxis(mat, 0.25f);
+	}
+
+	for (uint i = 0; i < 4; ++i)
+	{
+		mat.setTranslation(23.f, 13.f, i * 3.f);
+		mat.postTranslation(-5, 10, -5);
+
+		DebugDrawer::instance().drawBox(vec3f(1,2,3), mat, Color(1,1,0,1));
+		DebugDrawer::instance().drawCoordAxis(mat, 0.25f);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
   <rigidBodies>
     <rigidBody name="root" node="root" mass="2.25" offset="vec3f(0,0,0)" kinematic="0">
       <shape type="cylinder">
-        <params size="vec3f(0.3666,0.5,0.3666)" />
+        <params size="vec2f(0.3666,0.5)" />
       </shape>      
     </rigidBody>
   </rigidBodies>
