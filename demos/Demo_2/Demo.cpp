@@ -104,8 +104,9 @@ bool Demo::init()
 	IGameObj* player = gameWorld.getGameObj(playerID);
 
 	//-- loop idle animation.
-	animEngine.playAnim(player->animCtrl(), "af_pose", true);
+	animEngine.playAnim(player->animCtrl(), "idle", true);
 
+	/*
 	const char* anims[] = 
 	{
 		"idle", "run", "pain", "fall", "crouch", "cheer", "grab_a", "grab_b", "jump"
@@ -126,6 +127,7 @@ bool Demo::init()
 			animEngine.playAnim(player->animCtrl(),	anims[random(array_size(anims))] , true);
 		}
 	}
+	*/
 
 	return true;
 }
