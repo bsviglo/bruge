@@ -262,7 +262,7 @@ namespace render
 		dxDesc.Format			= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
 		dxDesc.MipLevels		= m_desc.mipLevels;
 		dxDesc.Usage			= D3D10_USAGE_DEFAULT; // default usage?
-		dxDesc.MiscFlags		= (m_desc.mipLevels == 1) ? 0 : D3D10_RESOURCE_MISC_GENERATE_MIPS;
+		dxDesc.MiscFlags		= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;
 		
 		std::vector<D3D10_SUBRESOURCE_DATA> dxData;
 		if (size > 0)
@@ -306,7 +306,7 @@ namespace render
 		dxDesc.Format				= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
 		dxDesc.MipLevels			= m_desc.mipLevels;
 		dxDesc.Usage				= D3D10_USAGE_DEFAULT; // default usage?
-		dxDesc.MiscFlags			= (m_desc.mipLevels == 1) ? 0 : D3D10_RESOURCE_MISC_GENERATE_MIPS;
+		dxDesc.MiscFlags			= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;
 		dxDesc.SampleDesc.Count		= 1;
 		dxDesc.SampleDesc.Quality	= 0;
 
@@ -358,7 +358,7 @@ namespace render
 		dxDesc.Format			= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
 		dxDesc.MipLevels		= m_desc.mipLevels;
 		dxDesc.Usage			= D3D10_USAGE_DEFAULT; // default usage?
-		dxDesc.MiscFlags		= (m_desc.mipLevels == 1) ? 0 : D3D10_RESOURCE_MISC_GENERATE_MIPS;
+		dxDesc.MiscFlags		= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;
 		
 		std::vector<D3D10_SUBRESOURCE_DATA> dxData;
 		if (size > 0)

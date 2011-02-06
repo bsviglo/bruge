@@ -38,9 +38,8 @@ namespace render
 
 		//-- load wire material.
 		{
-			m_wireMaterial.reset(new Material());
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/debug_wire.mtl");
-			if (!file.get() || !m_wireMaterial->load(*file))
+			if (!file || !(m_wireMaterial = rs().materials()->createMaterial(*file)))
 			{
 				return false;
 			}
@@ -441,6 +440,8 @@ namespace render
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::_swapBuffers()
 	{
+		if (m_vertices.empty()) return;
+
 		//-- check has the GPU buffer enough memory to hold all the vertex data.
 		if (m_vertices.size() > m_VB->getElemCount())
 		{

@@ -81,10 +81,9 @@ vs_out main(vs_in input)
 sampler 		  t_auto_diffuseMap_sml;
 Texture2D<float4> t_auto_diffuseMap_tex;
 
-//-------------------------------------------------------------------------------------------------
-float4 main(vs_out i) : SV_TARGET
-{
-	return float4(t_auto_diffuseMap_tex.Sample(t_auto_diffuseMap_sml, i.tc.xy).xyz, 0.0f);
-}
-
+	float4 main(vs_out i) : SV_TARGET
+	{
+		return i.pos.z / i.pos.w;
+	};
+	
 #endif

@@ -1,5 +1,4 @@
-<material>
-  <shader name="debug_solid" vertex="xyztcn" isSkinned="0" isBumped="0" isOpaque="1"/>
+<material name="debug_solid">
   <properties>
   </properties>
 </material>

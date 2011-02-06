@@ -17,15 +17,7 @@ Texture2D<float4> t_auto_diffuseMap_tex;
 
 	float4 main(vs_out_common i) : SV_TARGET
 	{
-		float3 dir = -g_worldLightPos + i.wPos;
-
-		float3 normal = normalize(i.normal);
-		dir = normalize(dir);
-	
-		float  light = max(dot(normal, dir), 0.05f);
-		float3 oCol  = t_auto_diffuseMap_tex.Sample(t_auto_diffuseMap_sml, i.texCoord).xyz * light;
-
-		return float4(oCol, 1.0f);
+		return i.pos.z / i.pos.w;
 	};
 	
 #endif

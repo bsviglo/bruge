@@ -1,13 +1,14 @@
 #pragma once
 
 #include "render_common.h"
-#include "os/FileSystem.h"
 #include "utils/string_utils.h"
 #include "utils/Singleton.h"
 #include "utils/DynamicLib.h"
 #include "render/IShader.h"
 #include "render/IRenderDevice.h"
 #include "render/state_objects.h"
+#include "render/shader_context.hpp"
+#include "render/materials.hpp"
 
 #include <memory>
 #include <vector>
@@ -18,64 +19,7 @@ namespace brUGE
 namespace render
 {
 
-	//-- The property of particular material. It represents some shader constants and another
-	//-- graphic data like texture, texture buffers and so on. Property may be two types:
-	//-- 1. common - means that it is specific for each shader.
-	//-- 2. auto   - means that this property is shared between another shader and maybe shader stages.
-	//--             e.g. ViewMat, ProjMat, CameraPos and so on.
-	//----------------------------------------------------------------------------------------------
-	class IProperty : public utils::RefCount
-	{
-	public:
-		IProperty() { }
-		virtual ~IProperty() { }
-		virtual bool apply(IShader& shader) const = 0;
-
-	private:
-		IProperty(const IProperty&);
-		IProperty& operator = (const IProperty&);
-	};
-	typedef std::vector<Ptr<IProperty>> Properties;
-
-
-	//----------------------------------------------------------------------------------------------
-	template<typename T>
-	class NumericProperty : public IProperty
-	{
-	public:
-		NumericProperty(const std::string& name, const T& value)
-			:	m_name(name), m_value(value) { }
-
-		virtual bool apply(IShader& shader) const
-		{
-			return shader.setConstantAsRawData(m_name.c_str(), &m_value, sizeof(T));
-		}
-
-	private:
-		std::string	m_name;
-		T			m_value;
-	};
-
-
-	//-- Represents material of the given geometry.
-	//----------------------------------------------------------------------------------------------
-	struct RenderFx
-	{
-		RenderFx()
-			:	m_shader(CONST_INVALID_HANDLE), m_props(0), m_propsCount(0),
-				m_vrtsLayout(CONST_INVALID_HANDLE)
-		{ }
-
-		bool			m_isOpaque;
-		bool			m_isSkinned;
-		bool			m_isBumped;
-
-		VertexLayoutID	m_vrtsLayout;
-		Handle			m_shader;
-		IProperty**		m_props;
-		uint			m_propsCount;
-	};
-
+	struct RenderFx;
 
 	//-- Represents the minimum quantum of the engine render system work.
 	//----------------------------------------------------------------------------------------------
@@ -112,73 +56,12 @@ namespace render
 	typedef std::vector<RenderOp> RenderOps;
 
 
-	//-- Shader include interface implementation.
-	//----------------------------------------------------------------------------------------------
-	class ShaderIncludeImpl : public render::IShaderInclude
-	{
-	public:
-		ShaderIncludeImpl(const std::string& path);
-		virtual ~ShaderIncludeImpl();
-
-		virtual bool open (const char* name, const void*& data, uint& size);
-		virtual bool close(const void*& data);
-
-	private:
-		typedef std::pair<const void*, RODataPtr>	Include;
-		typedef std::vector<Include>				Includes;
-
-		Includes    m_includes;
-		std::string m_path;
-	};	
-
-	
-	//-- Controls life time cycle of all the shader in the engine and does some additional work
-	//-- related to auto-constant applying, sharing some common uniform buffers, managing include
-	//-- interface for shaders and so on.
-	//----------------------------------------------------------------------------------------------
-	class ShaderContext
-	{
-	public:
-		ShaderContext();
-		~ShaderContext();
-
-		bool init();
-		bool fini();
-
-		//-- load shader.
-		Handle			getShader(const char* name);
-		VertexLayoutID	getVertexLayout(Handle shader, const std::string& desc);
-		
-		const RenderOp& renderOp() const { return *m_renderOp; }
-		const Camera&   camera() const   { return *m_camera; }
-
-		void			setCamera(Camera* cam);
-		void			applyFor(RenderOp* op);
-
-	private:
-		Handle loadShader(const char* name);
-
-	private:
-		typedef std::pair<Ptr<IShader>, Properties>		ShaderPair;
-		typedef std::vector<ShaderPair>					ShaderAutoProperties;
-		typedef std::map<std::string, Ptr<IProperty>>	AutoProperties;
-		typedef std::auto_ptr<ShaderIncludeImpl>		ShaderIncludeImplPtr;
-		typedef std::map<std::string, Handle>			ShaderSearchMap;
-
-		ShaderSearchMap		 m_searchMap;
-		ShaderAutoProperties m_shaderCashe;
-		AutoProperties		 m_autoProperties;
-		RenderOp*		 	 m_renderOp;
-		Camera*				 m_camera;
-		ShaderIncludeImplPtr m_shaderIncludes;
-	};
-
-
 	//-- The main class of the render system.
 	//----------------------------------------------------------------------------------------------
 	class RenderSystem : public utils::Singleton<RenderSystem>
 	{
 	public:
+		//-- ToDo:
 		enum EPassType
 		{
 			PASS_Z_ONLY,	
@@ -222,6 +105,7 @@ namespace render
 		Projection			projection()	const { return m_projection; }
 		IRenderDevice*		device()		const { return m_device; }
 		ShaderContext*		shaderContext()		  { return &m_shaderContext; }
+		Materials*			materials()			  { return &m_materials; }
 
 	private:
 		// console functions.
@@ -237,6 +121,7 @@ namespace render
 		ERenderAPIType		m_renderAPI;
 		utils::DynamicLib	m_dynamicLib;
 		ShaderContext		m_shaderContext;
+		Materials			m_materials;
 
 		Camera*				m_camera; //-- ToDo: use render camera instead.
 		EPassType			m_pass;
@@ -250,49 +135,6 @@ namespace render
 
 	inline IRenderDevice* rd() { return RenderSystem::instance().device(); }
 	inline RenderSystem&  rs() { return RenderSystem::instance(); }
-
-
-	//----------------------------------------------------------------------------------------------
-	class TextureProperty : public IProperty
-	{
-	public:
-		TextureProperty(const std::string& name, const Ptr<ITexture>& texture)
-			:	m_texture(texture)
-		{
-			m_textureName = utils::makeStr("%s_tex", name.c_str());
-			m_samplerName = utils::makeStr("%s_sml", name.c_str());
-		}
-
-		virtual bool apply(IShader& shader) const
-		{
-			//-- ToDo: reconsider.
-			static bool inited = false;
-			if (!inited)
-			{
-				SamplerStateDesc sDesc;
-				sDesc.minMagFilter	= SamplerStateDesc::FILTER_BILINEAR;
-				sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
-				sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
-				sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_BORDER;
-				m_samplerID = render::rd()->createSamplerState(sDesc);
-
-				inited = true;
-			}
-
-			bool result = true;
-
-			result &= shader.setTexture(m_textureName.c_str(), m_texture.get());
-			result &= shader.setSampler(m_samplerName.c_str(), m_samplerID);
-
-			return result;
-		}
-
-	private:
-		static SamplerStateID	m_samplerID;
-		std::string				m_textureName;
-		std::string				m_samplerName;
-		Ptr<ITexture>			m_texture;
-	};
 
 } // render
 } // brUGE

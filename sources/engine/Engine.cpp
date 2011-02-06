@@ -105,34 +105,45 @@ namespace brUGE
 			//{
 			m_timingPanel->start();
 			{
-				//-- update timing panel.
-				m_timingPanel->update(dt);
-
-				m_inputSystem.update();
-
-				m_renderSys.beginFrame();
-				m_gameWorld.beginUpdate(dt);
-
-				m_animEngine.animate(dt);
-				m_physicWorld.simulateDynamics(dt);
-
-				//-- ToDo: some old stuff.
-				updateFrame(dt);
-
-				m_renderWorld.resolveVisibility();
-
-				//m_collisionWorld.update(dt);
-
-				m_gameWorld.endUpdate();
-
-				//-- ToDo: some old stuff.
-				drawFrame(dt);
-
-				m_renderSys.endFrame();
 				
-				TIME_MEASURER_START_EX("CPU wait")
+				//-- do tick.
+				{
+					SCOPED_TIME_MEASURER_EX("update")
+
+					//-- update timing panel.
+					m_timingPanel->update(dt);
+
+					m_inputSystem.update();
+
+					m_gameWorld.beginUpdate(dt);
+
+					m_animEngine.animate(dt);
+					m_physicWorld.simulateDynamics(dt);
+
+					//-- ToDo: some old stuff.
+					updateFrame(dt);
+
+					//m_collisionWorld.update(dt);
+
+					m_gameWorld.endUpdate();
+				}
+				
+				//-- do draw.
+				{
+					SCOPED_TIME_MEASURER_EX("draw")
+
+					m_renderSys.beginFrame();
+					m_renderWorld.resolveVisibility();
+					//-- ToDo: some old stuff.
+					drawFrame(dt);
+					m_renderSys.endFrame();
+				}
+				
+				//-- wait next frame.
+				{
+					SCOPED_TIME_MEASURER_EX("CPU idle")
 					WaitForSingleObject(m_hEvent, INFINITE);
-				TIME_MEASURER_STOP_EX()
+				}
 			}
 			m_timingPanel->stop();
 			//}
@@ -395,8 +406,6 @@ namespace brUGE
 	//------------------------------------------
 	void Engine::updateFrame(float dt)
 	{
-		SCOPED_TIME_MEASURER_EX("update")
-	
 		m_demo->update(dt);
 		m_watchersPanel->update(dt);
 	}
@@ -405,8 +414,6 @@ namespace brUGE
 	//------------------------------------------
 	void Engine::drawFrame(float dt)
 	{
-		SCOPED_TIME_MEASURER_EX("draw")
-
 		m_demo->render(dt);
 		m_console->draw();
 		m_watchersPanel->draw(dt);

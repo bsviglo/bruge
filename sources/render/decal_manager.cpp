@@ -1,0 +1,188 @@
+#include "decal_manager.hpp"
+#include "game_world.hpp"
+#include "os/FileSystem.h"
+#include "loader/ResourcesManager.h"
+
+using namespace brUGE::os;
+using namespace brUGE::math;
+using namespace brUGE::utils;
+
+namespace brUGE
+{
+namespace render
+{
+
+	//----------------------------------------------------------------------------------------------
+	DecalManager::DecalManager()
+		: m_updateStatic(false), m_updateDynamic(false)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	DecalManager::~DecalManager()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool DecalManager::init()
+	{
+		//-- load decals material.
+		{
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/decal.mtl");
+			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
+			{
+				return false;
+			}
+		}
+
+		//-- create geometry instancing buffers.
+		{
+			m_staticTB = rd()->createBuffer(
+				IBuffer::TYPE_TEXTURE, NULL, 1024 * sizeof(GPUDecal) / sizeof(vec4f),
+				sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+				);
+
+			m_dynamicTB = rd()->createBuffer(
+				IBuffer::TYPE_TEXTURE, NULL, 1024 * sizeof(GPUDecal) / sizeof(vec4f),
+				sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+				);
+
+			if (!m_staticTB || !m_dynamicTB)
+			{
+				ERROR_MSG("Can't create texture buffers.");
+				return false;
+			}
+		}
+
+		//-- load standard system unit cube mesh.
+		{
+			m_unitCube = ResourcesManager::instance().loadMesh("system/meshes/box.obj");
+
+			if (!m_unitCube.isValid())
+			{
+				ERROR_MSG("Can't load system unit cube mesh.");
+				return false;
+			}
+			
+			//-- create rops for drawing.
+			RenderOps rops;
+			m_unitCube->gatherRenderOps(rops);
+			{
+				RenderOp& op  = rops[0];
+
+				//-- setup common params.
+				op.m_material     = m_material->renderFx();
+				op.m_instanceSize = sizeof(GPUDecal);
+				
+				//-- create ROP for static decals.
+				op.m_instanceTB = m_staticTB.get();
+				m_ROPs.push_back(op);
+
+				//-- create ROP for dynamic decals.
+				op.m_instanceTB = m_dynamicTB.get();
+				m_ROPs.push_back(op);
+			}
+		}
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool DecalManager::fini()
+	{
+		m_staticTB.reset();
+		m_dynamicTB.reset();
+		m_material.reset();
+		m_unitCube.reset();
+		m_ROPs.clear();
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void DecalManager::update(float /*dt*/)
+	{
+		//-- 1. update static decals.
+		if (m_updateStatic)
+		{
+			m_staticDecalsGPU.clear();
+			m_staticDecalsGPU.resize(m_staticDecalDescs.size());
+
+			for (uint i = 0; i < m_staticDecalDescs.size(); ++i)
+			{
+				const DecalDesc& desc = m_staticDecalDescs[i];
+				GPUDecal& gpu		  = m_staticDecalsGPU[i];
+
+				gpu.m_dir   = desc.m_dir.toVec4();
+				gpu.m_pos   = desc.m_pos.toVec4();
+				gpu.m_up    = desc.m_up.toVec4();
+				gpu.m_scale = desc.m_scale.toVec4();
+			}
+		}
+
+		//-- 2. update dynamic decals.
+		if (m_updateDynamic)
+		{
+			m_dynamicDecalsGPU.clear();
+			m_dynamicDecalsGPU.resize(m_dynamicDecalDescs.size());
+
+			for (uint i = 0; i < m_dynamicDecalDescs.size(); ++i)
+			{
+				const DynamicDecalDesc& desc = m_dynamicDecalDescs[i];
+				GPUDecal& gpu				 = m_dynamicDecalsGPU[i];
+				const mat4f& world			 = desc.second->matrix();
+
+				gpu.m_dir   = world.applyToVector(desc.first.m_dir).toVec4();
+				gpu.m_pos   = world.applyToPoint(desc.first.m_pos).toVec4();
+				gpu.m_up    = world.applyToVector(desc.first.m_up).toVec4();
+				gpu.m_scale = desc.first.m_scale.toVec4();
+			}
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	uint DecalManager::gatherRenderOps(RenderOps& ops) const
+	{
+		//-- setup static decals ROP.
+		ops.push_back(m_ROPs[0]);
+		ops.back().m_instanceCount = m_staticDecalsGPU.size();
+		ops.back().m_instanceData  = &m_staticDecalsGPU.front();
+
+		//-- setup dynamic decals ROP.
+		ops.push_back(m_ROPs[1]);
+		ops.back().m_instanceCount = m_dynamicDecalsGPU.size();
+		ops.back().m_instanceData  = &m_dynamicDecalsGPU.front();
+
+		return m_ROPs.size();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void DecalManager::addStaticDecal(const mat4f& orient, const vec3f& scale)
+	{
+		m_updateStatic = true;
+
+		vec3f dir = orient.applyToUnitAxis(2);
+		vec3f up  = orient.applyToUnitAxis(1);
+		vec3f pos = orient.applyToOrigin();
+
+		DecalDesc decal(dir, pos, up, scale);
+		m_staticDecalDescs.push_back(decal);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void DecalManager::addDynamicDecal(const mat4f& orient, const vec3f& scale, const Node* node)
+	{
+		m_updateDynamic = true;
+
+		vec3f dir = orient.applyToUnitAxis(2);
+		vec3f up  = orient.applyToUnitAxis(1);
+		vec3f pos = orient.applyToOrigin();
+
+		DecalDesc decal(dir, pos, up, scale);
+		m_dynamicDecalDescs.push_back(std::make_pair(decal, node));
+	}
+
+} //-- render
+} //-- brUGE

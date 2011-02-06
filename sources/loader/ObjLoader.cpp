@@ -6,12 +6,15 @@
 #include "math/math_types.h"
 #include "math/Vector2.h"
 #include "math/Vector3.h"
+#include "os/FileSystem.h"
 #include <vector>
 
 using namespace std;
 using namespace brUGE::render;
 using namespace brUGE::utils;
 using namespace brUGE::math;
+using namespace brUGE::os;
+
 
 // start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
@@ -203,8 +206,8 @@ namespace brUGE
 
 				//-- ToDo: try to load material for this submesh.
 				{
-					RODataPtr mData = os::FileSystem::instance().readFile("resources/" + mat);
-					if (!mData.get() || (mData && !submesh->material.load(*mData.get())))
+					RODataPtr mData = FileSystem::instance().readFile("resources/" + mat);
+					if (!mData.get() || !(submesh->material = rs().materials()->createMaterial(*mData.get())))
 					{
 						ERROR_MSG("Can't load submesh material %s.", mat.c_str());
 						return 0;
@@ -306,7 +309,7 @@ namespace brUGE
 			//-- ToDo: try to load material for this submesh.
 			{
 				RODataPtr mData = os::FileSystem::instance().readFile("resources/" + mat);
-				if (!mData.get() || (mData && !submesh->material.load(*mData.get())))
+				if (!mData.get() || !(submesh->material = rs().materials()->createMaterial(*mData.get())))
 				{
 					ERROR_MSG("Can't load submesh material %s.", mat.c_str());
 					return 0;

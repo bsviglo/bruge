@@ -1,6 +1,5 @@
-<material>
-  <shader name="diffuse_skinned" vertex="ntc2ui" isSkinned="1" isBumped="0" isOpaque="1"/>
+<material name="diffuse_skinned">
   <properties>
-	  <property name="diffuse" type="texture" value="textures/body_d.dds"/>
+	  <property name="diffuseMap" type="texture" value="textures/body_d.dds"/>
   </properties>
 </material>

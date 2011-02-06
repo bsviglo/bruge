@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
     <ClCompile Include="..\..\sources\os\win_message_func.cpp" />
     <ClCompile Include="..\..\sources\os\WinApp.cpp" />
+    <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp" />
     <ClCompile Include="..\..\sources\render\IShader.cpp" />
@@ -160,11 +161,13 @@
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
     <ClCompile Include="..\..\sources\render\Font.cpp" />
     <ClCompile Include="..\..\sources\render\Frustum.cpp" />
+    <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
     <ClCompile Include="..\..\sources\render\physic_world.cpp" />
     <ClCompile Include="..\..\sources\render\render_system.cpp" />
     <ClCompile Include="..\..\sources\render\render_world.cpp" />
     <ClCompile Include="..\..\sources\render\animation_engine.cpp" />
+    <ClCompile Include="..\..\sources\render\shader_context.cpp" />
     <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -198,13 +201,16 @@
     <ClInclude Include="..\..\sources\loader\TextureLoader.h" />
     <ClInclude Include="..\..\sources\os\FileSystem.h" />
     <ClInclude Include="..\..\sources\os\WinApp.h" />
+    <ClInclude Include="..\..\sources\render\decal_manager.hpp" />
     <ClInclude Include="..\..\sources\render\FreeCamera.h" />
     <ClInclude Include="..\..\sources\render\Color.h" />
     <ClInclude Include="..\..\sources\render\IBuffer.h" />
     <ClInclude Include="..\..\sources\render\IRenderDevice.h" />
     <ClInclude Include="..\..\sources\render\IShader.h" />
     <ClInclude Include="..\..\sources\render\ITexture.h" />
+    <ClInclude Include="..\..\sources\render\materials.hpp" />
     <ClInclude Include="..\..\sources\render\render_common.h" />
+    <ClInclude Include="..\..\sources\render\shader_context.hpp" />
     <ClInclude Include="..\..\sources\render\state_objects.h" />
     <ClInclude Include="..\..\sources\render\game_world.hpp" />
     <ClInclude Include="..\..\sources\render\physic_world.hpp" />
