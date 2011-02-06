@@ -26,8 +26,9 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
-			m_value.viewMat     = m_sc.camera().viewMatrix();
-			m_value.viewProjMat = m_sc.camera().viewProjMatrix();
+			m_value.m_viewMat		 = m_sc.camera().viewMatrix();
+			m_value.m_viewProjMat	 = m_sc.camera().viewProjMatrix();
+			m_value.m_invViewProjMat = m_sc.camera().invViewProjMatrix();
 
 			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
 		}
@@ -35,8 +36,9 @@ namespace
 	private:
 		struct PerFrameCB
 		{
-			mat4f viewMat;
-			mat4f viewProjMat;
+			mat4f m_viewMat;
+			mat4f m_viewProjMat;
+			mat4f m_invViewProjMat;
 		};
 		mutable PerFrameCB  m_value;
 		ShaderContext&		m_sc;
@@ -198,6 +200,38 @@ namespace
 		ShaderContext& m_sc;
 	};
 
+
+	//----------------------------------------------------------------------------------------------
+	class DepthMapAutoProperty : public IProperty
+	{
+	public:
+		DepthMapAutoProperty(ShaderContext& sc)	: m_sc(sc)
+		{
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_NEAREST;
+			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			m_samplerID			= render::rd()->createSamplerState(sDesc);
+		}
+
+		virtual ~DepthMapAutoProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			bool result = true;
+
+			result &= shader.setTexture("t_auto_depthMap_tex", rs().depthTexture());
+			result &= shader.setSampler("t_auto_depthMap_sml", m_samplerID);
+
+			return result;
+		}
+
+	private:
+		SamplerStateID m_samplerID;
+		ShaderContext& m_sc;
+	};
+	
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -239,6 +273,7 @@ namespace render
 		m_autoProperties["tb_auto_Instancing"]		= new InstancingProperty(*this);
 		m_autoProperties["t_auto_diffuseMap"]		= new TextureAutoProperty(*this, "diffuseMap", true);
 		m_autoProperties["t_auto_bumpMap"]			= new TextureAutoProperty(*this, "bumpMap", false);
+		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
 
 		return true;
 	}
@@ -249,11 +284,10 @@ namespace render
 		for (auto iter = m_autoProperties.begin(); iter != m_autoProperties.end(); ++iter)
 			delete iter->second;
 
-		m_autoProperties.clear();
-		m_shaderCashe.clear();
-		m_searchMap.clear();
-
 		m_shaderIncludes.reset();
+		m_shaderCache.clear();
+		m_searchMap.clear();
+		m_autoProperties.clear();
 
 		return true;
 	}
@@ -288,12 +322,12 @@ namespace render
 			}
 
 			//-- add to shader cash.
-			m_shaderCashe.push_back(make_pair(shader, props));
+			m_shaderCache.push_back(make_pair(shader, props));
 
 			//-- add to shader search map.
-			m_searchMap[name] = m_shaderCashe.size() - 1;
+			m_searchMap[name] = m_shaderCache.size() - 1;
 
-			return m_shaderCashe.size() - 1;
+			return m_shaderCache.size() - 1;
 		}
 
 		return CONST_INVALID_HANDLE;
@@ -323,7 +357,7 @@ namespace render
 		}
 		else
 		{
-			shader = m_shaderCashe[shaderID].first.get();
+			shader = m_shaderCache[shaderID].first.get();
 		}
 
 		if		(desc == "xyzc")
@@ -417,7 +451,7 @@ namespace render
 
 		assert(shaderID != CONST_INVALID_HANDLE);
 				
-		ShaderPair&		sp     = m_shaderCashe[shaderID];
+		ShaderPair&		sp     = m_shaderCache[shaderID];
 		IShader*		shader = sp.first.get();
 
 		//-- apply auto-properties predefined for this type of shader.
@@ -504,9 +538,10 @@ namespace render
 		{
 			SamplerStateDesc sDesc;
 			sDesc.minMagFilter	= SamplerStateDesc::FILTER_BILINEAR;
-			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_WRAP;
-			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_WRAP;
-			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_WRAP;
+			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.borderColour  = Color(0,0,0,0);
 			m_samplerID			= render::rd()->createSamplerState(sDesc);
 
 			inited = true;

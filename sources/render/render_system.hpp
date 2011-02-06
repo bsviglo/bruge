@@ -99,13 +99,14 @@ namespace render
 		void addRenderOps(const RenderOps& ops);
 		bool endPass();
 
-		const Camera&		camera()		const { return *m_camera; }
-		ERenderAPIType		gapi()			const { return m_renderAPI; }
-		ScreenResolution	screenRes()		const { return m_screenRes;  }
-		Projection			projection()	const { return m_projection; }
-		IRenderDevice*		device()		const { return m_device; }
-		ShaderContext*		shaderContext()		  { return &m_shaderContext; }
-		Materials*			materials()			  { return &m_materials; }
+		const Camera&		camera()		const	 { return *m_camera; }
+		ERenderAPIType		gapi()			const	 { return m_renderAPI; }
+		ScreenResolution	screenRes()		const	 { return m_screenRes;  }
+		Projection			projection()	const	 { return m_projection; }
+		IRenderDevice*		device()		const	 { return m_device; }
+		ShaderContext*		shaderContext()			 { return &m_shaderContext; }
+		Materials*			materials()				 { return &m_materials; }
+		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 
 	private:
 		// console functions.

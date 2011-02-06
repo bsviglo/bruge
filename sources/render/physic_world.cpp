@@ -258,12 +258,23 @@ namespace physic
 			auto world = cb.m_collisionObject->getWorldTransform();
 
 			//vec3f localPoint = bullet2bruge(world.invXform(cb.m_hitPointWorld));
-			vec3f localPoint = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
+			vec3f localPoint  = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
+			vec3f localNormal = bullet2bruge(world.inverse() * cb.m_hitNormalWorld);
+
+			mat4f mat;
+			vec3f up(0,1,0);
+
+			if (almostZero(fabs(localNormal.dot(up)) - 1.0f))
+			{
+				up = vec3f(0,0,1);
+			}
 
 			//-- apply offset to local point.
 			localPoint += *body->m_offset;
 
-			localMat.setTranslation(localPoint);
+			localMat.setLookAt(localPoint, localNormal, up);
+			localMat.invert();
+
 			node = body->m_node;
 
 			return true;

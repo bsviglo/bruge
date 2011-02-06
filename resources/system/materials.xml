@@ -19,5 +19,9 @@
   <material name="debug_solid" multipass="false" bumpMaped="false" skinned="false">
     <params vertex="xyztcn" pass0="debug_solid"/>
   </material>
+
+  <material name="decals" multipass="false" bumpMaped="false" skinned="false">
+    <params vertex="xyztcn" pass0="decals"/>
+  </material> 
   
 </materials>

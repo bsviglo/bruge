@@ -138,6 +138,7 @@ namespace render
 			finiPasses();
 			m_materials.fini();
 			m_shaderContext.fini();
+			m_device->resetToDefaults();
 			m_device->shutDown();
 
 			destroyRender destroy = static_cast<destroyRender>(m_dynamicLib.getSymbol("destroyRender"));
@@ -187,8 +188,30 @@ namespace render
 					return false;
 			}
 		}
+
+		//-- 2. PASS_DECAL
+		{
+			PassDesc& pass = m_passes[PASS_DECAL];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			bDesc.blendEnable[0] = true;
+			bDesc.srcBlend  = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlend = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendOp   = BlendStateDesc::BLEND_OP_ADD;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
 		
-		//-- 2. PASS_MAIN_COLOR
+		//-- 3. PASS_MAIN_COLOR
 		{
 			PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
@@ -206,7 +229,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 3. PASS_DEBUG_WIRE
+		//-- 4. PASS_DEBUG_WIRE
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
@@ -223,7 +246,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 3. PASS_DEBUG_SOLID
+		//-- 5. PASS_DEBUG_SOLID
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
 
@@ -304,6 +327,14 @@ namespace render
 			}
 		case PASS_DECAL:
 			{
+				PassDesc& pass = m_passes[PASS_DECAL];
+				m_device->backToMainFrameBuffer();
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_MAIN_COLOR:

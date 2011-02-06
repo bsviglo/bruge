@@ -75,11 +75,7 @@ namespace render
 		typedef int Index;
 
 		IShader(IRenderDevice& rd) : m_rDevice(rd) {}
-		virtual ~IShader()
-		{
-			for (uint i = 0; i < m_ubuffers.size(); ++i)
-				delete [] m_ubuffers[i].data.data;
-		}
+		virtual ~IShader() = 0 { }
 
 		virtual bool doChangeUniformBuffer(Index index, IBuffer* newBuffer) = 0;
 

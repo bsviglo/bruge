@@ -140,7 +140,7 @@ namespace render
 		typedef std::map<std::string, Handle>		ShaderSearchMap;
 
 		ShaderSearchMap		 m_searchMap;
-		ShaderAutoProperties m_shaderCashe;
+		ShaderAutoProperties m_shaderCache;
 		AutoProperties		 m_autoProperties;
 		RenderOp*		 	 m_renderOp;
 		Camera*				 m_camera;

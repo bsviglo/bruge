@@ -137,7 +137,8 @@ namespace render
 	//------------------------------------------
 	DXShader::~DXShader()
 	{
-
+		for (uint i = 0; i < m_ubuffers.size(); ++i)
+			delete [] m_ubuffers[i].data.data;
 	}
 	
 	//------------------------------------------

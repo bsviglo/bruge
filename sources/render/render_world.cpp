@@ -1,7 +1,6 @@
 #include "render_world.hpp"
 #include "game_world.hpp"
 #include "Camera.h"
-#include "DebugDrawer.h"
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
 
@@ -20,7 +19,10 @@ namespace render
 
 		m_renderOps.reserve(2000);
 		m_debugDrawer.reset(new DebugDrawer);
+		m_decalManager.reset(new DecalManager);
+
 		success &= m_debugDrawer->init();
+		success &= m_decalManager->init();
 
 		return success;
 	}
@@ -42,6 +44,12 @@ namespace render
 
 		if (m_debugDrawer)
 			m_debugDrawer->destroy();
+
+		if (m_decalManager)
+			m_decalManager->fini();
+
+		m_debugDrawer.reset();
+		m_decalManager.reset();
 
 		return success;
 	}
@@ -98,6 +106,18 @@ namespace render
 		rs.setCamera(m_camera.get());
 		rs.addRenderOps(m_renderOps);
 		rs.endPass();
+
+		//-- decal manager.
+		{
+			m_renderOps.clear();
+			m_decalManager->update(0.0f);
+			m_decalManager->gatherRenderOps(m_renderOps);
+
+			rs.beginPass(RenderSystem::PASS_DECAL);
+			rs.setCamera(m_camera.get());
+			rs.addRenderOps(m_renderOps);
+			rs.endPass();
+		}
 
 		//-- ToDo: reconsider.
 		//-- update debug drawer.

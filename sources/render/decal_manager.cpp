@@ -30,7 +30,7 @@ namespace render
 	{
 		//-- load decals material.
 		{
-			RODataPtr file = FileSystem::instance().readFile("resources/materials/decal.mtl");
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/decals.mtl");
 			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
 			{
 				return false;
@@ -145,17 +145,29 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	uint DecalManager::gatherRenderOps(RenderOps& ops) const
 	{
+		uint count = 0;
+
 		//-- setup static decals ROP.
-		ops.push_back(m_ROPs[0]);
-		ops.back().m_instanceCount = m_staticDecalsGPU.size();
-		ops.back().m_instanceData  = &m_staticDecalsGPU.front();
+		if (!m_staticDecalsGPU.empty())
+		{
+			ops.push_back(m_ROPs[0]);
+			ops.back().m_instanceCount = m_staticDecalsGPU.size();
+			ops.back().m_instanceData  = &m_staticDecalsGPU.front();
+
+			++count;
+		}
 
 		//-- setup dynamic decals ROP.
-		ops.push_back(m_ROPs[1]);
-		ops.back().m_instanceCount = m_dynamicDecalsGPU.size();
-		ops.back().m_instanceData  = &m_dynamicDecalsGPU.front();
+		if (!m_dynamicDecalsGPU.empty())
+		{
+			ops.push_back(m_ROPs[1]);
+			ops.back().m_instanceCount = m_dynamicDecalsGPU.size();
+			ops.back().m_instanceData  = &m_dynamicDecalsGPU.front();
 
-		return m_ROPs.size();
+			++count;
+		}
+
+		return count;
 	}
 
 	//----------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #include "common.hlsl"
 
 //-- Note: we can experiment with data packing. This is far from ideal data packing rules.
-//--	   It looks like it look only for simplicity to undestading what is going here.
+//--	   It looks like it look only for simplicity to undestading what is going on here.
 struct vs_out
 {
 	float4 pos			: SV_POSITION;
@@ -10,6 +10,8 @@ struct vs_out
 	float4 row1			: TEXCOORD2;
 	float4 row2			: TEXCOORD3;
 	float4 row3			: TEXCOORD4;
+	float2 invScale		: TEXCOORD5;
+	float4 cPos			: TEXCOORD6;
 };
 
 struct Instance
@@ -61,9 +63,9 @@ vs_out main(vs_in i)
 
 	float3 scale = inst.m_scale;
 	float3 pos	 = inst.m_pos;
-	float3 zAxis = inst.m_dir.xyz;
-	float3 yAxis = inst.m_up.xyz;
-	float3 xAxis = cross(zAxis, xAxis);
+	float3 zAxis = normalize(inst.m_dir.xyz);
+	float3 yAxis = normalize(inst.m_up.xyz);
+	float3 xAxis = cross(yAxis, zAxis);
 
 	float4x4 scaleMat = 
 	{
@@ -96,7 +98,7 @@ vs_out main(vs_in i)
 	//-- -dot(xaxis, pos)  -dot(yaxis, pos)  -dot(zaxis, pos) l
 	//--
 	//-- ToDo: reconsider.
-	//--
+	//-- viewProjMat = 
 	float4x4 lookAtMat = 
 	{
 		{xAxis.x,			yAxis.x,			zAxis.x,			0},
@@ -108,7 +110,9 @@ vs_out main(vs_in i)
 	//-- 5. Now do regular vertex shader with usage of the previous calculated data.
 	float4 wPos	  = mul(float4(i.pos, 1.0f), worldMat);
 	o.pos		  = mul(wPos, g_viewProjMat);
+	o.cPos		  = o.pos;
 	o.instanceId  = i.instanceId;
+	o.invScale	  = 1.0f / scale.xy;
 
 	o.row0 = lookAtMat[0];
 	o.row1 = lookAtMat[1];
@@ -122,37 +126,49 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
-sampler 		  texSampler;
-sampler			  depthSampler;
-Texture2D<float4> diffTex;
-Texture2D<float>  depthTex;
+sampler 		  t_auto_depthMap_sml;
+Texture2D<float>  t_auto_depthMap_tex;
+
+sampler			  diffuse_sml;
+Texture2D<float4> diffuse_tex;
 
 //-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {	
+	float3 clipPos = i.cPos.xyz / i.cPos.w;
+
 	//-- convert to texture coordinates.
 	float2 texCoord;
-	texCoord.x = 0.5f + 0.5f * i.pos.x;
-	texCoord.y = 0.5f - 0.5f * i.pos.y;
+	texCoord.x = 0.5f + 0.5f * clipPos.x;
+	texCoord.y = 0.5f - 0.5f * clipPos.y;
 
-	//-- read depth
-	float pixelDepth = depthTex.Sample(depthSampler, texCoord.xy);
+	//-- read depth.
+	float pixelDepth = t_auto_depthMap_tex.Sample(t_auto_depthMap_sml, texCoord.xy);
 
-	//-- transform to world space
-	float4 pixelWorldPos  = mul(float4(cPos.x, cPos.y, pixelDepth, 1.0f), invViewProjMat);
+	//-- transform to world space.
+	float4 pixelWorldPos  = mul(float4(clipPos.x, clipPos.y, pixelDepth, 1.0f), g_invViewProjMat);
 	pixelWorldPos /= pixelWorldPos.w;
 
+	//-- reconstruct decal projection matrix.
+	float4x4 decalViewProjMat = { i.row0, i.row1, i.row2, i.row3 };
+
 	//-- calculate texture coordinates for projection texture.
-	float4 pixelClipPosInTexSpace = mul(pixelWorldPos, g_positions[i.instanceId].viewProjMat);
-	pixelClipPosInTexSpace /= pixelClipPosInTexSpace.w;
+	//-- 1. apply (inv Translate * inv Rotate)
+	float4 pixelClipPosInTexSpace = mul(pixelWorldPos, decalViewProjMat);
+
+	//-- 2. apply (inv Scale)
+	pixelClipPosInTexSpace.xy *= 2.0f * i.invScale;
+	
+	//-- 3. do perspective division.
+	pixelClipPosInTexSpace.xy /= pixelClipPosInTexSpace.w;
 
 	//-- convert to texture coordinates.
 	texCoord.x = 0.5f + 0.5f * pixelClipPosInTexSpace.x;
 	texCoord.y = 0.5f - 0.5f * pixelClipPosInTexSpace.y;
 
-	float4 oColor = diffTex.Sample(texSampler, texCoord.xy);
+	float4 oColor = diffuse_tex.Sample(diffuse_sml, texCoord.xy);
 
-	return oColor + float4(g_positions[i.instanceId].color.rgb, 0.0f) * 0.5f * oColor.a;
+	return oColor;
 }
 
 #endif
