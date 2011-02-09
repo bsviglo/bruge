@@ -259,7 +259,7 @@ namespace physic
 
 			//vec3f localPoint = bullet2bruge(world.invXform(cb.m_hitPointWorld));
 			vec3f localPoint  = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
-			vec3f localNormal = bullet2bruge(world.inverse() * cb.m_hitNormalWorld);
+			vec3f localNormal = bullet2bruge(world.getBasis().inverse() * cb.m_hitNormalWorld);
 
 			mat4f mat;
 			vec3f up(0,1,0);
