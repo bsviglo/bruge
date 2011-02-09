@@ -1,6 +1,5 @@
-<material>
-  <shader name="diffuse" vertex="xyztcn" isSkinned="0" isBumped="0" isOpaque="1"/>
+<material name="diffuse">
   <properties>
-	  <property name="diffuse" type="texture" value="textures/pbarrel.dds"/>
+	  <property name="diffuseMap" type="texture" value="textures/pbarrel.dds"/>
   </properties>
 </material>

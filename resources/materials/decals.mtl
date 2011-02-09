@@ -1,0 +1,5 @@
+<material name="decals">
+  <properties>
+	 <property name="diffuse" type="texture" value="textures/decal.dds"/>
+  </properties>
+</material>

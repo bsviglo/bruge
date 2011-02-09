@@ -1,5 +1,4 @@
-<material>
-  <shader name="debug_wire" vertex="xyzc" isSkinned="0" isBumped="0" isOpaque="1"/>
+<material name="debug_wire">
   <properties>
   </properties>
 </material>

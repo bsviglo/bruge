@@ -3,6 +3,7 @@
 #include "render_common.h"
 #include "render/IRenderDevice.h"
 #include "render/render_system.hpp"
+#include "render/materials.hpp"
 #include "math/math_types.h"
 #include "math/Vector2.h"
 #include "math/Vector3.h"
@@ -16,20 +17,6 @@ namespace brUGE
 {
 namespace render
 {
-
-	//----------------------------------------------------------------------------------------------
-	class Material
-	{
-	public:
-		bool			load(const utils::ROData& data);
-		const RenderFx* renderFx() const { return &m_fx; }
-
-	private:
-		std::vector<IProperty*> m_fxProps; 
-		Properties				m_props;
-		RenderFx				m_fx;
-	};
-
 
 	// 
 	//----------------------------------------------------------------------------------------------
@@ -68,7 +55,7 @@ namespace render
 			Ptr<IBuffer>		 mainVB;
 			Ptr<IBuffer>		 tangentVB;
 			Ptr<IBuffer>		 IB;
-			Material			 material;
+			Ptr<Material>		 material;
 
 			bool buildBuffers(bool useNVTriStipOptimization = false);
 			void buildTangents();
@@ -191,7 +178,7 @@ namespace render
 			Ptr<IBuffer>		 tangentVB;
 			Ptr<IBuffer>		 IB;
 			Ptr<IBuffer>		 weightsTB;
-			Material			 material;
+			Ptr<Material>		 material;
 
 			bool buildBuffers  ();
 			void buildTangents (const Positions& positions);

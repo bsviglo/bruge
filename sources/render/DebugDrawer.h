@@ -20,7 +20,7 @@ namespace render
 
 	//-- Debug information drawer.
 	//-- It gathers drawing information from all its drawing methods and then draw all this
-	//-- information uses for that only once draw call.
+	//-- information as effective as possible.
 	//---------------------------------------------------------------------------------------------
 	class DebugDrawer : public utils::Singleton<DebugDrawer>
 	{
@@ -80,7 +80,7 @@ namespace render
 
 		std::vector<VertDesc>		m_vertices;
 		Ptr<IBuffer>				m_VB;
-		std::unique_ptr<Material>	m_wireMaterial;
+		Ptr<Material>				m_wireMaterial;
 		RenderOps					m_wireROPs;
 
 		//-- text drawing

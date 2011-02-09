@@ -1,9 +1,11 @@
 #include "engine/Engine.h"
+#include "render/decal_manager.hpp"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
 //-- prevent negative influence on other include files.
 #include "Demo.h"
 
+using namespace brUGE::render;
 using namespace brUGE::physic;
 using namespace brUGE::utils;
 
@@ -199,6 +201,10 @@ bool Demo::handleMouseClick(const MouseEvent& me)
 		Node* node = nullptr;
 		if (physWorld.collide(localMat, node, m_camera->position(), m_camera->direction()))
 		{
+			DecalManager& decalManager = Engine::instance().renderWorld().decalManager();
+
+			decalManager.addDynamicDecal(localMat, vec3f(0.25f,0.25f,0.6f), node);
+
 			m_collisionDescs.push_back(std::make_pair(localMat, node));
 			ConPrint("add new collision #%d", m_collisionDescs.size());
 			m_collisions.resize(m_collisionDescs.size());

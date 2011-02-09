@@ -1,0 +1,27 @@
+<materials>
+  
+  <material name="diffuse" multipass="true" bumpMaped="false" skinned="false">
+    <params vertex="xyztcn" pass0="z_pre_pass" pass1="cast_shadow_map" pass2="diffuse"/>
+  </material>
+
+  <material name="diffuse_skinned" multipass="true" bumpMaped="false" skinned="true">
+    <params vertex="ntc2ui" pass0="skinned_z_pre_pass" pass1="skinned_cast_shadow_map" pass2="diffuse_skinned"/>
+  </material>
+
+  <material name="ambient" multipass="true" bumpMaped="false" skinned="false">
+    <params vertex="xyztcn" pass0="z_pre_pass" pass1="cast_shadow_map" pass2="ambient"/>
+  </material>
+
+  <material name="debug_wire"  multipass="false" bumpMaped="false" skinned="false">
+    <params vertex="xyzc" pass0="debug_wire"/>
+  </material>
+
+  <material name="debug_solid" multipass="false" bumpMaped="false" skinned="false">
+    <params vertex="xyztcn" pass0="debug_solid"/>
+  </material>
+
+  <material name="decals" multipass="false" bumpMaped="false" skinned="false">
+    <params vertex="xyztcn" pass0="decals"/>
+  </material> 
+  
+</materials>

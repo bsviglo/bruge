@@ -35,7 +35,7 @@ namespace brUGE
 		void setMouseAcceleration(float accel)	{ m_mouseAccel = accel; }
 
 	private:
-		void _moveByKey();
+		void _moveByKey(float dt);
 		void _move(float value);										
 		void _strafe(float value);
 		void _throw(float value);

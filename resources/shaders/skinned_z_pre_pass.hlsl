@@ -3,7 +3,8 @@
 struct vs_out
 {
 	float4 pos	: SV_POSITION;
-	float2 tc	: TEXCOORD0;
+	float4 cPos : TEXCOORD0;
+	float2 tc	: TEXCOORD1;
 };
 
 //-- 16 byte aligned.
@@ -69,8 +70,9 @@ vs_out main(vs_in input)
 		worldPos += weight.pos.w * boneTransf(weight.joint.x, weight.pos.xyz); 
     }
     
-	o.pos = mul(float4(worldPos, 1.0f), g_viewProjMat);
-	o.tc  = input.tc;
+	o.pos  = mul(float4(worldPos, 1.0f), g_viewProjMat);
+	o.cPos = o.pos;
+	o.tc   = input.tc;
 
     return o;
 }
@@ -82,10 +84,9 @@ vs_out main(vs_in input)
 sampler 		  t_auto_diffuseMap_sml;
 Texture2D<float4> t_auto_diffuseMap_tex;
 
-//-------------------------------------------------------------------------------------------------
-float4 main(vs_out i) : SV_TARGET
-{
-	return float4(t_auto_diffuseMap_tex.Sample(t_auto_diffuseMap_sml, i.tc.xy).xyz, 0.0f);
-}
-
+	float4 main(vs_out i) : SV_TARGET
+	{
+		return i.cPos.z / i.cPos.w;
+	};
+	
 #endif

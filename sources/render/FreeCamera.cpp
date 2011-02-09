@@ -10,7 +10,7 @@ namespace brUGE
 	//------------------------------------------
 	FreeCamera::FreeCamera(const render::Projection *projection /*= NULL*/)
 		:	render::Camera(projection),
-			m_speed(0.5f),
+			m_speed(10.0f),
 			m_mouseSens(0.25f),
 			m_mouseAccel(20.0f),
 			m_vertFov(60.0f),
@@ -39,14 +39,14 @@ namespace brUGE
 
 	// 
 	//------------------------------------------
-	void FreeCamera::update(bool updateInput, float /*dt*/)
+	void FreeCamera::update(bool updateInput, float dt)
 	{
 		m_updateInput = updateInput;
 		
 		if (m_drawDebug)		drawViewFrustum();
 		if (!m_updateInput)		return;
 
-		_moveByKey();
+		_moveByKey(dt);
 		_setEuler(m_pos, math::degToRad(m_pitch), math::degToRad(m_yaw), 0.0f);
 	}
 
@@ -72,7 +72,7 @@ namespace brUGE
 	
 	// 
 	//------------------------------------------
-	void FreeCamera::_moveByKey()
+	void FreeCamera::_moveByKey(float dt)
 	{
 		if (Console::instance().visible()) return;
 
@@ -80,6 +80,9 @@ namespace brUGE
 		
 		float multiplier = 1.0f;
 		if (im.isModifierDown(KM_SHIFT))	multiplier = 2.0f;
+
+		//-- adjust by time.
+		multiplier *= dt;
 
 		if (im.isKeyDown(DIK_W))	_move	( multiplier * m_speed);	//W
 		if (im.isKeyDown(DIK_S))	_move	(-multiplier * m_speed);	//S

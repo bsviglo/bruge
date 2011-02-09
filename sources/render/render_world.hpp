@@ -7,6 +7,7 @@
 #include "Mesh.hpp"
 #include "render_system.hpp"
 #include "DebugDrawer.h"
+#include "decal_manager.hpp"
 #include <memory>
 
 namespace brUGE
@@ -15,7 +16,7 @@ namespace brUGE
 
 namespace render
 {
-	class  Camera;
+	class Camera;
 
 	//----------------------------------------------------------------------------------------------
 	struct LightInstance
@@ -70,7 +71,9 @@ namespace render
 		//-- models.
 		Handle				 addMeshDef		(const MeshInstance::Desc& desc, Transform* transform);
 		bool				 delMeshDef		(Handle handle);
-		MeshInstance*		 getMeshDef		(Handle handle);	
+		MeshInstance*		 getMeshDef		(Handle handle);
+
+		DecalManager&		 decalManager() { return *m_decalManager.get(); }
 		
 	private:
 		MeshInstance* setupMeshInst(const MeshInstance::Desc& desc, Transform* transform);
@@ -79,11 +82,13 @@ namespace render
 		typedef std::vector<MeshInstance*>	  MeshInstances;
 		typedef std::vector<LightInstance*>	  LightInstances;
 		typedef std::unique_ptr<DebugDrawer>  DebugDrawerPtr;
+		typedef std::unique_ptr<DecalManager> DecalManagerPtr;	
 		
 		LightInstances	m_lightInstances;
 		MeshInstances   m_meshInstances;
 		Ptr<Camera>		m_camera;
 		DebugDrawerPtr	m_debugDrawer;
+		DecalManagerPtr m_decalManager;
 		RenderOps		m_renderOps;
 	};
 

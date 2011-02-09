@@ -38,6 +38,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="render\framework\decals">
+      <UniqueIdentifier>{b486b571-afbb-4e47-ac5d-748b4de8995e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\framework\materials">
+      <UniqueIdentifier>{2024fc1a-27be-4c60-a049-37e9b785faf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -126,6 +132,15 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\physic_world.cpp">
       <Filter>render\worlds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\decal_manager.cpp">
+      <Filter>render\framework\decals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\materials.cpp">
+      <Filter>render\framework\materials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\shader_context.cpp">
+      <Filter>render\framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +245,15 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\win32Res\resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\decal_manager.hpp">
+      <Filter>render\framework\decals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\materials.hpp">
+      <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\shader_context.hpp">
+      <Filter>render\framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -301,7 +301,7 @@ namespace render
 			op.m_mainVB			= &*sm.mainVB;
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material.renderFx();
+			op.m_material		= sm.material->renderFx();
 
 			ops.push_back(op);
 		}
@@ -372,7 +372,7 @@ namespace render
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_weightsTB		= &*sm.weightsTB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material.renderFx();
+			op.m_material		= sm.material->renderFx();
 
 			ops.push_back(op);
 		}
@@ -560,63 +560,6 @@ namespace render
 		return result;
 		*/
 	}
-
-	//----------------------------------------------------------------------------------------------
-	bool Material::load(const utils::ROData& data)
-	{
-		pugi::xml_document	   doc;
-		pugi::xml_parse_result result = doc.load_buffer(data.ptr(), data.length());
-
-		if (!result)
-			return false;
-
-		pugi::xml_node matNode = doc.document_element();
-
-		//-- parse shader.
-		{
-			pugi::xml_node shaderNode = matNode.child("shader");
-			const char* shader = shaderNode.attribute("name").value();
-			const char* vertex = shaderNode.attribute("vertex").value();
-			
-			m_fx.m_isBumped   = shaderNode.attribute("isBumped").as_bool();
-			m_fx.m_isSkinned  = shaderNode.attribute("isSkinned").as_bool();
-			m_fx.m_isOpaque   = shaderNode.attribute("isOpaque").as_bool();
-			m_fx.m_shader     = rs().shaderContext()->getShader(shader);
-			m_fx.m_vrtsLayout = rs().shaderContext()->getVertexLayout(m_fx.m_shader, vertex);
-		}
-
-		//-- parse shader properties.
-		{
-			pugi::xml_node props = matNode.child("properties");
-
-			for (pugi::xml_node prop = props.child("property"); prop; prop = prop.next_sibling("property"))
-			{
-				const char* type = prop.attribute("type").value();
-				const char* name = prop.attribute("name").value();
-				
-				if (strcmp(type, "texture") == 0)
-				{	
-					const char* texName = prop.attribute("value").value();
-					Ptr<ITexture> tex = ResourcesManager::instance().loadTexture(texName);
-
-					m_props.push_back(new TextureProperty(name, tex));
-				}
-				else
-				{
-					assert(0 && "another types currently are not implemented.");
-				}
-			}
-
-			for (uint i = 0; i < m_props.size(); ++i)
-				m_fxProps.push_back(m_props[i].get());
-
-			m_fx.m_props	  = (m_fxProps.size() > 0) ? &m_fxProps[0] : nullptr;
-			m_fx.m_propsCount = m_fxProps.size();
-		}
-
-		return true;
-	}
-
 	
 } // render
 } // brUGE
