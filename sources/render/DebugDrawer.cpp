@@ -116,8 +116,8 @@ namespace render
 	{
 		if (!m_isEnabled) return;
 
-		m_vertices.push_back(VertDesc(start, color));
-		m_vertices.push_back(VertDesc(end,	 color));
+		m_vertices.push_back(VertDesc(start, color.toVec4()));
+		m_vertices.push_back(VertDesc(end,	 color.toVec4()));
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -246,43 +246,43 @@ namespace render
 		vec3f v8 = orient.applyToPoint(far_p + up_far + side_far);
 
 		// верхн€€ плоскость.
-		m_vertices.push_back(VertDesc(v1, color));
-		m_vertices.push_back(VertDesc(v2, color));
+		m_vertices.push_back(VertDesc(v1, color.toVec4()));
+		m_vertices.push_back(VertDesc(v2, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v2, color));
-		m_vertices.push_back(VertDesc(v3, color));
+		m_vertices.push_back(VertDesc(v2, color.toVec4()));
+		m_vertices.push_back(VertDesc(v3, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v3, color));
-		m_vertices.push_back(VertDesc(v4, color));
+		m_vertices.push_back(VertDesc(v3, color.toVec4()));
+		m_vertices.push_back(VertDesc(v4, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v4, color));
-		m_vertices.push_back(VertDesc(v1, color));
+		m_vertices.push_back(VertDesc(v4, color.toVec4()));
+		m_vertices.push_back(VertDesc(v1, color.toVec4()));
 
 		// нижн€€ плоскость.
-		m_vertices.push_back(VertDesc(v5, color));
-		m_vertices.push_back(VertDesc(v6, color));
+		m_vertices.push_back(VertDesc(v5, color.toVec4()));
+		m_vertices.push_back(VertDesc(v6, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v6, color));
-		m_vertices.push_back(VertDesc(v7, color));
+		m_vertices.push_back(VertDesc(v6, color.toVec4()));
+		m_vertices.push_back(VertDesc(v7, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v7, color));
-		m_vertices.push_back(VertDesc(v8, color));
+		m_vertices.push_back(VertDesc(v7, color.toVec4()));
+		m_vertices.push_back(VertDesc(v8, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v8, color));
-		m_vertices.push_back(VertDesc(v5, color));
+		m_vertices.push_back(VertDesc(v8, color.toVec4()));
+		m_vertices.push_back(VertDesc(v5, color.toVec4()));
 
 		// грани соедин€ющие верхнюю и нижнюю плоскоть.
-		m_vertices.push_back(VertDesc(v1, color));
-		m_vertices.push_back(VertDesc(v5, color));
+		m_vertices.push_back(VertDesc(v1, color.toVec4()));
+		m_vertices.push_back(VertDesc(v5, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v2, color));
-		m_vertices.push_back(VertDesc(v6, color));
+		m_vertices.push_back(VertDesc(v2, color.toVec4()));
+		m_vertices.push_back(VertDesc(v6, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v3, color));
-		m_vertices.push_back(VertDesc(v7, color));
+		m_vertices.push_back(VertDesc(v3, color.toVec4()));
+		m_vertices.push_back(VertDesc(v7, color.toVec4()));
 
-		m_vertices.push_back(VertDesc(v4, color));
-		m_vertices.push_back(VertDesc(v8, color));
+		m_vertices.push_back(VertDesc(v4, color.toVec4()));
+		m_vertices.push_back(VertDesc(v8, color.toVec4()));
 
 		/*
 		mat4f transf;

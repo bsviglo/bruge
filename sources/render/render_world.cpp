@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
+#include "gui/imgui_render.hpp"
 
 using namespace brUGE;
 using namespace brUGE::utils;
@@ -20,9 +21,11 @@ namespace render
 		m_renderOps.reserve(2000);
 		m_debugDrawer.reset(new DebugDrawer);
 		m_decalManager.reset(new DecalManager);
+		m_imguiRender.reset(new imguiRender);
 
 		success &= m_debugDrawer->init();
 		success &= m_decalManager->init();
+		success &= m_imguiRender->init();
 
 		return success;
 	}
@@ -48,8 +51,12 @@ namespace render
 		if (m_decalManager)
 			m_decalManager->fini();
 
+		if (m_imguiRender)
+			m_imguiRender->fini();
+
 		m_debugDrawer.reset();
 		m_decalManager.reset();
+		m_imguiRender.reset();
 
 		return success;
 	}
@@ -123,6 +130,9 @@ namespace render
 		//-- update debug drawer.
 		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
 		DebugDrawer::instance().draw();
+
+		//-- draw imgui.
+		m_imguiRender->draw();
 
 		m_renderOps.clear();
 	}

@@ -1,5 +1,6 @@
 #include "engine/Engine.h"
 #include "render/decal_manager.hpp"
+#include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
 //-- prevent negative influence on other include files.
@@ -143,13 +144,67 @@ void Demo::shutdown()
 //-------------------------------------------------------------------------------------------------
 void Demo::update(float dt)
 {
-	m_camera->update(true, dt);
+	imguiBeginFrame(
+		m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
+		);
+
+	//-- draw gui.
+	gui();
+
+	if (!m_imguiActive)
+	{
+		m_camera->update(true, dt);
+	}
 
 	for (uint i = 0; i < m_collisionDescs.size(); ++i)
 	{
 		m_collisions[i] = m_collisionDescs[i].first;
 		m_collisions[i].postMultiply(m_collisionDescs[i].second->matrix());
 	}
+
+	imguiEndFrame();
+
+	m_imguiInput.scroll	= 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+void Demo::gui()
+{
+	static uint width = Engine::instance().getVideoMode().width;
+	static uint height = Engine::instance().getVideoMode().height;
+	static int  propScroll = 0;
+	static bool showLog = false;
+	static bool showTools = false;
+	static float slider[20] = {3.5f, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
+	m_imguiActive = InputManager::instance().isKeyDown(DIK_LCONTROL);
+
+	if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
+		m_imguiActive = true;
+
+	for (uint i = 0; i < 20; ++i)
+	{
+		//imguiSeparator();
+		imguiSlider("Slider", &slider[i], 0.0f, 20.0f, 0.01f);
+	}
+
+	if (imguiCheck("Show Log", showLog))
+		showLog = !showLog;
+	if (imguiCheck("Show Tools", showTools))
+		showTools = !showTools;
+
+	imguiSeparator();
+	imguiLabel("Sample");
+	if (imguiButton("Hello BronX!"))
+	{
+	
+	}
+
+	imguiSeparator();
+	imguiLabel("Input Mesh");
+	imguiButton("Hello again BronX!!!");
+
+	imguiEndScrollArea();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -194,6 +249,12 @@ void Demo::render(float /*dt*/)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleMouseClick(const MouseEvent& me)
 {
+	if		(me.button == MB_LEFT_BUTTON  && me.isDown) m_imguiInput.button = IMGUI_MBUT_LEFT;
+	else if (me.button == MB_RIGHT_BUTTON && me.isDown) m_imguiInput.button = IMGUI_MBUT_RIGHT;
+	else												m_imguiInput.button = 0;
+	
+	if (m_imguiActive) return true;
+
 	if (me.button == MB_LEFT_BUTTON && me.isDown)
 	{
 		const PhysicWorld& physWorld = Engine::instance().physicWorld();
@@ -217,6 +278,12 @@ bool Demo::handleMouseClick(const MouseEvent& me)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleMouseMove(const MouseAxisEvent& mae)
 {
+	m_imguiInput.mx		= mae.absX;
+	m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
+	m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 10);
+
+	if (m_imguiActive) return true;
+
 	m_camera->updateMouse(mae.relX, mae.relY, mae.relZ);
 	return true;
 }
@@ -224,5 +291,8 @@ bool Demo::handleMouseMove(const MouseAxisEvent& mae)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleKeyboardEvent(const KeyboardEvent& /*ke*/)
 {
+	if (m_imguiActive)
+		return true;
+	
 	return false;
 }

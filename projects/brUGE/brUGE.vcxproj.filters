@@ -44,6 +44,9 @@
     <Filter Include="render\framework\materials">
       <UniqueIdentifier>{2024fc1a-27be-4c60-a049-37e9b785faf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{ea45d212-f66f-4ec7-a93f-e72b3a3a74ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -141,6 +144,12 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\shader_context.cpp">
       <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\imgui_render.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -254,6 +263,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\shader_context.hpp">
       <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui_render.hpp">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -30,6 +30,11 @@ namespace
 			m_value.m_viewProjMat	 = m_sc.camera().viewProjMatrix();
 			m_value.m_invViewProjMat = m_sc.camera().invViewProjMatrix();
 
+			m_value.m_screenRes.x	 = rs().screenRes().width;
+			m_value.m_screenRes.y	 = rs().screenRes().height;
+			m_value.m_screenRes.z	 = 1.0f / rs().screenRes().width;
+			m_value.m_screenRes.w	 = 1.0f / rs().screenRes().height;
+
 			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
 		}
 
@@ -39,6 +44,7 @@ namespace
 			mat4f m_viewMat;
 			mat4f m_viewProjMat;
 			mat4f m_invViewProjMat;
+			vec4f m_screenRes;
 		};
 		mutable PerFrameCB  m_value;
 		ShaderContext&		m_sc;

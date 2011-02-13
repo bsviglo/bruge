@@ -124,6 +124,7 @@ namespace render
 		dxDesc.FillMode = dxFillMode[desc.fillMode];
 		dxDesc.CullMode = dxCullMode[desc.cullMode];
 		dxDesc.FrontCounterClockwise = desc.frontCounterClockwise;
+		dxDesc.ScissorEnable		 = desc.scissorEnable;
 		
 		// ToDo: to be completed.
 
@@ -132,7 +133,6 @@ namespace render
 		dxDesc.DepthBiasClamp		 = 0.0f;
 		dxDesc.SlopeScaledDepthBias	 = 0.0f;
 		dxDesc.DepthClipEnable		 = FALSE;
-		dxDesc.ScissorEnable		 = FALSE;
 		dxDesc.MultisampleEnable	 = FALSE;
 		dxDesc.AntialiasedLineEnable = FALSE;
 		
@@ -224,8 +224,10 @@ namespace render
 		dxDesc.AddressV	= dxTexAddressMode[desc.wrapT];
 		dxDesc.AddressW	= dxTexAddressMode[desc.wrapR];
 		
-		for (uint i = 0; i < 4; ++i)
-			dxDesc.BorderColor[i] = desc.borderColour[i];
+		dxDesc.BorderColor[0] = desc.borderColour.r;
+		dxDesc.BorderColor[1] = desc.borderColour.g;
+		dxDesc.BorderColor[2] = desc.borderColour.b;
+		dxDesc.BorderColor[3] = desc.borderColour.a;
 
 		dxDesc.ComparisonFunc = dxTexComparisonFunc[desc.compareFunc];
 		dxDesc.Filter		  = dxTexFilter[desc.minMagFilter];

@@ -99,7 +99,7 @@
 /NODEFAULTLIB:msvcrt.lib
 /NODEFAULTLIB:libcd.lib
 /NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>DevIL.lib;freetype244_d.lib;pugixml_sd.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype244_d.lib;pugixml_sd.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
@@ -141,6 +141,8 @@
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
     <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
     <ClCompile Include="..\..\sources\engine\Engine.cpp" />
+    <ClCompile Include="..\..\sources\gui\imgui.cpp" />
+    <ClCompile Include="..\..\sources\gui\imgui_render.cpp" />
     <ClCompile Include="..\..\sources\loader\LwoLoader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -196,6 +198,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuildStep>
+    <ClInclude Include="..\..\sources\gui\imgui.h" />
+    <ClInclude Include="..\..\sources\gui\imgui_render.hpp" />
     <ClInclude Include="..\..\sources\loader\ObjLoader.h" />
     <ClInclude Include="..\..\sources\loader\ResourcesManager.h" />
     <ClInclude Include="..\..\sources\loader\TextureLoader.h" />

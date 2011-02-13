@@ -30,6 +30,9 @@ namespace render
 		m_fontDesc.height		= 0;
 		m_fontDesc.width		= 0;
 
+		//-- ToDo:
+		m_glyphMap.resize(glyphRange.y + 1);
+
 		_createFontTex(fontData);
 		_setupRender();
 	}
@@ -72,15 +75,16 @@ namespace render
 	}
 	
 	//------------------------------------------
-	void Font::beginDraw()
+	void Font::beginDraw(bool enableScissor)
 	{
-		render::rd()->setDepthStencilState(m_stateDS, 0);
-		render::rd()->setRasterizerState(m_stateR);
-		render::rd()->setBlendState(m_stateB, NULL, 0xffffffff);
+		rd()->setDepthStencilState(m_stateDS, 0);
+		rd()->setRasterizerState(enableScissor ? m_stateR_scissor : m_stateR);
+		rd()->setBlendState(m_stateB, NULL, 0xffffffff);
+		
+		rd()->setVertexLayout(m_vl);
+		rd()->setVertexBuffer(0, m_vb.get());
+		rd()->setShader(m_shader.get());
 
-		render::rd()->setVertexLayout(m_vl);
-		render::rd()->setVertexBuffer(0, m_vb.get());
-		render::rd()->setShader(m_shader.get());
 		m_shader->setSampler("fontSampl", m_stateS);
 		m_shader->setTexture("fontTex", m_texture.get());
 	}
@@ -339,6 +343,9 @@ namespace render
 			RasterizerStateDesc rDesc;
 			m_stateR = render::rd()->createRasterizedState(rDesc);
 
+			rDesc.scissorEnable = true;
+			m_stateR_scissor = render::rd()->createRasterizedState(rDesc);
+
 			BlendStateDesc bDesc;
 			bDesc.blendEnable[0] = true;
 			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
@@ -388,30 +395,30 @@ namespace render
 
 		// ToDo: optimization.
 
-		for (uint i = 0; i < text.length() && i < MAX_CHAR_SIZE; ++i)
+		for (uint i = 0, j = 0; i < text.length() && i < MAX_CHAR_SIZE; ++i, j += 4)
 		{
 			const GlyphDesc& glyph = m_glyphMap[text[i]];
 			charSize.x = glyph.horiAdvance * twoDivWidth;
 		
 			// bottom left
-			(vb)->pos		= curPos;
-			(vb)->texCoord	= glyph.bottomLeft;
-			(vb++)->color	= color;			
+			vb[j + 0].pos		= curPos;
+			vb[j + 0].texCoord	= glyph.bottomLeft;
+			vb[j + 0].color		= color.toVec4();			
 			
 			// upper left
-			(vb)->pos		= vec3f(curPos.x, curPos.y + charSize.y, curPos.z);
-			(vb)->texCoord	= vec2f(glyph.bottomLeft.x, glyph.topRight.y);
-			(vb++)->color	= color;			
+			vb[j + 1].pos		= vec3f(curPos.x, curPos.y + charSize.y, curPos.z);
+			vb[j + 1].texCoord	= vec2f(glyph.bottomLeft.x, glyph.topRight.y);
+			vb[j + 1].color		= color.toVec4();			
 			
 			// bottom right
-			(vb)->pos		= vec3f(curPos.x + charSize.x, curPos.y, curPos.z);
-			(vb)->texCoord	= vec2f(glyph.topRight.x, glyph.bottomLeft.y);
-			(vb++)->color	= color;			
+			vb[j + 2].pos		= vec3f(curPos.x + charSize.x, curPos.y, curPos.z);
+			vb[j + 2].texCoord	= vec2f(glyph.topRight.x, glyph.bottomLeft.y);
+			vb[j + 2].color		= color.toVec4();			
 
 			// upper right
-			(vb)->pos		= vec3f(curPos.x + charSize.x, curPos.y + charSize.y, curPos.z);
-			(vb)->texCoord	= glyph.topRight;
-			(vb++)->color	= color;			
+			vb[j + 3].pos		= vec3f(curPos.x + charSize.x, curPos.y + charSize.y, curPos.z);
+			vb[j + 3].texCoord	= glyph.topRight;
+			vb[j + 3].color		= color.toVec4();			
 			
 			curPos.x += charSize.x;
 		}

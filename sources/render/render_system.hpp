@@ -99,6 +99,9 @@ namespace render
 		void addRenderOps(const RenderOps& ops);
 		bool endPass();
 
+		//-- ToDo:
+		void addImmediateRenderOps(const RenderOps& ops);
+
 		const Camera&		camera()		const	 { return *m_camera; }
 		ERenderAPIType		gapi()			const	 { return m_renderAPI; }
 		ScreenResolution	screenRes()		const	 { return m_screenRes;  }
@@ -112,8 +115,9 @@ namespace render
 		// console functions.
 		int _printGAPIType();
 
-		bool initPasses();
-		bool finiPasses();
+		bool _initPasses();
+		bool _finiPasses();
+		void _doDraw(RenderOps& ops);
 
 	private:
 		VideoMode			m_videoMode;

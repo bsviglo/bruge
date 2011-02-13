@@ -25,8 +25,20 @@ public:
 	virtual bool handleKeyboardEvent(const KeyboardEvent& ke);
 
 private:
+	void gui();
+
+private:
 	Ptr<FreeCamera>	m_camera;
 
 	std::vector<std::pair<mat4f, Node*>> m_collisionDescs;
 	std::vector<mat4f>					 m_collisions;
+
+	struct imguiInput
+	{
+		int  mx, my;
+		byte button;
+		int  scroll;
+	};
+	imguiInput	m_imguiInput;
+	bool		m_imguiActive;
 };

@@ -1,17 +1,23 @@
 #include "imgui_render.hpp"
+#include "render/render_system.hpp"
+#include "os/FileSystem.h"
+#include "loader/ResourcesManager.h"
 #include <cassert>
 
 using namespace brUGE;
 using namespace brUGE::render;
 using namespace brUGE::math;
 using namespace brUGE::utils;
+using namespace brUGE::os;
+
 
 //-- start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-	const uint g_tempCoordCount = 100;
-	const uint g_circleVerts    = 8 * 4;
+	const uint  g_tempCoordCount	= 100;
+	const uint  g_circleVertsCount  = 4 * 4;
+	float		g_circleVerts[g_circleVertsCount * 2];
 
 	typedef brUGE::render::imguiRender::GuiVertex GuiVertex;
 
@@ -24,8 +30,8 @@ namespace
 		//-- to find problem as soon as possible.
 		assert(numCoords < 250);
 
-		tempCoords.resize (numCoords);
-		tempNormals.resize(numCoords);
+		//tempCoords.resize (numCoords);
+		//tempNormals.resize(numCoords);
 
 		for (uint i = 0, j = numCoords - 1; i < numCoords; j = i++)
 		{
@@ -65,11 +71,11 @@ namespace
 		}
 
 		Color colTrans;
-		colTrans.set(col);
+		colTrans.setABGR(col);
 		colTrans.a = 0.0f;
 
 		Color colOrigin;
-		colOrigin.set(col);
+		colOrigin.setABGR(col);
 
 		for (uint i = 0, j = numCoords - 1; i < numCoords; j = i++)
 		{
@@ -113,7 +119,7 @@ namespace
 		std::vector<float>& tempNormals, std::vector<float>& tempCoords,
 		float x, float y, float w, float h, float r, float fth, unsigned int col)
 	{
-		const uint n = g_circleVerts / 4;
+		const uint n = g_circleVertsCount / 4;
 		float verts[(n + 1) * 4 * 2];
 
 		const float* cverts = g_circleVerts;
@@ -198,23 +204,44 @@ namespace brUGE
 {
 namespace render
 {
+	//----------------------------------------------------------------------------------------------
+	imguiRender::imguiRender() : m_scissor(false)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	imguiRender::~imguiRender()
+	{
+
+	}
 
 	//----------------------------------------------------------------------------------------------
 	bool imguiRender::init()
 	{
-		for (int i = 0; i < CIRCLE_VERTS; ++i)
+		for (int i = 0; i < g_circleVertsCount; ++i)
 		{
-			float a = (float)i/(float)CIRCLE_VERTS * PI*2;
+			float a = (float)i/(float)g_circleVertsCount * PI*2;
 			g_circleVerts[i*2+0] = cosf(a);
 			g_circleVerts[i*2+1] = sinf(a);
 		}
 
-		return true;
+		m_vertices.reserve(1000);
+		m_texDrawOps.reserve(100);
+
+		m_tempCoords.resize(200);
+		m_tempNormals.resize(200);
+
+		return _setupRender();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	bool imguiRender::fini()
 	{
+		m_vb.reset();
+		m_font.reset();
+		m_material.reset();
+
 		return true;
 	}
 
@@ -291,8 +318,8 @@ namespace render
 			}
 			else if (cmd.type == IMGUI_GFXCMD_TEXT)
 			{
-				vec2ui dims = m_font.getStringDim(cmd.text.text);
-				vec2f  pos(cmd.text.x, cmd.text.y);
+				vec2ui dims = m_font->getStringDim(cmd.text.text);
+				vec2f  pos(cmd.text.x, (rs().screenRes().height - cmd.text.y) + dims.y * 0.5f);
 
 				if		(cmd.text.align == IMGUI_ALIGN_CENTER) pos.x -= dims.x / 2;
 				else if (cmd.text.align == IMGUI_ALIGN_RIGHT)  pos.x -= dims.x;
@@ -305,24 +332,133 @@ namespace render
 			else if (cmd.type == IMGUI_GFXCMD_SCISSOR)
 			{
 				//-- do real draw
-				//-- 1. poligons
+				//-- 1. polygons
 				//-- 2. text
-				//-- clear polygons vector and draw text operations.
-
+				//-- 3. clear polygons vector and draw text operations.
+				_doDraw();
+				
 				if (cmd.flags)
 				{
-					glEnable(GL_SCISSOR_TEST);
-					glScissor(cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h);
+					m_scissor = true;
+					rd()->setScissorRect(
+						cmd.rect.x, rs().screenRes().height - (cmd.rect.y + cmd.rect.h),
+						cmd.rect.w, cmd.rect.h
+						);
 				}
 				else
 				{
-					glDisable(GL_SCISSOR_TEST);
+					m_scissor = false;
 				}
 			}
 		}
-		//-- disable scissor.
+
+		//-- do final draw.
+		_doDraw();
 	}
 
+	//----------------------------------------------------------------------------------------------
+	bool imguiRender::_setupRender()
+	{
+		m_vertices.reserve(16348);
+
+		//-- create geometry vertex buffer.
+		{
+			m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 16348, sizeof(GuiVertex),
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE);
+		}
+
+		//-- load material.
+		{
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/gui.mtl");
+			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
+			{
+				return false;
+			}
+
+			//-- create rops for drawing.
+			{
+				RenderOp op;
+				op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
+				op.m_mainVB		  = &*m_vb;
+				op.m_indicesCount = 0;
+				op.m_material	  = m_material->renderFx();
+
+				m_geomROPs.push_back(op);
+			}
+		}
+
+		//-- create render states.
+		{
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthEnable = false;
+			m_stateDS = render::rd()->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			m_stateR = render::rd()->createRasterizedState(rDesc);
+
+			rDesc.scissorEnable = true;
+			m_stateR_scissor = render::rd()->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			bDesc.blendEnable[0] = true;
+			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlend		 = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendOp		 = BlendStateDesc::BLEND_OP_ADD;
+			m_stateB = render::rd()->createBlendState(bDesc);
+		}
+
+		//-- font.
+		{
+			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
+			if (!m_font.isValid())
+				return false;
+		}
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void imguiRender::_swapBuffers()
+	{
+		if (void* vb = m_vb->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
+		{
+			memcpy(vb, &m_vertices[0], sizeof(GuiVertex) * m_vertices.size());
+			m_vb->unmap();
+		}
+
+		m_geomROPs[0].m_indicesCount = m_vertices.size();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void imguiRender::_doDraw()
+	{
+		//-- draw polygons.
+		if (!m_vertices.empty())
+		{
+			_swapBuffers();
+			rd()->setDepthStencilState(m_stateDS, 0);
+			rd()->setBlendState(m_stateB, NULL, 0xffffffff);
+			rd()->setRasterizerState(m_scissor ? m_stateR_scissor : m_stateR);
+
+			rs().addImmediateRenderOps(m_geomROPs);
+
+			m_vertices.clear();
+		}
+		
+		//-- draw text.
+		if (!m_texDrawOps.empty())
+		{
+			m_font->beginDraw(m_scissor);
+			for (uint i = 0; i < m_texDrawOps.size(); ++i)
+			{
+				TextDrawOperation& op = m_texDrawOps[i];
+				m_font->draw2D(op.m_pos, op.m_color, op.m_text);
+			}
+			m_font->endDraw();
+
+			m_texDrawOps.clear();
+		}
+	}
 
 } // render
 } // brUGE

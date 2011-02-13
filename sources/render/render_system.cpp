@@ -127,7 +127,7 @@ namespace render
 			return false;
 		}
 
-		return initPasses();
+		return _initPasses();
 	}
 	
 	//----------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ namespace render
 	{
 		if (m_dynamicLib.isLoaded())
 		{
-			finiPasses();
+			_finiPasses();
 			m_materials.fini();
 			m_shaderContext.fini();
 			m_device->resetToDefaults();
@@ -155,7 +155,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool RenderSystem::initPasses()
+	bool RenderSystem::_initPasses()
 	{
 		//-- 1. PASS_Z_ONLY
 		{
@@ -268,7 +268,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool RenderSystem::finiPasses()
+	bool RenderSystem::_finiPasses()
 	{
 		for (uint i = 0; i < PASS_COUNT; ++i)
 		{
@@ -342,7 +342,7 @@ namespace render
 				PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
 				m_device->backToMainFrameBuffer();
-				m_device->clear(CLEAR_COLOR, Color(0,0,0,0), 0.0f, 0);
+				m_device->clear(CLEAR_COLOR, Color(0.1f,0.1f,0.1f,0), 0.0f, 0);
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
@@ -411,9 +411,23 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool RenderSystem::endPass()
 	{
-		for (uint i = 0; i < m_renderOps.size(); ++i)
+		_doDraw(m_renderOps);
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void RenderSystem::addImmediateRenderOps(const RenderOps& ops)
+	{
+		RenderOps rOps = ops;
+		_doDraw(rOps);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void RenderSystem::_doDraw(RenderOps& ops)
+	{
+		for (uint i = 0; i < ops.size(); ++i)
 		{
-			RenderOp&					ro = m_renderOps[i];
+			RenderOp&					ro = ops[i];
 			const Materials::RenderMat& rm = *ro.m_material->m_shader;
 
 			m_device->setVertexLayout(rm.m_vertDecl);
@@ -450,8 +464,6 @@ namespace render
 				}
 			}
 		}
-
-		return true;
 	}
 
 	// console functions.

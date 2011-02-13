@@ -293,11 +293,23 @@ namespace render
 	}
 
 	//------------------------------------------
+	void DXRenderDevice::doSetScissorRect(uint x, uint y, uint width, uint height)
+	{
+		D3D10_RECT rect;
+		rect.left   = x;
+		rect.right  = x + width;
+		rect.top	= y;
+		rect.bottom = y + height;
+
+		m_dxDevice->RSSetScissorRects(1, &rect);
+	}
+
+	//------------------------------------------
 	void DXRenderDevice::doClear(uint clearFlags, const Color& color, float depth, uint8 stencil)
 	{
 		if (m_mainColorRT && clearFlags & CLEAR_COLOR)
 		{
-			m_dxDevice->ClearRenderTargetView(toDxTex(m_mainColorRT)->getRTView(), &color[0]);
+			m_dxDevice->ClearRenderTargetView(toDxTex(m_mainColorRT)->getRTView(), color.toPtr());
 		}
 
 		if (m_mainDepthRT && (clearFlags & CLEAR_DEPTH || clearFlags & CLEAR_STENCIL))
@@ -312,7 +324,7 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::doClearColorRT(ITexture* crt, const Color& color)
 	{
-		m_dxDevice->ClearRenderTargetView(toDxTex(crt)->getRTView(), &color[0]);
+		m_dxDevice->ClearRenderTargetView(toDxTex(crt)->getRTView(), color.toPtr());
 	}
 
 	//------------------------------------------

@@ -7,6 +7,7 @@
 #include "Mesh.hpp"
 #include "render_system.hpp"
 #include "DebugDrawer.h"
+#include "gui/imgui_render.hpp"
 #include "decal_manager.hpp"
 #include <memory>
 
@@ -82,13 +83,15 @@ namespace render
 		typedef std::vector<MeshInstance*>	  MeshInstances;
 		typedef std::vector<LightInstance*>	  LightInstances;
 		typedef std::unique_ptr<DebugDrawer>  DebugDrawerPtr;
-		typedef std::unique_ptr<DecalManager> DecalManagerPtr;	
+		typedef std::unique_ptr<DecalManager> DecalManagerPtr;
+		typedef std::unique_ptr<imguiRender>  ImguiRenderPtr;
 		
 		LightInstances	m_lightInstances;
 		MeshInstances   m_meshInstances;
 		Ptr<Camera>		m_camera;
 		DebugDrawerPtr	m_debugDrawer;
 		DecalManagerPtr m_decalManager;
+		ImguiRenderPtr	m_imguiRender;
 		RenderOps		m_renderOps;
 	};
 

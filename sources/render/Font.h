@@ -41,7 +41,7 @@ namespace render
 		//-- Note: useful in places where you need call more times the function print2D.
 		//--	   This couple of functions do this task more effectively.
 		//-----------------------------------------------------------------------------------------
-		void beginDraw();
+		void beginDraw(bool enableScissor = false);
 		void draw2D(const vec2f& pos, const Color& color, const std::string& text);
 		void draw2D(const vec2f& pos, const Color& color, const char* text, ...);
 		void endDraw();
@@ -78,7 +78,8 @@ namespace render
 			vec4f color;
 		};
 
-		typedef std::map<uint, GlyphDesc> GlyphMap;
+		//typedef std::map<uint, GlyphDesc> GlyphMap;
+		typedef std::vector<GlyphDesc> GlyphMap;
 
 		mutable GlyphMap	m_glyphMap;
 		Desc				m_fontDesc;
@@ -92,6 +93,7 @@ namespace render
 		DepthStencilStateID m_stateDS;
 		BlendStateID		m_stateB;
 		RasterizerStateID	m_stateR;
+		RasterizerStateID	m_stateR_scissor;
 		SamplerStateID		m_stateS;
 	};
 

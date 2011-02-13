@@ -67,7 +67,6 @@ namespace render
 		CLEAR_ALL	  = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
 	};
 	
-
 	//
 	//----------------------------------------------------------------------------------------------
 	class IRenderDevice
@@ -87,49 +86,50 @@ namespace render
 		};
 
 	public:
-		bool init(HWND hWindow, const VideoMode& videoMode);
-		void shutDown() { doShutDown(); }
+		bool			init(HWND hWindow, const VideoMode& videoMode);
+		void			shutDown() { doShutDown(); }
 		
 		//-- frame buffer operations.
-		void setViewPort(uint width, uint height) { doSetViewPort(width, height); }
-		void swapBuffers();
-		void resetToDefaults();
+		void			setViewPort(uint width, uint height) { doSetViewPort(width, height); }
+		void			setScissorRect(uint x, uint y, uint width, uint height) { doSetScissorRect(x, y, width, height); }
+		void			swapBuffers();
+		void			resetToDefaults();
 		
 		//-- set of clear methods.
-		void clear(uint clearFlags, const Color& color, float depth, uint8 stencil);
-		void clearColorRT(ITexture* rt, const Color& color);
-		void clearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil);
+		void			clear(uint clearFlags, const Color& color, float depth, uint8 stencil);
+		void			clearColorRT(ITexture* rt, const Color& color);
+		void			clearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil);
 
 		//-- access to main frame buffer.
-		ITexture* getMainColorRT() { return m_mainColorRT.get(); }
-		ITexture* getMainDepthRT() { return m_mainDepthRT.get(); }
+		ITexture*		getMainColorRT() { return m_mainColorRT.get(); }
+		ITexture*		getMainDepthRT() { return m_mainDepthRT.get(); }
 		
 		//-- vertex operations.
-		void setVertexLayout(VertexLayoutID layout) { m_curVertLayout = layout; }
-		void setVertexBuffer(uint slot, IBuffer* buffer, uint offset = 0);
-		void setVertexBuffers(uint startSlot, IBuffer** buffers, uint count, uint offset = 0);
-		void setIndexBuffer(IBuffer* buffer) { m_curIB = buffer; }
+		void			setVertexLayout(VertexLayoutID layout) { m_curVertLayout = layout; }
+		void			setVertexBuffer(uint slot, IBuffer* buffer, uint offset = 0);
+		void			setVertexBuffers(uint startSlot, IBuffer** buffers, uint count, uint offset = 0);
+		void			setIndexBuffer(IBuffer* buffer) { m_curIB = buffer; }
 
 		//-- render target operations.
-		void setRenderTarget(ITexture* colorRT, ITexture* depthRT);
-		void setRenderTargets(ITexture** colorRTs, uint numTargets, ITexture* depthRT);
-		void backToMainFrameBuffer();
+		void			setRenderTarget(ITexture* colorRT, ITexture* depthRT);
+		void			setRenderTargets(ITexture** colorRTs, uint numTargets, ITexture* depthRT);
+		void			backToMainFrameBuffer();
 		
 		//-- drawing operations.
-		void draw(EPrimitiveTopology topology, uint first, uint count);
-		void drawIndexed(EPrimitiveTopology topology, uint first, uint count);
-		void drawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
-		void drawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
+		void			draw(EPrimitiveTopology topology, uint first, uint count);
+		void			drawIndexed(EPrimitiveTopology topology, uint first, uint count);
+		void			drawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
+		void			drawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
 
 		//-- state objects.
-		void setRasterizerState	 (RasterizerStateID state);
-		void setDepthStencilState(DepthStencilStateID state, uint stencilRef);
-		void setBlendState		 (BlendStateID state, const float blendFactor[4], uint sampleMask);
+		void			setRasterizerState(RasterizerStateID state);
+		void			setDepthStencilState(DepthStencilStateID state, uint stencilRef);
+		void			setBlendState(BlendStateID state, const float blendFactor[4], uint sampleMask);
 
 		//-- shader.
-		void setShader(IShader* shader) { m_curShader = shader; }
-		Ptr<IShader> createShader(const char* src, const ShaderMacro* macros = NULL, uint count = 0);
-		void setShaderIncludes(IShaderInclude* si) { doSetShaderIncludes(si); }
+		void			setShader(IShader* shader) { m_curShader = shader; }
+		Ptr<IShader>	createShader(const char* src, const ShaderMacro* macros = NULL, uint count = 0);
+		void			setShaderIncludes(IShaderInclude* si) { doSetShaderIncludes(si); }
 
 		//-- vertex layout.
 		VertexLayoutID createVertexLayout(const VertexDesc* vd, uint count, const IShader& shader)
@@ -158,21 +158,22 @@ namespace render
 			  m_curVertLayout(-1), m_curRasterState(-1), m_isRTsChangeStateDirty(true) { }
 		virtual ~IRenderDevice() {}
 	
-		virtual bool doInit(HWND hWindow, const VideoMode& videoMode) = 0;
-		virtual void doShutDown() = 0; 
+		virtual bool				doInit(HWND hWindow, const VideoMode& videoMode) = 0;
+		virtual void				doShutDown() = 0; 
 
-		virtual void doSetViewPort(uint width, uint height) = 0;
-		virtual void doSwapBuffers() = 0;
-		virtual void doResetToDefaults() = 0;
+		virtual void				doSetViewPort(uint width, uint height) = 0;
+		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height) = 0;
+		virtual void				doSwapBuffers() = 0;
+		virtual void				doResetToDefaults() = 0;
 
-		virtual void doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
-		virtual void doDrawIndexed(EPrimitiveTopology topology, uint first, uint count) = 0;
-		virtual void doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
-		virtual void doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
+		virtual void				doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
+		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint count) = 0;
+		virtual void				doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
+		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
 
-		virtual void doClear(uint clearFlags, const Color& color, float depth, uint8 stencil) = 0;
-		virtual void doClearColorRT(ITexture* crt, const Color& color) = 0;
-		virtual void doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil) = 0;
+		virtual void				doClear(uint clearFlags, const Color& color, float depth, uint8 stencil) = 0;
+		virtual void				doClearColorRT(ITexture* crt, const Color& color) = 0;
+		virtual void				doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil) = 0;
 
 		virtual Ptr<IBuffer>		doCreateBuffer(IBuffer::EType type, const void* data, uint elemCount, uint elemSize, IBuffer::EUsage usage, IBuffer::ECPUAccess access) = 0;
 		virtual Ptr<ITexture>		doCreateTexture(const ITexture::Desc& desc, const ITexture::Data* data, uint size) = 0;

@@ -24,4 +24,8 @@
     <params vertex="xyztcn" pass0="decals"/>
   </material> 
   
+  <material name="gui" multipass="false" bumpMaped="false" skinned="false">
+	<params vertex="xyzc" pass0="gui"/>
+  </material>
+  
 </materials>

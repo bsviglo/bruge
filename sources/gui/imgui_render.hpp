@@ -2,7 +2,10 @@
 
 #include "prerequisites.h"
 #include "imgui.h"
+#include "render/IBuffer.h"
+#include "render/Font.h"
 #include "render/Color.h"
+#include "render/materials.hpp"
 #include "math/Vector3.h"
 #include <vector>
 
@@ -36,33 +39,38 @@ namespace render
 		};
 
 	public:
+		imguiRender();
+		~imguiRender();
+
 		bool init();
 		bool fini();
 
 		void draw();
 
 	private:
+		bool _setupRender();
+		void _swapBuffers();
+		void _doDraw();
 
-		Font			   m_font;
-		RasterizerStateID  m_rState_enable_scissor;
-		RasterizerStateID  m_rState_disable_scissor;
-
+	private:
 
 		//-- some useful temporary variables.
-		std::vector<GuiVertex>		   m_vertices;
-		std::vector<TextDrawOperation> m_texDrawOps;
-		std::vector<float> m_tempCoords;
-		std::vector<float> m_tempNormals;
-		std::vector<float> m_circleVerts;
+		std::vector<GuiVertex>			m_vertices;
+		std::vector<TextDrawOperation>	m_texDrawOps;
+		std::vector<float>				m_tempCoords;
+		std::vector<float>				m_tempNormals;
 
 		//-- render section.
+		bool			    m_scissor;
+		Ptr<Font>			m_font;
 		Ptr<IBuffer>		m_vb;
-		Ptr<IShader>		m_shader;
+		Ptr<Material>		m_material;
+		RenderOps			m_geomROPs;
 
-		VertexLayoutID		m_vl;
 		DepthStencilStateID m_stateDS;
 		BlendStateID		m_stateB;
 		RasterizerStateID	m_stateR;
+		RasterizerStateID	m_stateR_scissor;
 		SamplerStateID		m_stateS;
 	};
 

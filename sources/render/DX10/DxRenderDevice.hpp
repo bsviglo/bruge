@@ -18,9 +18,9 @@ namespace render
 		DXRenderDevice();
 		virtual ~DXRenderDevice();
 		
-		ID3D10Include* shaderInclude() { return m_shaderIncludes.get(); }
-		ID3D10SamplerState* getSamplerState(SamplerStateID id) { return m_dxSamplerStates[id]; }
-		static DXDevice& device() { return m_dxDevice; }	
+		ID3D10Include*				shaderInclude() { return m_shaderIncludes.get(); }
+		ID3D10SamplerState*			getSamplerState(SamplerStateID id) { return m_dxSamplerStates[id]; }
+		static DXDevice&			device() { return m_dxDevice; }	
 
 	protected:
 		virtual bool				doInit(HWND hWindow, const VideoMode& videoMode);
@@ -29,6 +29,7 @@ namespace render
 		virtual void				doSwapBuffers();
 		virtual void				doResetToDefaults();
 		virtual void				doSetViewPort(uint width, uint height);
+		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height);
 
 		virtual void				doClear(uint clearFlags, const Color& color, float depth, uint8 stencil);
 		virtual void				doClearColorRT(ITexture* crt, const Color& color);
