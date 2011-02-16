@@ -1,8 +1,10 @@
 #pragma once
 
+#include "prerequisites.h"
 #include "render_common.h"
 #include "shader_context.hpp"
 #include "utils/Data.hpp"
+#include "pugixml/pugixml.hpp"
 
 #include <vector>
 #include <map>
@@ -12,10 +14,11 @@ namespace brUGE
 namespace render
 {
 
-	class Material;
+	class  Material;
+	struct UIDesc;
 
 	//-- Presents data holder of the all materials in the engine. At the beginning of the game all
-	//-- needed materials descriptions will be readed from the materials.xml file and then used
+	//-- needed materials descriptions will be read from the materials.xml file and then used
 	//-- to formulate desired material.
 	//----------------------------------------------------------------------------------------------
 	class Materials
@@ -46,6 +49,7 @@ namespace render
 		bool fini();
 
 		Ptr<Material> createMaterial(const utils::ROData& data);
+		Ptr<Material> createMaterial(const pugi::xml_node& section, UIDesc* uiDesc);
 
 	private:
 		typedef std::map<std::string, RenderMat> MaterialsMap;
@@ -90,7 +94,7 @@ namespace render
 	};
 
 
-	//-- Presents system render system vision about the material. I.e. it manages the all things
+	//-- Presents render system vision about the material. I.e. it manages the all things
 	//-- related to the resources management and loading.
 	//----------------------------------------------------------------------------------------------
 	class Material : public utils::RefCount
@@ -115,6 +119,38 @@ namespace render
 
 		Ptr<ITexture>	m_diffuseTex;
 		Ptr<ITexture>	m_bumpTex;
+	};
+
+
+	//-- UI presentation about some shader properties. This interface gives opportunities to modify
+	//-- some shader constants directly from the GUI interface if it exists. For example it's
+	//-- actively used in the post-processing framework to modify effect's parameters.
+	//----------------------------------------------------------------------------------------------
+	struct UIDesc
+	{
+		struct SliderDesc
+		{
+			SliderDesc() : m_step(0), m_value(0) { }
+
+			std::string m_name;
+			vec2f		m_range;
+			float		m_step;
+			float		m_value;
+		};
+
+		struct CheckBoxDesc
+		{
+			CheckBoxDesc() : m_value(0) { }
+
+			std::string m_name;
+			bool		m_value;
+		};
+
+		typedef std::pair<SliderDesc,   NumericProperty<float>*> Slider;
+		typedef std::pair<CheckBoxDesc, NumericProperty<float>*> CheckBox;
+
+		std::vector<Slider>   m_sliders;
+		std::vector<CheckBox> m_checkBoxes;
 	};
 
 } //-- render

@@ -6,12 +6,12 @@
 	//#include <vld.h>
 #endif
 
-//#include <crtdbg.h>
+#include <crtdbg.h>
 using namespace brUGE;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {	
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Engine engine;
 	try

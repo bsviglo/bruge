@@ -47,6 +47,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{ea45d212-f66f-4ec7-a93f-e72b3a3a74ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\post processing">
+      <UniqueIdentifier>{7c637e0e-deee-4c19-b069-d818cf7bfce9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -142,14 +145,17 @@
     <ClCompile Include="..\..\sources\render\materials.cpp">
       <Filter>render\framework\materials</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\render\shader_context.cpp">
-      <Filter>render\framework</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\gui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\gui\imgui_render.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\shader_context.cpp">
+      <Filter>render\framework\materials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\post_processing.cpp">
+      <Filter>render\framework\post processing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -261,14 +267,17 @@
     <ClInclude Include="..\..\sources\render\materials.hpp">
       <Filter>render\framework\materials</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\shader_context.hpp">
-      <Filter>render\framework</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\gui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\gui\imgui_render.hpp">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\post_processing.hpp">
+      <Filter>render\framework\post processing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\shader_context.hpp">
+      <Filter>render\framework\materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +287,7 @@
     <None Include="..\..\sources\win32Res\brUGE_image.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc">

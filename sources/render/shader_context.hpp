@@ -55,6 +55,11 @@ namespace render
 			return shader.setConstantAsRawData(m_name.c_str(), &m_value, sizeof(T));
 		}
 
+		void set(const T& value)
+		{
+			m_value = value;
+		}
+
 	private:
 		std::string	m_name;
 		T			m_value;

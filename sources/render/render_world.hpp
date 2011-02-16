@@ -61,6 +61,7 @@ namespace render
 		bool fini();
 
 		//-- resolve visibility.
+		void				 update(float dt);
 		void				 setCamera(const Ptr<Camera>& cam);
 		void				 resolveVisibility();
 

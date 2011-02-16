@@ -384,6 +384,15 @@ namespace render
 			};
 			return rd()->createVertexLayout(desc, 2, *shader);
 		}
+		else if (desc == "xyztc")
+		{
+			VertexDesc desc[] = 
+			{
+				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
+				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 2}
+			};
+			return rd()->createVertexLayout(desc, 2, *shader);
+		}
 		else if (desc == "xyztcn")
 		{
 			VertexDesc desc[] = 

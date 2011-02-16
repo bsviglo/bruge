@@ -1,0 +1,13 @@
+<material name="ssaa">
+  <properties>
+	<property name="g_filerWidth" type="float" value="1.75">
+		<ui type="slider" range="vec2f(0,5)" step="0.05"/>
+	</property>
+	<property name="g_treshold" type="float" value="0.0625">
+		<ui type="slider" range="vec2f(0,1)" step="0.005"/>
+	</property>
+	<property name="g_debug" type="float" value="1">
+		<ui type="checkbox"/>
+	</property>
+  </properties>
+</material>

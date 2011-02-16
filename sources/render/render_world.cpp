@@ -62,6 +62,13 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
+	void RenderWorld::update(float dt)
+	{
+		m_decalManager->update(dt);
+		RenderSystem::instance().postProcessing()->update(dt);
+	}
+
+	//----------------------------------------------------------------------------------------------
 	void RenderWorld::setCamera(const Ptr<Camera>& cam)
 	{
 		m_camera = cam;
@@ -117,7 +124,6 @@ namespace render
 		//-- decal manager.
 		{
 			m_renderOps.clear();
-			m_decalManager->update(0.0f);
 			m_decalManager->gatherRenderOps(m_renderOps);
 
 			rs.beginPass(RenderSystem::PASS_DECAL);
@@ -125,6 +131,9 @@ namespace render
 			rs.addRenderOps(m_renderOps);
 			rs.endPass();
 		}
+
+		//-- draw post-processing.
+		rs.postProcessing()->draw();
 
 		//-- ToDo: reconsider.
 		//-- update debug drawer.

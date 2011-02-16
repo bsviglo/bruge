@@ -1,11 +1,13 @@
 #include "materials.hpp"
-#include "pugixml/pugixml.hpp"
 #include "utils/Data.hpp"
 #include "os/FileSystem.h"
 #include "loader/ResourcesManager.h"
+#include "utils/ArgParser.h"
+#include "post_processing.hpp"
 
 using namespace brUGE;
 using namespace brUGE::os;
+using namespace brUGE::utils;
 
 //-- start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
@@ -165,18 +167,21 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	Ptr<Material> Materials::createMaterial(const utils::ROData& data)
 	{
-		Ptr<Material> out(new Material());
-
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
 		{
 			return false;
 		}
+		return createMaterial(doc.document_element(), nullptr);
+	}
 
-		pugi::xml_node matNode = doc.document_element();
+	//----------------------------------------------------------------------------------------------
+	Ptr<Material> Materials::createMaterial(const pugi::xml_node& section, UIDesc* uiDesc)
+	{
+		Ptr<Material> out(new Material());
 
 		//-- parse shader.
-		if (auto name = matNode.attribute("name"))
+		if (auto name = section.attribute("name"))
 		{
 			auto iter = m_materials.find(name.value());
 			if (iter != m_materials.end())
@@ -186,21 +191,45 @@ namespace render
 			else
 			{
 				assert(0);
+				return nullptr;
 			}
 		}
 
 		//-- parse shader properties.
-		if (auto props = matNode.child("properties"))
+		if (auto props = section.child("properties"))
 		{
-			for (pugi::xml_node prop = props.child("property"); prop; prop = prop.next_sibling("property"))
+			for (auto prop = props.child("property"); prop; prop = prop.next_sibling("property"))
 			{
-				const char* type = prop.attribute("type").value();
+				std::string type = prop.attribute("type").value();
 				std::string name = prop.attribute("name").value();
 
-				if (strcmp(type, "texture") == 0)
+				if (type == "texture")
 				{
 					const char* texName = prop.attribute("value").value();
-					Ptr<ITexture> tex = ResourcesManager::instance().loadTexture(texName);
+
+					//-- ToDo: reconsider. Probably needed creating some texture manager, which
+					//--	   can generalize idea behind texture loading. I.e. it gives us oppor-
+					//--	   tunities to interpret render targets from post-processing framework
+					//--	   as well as another common textures, which are implicitly loaded from
+					//--	   the hard disk.
+					Ptr<ITexture> tex;
+					{
+						//-- 1. first search texture among post-processing's render targets.
+						tex = rs().postProcessing()->find(texName);
+
+						//-- 2. ... then load it from resource manager.h
+						if (!tex)
+						{
+							tex = ResourcesManager::instance().loadTexture(texName);
+						}
+
+						//-- 3. ... raise error if we failed to load texture.
+						if (!tex)
+						{
+							ERROR_MSG("Can't load texture %s or find render target.", texName);
+							return nullptr;
+						}
+					}
 
 					//-- firstly try to load system resources.
 					if (name == "diffuseMap")
@@ -218,9 +247,53 @@ namespace render
 						out->m_props.push_back(new TextureProperty(name, tex));
 					}
 				}
+				else if (type == "float")
+				{
+					float val = prop.attribute("value").as_float();
+					NumericProperty<float>* shaderProp = new NumericProperty<float>(name, val);
+
+					auto ui = prop.child("ui");
+					if (uiDesc && ui)
+					{
+						std::string uiType = ui.attribute("type").value();
+						
+						if (uiType == "slider")
+						{
+							UIDesc::Slider slider;
+
+							slider.first.m_name  = name;
+							slider.first.m_range = parseTo<vec2f>(ui.attribute("range").value());
+							slider.first.m_step  = ui.attribute("step").as_float();
+							slider.first.m_value = val;
+
+							slider.second = shaderProp;
+
+							uiDesc->m_sliders.push_back(slider);
+						}
+						else if (uiType == "checkbox")
+						{
+							UIDesc::CheckBox checkBox;
+
+							checkBox.first.m_name  = name;
+							checkBox.first.m_value = static_cast<bool>(val);
+
+							checkBox.second = shaderProp;
+
+							uiDesc->m_checkBoxes.push_back(checkBox);
+						}
+						else
+						{
+							assert(!"another ui types currently are not implemented.");
+							return nullptr;
+						}
+					}
+
+					out->m_props.push_back(shaderProp);
+				}
 				else
 				{
-					assert(0 && "another types currently are not implemented.");
+					assert(!"another types currently are not implemented.");
+					return nullptr;
 				}
 			}
 
@@ -248,7 +321,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	Material::~Material()
 	{
+		for (uint i = 0; i < m_props.size(); ++i)
+			delete m_props[i];
 
+		m_props.clear();
 	}
 
 } //-- render

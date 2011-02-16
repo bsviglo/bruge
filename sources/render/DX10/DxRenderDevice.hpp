@@ -31,6 +31,8 @@ namespace render
 		virtual void				doSetViewPort(uint width, uint height);
 		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height);
 
+		virtual void				doCopyTexture(ITexture* src, ITexture* dst);
+
 		virtual void				doClear(uint clearFlags, const Color& color, float depth, uint8 stencil);
 		virtual void				doClearColorRT(ITexture* crt, const Color& color);
 		virtual void				doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil);

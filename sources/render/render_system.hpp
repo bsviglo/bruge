@@ -9,6 +9,7 @@
 #include "render/state_objects.h"
 #include "render/shader_context.hpp"
 #include "render/materials.hpp"
+#include "render/post_processing.hpp"
 
 #include <memory>
 #include <vector>
@@ -109,6 +110,7 @@ namespace render
 		IRenderDevice*		device()		const	 { return m_device; }
 		ShaderContext*		shaderContext()			 { return &m_shaderContext; }
 		Materials*			materials()				 { return &m_materials; }
+		PostProcessing*		postProcessing()		 { return &m_postProcessing; }
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 
 	private:
@@ -127,6 +129,7 @@ namespace render
 		utils::DynamicLib	m_dynamicLib;
 		ShaderContext		m_shaderContext;
 		Materials			m_materials;
+		PostProcessing		m_postProcessing;
 
 		Camera*				m_camera; //-- ToDo: use render camera instead.
 		EPassType			m_pass;

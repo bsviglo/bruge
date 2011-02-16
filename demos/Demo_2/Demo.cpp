@@ -34,7 +34,7 @@ namespace
 // end unnamed namespace
 
 //-------------------------------------------------------------------------------------------------
-Demo::Demo()
+Demo::Demo() : m_imguiActive(false), m_cursorVisible(true)
 {
 
 }
@@ -132,6 +132,8 @@ bool Demo::init()
 	}
 	*/
 
+	rs().postProcessing()->enable("ssaa.pp");
+
 	return true;
 }
 
@@ -144,12 +146,10 @@ void Demo::shutdown()
 //-------------------------------------------------------------------------------------------------
 void Demo::update(float dt)
 {
-	imguiBeginFrame(
-		m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
-		);
+	m_imguiActive = InputManager::instance().isKeyDown(DIK_LCONTROL);
 
 	//-- draw gui.
-	gui();
+	//gui();
 
 	if (!m_imguiActive)
 	{
@@ -162,9 +162,28 @@ void Demo::update(float dt)
 		m_collisions[i].postMultiply(m_collisionDescs[i].second->matrix());
 	}
 
-	imguiEndFrame();
+	if (!m_imguiActive)
+	{
+		if (m_cursorVisible)
+		{
+			m_cursorVisible = false;
+			ShowCursor(FALSE);
+		}
 
-	m_imguiInput.scroll	= 0;
+		//-- set cursor on the center of the window.
+		ScreenResolution sr = render::rs().screenRes();
+		SetCursorPos(sr.width / 2, sr.height / 2);
+	}
+	else
+	{
+		if (!m_cursorVisible)
+		{
+			m_cursorVisible = true;
+			ShowCursor(TRUE);
+		}
+	}
+
+	
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -184,7 +203,7 @@ void Demo::gui()
 
 	for (uint i = 0; i < 20; ++i)
 	{
-		//imguiSeparator();
+		imguiSeparatorLine();
 		imguiSlider("Slider", &slider[i], 0.0f, 20.0f, 0.01f);
 	}
 
@@ -249,10 +268,6 @@ void Demo::render(float /*dt*/)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleMouseClick(const MouseEvent& me)
 {
-	if		(me.button == MB_LEFT_BUTTON  && me.isDown) m_imguiInput.button = IMGUI_MBUT_LEFT;
-	else if (me.button == MB_RIGHT_BUTTON && me.isDown) m_imguiInput.button = IMGUI_MBUT_RIGHT;
-	else												m_imguiInput.button = 0;
-	
 	if (m_imguiActive) return true;
 
 	if (me.button == MB_LEFT_BUTTON && me.isDown)
@@ -278,10 +293,6 @@ bool Demo::handleMouseClick(const MouseEvent& me)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleMouseMove(const MouseAxisEvent& mae)
 {
-	m_imguiInput.mx		= mae.absX;
-	m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
-	m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 10);
-
 	if (m_imguiActive) return true;
 
 	m_camera->updateMouse(mae.relX, mae.relY, mae.relZ);
@@ -291,8 +302,5 @@ bool Demo::handleMouseMove(const MouseAxisEvent& mae)
 //-------------------------------------------------------------------------------------------------
 bool Demo::handleKeyboardEvent(const KeyboardEvent& /*ke*/)
 {
-	if (m_imguiActive)
-		return true;
-	
 	return false;
 }

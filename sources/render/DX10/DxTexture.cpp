@@ -87,73 +87,70 @@ namespace
 
 	//-- converts from typeful to typeless format.
 	//----------------------------------------------------------------------------------------------
-	DXGI_FORMAT fromTypefulToTypeless(DXGI_FORMAT typefulFormat)
+	DXGI_FORMAT dxTypelessTexFormat[] = 
 	{
-		switch (typefulFormat)
-		{
-		case DXGI_FORMAT_R8_UNORM:
-		case DXGI_FORMAT_R8_SNORM:
-			return DXGI_FORMAT_R8_TYPELESS;
+		DXGI_FORMAT_UNKNOWN,
 
-		case DXGI_FORMAT_R8G8_UNORM:
-		case DXGI_FORMAT_R8G8_SNORM:
-			return DXGI_FORMAT_R8G8_TYPELESS;
+		DXGI_FORMAT_R8_TYPELESS,
+		DXGI_FORMAT_R8G8_TYPELESS,
+		DXGI_FORMAT_R8G8B8A8_TYPELESS,
+		DXGI_FORMAT_R8G8B8A8_TYPELESS,
 
-		case DXGI_FORMAT_R8G8B8A8_UNORM:
-		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-		case DXGI_FORMAT_R8G8B8A8_SNORM:
-		case DXGI_FORMAT_R8G8B8A8_SINT:
-		case DXGI_FORMAT_R8G8B8A8_UINT:
-			return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R16G16_TYPELESS,
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,
 
-		case DXGI_FORMAT_R16_UNORM:
-		case DXGI_FORMAT_R16_SNORM:
-		case DXGI_FORMAT_R16_FLOAT:
-		case DXGI_FORMAT_R16_UINT:
-		case DXGI_FORMAT_R16_SINT:
-		case DXGI_FORMAT_D16_UNORM:
-			return DXGI_FORMAT_R16_TYPELESS;
+		DXGI_FORMAT_R8_TYPELESS,
+		DXGI_FORMAT_R8G8_TYPELESS,
+		DXGI_FORMAT_R8G8B8A8_TYPELESS,
 
-		case DXGI_FORMAT_R16G16_UNORM:
-		case DXGI_FORMAT_R16G16_SNORM:
-		case DXGI_FORMAT_R16G16_FLOAT:
-		case DXGI_FORMAT_R16G16_UINT:
-		case DXGI_FORMAT_R16G16_SINT:
-			return DXGI_FORMAT_R16G16_TYPELESS;
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R16G16_TYPELESS,
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,
 
-		case DXGI_FORMAT_R16G16B16A16_UNORM:
-		case DXGI_FORMAT_R16G16B16A16_SNORM:
-		case DXGI_FORMAT_R16G16B16A16_FLOAT:
-		case DXGI_FORMAT_R16G16B16A16_UINT:
-		case DXGI_FORMAT_R16G16B16A16_SINT:
-			return DXGI_FORMAT_R16G16B16A16_TYPELESS;
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R16G16_TYPELESS,
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,
 
-		case DXGI_FORMAT_R32_FLOAT:
-		case DXGI_FORMAT_R32_UINT:
-		case DXGI_FORMAT_R32_SINT:
-		case DXGI_FORMAT_D32_FLOAT:
-		case DXGI_FORMAT_D24_UNORM_S8_UINT:
-			return DXGI_FORMAT_R32_TYPELESS;
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32G32_TYPELESS,
+		DXGI_FORMAT_R32G32B32_TYPELESS,
+		DXGI_FORMAT_R32G32B32A32_TYPELESS,
 
-		case DXGI_FORMAT_R32G32_FLOAT:
-		case DXGI_FORMAT_R32G32_UINT:
-		case DXGI_FORMAT_R32G32_SINT:
-			return DXGI_FORMAT_R32G32_TYPELESS;
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R16G16_TYPELESS,
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,
 
-		case DXGI_FORMAT_R32G32B32_FLOAT:
-		case DXGI_FORMAT_R32G32B32_UINT:
-		case DXGI_FORMAT_R32G32B32_SINT:
-			return DXGI_FORMAT_R32G32B32_TYPELESS;
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32G32_TYPELESS,
+		DXGI_FORMAT_R32G32B32_TYPELESS,
+		DXGI_FORMAT_R32G32B32A32_TYPELESS,
 
-		case DXGI_FORMAT_R32G32B32A32_FLOAT:
-		case DXGI_FORMAT_R32G32B32A32_UINT:
-		case DXGI_FORMAT_R32G32B32A32_SINT:
-			return DXGI_FORMAT_R32G32B32A32_TYPELESS;
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R16G16_TYPELESS,
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,
 
-		default:
-			return typefulFormat;
-		}
-	}
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32G32_TYPELESS,
+		DXGI_FORMAT_R32G32B32_TYPELESS,
+		DXGI_FORMAT_R32G32B32A32_TYPELESS,
+
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R32_TYPELESS,
+
+		DXGI_FORMAT_R16_TYPELESS,
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32_TYPELESS,
+		DXGI_FORMAT_R32_TYPELESS,
+
+		DXGI_FORMAT_BC1_TYPELESS,
+		DXGI_FORMAT_BC2_TYPELESS,
+		DXGI_FORMAT_BC3_TYPELESS,
+		DXGI_FORMAT_BC4_TYPELESS,
+		DXGI_FORMAT_BC5_TYPELESS,
+	};
 
 	//-- tries to convert from depth format to shader resource format.
 	//-- If format is not depth, do nothing.
@@ -259,7 +256,7 @@ namespace render
 		dxDesc.ArraySize		= m_desc.arraySize;
 		dxDesc.BindFlags		= bindFlags;
 		dxDesc.CPUAccessFlags	= 0; // CPU access is not required.
-		dxDesc.Format			= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
+		dxDesc.Format			= dxTypelessTexFormat[m_desc.format];
 		dxDesc.MipLevels		= m_desc.mipLevels;
 		dxDesc.Usage			= D3D10_USAGE_DEFAULT; // default usage?
 		dxDesc.MiscFlags		= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;
@@ -303,7 +300,7 @@ namespace render
 		dxDesc.ArraySize			= m_desc.arraySize;
 		dxDesc.BindFlags			= bindFlags;
 		dxDesc.CPUAccessFlags		= 0; // CPU access is not required.
-		dxDesc.Format				= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
+		dxDesc.Format				= dxTypelessTexFormat[m_desc.format];
 		dxDesc.MipLevels			= m_desc.mipLevels;
 		dxDesc.Usage				= D3D10_USAGE_DEFAULT; // default usage?
 		dxDesc.MiscFlags			= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;
@@ -355,7 +352,7 @@ namespace render
 		dxDesc.Depth			= m_desc.depth;
 		dxDesc.BindFlags		= bindFlags;
 		dxDesc.CPUAccessFlags	= 0; // CPU access is not required.
-		dxDesc.Format			= fromTypefulToTypeless(dxTexFormat[m_desc.format]);
+		dxDesc.Format			= dxTypelessTexFormat[m_desc.format];
 		dxDesc.MipLevels		= m_desc.mipLevels;
 		dxDesc.Usage			= D3D10_USAGE_DEFAULT; // default usage?
 		dxDesc.MiscFlags		= (m_desc.mipLevels == 0) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0;

@@ -103,6 +103,9 @@ namespace render
 		//-- access to main frame buffer.
 		ITexture*		getMainColorRT() { return m_mainColorRT.get(); }
 		ITexture*		getMainDepthRT() { return m_mainDepthRT.get(); }
+
+		//-- resource copying.
+		void			copyTexture(ITexture* src, ITexture* dst) { doCopyTexture(src, dst); }
 		
 		//-- vertex operations.
 		void			setVertexLayout(VertexLayoutID layout) { m_curVertLayout = layout; }
@@ -165,6 +168,8 @@ namespace render
 		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height) = 0;
 		virtual void				doSwapBuffers() = 0;
 		virtual void				doResetToDefaults() = 0;
+
+		virtual void				doCopyTexture(ITexture* src, ITexture* dst) = 0;
 
 		virtual void				doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
 		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint count) = 0;

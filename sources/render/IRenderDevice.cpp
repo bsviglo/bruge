@@ -158,6 +158,8 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::draw(EPrimitiveTopology topology, uint first, uint count)
 	{
+		assert(count != 0 && "count must be a value > 0.");
+
 		m_primitivesCount += count;
 		++m_drawCallsCount;  
 		doDraw(topology, first, count);
@@ -166,6 +168,8 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::drawIndexed(EPrimitiveTopology topology, uint first, uint count)
 	{
+		assert(count != 0 && "count must be a value > 0.");
+
 		m_primitivesCount += count;
 		++m_drawCallsCount;  
 		doDrawIndexed(topology, first, count);
@@ -175,6 +179,9 @@ namespace render
 	void IRenderDevice::drawInstanced(
 		EPrimitiveTopology topology, uint first, uint count, uint instanceCount)
 	{
+		assert(count != 0 && "count must be a value > 0.");
+		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
+
 		m_primitivesCount += count * instanceCount;
 		++m_drawCallsCount;  
 		doDrawInstanced(topology, first, count, instanceCount);
@@ -184,6 +191,9 @@ namespace render
 	void IRenderDevice::drawIndexedInstanced(
 		EPrimitiveTopology topology, uint first, uint count, uint instanceCount)
 	{
+		assert(count != 0 && "count must be a value > 0.");
+		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
+
 		m_primitivesCount += count * instanceCount;
 		++m_drawCallsCount;  
 		doDrawIndexedInstanced(topology, first, count, instanceCount);

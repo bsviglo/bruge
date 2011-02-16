@@ -107,7 +107,7 @@ namespace render
 		sd.BufferCount							= 1;
 		sd.BufferDesc.Width						= m_videoMode.width;
 		sd.BufferDesc.Height					= m_videoMode.height;
-		sd.BufferDesc.Format					= DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		sd.BufferDesc.Format					= DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.BufferDesc.RefreshRate.Numerator		= m_videoMode.frequancy; 
 		sd.BufferDesc.RefreshRate.Denominator	= 1;
 		sd.BufferUsage							= DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
@@ -203,7 +203,7 @@ namespace render
 			desc.sample.count	= 1;
 			desc.sample.quality = 0;
 			desc.texType   		= ITexture::TYPE_2D;
-			desc.format    		= ITexture::FORMAT_RGBA8_sRGB;
+			desc.format    		= ITexture::FORMAT_RGBA8;
 			desc.bindFalgs 		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
 			
 			Ptr<DXTexture> texture = new DXTexture(desc);
@@ -302,6 +302,12 @@ namespace render
 		rect.bottom = y + height;
 
 		m_dxDevice->RSSetScissorRects(1, &rect);
+	}
+
+	//------------------------------------------
+	void DXRenderDevice::doCopyTexture(ITexture* src, ITexture* dst)
+	{
+		m_dxDevice->CopyResource(toDxTex(dst)->getTex(), toDxTex(src)->getTex());
 	}
 
 	//------------------------------------------

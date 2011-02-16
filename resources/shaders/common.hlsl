@@ -1,6 +1,17 @@
 #ifndef _COMMON_HLSL_
 #define _COMMON_HLSL_
 
+#define texture1D(type, name) 	 	\
+	sampler 		  name##_sml;	\
+	Texture1D<type>   name##_tex;
+
+#define texture2D(type, name) 	 	\
+	sampler 		  name##_sml;	\
+	Texture2D<type>   name##_tex;
+
+#define sample1D(name, tc) name##_tex.Sample(name##_sml, tc)	
+#define sample2D(name, tc) name##_tex.Sample(name##_sml, tc)
+
 //-- ToDo: reconsider.
 static const float3 g_worldLightPos = {4.0f, 30.0f, 50.0f};
 

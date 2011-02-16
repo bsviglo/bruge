@@ -117,15 +117,20 @@ namespace render
 		{
 			return false;
 		}
-		
-		//-- register watchers.
-		REGISTER_RO_WATCHER("primitives count", uint, m_device->m_primitivesCount);
-		REGISTER_RO_WATCHER("draw calls count", uint, m_device->m_drawCallsCount);
 
 		if (!m_materials.init())
 		{
 			return false;
 		}
+
+		if (!m_postProcessing.init())
+		{
+			return false;
+		}
+		
+		//-- register watchers.
+		REGISTER_RO_WATCHER("primitives count", uint, m_device->m_primitivesCount);
+		REGISTER_RO_WATCHER("draw calls count", uint, m_device->m_drawCallsCount);
 
 		return _initPasses();
 	}
@@ -136,6 +141,7 @@ namespace render
 		if (m_dynamicLib.isLoaded())
 		{
 			_finiPasses();
+			m_postProcessing.fini();
 			m_materials.fini();
 			m_shaderContext.fini();
 			m_device->resetToDefaults();
@@ -342,7 +348,7 @@ namespace render
 				PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
 				m_device->backToMainFrameBuffer();
-				m_device->clear(CLEAR_COLOR, Color(0.1f,0.1f,0.1f,0), 0.0f, 0);
+				m_device->clear(CLEAR_COLOR, Color(0.25f,0.25f,0.25f,1), 0.0f, 0);
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);

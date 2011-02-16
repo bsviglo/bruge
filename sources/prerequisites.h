@@ -15,6 +15,7 @@ namespace brUGE
 #pragma warning(disable : 4312) //-- 'operation' : conversion from 'type1' to 'type2' of greater size
 #pragma warning(disable : 4201) //-- nonstandard extension used : nameless struct/union 
 #pragma warning(disable : 4996) //-- 'function': was declared deprecated
+#pragma warning(disable : 4800) //-- forcing value to bool 'true' or 'false' (performance warning)
 
 typedef int					Handle;
 typedef unsigned char		uchar;

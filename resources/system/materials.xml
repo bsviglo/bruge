@@ -28,4 +28,12 @@
 	<params vertex="xyzc" pass0="gui"/>
   </material>
   
+  <material name="test" multipass="false" bumpMaped="false" skinned="false">
+	<params vertex="xyztc" pass0="test"/>
+  </material>
+  
+  <material name="ssaa" multipass="false" bumpMaped="false" skinned="false">
+	<params vertex="xyztc" pass0="ssaa"/>
+  </material>
+  
 </materials>

@@ -123,6 +123,14 @@ namespace brUGE
 		physic::PhysicWorld				m_physicWorld;
 		render::AnimationEngine			m_animEngine;
 		//render::CollisionWorld			m_collisionWorld;
+
+		struct imguiInput
+		{
+			int  mx, my;
+			byte button;
+			int  scroll;
+		};
+		imguiInput						m_imguiInput;
 		
 		float				 			m_fps;
 	};

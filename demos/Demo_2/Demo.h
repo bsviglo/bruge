@@ -33,12 +33,6 @@ private:
 	std::vector<std::pair<mat4f, Node*>> m_collisionDescs;
 	std::vector<mat4f>					 m_collisions;
 
-	struct imguiInput
-	{
-		int  mx, my;
-		byte button;
-		int  scroll;
-	};
-	imguiInput	m_imguiInput;
-	bool		m_imguiActive;
+	bool m_imguiActive;
+	bool m_cursorVisible;
 };

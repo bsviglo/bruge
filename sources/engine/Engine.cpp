@@ -8,6 +8,7 @@ using namespace brUGE;
 using namespace brUGE::render;
 using namespace brUGE::utils;
 using namespace brUGE::os;
+using namespace brUGE::math;
 
 extern bool g_needToStartApp;
 extern brUGE::render::ERenderAPIType g_renderAPI;
@@ -110,6 +111,11 @@ namespace brUGE
 				{
 					SCOPED_TIME_MEASURER_EX("update")
 
+					//-- start updating imgui input.
+					imguiBeginFrame(
+						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
+						);
+
 					//-- update timing panel.
 					m_timingPanel->update(dt);
 
@@ -120,12 +126,17 @@ namespace brUGE
 					m_animEngine.animate(dt);
 					m_physicWorld.simulateDynamics(dt);
 
+					m_renderWorld.update(dt);
+
 					//-- ToDo: some old stuff.
 					updateFrame(dt);
 
 					//m_collisionWorld.update(dt);
 
 					m_gameWorld.endUpdate();
+
+					//-- finish updating imgui input.
+					imguiEndFrame();
 				}
 				
 				//-- do draw.
@@ -369,13 +380,21 @@ namespace brUGE
 	//------------------------------------------
 	void Engine::handleMouseClick(const MouseEvent& me)
 	{
+		if		(me.button == MB_LEFT_BUTTON  && me.isDown) m_imguiInput.button = IMGUI_MBUT_LEFT;
+		else if (me.button == MB_RIGHT_BUTTON && me.isDown) m_imguiInput.button = IMGUI_MBUT_RIGHT;
+		else												m_imguiInput.button = 0;
+
 		m_demo->handleMouseClick(me);
 	}
 
 	//------------------------------------------
-	void Engine::handleMouseMove(const MouseAxisEvent& me)
+	void Engine::handleMouseMove(const MouseAxisEvent& mae)
 	{
-		m_demo->handleMouseMove(me);
+		m_imguiInput.mx		= mae.absX;
+		m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
+		m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 10);
+
+		m_demo->handleMouseMove(mae);
 	}
 
 	//------------------------------------------
