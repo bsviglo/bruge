@@ -2,8 +2,8 @@
 
 #include "prerequisites.h"
 #include "utils/Data.hpp"
-#include "math/AABB.h"
-#include "math/Matrix4x4.h"
+#include "math/AABB.hpp"
+#include "math/Matrix4x4.hpp"
 #include <vector>
 
 namespace brUGE
@@ -45,6 +45,7 @@ namespace brUGE
 		~Transform();
 
 		AABB  m_localBounds;
+		AABB  m_worldBounds;
 		mat4f m_worldMat;
 		Nodes m_nodes;
 	};

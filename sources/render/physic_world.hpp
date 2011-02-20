@@ -2,7 +2,7 @@
 
 #include "prerequisites.h"
 #include "utils/Data.hpp"
-#include "math/Vector3.h"
+#include "math/Vector3.hpp"
 
 //-- ToDo: reconsider.
 #pragma warning(push, 3)
@@ -51,11 +51,11 @@ namespace physic
 			virtual void getWorldTransform(btTransform& worldTrans) const;
 			virtual void setWorldTransform(const btTransform& worldTrans);
 
-			const char*					 m_name; //-- pointed at the managed object. No needed explicit deletion.
-			Node*						 m_node;
-			Handle						 m_owner;
-			vec3f*						 m_offset;
-			std::unique_ptr<btRigidBody> m_body;
+			const char*	 m_name; //-- pointed at the managed object. No needed explicit deletion.
+			Node*		 m_node;
+			vec3f*	 	 m_offset;
+			PhysObj*	 m_owner;
+			btRigidBody* m_body;
 		};
 		typedef std::vector<RigidBody*>	RigidBodies;
 
@@ -71,10 +71,10 @@ namespace physic
 
 		public:
 			Constraint()  {}
-			~Constraint() {}
+			~Constraint() { delete m_constraint; m_constraint = nullptr; }
 
-			const char*						   m_name; //-- pointed at the managed object. No needed explicit deletion.
-			std::unique_ptr<btTypedConstraint> m_constraint;
+			const char*		   m_name; //-- pointed at the managed object. No needed explicit deletion.
+			btTypedConstraint* m_constraint;
 		};
 		typedef std::vector<Constraint*> Constraints;
 
@@ -111,6 +111,7 @@ namespace physic
 
 		void addImpulse(const vec3f& dir, const vec3f& relPos);
 
+		Handle					 m_objectID;
 		Transform*				 m_transform;
 		PhysObjDesc::RigidBodies m_bodies;
 		PhysObjDesc::Constraints m_constraints;

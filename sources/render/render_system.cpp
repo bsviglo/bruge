@@ -10,9 +10,7 @@
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
 
-#include "math/Matrix4x4.h"
-#include "math/Vector3.h"
-#include "math/Vector4.h"
+#include "math/math_all.hpp"
 
 using namespace brUGE;
 using namespace brUGE::render;

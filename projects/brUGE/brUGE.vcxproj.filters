@@ -287,7 +287,6 @@
     <None Include="..\..\sources\win32Res\brUGE_image.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc">

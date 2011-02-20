@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Vector2.h"
-#include "Vector3.h"
-#include <math.h>
-#include <assert.h>
+#include "math_types.hpp"
+#include "Vector2.hpp"
+#include "Vector3.hpp"
+#include <cmath>
+#include <cassert>
 
 namespace brUGE
 {
@@ -18,6 +19,7 @@ namespace math
 		inline Vector4(T x, T y, T z, T w)										{ set(x,y,z,w); }
 		inline explicit Vector4(const T* const data)							{ assert(data); set(data[0], data[1], data[2], data[3]); }
 
+		inline void				operator *=		(T scale)						{ x*=scale; y*=scale; z*=scale; w*=scale; }
 		inline void				operator *=		(const Vector4<T>& rt)			{ x*=rt.x; y*=rt.y; z*=rt.z; w*=rt.w; }
 		inline void 			operator +=		(const Vector4<T>& rt)			{ x+=rt.x; y+=rt.y; z+=rt.z; w+=rt.w; }
 		inline void 			operator -=		(const Vector4<T>& rt)			{ x-=rt.x; y-=rt.y; z-=rt.z; w-=rt.w; }
@@ -40,6 +42,7 @@ namespace math
 
 		inline Vector2<T>		toVec2			() const						{ return Vector2<T>(x,y); }
 		inline Vector3<T>		toVec3			() const						{ return Vector3<T>(x,y,z); }
+		inline Outcode			calculateOutcode() const;
 
 	public:
 		union{ struct{ T x,y,z,w; }; T data[4];	};
@@ -89,6 +92,21 @@ namespace math
 	inline Vector4<T> Vector4<T>::scale(T scale) const
 	{
 		return Vector4<T>(x*scale, y*scale, z*scale, w*scale);
+	}
+
+	template <class T>
+	inline Outcode Vector4<T>::calculateOutcode() const
+	{
+		Outcode oc = 0;
+
+		if (x < -w)	oc |= OUTCODE_LEFT;
+		if (x > +w)	oc |= OUTCODE_RIGHT;
+		if (y < -w)	oc |= OUTCODE_BOTTOM;
+		if (y > +w)	oc |= OUTCODE_TOP;
+		if (z < +0)	oc |= OUTCODE_NEAR;
+		if (z > +w)	oc |= OUTCODE_FAR;
+
+		return oc;
 	}
 
 } // math

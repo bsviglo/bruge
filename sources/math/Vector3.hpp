@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Vector2.h"
-#include "Vector4.h"
-#include <math.h>
-#include <assert.h>
+#include "Vector2.hpp"
+#include "Vector4.hpp"
+#include <cmath>
+#include <cassert>
 
 namespace brUGE
 {
@@ -17,6 +17,7 @@ namespace math
 		inline Vector3(T x, T y, T z)											{ set(x,y,z); }
 		inline explicit Vector3(const T* const data)							{ assert(data); x = data[0]; y = data[1]; z = data[2]; }
 		
+		inline void				operator *=		(T scale)						{ x*=scale; y*=scale; z*=scale; }
 		inline void				operator *=		(const Vector3<T>& rt)			{ x*=rt.x; y*=rt.y; z*=rt.z; }
 		inline void 			operator +=		(const Vector3<T>& rt)			{ x+=rt.x; y+=rt.y; z+=rt.z; }
 		inline void 			operator -=		(const Vector3<T>& rt)			{ x-=rt.x; y-=rt.y; z-=rt.z; }

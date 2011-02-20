@@ -1,8 +1,7 @@
 #pragma once
 
 #include "prerequisites.h"
-#include "utils/Ptr.h"
-#include "math/Vector3.h"
+#include "math/Vector3.hpp"
 #include "Color.h"
 #include "Mesh.hpp"
 #include "render_system.hpp"

@@ -2,8 +2,6 @@
 
 #include "prerequisites.h"
 #include "utils/LogManager.h"
-#include "math/math_types.h"
-#include "utils/Ptr.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN

@@ -1,12 +1,13 @@
 #include "physic_world.hpp"
 #include "game_world.hpp"
-#include "math/Matrix4x4.h"
+#include "math/Matrix4x4.hpp"
 #include "pugixml/pugixml.hpp"
 #include "utils/Data.hpp"
 #include "utils/ArgParser.h"
 #include "os/FileSystem.h"
 #include "render/DebugDrawer.h"
 #include "render/Color.h"
+#include "render/Mesh.hpp"
 #include "console/Console.h"
 #include <algorithm>
 
@@ -151,6 +152,7 @@ namespace physic
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 			delete i->second;
 
+		m_physObjDescs.clear();
 		m_dynamicsWorld.reset();
 		m_solver.reset();
 		m_broadphase.reset();
@@ -427,11 +429,12 @@ namespace physic
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::create(PhysObj*& obj, Transform* transform, Handle owner)
+	bool PhysObjDesc::create(PhysObj*& obj, Transform* transform, Handle objectID)
 	{
 		std::unique_ptr<PhysObj> physObj(new PhysObj);
 
 		//-- 1. set transform.
+		physObj->m_objectID  = objectID;
 		physObj->m_transform = transform;
 			
 		//-- 2. create all rigid bodies.
@@ -440,7 +443,7 @@ namespace physic
 			RigidBody* body = new RigidBody();
 
 			body->m_name   = i->m_name.c_str();
-			body->m_owner  = owner;
+			body->m_owner  = physObj.get();
 			body->m_offset = &i->m_offset;
 
 			//-- find anchor joint.
@@ -451,7 +454,7 @@ namespace physic
 				btVector3(i->m_localInertia.x, i->m_localInertia.y, i->m_localInertia.z)
 				);
 
-			body->m_body.reset(new btRigidBody(rbInfo));
+			body->m_body = new btRigidBody(rbInfo);
 
 			//-- set user pointer as a pointer to the PhysObj object.
 			body->m_body->setUserPointer(body);
@@ -501,7 +504,7 @@ namespace physic
 	}
 	
 	//----------------------------------------------------------------------------------------------
-	PhysObj::PhysObj() : m_transform(nullptr)
+	PhysObj::PhysObj() : m_transform(nullptr), m_objectID(CONST_INVALID_HANDLE)
 	{
 
 	}
@@ -526,21 +529,21 @@ namespace physic
 	{
 		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
 		{
-			world->addRigidBody((*i)->m_body.get());
+			world->addRigidBody((*i)->m_body);
 		}
 
 		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->addConstraint((*i)->m_constraint.get(), true);
+			world->addConstraint((*i)->m_constraint, true);
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PhysObj::delFromWorld(btDynamicsWorld* world)
 	{
 		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
-			world->removeRigidBody((*i)->m_body.get());
+			world->removeRigidBody((*i)->m_body);
 
 		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->removeConstraint((*i)->m_constraint.get());
+			world->removeConstraint((*i)->m_constraint);
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -553,7 +556,7 @@ namespace physic
 
 	//----------------------------------------------------------------------------------------------
 	PhysObjDesc::RigidBody::RigidBody()
-		: m_name(nullptr), m_node(nullptr), m_owner(CONST_INVALID_HANDLE)
+		: m_name(nullptr), m_node(nullptr), m_owner(nullptr)
 	{
 
 	}
@@ -561,7 +564,8 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	PhysObjDesc::RigidBody::~RigidBody()
 	{
-
+		delete m_body;
+		m_body = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -574,6 +578,7 @@ namespace physic
 		worldTrans = bruge2bullet(transform);
 	}
 
+
 	//----------------------------------------------------------------------------------------------
 	void PhysObjDesc::RigidBody::setWorldTransform(const btTransform& worldTrans)
 	{
@@ -581,6 +586,22 @@ namespace physic
 		mat4f transform = bullet2bruge(worldTrans);
 		transform.postTranslation(m_offset->scale(-1));
 
+		//-- update AABB.
+		//-- ToDo: optimize.
+		{
+			btVector3 aabbMin, aabbMax;
+			btTransform identityTransform;
+			identityTransform.setIdentity();
+			m_body->getCollisionShape()->getAabb(
+				identityTransform, aabbMin, aabbMax
+				);
+			
+			Transform& tr = *m_owner->m_transform;
+			tr.m_localBounds = AABB(bullet2bruge(aabbMin), bullet2bruge(aabbMax));
+			tr.m_worldBounds = tr.m_localBounds.getTranformed(transform);
+		}
+		
+		//-- update root node matrix.
 		m_node->matrix(transform);
 	}
 

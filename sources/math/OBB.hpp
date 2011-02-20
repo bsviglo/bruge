@@ -1,8 +1,8 @@
 #pragma once
 
-#include "math_types.h"
-#include "Vector3.h"
-#include "Matrix4x4.h"
+#include "math_types.hpp"
+#include "Vector3.hpp"
+#include "Matrix4x4.hpp"
 
 namespace brUGE
 {

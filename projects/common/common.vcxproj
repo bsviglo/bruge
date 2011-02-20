@@ -99,6 +99,8 @@
     <ClCompile Include="..\..\sources\utils\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sources\math\math_all.hpp" />
+    <ClInclude Include="..\..\sources\math\math_funcs.hpp" />
     <ClInclude Include="..\..\sources\utils\ArgParser.h" />
     <ClInclude Include="..\..\sources\utils\BSPTree.h" />
     <ClInclude Include="..\..\sources\utils\ComPtr.h" />
@@ -112,15 +114,15 @@
     <ClInclude Include="..\..\sources\utils\TernaryTree.h" />
     <ClInclude Include="..\..\sources\utils\Thread.h" />
     <ClInclude Include="..\..\sources\utils\Timer.h" />
-    <ClInclude Include="..\..\sources\math\AABB.h" />
-    <ClInclude Include="..\..\sources\math\geometry.h" />
-    <ClInclude Include="..\..\sources\math\math_types.h" />
-    <ClInclude Include="..\..\sources\math\Matrix4x4.h" />
+    <ClInclude Include="..\..\sources\math\AABB.hpp" />
+    <ClInclude Include="..\..\sources\math\Plane.hpp" />
+    <ClInclude Include="..\..\sources\math\math_types.hpp" />
+    <ClInclude Include="..\..\sources\math\Matrix4x4.hpp" />
     <ClInclude Include="..\..\sources\math\OBB.hpp" />
     <ClInclude Include="..\..\sources\math\Quaternion.hpp" />
-    <ClInclude Include="..\..\sources\math\Vector2.h" />
-    <ClInclude Include="..\..\sources\math\Vector3.h" />
-    <ClInclude Include="..\..\sources\math\Vector4.h" />
+    <ClInclude Include="..\..\sources\math\Vector2.hpp" />
+    <ClInclude Include="..\..\sources\math\Vector3.hpp" />
+    <ClInclude Include="..\..\sources\math\Vector4.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

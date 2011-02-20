@@ -71,11 +71,11 @@ bool Demo::init()
 	gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
-	for (uint i = 0; i < 5; ++i)
+	for (uint i = 0; i < 10; ++i)
 	{
-		for (uint j = 0; j < 5; ++j)
+		for (uint j = 0; j < 10; ++j)
 		{
-			for (uint k = 0; k < 5; ++k)
+			for (uint k = 0; k < 10; ++k)
 			{
 				mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 				mat.postTranslation(-15, 25, -15);
@@ -84,11 +84,11 @@ bool Demo::init()
 		}
 	}
 
-	for (uint i = 0; i < 4; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
-		for (uint j = 0; j < 4; ++j)
+		for (uint j = 0; j < 5; ++j)
 		{
-			for (uint k = 0; k < 4; ++k)
+			for (uint k = 0; k < 5; ++k)
 			{
 				mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
 				mat.postTranslation(-5, 50, -5);

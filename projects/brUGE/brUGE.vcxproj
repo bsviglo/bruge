@@ -162,7 +162,9 @@
     <ClCompile Include="..\..\sources\render\Camera.cpp" />
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
     <ClCompile Include="..\..\sources\render\Font.cpp" />
-    <ClCompile Include="..\..\sources\render\Frustum.cpp" />
+    <ClCompile Include="..\..\sources\render\Frustum.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
     <ClCompile Include="..\..\sources\render\physic_world.cpp" />
@@ -223,7 +225,9 @@
     <ClInclude Include="..\..\sources\render\Camera.h" />
     <ClInclude Include="..\..\sources\render\DebugDrawer.h" />
     <ClInclude Include="..\..\sources\render\Font.h" />
-    <ClInclude Include="..\..\sources\render\Frustum.h" />
+    <ClInclude Include="..\..\sources\render\Frustum.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\sources\render\Mesh.hpp" />
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />
     <ClInclude Include="..\..\sources\render\render_system.hpp" />
@@ -253,7 +257,6 @@
   <ItemGroup>
     <None Include="..\..\sources\win32Res\brUGE_icon.ico" />
     <None Include="..\..\sources\win32Res\brUGE_image.bmp" />
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc" />

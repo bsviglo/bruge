@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/math_types.h"
+#include "math/math_types.hpp"
 #include "utils/Ptr.h"
 
 namespace brUGE

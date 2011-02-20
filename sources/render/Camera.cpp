@@ -36,15 +36,13 @@ namespace render
 		m_invViewMat = m_viewMat.getInverted();
 		m_pos = pos;
 		
-		m_invViewMat.getRow(0, m_side);
-		m_invViewMat.getRow(1, m_up);
-		m_invViewMat.getRow(2, m_dir);
+		m_side = m_invViewMat.applyToUnitAxis(0);
+		m_up   = m_invViewMat.applyToUnitAxis(1);
+		m_dir  = m_invViewMat.applyToUnitAxis(2);
 
 		m_viewProjMat = m_viewMat;
 		m_viewProjMat.postMultiply(m_projMat);
 		m_invViewProjMat = m_viewProjMat.getInverted();
-
-		m_frustum.recalc(m_viewProjMat, true);
 	}
 
 	// 
@@ -54,16 +52,14 @@ namespace render
 		m_viewMat.setLookAt(pos, dir, up);
 		m_invViewMat = m_viewMat.getInverted();
 
-		m_invViewMat.getRow(0, m_side);
-		m_invViewMat.getRow(1, m_up);
-		m_invViewMat.getRow(2, m_dir);
-		m_invViewMat.getRow(3, m_pos);
+		m_side = m_invViewMat.applyToUnitAxis(0);
+		m_up   = m_invViewMat.applyToUnitAxis(1);
+		m_dir  = m_invViewMat.applyToUnitAxis(2);
+		m_pos  = m_invViewMat.applyToOrigin();
 
 		m_viewProjMat = m_viewMat;
 		m_viewProjMat.postMultiply(m_projMat);
 		m_invViewProjMat = m_viewProjMat.getInverted();
-
-		m_frustum.recalc(m_viewProjMat, true);
 	}
 
 	// Note: ”глы ейлера (pitch, yaw, roll) задаютс€ в градусах.
@@ -79,16 +75,14 @@ namespace render
 		m_invViewMat.postTranslation(pos);
 		m_viewMat = m_invViewMat.getInverted();
 		
-		m_invViewMat.getRow(0, m_side);
-		m_invViewMat.getRow(1, m_up);
-		m_invViewMat.getRow(2, m_dir);
-		m_invViewMat.getRow(3, m_pos);
+		m_side = m_invViewMat.applyToUnitAxis(0);
+		m_up   = m_invViewMat.applyToUnitAxis(1);
+		m_dir  = m_invViewMat.applyToUnitAxis(2);
+		m_pos  = m_invViewMat.applyToOrigin();
 
 		m_viewProjMat = m_viewMat;
 		m_viewProjMat.postMultiply(m_projMat);
 		m_invViewProjMat = m_viewProjMat.getInverted();
-
-		m_frustum.recalc(m_viewProjMat, true);
 	}
 	
 	//------------------------------------------

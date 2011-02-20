@@ -1,7 +1,8 @@
 #pragma once
 
 #include "prerequisites.h"
-#include "math/Vector4.h"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 
 namespace brUGE
 {

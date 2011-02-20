@@ -2,9 +2,7 @@
 #include "render/animation_engine.hpp"
 #include "utils/Data.hpp"
 #include "utils/string_utils.h"
-#include "math/math_types.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
+#include "math/math_all.hpp"
 #include "os/FileSystem.h"
 
 #include <string>
@@ -280,12 +278,12 @@ namespace brUGE
 			AABB& aabb = m_bounds[i++];
 
 			sscanf(args.c_str(), "( %f %f %f ) ( %f %f %f )",
-				&aabb.min.x, &aabb.min.y, &aabb.min.z,
-				&aabb.max.x, &aabb.max.y, &aabb.max.z
+				&aabb.m_min.x, &aabb.m_min.y, &aabb.m_min.z,
+				&aabb.m_max.x, &aabb.m_max.y, &aabb.m_max.z
 				);
 
-			aabb.min = aabb.min.scale(g_vertexScale);
-			aabb.max = aabb.max.scale(g_vertexScale);
+			aabb.m_min = aabb.m_min.scale(g_vertexScale);
+			aabb.m_max = aabb.m_max.scale(g_vertexScale);
 		}
 		return true;
 	}

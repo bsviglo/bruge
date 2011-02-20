@@ -1,22 +1,17 @@
 #pragma once
 
 #include "render_common.h"
-#include "Color.h"
 #include "utils/Singleton.h"
-#include "math/AABB.h"
-#include "math/OBB.hpp"
-#include "IBuffer.h"
-#include "IShader.h"
-#include "Font.h"
-#include "Mesh.hpp"
+#include "Color.h"
 #include "render_system.hpp"
-
 #include <vector>
 
 namespace brUGE
 {
 namespace render
 {
+	class Mesh;
+	class Font;
 
 	//-- Debug information drawer.
 	//-- It gathers drawing information from all its drawing methods and then draw all this

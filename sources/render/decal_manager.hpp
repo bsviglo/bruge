@@ -2,8 +2,8 @@
 
 #include "prerequisites.h"
 #include "render_system.hpp"
-#include "Mesh.hpp"
-#include "math/Vector3.h"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 #include <vector>
 
 namespace brUGE
@@ -12,6 +12,7 @@ namespace brUGE
 
 namespace render
 {
+	class Mesh;
 
 	//----------------------------------------------------------------------------------------------
 	class DecalManager

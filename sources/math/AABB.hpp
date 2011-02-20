@@ -1,8 +1,9 @@
 #pragma once
 
-#include "math_types.h"
-#include "Vector3.h"
-#include "Matrix4x4.h"
+#include "math_types.hpp"
+#include "math_funcs.hpp"
+#include "Vector3.hpp"
+#include "Matrix4x4.hpp"
 
 namespace brUGE
 {
@@ -16,12 +17,12 @@ namespace math
 	public:
 		inline AABB() { setEmpty(); }
 		inline AABB(const vec3f& min, const vec3f& max) { set(min, max); }
-		inline AABB(const AABB& rt) : min(rt.min), max(rt.max) { }
+		inline AABB(const AABB& rt) : m_min(rt.m_min), m_max(rt.m_max) { }
 		inline ~AABB() {}
 
 		AABB& operator = (const AABB& rt)
 		{
-			set(rt.min, rt.max);
+			set(rt.m_min, rt.m_max);
 			return *this;
 		}
 
@@ -39,52 +40,52 @@ namespace math
 
 		inline bool isEmpty() const
 		{
-			if (min.x < max.x)	return false;
-			if (min.y < max.y)	return false;
-			if (min.z < max.z)	return false;
+			if (m_min.x < m_max.x)	return false;
+			if (m_min.y < m_max.y)	return false;
+			if (m_min.z < m_max.z)	return false;
 			return true;
 		}
 
 		inline Vector3<float> getCenter() const
 		{
-			return (min + max).scale(0.5f);
+			return (m_min + m_max).scale(0.5f);
 		}
 
 		inline Vector3<float> getDimensions() const
 		{
-			return max - min;
+			return m_max - m_min;
 		}
 
 		inline void set(float minx, float miny, float minz, float maxx, float maxy, float maxz)
 		{
-			this->min.set(minx, miny, minz);
-			this->max.set(maxx, maxy, maxz);
+			m_min.set(minx, miny, minz);
+			m_max.set(maxx, maxy, maxz);
 		}
 
 		inline void set(const vec3f& min, const vec3f& max)
 		{
-			this->min = min;
-			this->max = max;
+			m_min = min;
+			m_max = max;
 		}
 
 		inline void include(const vec3f& point)
 		{
-			if (point.x < min.x) min.x = point.x;
-			if (point.x > max.x) max.x = point.x;
-			if (point.y < min.y) min.y = point.y;
-			if (point.y > max.y) max.y = point.y;
-			if (point.z < min.z) min.z = point.z;
-			if (point.z > max.z) max.z = point.z;
+			if (point.x < m_min.x) m_min.x = point.x;
+			if (point.x > m_max.x) m_max.x = point.x;
+			if (point.y < m_min.y) m_min.y = point.y;
+			if (point.y > m_max.y) m_max.y = point.y;
+			if (point.z < m_min.z) m_min.z = point.z;
+			if (point.z > m_max.z) m_max.z = point.z;
 		}
 
 		inline void combine(const AABB& b2)
 		{
-			if (b2.min.x < min.x) min.x = b2.min.x;
-			if (b2.min.y < min.y) min.y = b2.min.y;
-			if (b2.min.z < min.z) min.z = b2.min.z;
-			if (b2.max.x > max.x) max.x = b2.max.x;
-			if (b2.max.y > max.y) max.y = b2.max.y;
-			if (b2.max.z > max.z) max.z = b2.max.z;
+			if (b2.m_min.x < m_min.x) m_min.x = b2.m_min.x;
+			if (b2.m_min.y < m_min.y) m_min.y = b2.m_min.y;
+			if (b2.m_min.z < m_min.z) m_min.z = b2.m_min.z;
+			if (b2.m_max.x > m_max.x) m_max.x = b2.m_max.x;
+			if (b2.m_max.y > m_max.y) m_max.y = b2.m_max.y;
+			if (b2.m_max.z > m_max.z) m_max.z = b2.m_max.z;
 		}
 
 		//-- Intersect ray R(t)=origin + t * dir against AABB a. When intersecting,
@@ -95,9 +96,9 @@ namespace math
 		{
 			float tfirst = 0.0f, tlast  = 1.0f;
 
-			if (!raySlabIntersect(origin.x, dir.x, min.x, max.x, tfirst, tlast)) return false;
-			if (!raySlabIntersect(origin.y, dir.y, min.y, max.y, tfirst, tlast)) return false;
-			if (!raySlabIntersect(origin.z, dir.z, min.x, max.z, tfirst, tlast)) return false;
+			if (!raySlabIntersect(origin.x, dir.x, m_min.x, m_max.x, tfirst, tlast)) return false;
+			if (!raySlabIntersect(origin.y, dir.y, m_min.y, m_max.y, tfirst, tlast)) return false;
+			if (!raySlabIntersect(origin.z, dir.z, m_min.x, m_max.z, tfirst, tlast)) return false;
 
 			coll = origin + dir.scale(tfirst);
 			dist = tfirst * dir.length();
@@ -110,7 +111,7 @@ namespace math
 		bool intesectsSegment(const vec3f& p0, const vec3f& p1) const
 		{
 			vec3f c = getCenter();				//-- box center-point.
-			vec3f e = max - c;					//-- box half length extents.
+			vec3f e = m_max - c;					//-- box half length extents.
 			vec3f m = (p0 + p1).scale(0.5f);	//-- segment midpoint.
 			vec3f d = p1 - m;					//-- segment half length vector.
 			m = m - c;							//-- translate box and segment to origin.
@@ -141,11 +142,11 @@ namespace math
 			assert(!this->isEmpty());
 
 			//-- need to remember to save the size that we'll use to scale the unit axes.
-			vec3f size = max - min;
+			vec3f size = m_max - m_min;
 
 			//-- calculate the new location of the minimum point.
-			min = transform.applyToPoint(min);
-			max = min;
+			m_min = transform.applyToPoint(m_min);
+			m_max = m_min;
 
 			//-- go through each axis. Each component of each axis either adds to the
 			//-- max or takes from the min.
@@ -160,25 +161,62 @@ namespace math
 					//-- appropriate point.
 					if (transformedAxis[resultDirection] > 0)
 					{
-						max[resultDirection] += transformedAxis[resultDirection];
+						m_max[resultDirection] += transformedAxis[resultDirection];
 					}
 					else
 					{
-						min[resultDirection] += transformedAxis[resultDirection];
+						m_min[resultDirection] += transformedAxis[resultDirection];
 					}
 				}
 			}
 		}
 
-		inline AABB getTranformed(const mat4f& tranform)
+		inline AABB getTranformed(const mat4f& tranform) const
 		{
 			AABB tmp(*this);
 			tmp.transform(tranform);
 			return tmp;
 		}
+
+		inline Outcode calculateOutcode(const mat4f& VP) const
+		{
+			Outcode oc = OUTCODE_MASK;
+
+			vec4f vx[2];
+			vec4f vy[2];
+			vec4f vz[2];
+
+			vx[0] = VP.getRow(0);
+			vx[1] = vx[0];
+			vx[0] *= m_min[0];
+			vx[1] *= m_max[0];
+
+			vy[0] = VP.getRow(1);
+			vy[1] = vy[0];
+			vy[0] *= m_min[1];
+			vy[1] *= m_max[1];
+
+			vz[0] = VP.getRow(2);
+			vz[1] = vz[0];
+			vz[0] *= m_min[2];
+			vz[1] *= m_max[2];
+
+			const vec4f& vw = VP.getRow(3);
+
+			for (uint i = 0 ; i < 8 ; ++i)
+			{
+				vec4f v = vw;
+				v += vx[i & 1];
+				v += vy[(i >> 1) & 1];
+				v += vz[(i >> 2) & 1];
+
+				oc &= v.calculateOutcode();
+			}
+			return oc;
+		}
 	
 	public:
-		vec3f min, max;
+		vec3f m_min, m_max;
 	};
 
 } // math

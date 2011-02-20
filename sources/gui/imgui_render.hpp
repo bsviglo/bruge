@@ -2,17 +2,16 @@
 
 #include "prerequisites.h"
 #include "imgui.h"
-#include "render/IBuffer.h"
-#include "render/Font.h"
 #include "render/Color.h"
 #include "render/materials.hpp"
-#include "math/Vector3.h"
+#include "math/Vector3.hpp"
 #include <vector>
 
 namespace brUGE
 {
 namespace render
 {
+	class Font;
 
 	//-- Implements imgui renderer interface.
 	//-- Note: This is basic initial version. In near future it will be reworked. 

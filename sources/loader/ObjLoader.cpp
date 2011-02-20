@@ -3,9 +3,7 @@
 #include "render/IBuffer.h"
 #include "utils/Data.hpp"
 #include "utils/string_utils.h"
-#include "math/math_types.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
+#include "math/math_all.hpp"
 #include "os/FileSystem.h"
 #include <vector>
 

@@ -123,8 +123,17 @@ namespace brUGE
 
 					m_gameWorld.beginUpdate(dt);
 
-					m_animEngine.animate(dt);
-					m_physicWorld.simulateDynamics(dt);
+					//-- update animation.
+					{
+						SCOPED_TIME_MEASURER_EX("animation")
+						m_animEngine.animate(dt);
+					}
+					
+					//-- simulate physics.
+					{
+						SCOPED_TIME_MEASURER_EX("physic")
+						m_physicWorld.simulateDynamics(dt);
+					}
 
 					m_renderWorld.update(dt);
 

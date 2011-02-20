@@ -2,8 +2,10 @@
 
 #include "prerequisites.h"
 #include "render_common.h"
+#include "math/Vector2.hpp"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 #include "Color.h"
-#include "math/Vector2.h"
 #include <map>
 #include <string>
 

@@ -74,31 +74,37 @@
     <ClInclude Include="..\..\sources\utils\Timer.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\math\AABB.h">
-      <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\math\geometry.h">
-      <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\math\math_types.h">
-      <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\math\Matrix4x4.h">
-      <Filter>math</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\math\OBB.hpp">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\math\Quaternion.hpp">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\math\Vector2.h">
+    <ClInclude Include="..\..\sources\math\Plane.hpp">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\math\Vector3.h">
+    <ClInclude Include="..\..\sources\math\math_funcs.hpp">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\math\Vector4.h">
+    <ClInclude Include="..\..\sources\math\math_types.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\Matrix4x4.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\Vector2.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\Vector3.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\Vector4.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\AABB.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\math\math_all.hpp">
       <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>

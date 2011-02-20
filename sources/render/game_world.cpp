@@ -189,6 +189,14 @@ namespace brUGE
 
 					m_transform.m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
 				}
+
+				m_transform.m_localBounds = meshInst->m_skinnedMesh->bounds();
+				m_transform.m_worldBounds = meshInst->m_skinnedMesh->bounds().getTranformed(m_transform.m_worldMat);
+			}
+			else
+			{
+				m_transform.m_localBounds = meshInst->m_mesh->bounds();
+				m_transform.m_worldBounds = meshInst->m_mesh->bounds().getTranformed(m_transform.m_worldMat);
 			}
 		}
 

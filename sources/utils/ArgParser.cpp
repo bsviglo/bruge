@@ -1,8 +1,8 @@
 #include "prerequisites.h"
 #include "utils/string_utils.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
-#include "math/Vector4.h"
+#include "math/Vector2.hpp"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 
 namespace brUGE
 {

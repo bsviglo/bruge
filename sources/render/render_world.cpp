@@ -4,9 +4,11 @@
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
 #include "gui/imgui_render.hpp"
+#include "console/TimingPanel.h"
 
 using namespace brUGE;
 using namespace brUGE::utils;
+using namespace brUGE::math;
 
 namespace brUGE
 {
@@ -77,71 +79,108 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void RenderWorld::resolveVisibility()
 	{
-		RenderSystem& rs = RenderSystem::instance();
-
-		for (uint i = 0; i < m_meshInstances.size(); ++i)
+		//-- 1. resolve visibility
 		{
-			const MeshInstance& inst = *m_meshInstances[i];
+			SCOPED_TIME_MEASURER_EX("resolve visibility")
 
-			//-- 1. cull frustum against AABB.
+			const mat4f& vpMat = m_camera->viewProjMatrix();
 
-			//-- 2. gather render operations.
-			if (inst.m_mesh)
+			for (uint i = 0; i < m_meshInstances.size(); ++i)
 			{
-				uint count = inst.m_mesh->gatherRenderOps(m_renderOps);
-				for (uint i = m_renderOps.size() - count; i < m_renderOps.size(); ++i)
+				const MeshInstance& inst = *m_meshInstances[i];
+
+				//-- 1. cull frustum against AABB.
+				Outcode outCode = inst.m_transform->m_worldBounds.calculateOutcode(vpMat);
+				if (outCode != 0)
 				{
-					RenderOp& rop = m_renderOps[i];
-					rop.m_worldMat = &inst.m_transform->m_worldMat;
+					continue;
 				}
-			}
-			else if (inst.m_skinnedMesh)
-			{
-				uint count = inst.m_skinnedMesh->gatherRenderOps(m_renderOps);
-				for (uint i = m_renderOps.size() - count; i < m_renderOps.size(); ++i)
-				{
-					RenderOp& rop = m_renderOps[i];
+				//else
+				//{
+				//	m_debugDrawer->drawAABB(inst.m_transform->m_worldBounds, Color(1,0,0,0));
+				//}
 
-					rop.m_worldMat			 = &inst.m_transform->m_worldMat;
-					rop.m_matrixPalette		 = &inst.m_worldPalette[0];
-					rop.m_matrixPaletteCount = inst.m_worldPalette.size();
+				//-- 2. gather render operations.
+				if (inst.m_mesh)
+				{
+					uint count = inst.m_mesh->gatherRenderOps(m_renderOps);
+					for (uint i = m_renderOps.size() - count; i < m_renderOps.size(); ++i)
+					{
+						RenderOp& rop = m_renderOps[i];
+						rop.m_worldMat = &inst.m_transform->m_worldMat;
+					}
+				}
+				else if (inst.m_skinnedMesh)
+				{
+					uint count = inst.m_skinnedMesh->gatherRenderOps(m_renderOps);
+					for (uint i = m_renderOps.size() - count; i < m_renderOps.size(); ++i)
+					{
+						RenderOp& rop = m_renderOps[i];
+
+						rop.m_worldMat			 = &inst.m_transform->m_worldMat;
+						rop.m_matrixPalette		 = &inst.m_worldPalette[0];
+						rop.m_matrixPaletteCount = inst.m_worldPalette.size();
+					}
 				}
 			}
 		}
-
-		//-- 1. z-only pass.
-		rs.beginPass(RenderSystem::PASS_Z_ONLY);
-		rs.setCamera(m_camera.get());
-		rs.addRenderOps(m_renderOps);
-		rs.endPass();
-
-		//-- 2. main pass.
-		rs.beginPass(RenderSystem::PASS_MAIN_COLOR);
-		rs.setCamera(m_camera.get());
-		rs.addRenderOps(m_renderOps);
-		rs.endPass();
-
-		//-- decal manager.
+		
+		//-- 2. z-only pass.
 		{
+			SCOPED_TIME_MEASURER_EX("z-pre pass")
+			
+			rs().beginPass(RenderSystem::PASS_Z_ONLY);
+			rs().setCamera(m_camera.get());
+			rs().addRenderOps(m_renderOps);
+			rs().endPass();
+		}
+		
+
+		//-- 3. main pass.
+		{
+			SCOPED_TIME_MEASURER_EX("main pass")
+
+			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);
+			rs().setCamera(m_camera.get());
+			rs().addRenderOps(m_renderOps);
+			rs().endPass();
+		}
+
+		//-- 4. decal manager.
+		{
+			SCOPED_TIME_MEASURER_EX("decals")
+
 			m_renderOps.clear();
 			m_decalManager->gatherRenderOps(m_renderOps);
 
-			rs.beginPass(RenderSystem::PASS_DECAL);
-			rs.setCamera(m_camera.get());
-			rs.addRenderOps(m_renderOps);
-			rs.endPass();
+			rs().beginPass(RenderSystem::PASS_DECAL);
+			rs().setCamera(m_camera.get());
+			rs().addRenderOps(m_renderOps);
+			rs().endPass();
 		}
 
-		//-- draw post-processing.
-		rs.postProcessing()->draw();
+		//-- 5. draw post-processing.
+		{
+			SCOPED_TIME_MEASURER_EX("post-processing")
 
-		//-- ToDo: reconsider.
-		//-- update debug drawer.
+			rs().postProcessing()->draw();
+		}
+
+		//-- 6. update debug drawer.
 		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
-		DebugDrawer::instance().draw();
+		//-- ToDo: reconsider.
+		{
+			SCOPED_TIME_MEASURER_EX("debug drawer")
 
-		//-- draw imgui.
-		m_imguiRender->draw();
+			m_debugDrawer->draw();
+		}
+
+		//-- 7. draw imgui.
+		{
+			SCOPED_TIME_MEASURER_EX("imgui")
+
+			m_imguiRender->draw();
+		}
 
 		m_renderOps.clear();
 	}

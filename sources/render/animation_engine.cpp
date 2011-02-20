@@ -1,8 +1,7 @@
 #include "animation_engine.hpp"
 #include "os/FileSystem.h"
 #include "console/Console.h"
-#include "math/Matrix4x4.h"
-#include "math/Quaternion.hpp"
+#include "math/math_all.hpp"
 #include "game_world.hpp"
 #include "render_world.hpp"
 
@@ -300,8 +299,8 @@ namespace render
 	void Animation::updateBounds(AABB& bound, uint _1st, uint _2nd, float blend)
 	{
 		//-- smoothly change one AABB to another.
-		bound.min = lerp(m_bounds[_1st].min, m_bounds[_2nd].min, blend);
-		bound.max = lerp(m_bounds[_1st].max, m_bounds[_2nd].max, blend);
+		bound.m_min = lerp(m_bounds[_1st].m_min, m_bounds[_2nd].m_min, blend);
+		bound.m_max = lerp(m_bounds[_1st].m_max, m_bounds[_2nd].m_max, blend);
 	}
 
 	//----------------------------------------------------------------------------------------------

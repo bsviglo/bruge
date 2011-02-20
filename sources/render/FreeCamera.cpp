@@ -2,7 +2,6 @@
 #include "control/InputManager.h"
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
-#include "math/Vector3.h"
 
 namespace brUGE
 {

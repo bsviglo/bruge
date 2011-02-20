@@ -1,9 +1,9 @@
 #pragma once
 
 #include "prerequisites.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
-#include "math/Vector4.h"
+#include "math/Vector2.hpp"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 #include "utils/Data.hpp"
 #include "utils/Ptr.h"
 

@@ -8,101 +8,78 @@ namespace brUGE
 namespace render
 {
 	
-	//------------------------------------------
+	//----------------------------------------------------------------------------------------------
 	Frustum::Frustum()
 	{
 
 	}
 
-	//------------------------------------------
+	//----------------------------------------------------------------------------------------------
 	Frustum::~Frustum()
 	{
 
 	}
 
-	// 
-	//------------------------------------------
-	void Frustum::recalc(const mat4f& viewProj, bool normalise/* = false */)
+	//----------------------------------------------------------------------------------------------
+	void Frustum::update(const mat4f& VP)
 	{
-		// –асчитываем вектор нормали дл€ правой плоскости
-		rightPlane.normal[0] = viewProj[ 3] - viewProj[ 0];
-		rightPlane.normal[1] = viewProj[ 7] - viewProj[ 4];
-		rightPlane.normal[2] = viewProj[11] - viewProj[ 8];
-		rightPlane.dist	     = viewProj[15] - viewProj[12];
+		//-- right plane.
+		m_planes[0].m_normal.x	= VP[ 3] - VP[ 0];
+		m_planes[0].m_normal.y	= VP[ 7] - VP[ 4];
+		m_planes[0].m_normal.z	= VP[11] - VP[ 8];
+		m_planes[0].m_dist		= VP[15] - VP[12];
 
-		// –асчитываем вектор нормали дл€ левой плоскости
-		leftPlane.normal[0] = viewProj[ 3] + viewProj[ 0];
-		leftPlane.normal[1] = viewProj[ 7] + viewProj[ 4];
-		leftPlane.normal[2] = viewProj[11] + viewProj[ 8];
-		leftPlane.dist	    = viewProj[15] + viewProj[12];
+		//-- left plane.
+		m_planes[1].m_normal.x	= VP[ 3] + VP[ 0];
+		m_planes[1].m_normal.y	= VP[ 7] + VP[ 4];
+		m_planes[1].m_normal.z	= VP[11] + VP[ 8];
+		m_planes[1].m_dist		= VP[15] + VP[12];
 
-		// –асчитываем вектор нормали дл€ нижней плоскости
-		bottomPlane.normal[0] = viewProj[ 3] + viewProj[ 1];
-		bottomPlane.normal[1] = viewProj[ 7] + viewProj[ 5];
-		bottomPlane.normal[2] = viewProj[11] + viewProj[ 9];
-		bottomPlane.dist	  = viewProj[15] + viewProj[13];
+		//-- bottom plane.
+		m_planes[2].m_normal.x	= VP[ 3] + VP[ 1];
+		m_planes[2].m_normal.y	= VP[ 7] + VP[ 5];
+		m_planes[2].m_normal.z	= VP[11] + VP[ 9];
+		m_planes[2].m_dist		= VP[15] + VP[13];
 
-		// –асчитываем вектор нормали дл€ верхней плоскости
-		topPlane.normal[0] = viewProj[ 3] - viewProj[ 1];
-		topPlane.normal[1] = viewProj[ 7] - viewProj[ 5];
-		topPlane.normal[2] = viewProj[11] - viewProj[ 9];
-		topPlane.dist	   = viewProj[15] - viewProj[13];
+		//-- top plane.
+		m_planes[3].m_normal.x	= VP[ 3] - VP[ 1];
+		m_planes[3].m_normal.y	= VP[ 7] - VP[ 5];
+		m_planes[3].m_normal.z	= VP[11] - VP[ 9];
+		m_planes[3].m_dist		= VP[15] - VP[13];
 
-		// –асчитываем вектор нормали дл€ дальней плоскости
-		farPlane.normal[0] = viewProj[ 3] - viewProj[ 2];
-		farPlane.normal[1] = viewProj[ 7] - viewProj[ 6];
-		farPlane.normal[2] = viewProj[11] - viewProj[10];
-		farPlane.dist	   = viewProj[15] - viewProj[14];
+		//-- far plane.
+		m_planes[4].m_normal.x	= VP[ 3] - VP[ 2];
+		m_planes[4].m_normal.y	= VP[ 7] - VP[ 6];
+		m_planes[4].m_normal.z	= VP[11] - VP[10];
+		m_planes[4].m_dist		= VP[15] - VP[14];
 
-		// –асчитываем вектор нормали дл€ ближней плоскости
-		nearPlane.normal[0] = viewProj[ 3] + viewProj[ 2];
-		nearPlane.normal[1] = viewProj[ 7] + viewProj[ 6];
-		nearPlane.normal[2] = viewProj[11] + viewProj[10];
-		nearPlane.dist	    = viewProj[15] + viewProj[14];
+		//-- near plane.
+		m_planes[5].m_normal.x	= VP[ 3] + VP[ 2];
+		m_planes[5].m_normal.y	= VP[ 7] + VP[ 6];
+		m_planes[5].m_normal.z	= VP[11] + VP[10];
+		m_planes[5].m_dist		= VP[15] + VP[14];
 		
-		if (normalise)
+		for (uint i = 0; i < 6; ++i)
 		{
-			rightPlane.normalise();
-			leftPlane.normalise();
-			topPlane.normalise();
-			bottomPlane.normalise();
-			nearPlane.normalise();
-			farPlane.normalise();
+			float length = m_planes[i].m_normal.length();
+
+			if (!almostZero(length))
+			{
+				m_planes[i].m_normal.normalize();
+				m_planes[i].m_dist /= length;
+			}
 		}
 	}
 	
-	// 
-	//------------------------------------------
-	bool Frustum::testRect2d(const Rect2d &rect) const
+	//----------------------------------------------------------------------------------------------
+	bool Frustum::testAABB(const AABB& aabb) const
 	{
-		Plane2d l;
-		l.n[0] = leftPlane.n[0];
-		l.n[1] = leftPlane.n[1];
-		l.n[2] = leftPlane.n[3];
-		Plane2d r;
-		r.n[0] = rightPlane.n[0];
-		r.n[1] = rightPlane.n[1];
-		r.n[2] = rightPlane.n[3];
-		Plane2d n;
-		n.n[0] = nearPlane.n[0];
-		n.n[1] = nearPlane.n[1];
-		n.n[2] = nearPlane.n[3];
-		Plane2d f;
-		f.n[0] = farPlane.n[0];
-		f.n[1] = farPlane.n[1];
-		f.n[2] = farPlane.n[3];
-
-		l.normalise();
-		r.normalise();
-		n.normalise();
-		f.normalise();
-
-		if (l.planeClassify(rect)	 == PC_BACK
-			|| r.planeClassify(rect) == PC_BACK
-			|| n.planeClassify(rect) == PC_BACK
-			|| f.planeClassify(rect) == PC_BACK)
+		for (uint i = 0; i < 6; ++i)
 		{
-			return false;
+			if (m_planes[i].classify(aabb) == Plane::CLASSIFLY_IN_BACK)
+			{
+				return false;
+			}
 		}
 		return true;
 	}

@@ -137,14 +137,14 @@ namespace render
 	{
 		if (!m_isEnabled) return;
 
-		vec3f lb1(aabb.min);
-		vec3f lb2(aabb.min.x, aabb.min.y, aabb.max.z);
-		vec3f lt1(aabb.min.x, aabb.max.y, aabb.min.z);
-		vec3f lt2(aabb.min.x, aabb.max.y, aabb.max.z);
-		vec3f rb1(aabb.max.x, aabb.min.y, aabb.min.z);
-		vec3f rb2(aabb.max.x, aabb.min.y, aabb.max.z);
-		vec3f rt1(aabb.max.x, aabb.max.y, aabb.min.z);
-		vec3f rt2(aabb.max);
+		vec3f lb1(aabb.m_min);
+		vec3f lb2(aabb.m_min.x, aabb.m_min.y, aabb.m_max.z);
+		vec3f lt1(aabb.m_min.x, aabb.m_max.y, aabb.m_min.z);
+		vec3f lt2(aabb.m_min.x, aabb.m_max.y, aabb.m_max.z);
+		vec3f rb1(aabb.m_max.x, aabb.m_min.y, aabb.m_min.z);
+		vec3f rb2(aabb.m_max.x, aabb.m_min.y, aabb.m_max.z);
+		vec3f rt1(aabb.m_max.x, aabb.m_max.y, aabb.m_min.z);
+		vec3f rt2(aabb.m_max);
 		
 		//-- min corner.
 		drawLine(lb1, lt1, color);
@@ -462,8 +462,6 @@ namespace render
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::draw()
 	{
-		SCOPED_TIME_MEASURER_EX("DebugDrawer draw")
-
 		if (!m_isEnabled) return;
 		
 		//-- 1. do solid geometry drawing.

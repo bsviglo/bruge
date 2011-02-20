@@ -1,14 +1,11 @@
 #pragma once
 
+#include "prerequisites.h"
 #include "render_common.h"
 #include "render/IRenderDevice.h"
 #include "render/render_system.hpp"
 #include "render/materials.hpp"
-#include "math/math_types.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
-#include "math/Quaternion.hpp"
-#include "math/AABB.h"
+#include "math/math_all.hpp"
 #include "utils/BSPTree.h"
 #include "utils/Data.hpp"
 #include <vector>

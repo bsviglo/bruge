@@ -1,13 +1,8 @@
 #pragma once
 
 #include "prerequisites.h"
-#include "utils/Ptr.h"
-#include "Frustum.h"
 #include "render_common.h"
-#include "math/Vector2.h"
-#include "math/Vector3.h"
-#include "math/Vector4.h"
-#include "math/Matrix4x4.h"
+#include "math/math_all.hpp"
 
 namespace brUGE
 {
@@ -43,7 +38,6 @@ namespace render
 		//------------------------------------------
 		void drawViewFrustum() const;
 
-		const Frustum&		frustum() const				{ return m_frustum; }
 		const Projection& 	projection() const			{ return m_projInfo; }
 		const mat4f&		viewProjMatrix() const		{ return m_viewProjMat; }
 		const mat4f&		invViewProjMatrix() const	{ return m_invViewProjMat; }
@@ -71,7 +65,6 @@ namespace render
 	private:
 		ScreenResolution m_screen;
 		Projection m_projInfo;
-		Frustum	m_frustum;
 
 		mat4f m_viewMat;
 		mat4f m_invViewMat;
@@ -83,8 +76,6 @@ namespace render
 		vec3f m_up;
 		vec3f m_dir;
 		vec3f m_pos;
-
-		mutable vec3f m_frustumDirs[4];
 	};
 
 } // render
