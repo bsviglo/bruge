@@ -11,7 +11,6 @@ struct vs_out
 	float4 row2			: TEXCOORD3;
 	float4 row3			: TEXCOORD4;
 	float2 invScale		: TEXCOORD5;
-	float4 cPos			: TEXCOORD6;
 };
 
 struct Instance
@@ -110,7 +109,6 @@ vs_out main(vs_in i)
 	//-- 5. Now do regular vertex shader with usage of the previous calculated data.
 	float4 wPos	  = mul(float4(i.pos, 1.0f), worldMat);
 	o.pos		  = mul(wPos, g_viewProjMat);
-	o.cPos		  = o.pos;
 	o.instanceId  = i.instanceId;
 	o.invScale	  = 1.0f / scale.xy;
 
@@ -126,24 +124,20 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
-sampler 		  t_auto_depthMap_sml;
-Texture2D<float>  t_auto_depthMap_tex;
-
-sampler			  diffuse_sml;
-Texture2D<float4> diffuse_tex;
+texture2D(float, t_auto_depthMap);
+texture2D(float4, diffuse);
 
 //-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
-{	
-	float3 clipPos = i.cPos.xyz / i.cPos.w;
-
-	//-- convert to texture coordinates.
-	float2 texCoord;
-	texCoord.x = 0.5f + 0.5f * clipPos.x;
-	texCoord.y = 0.5f - 0.5f * clipPos.y;
-
+{
+	//-- calculate texture coordinates and clip coordinates.
+	float2 texCoord = i.pos.xy * g_screenRes.zw;
+	float2 clipPos;
+	clipPos.x = +2.0f * texCoord.x - 1.0f;
+	clipPos.y = -2.0f * texCoord.y + 1.0f;
+	
 	//-- read depth.
-	float pixelDepth = t_auto_depthMap_tex.Sample(t_auto_depthMap_sml, texCoord.xy);
+	float pixelDepth = sample2D(t_auto_depthMap, texCoord.xy);
 
 	//-- transform to world space.
 	float4 pixelWorldPos  = mul(float4(clipPos.x, clipPos.y, pixelDepth, 1.0f), g_invViewProjMat);
@@ -166,7 +160,7 @@ float4 main(vs_out i) : SV_TARGET
 	texCoord.x = 0.5f + 0.5f * pixelClipPosInTexSpace.x;
 	texCoord.y = 0.5f - 0.5f * pixelClipPosInTexSpace.y;
 
-	float4 oColor = diffuse_tex.Sample(diffuse_sml, texCoord.xy);
+	float4 oColor = sample2D(diffuse, texCoord.xy);
 
 	return oColor;
 }

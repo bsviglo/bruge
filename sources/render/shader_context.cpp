@@ -237,6 +237,38 @@ namespace
 		SamplerStateID m_samplerID;
 		ShaderContext& m_sc;
 	};
+
+
+	//----------------------------------------------------------------------------------------------
+	class DecalsMaskAutoProperty : public IProperty
+	{
+	public:
+		DecalsMaskAutoProperty(ShaderContext& sc)	: m_sc(sc)
+		{
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_NEAREST;
+			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			m_samplerID			= render::rd()->createSamplerState(sDesc);
+		}
+
+		virtual ~DecalsMaskAutoProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			bool result = true;
+
+			result &= shader.setTexture("t_auto_decalsMask_tex", rs().decalsMask());
+			result &= shader.setSampler("t_auto_decalsMask_sml", m_samplerID);
+
+			return result;
+		}
+
+	private:
+		SamplerStateID m_samplerID;
+		ShaderContext& m_sc;
+	};
 	
 }
 //--------------------------------------------------------------------------------------------------
@@ -280,6 +312,7 @@ namespace render
 		m_autoProperties["t_auto_diffuseMap"]		= new TextureAutoProperty(*this, "diffuseMap", true);
 		m_autoProperties["t_auto_bumpMap"]			= new TextureAutoProperty(*this, "bumpMap", false);
 		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
+		m_autoProperties["t_auto_decalsMask"]		= new DecalsMaskAutoProperty(*this);
 
 		return true;
 	}

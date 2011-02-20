@@ -35,9 +35,10 @@ namespace math
 
 	//-- swaps its arguments.
 	//----------------------------------------------------------------------------------------------
-	inline void swapf(float& left, float& right)
+	template<typename T>
+	inline void swap(T& left, T& right)
 	{
-		float tmp = left;
+		T tmp = left;
 		left  = right;
 		right = tmp;
 	}
@@ -61,7 +62,7 @@ namespace math
 
 		float tmin = (min - start) / dir;
 		float tmax = (max - start) / dir;
-		if (tmin > tmax) swapf(tmin, tmax);
+		if (tmin > tmax) swap(tmin, tmax);
 
 		//-- ray is parallel to slab. No hit if origin not within slab.
 		if (tmax < tfirst || tmin > tlast)

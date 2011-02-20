@@ -134,26 +134,25 @@ namespace render
 			rs().addRenderOps(m_renderOps);
 			rs().endPass();
 		}
-		
 
-		//-- 3. main pass.
+		//-- 3. decal manager.
+		{
+			SCOPED_TIME_MEASURER_EX("decals")
+
+			RenderOps ops;
+			m_decalManager->gatherRenderOps(ops);
+
+			rs().beginPass(RenderSystem::PASS_DECAL);
+			rs().setCamera(m_camera.get());
+			rs().addRenderOps(ops);
+			rs().endPass();
+		}
+		
+		//-- 4. main pass.
 		{
 			SCOPED_TIME_MEASURER_EX("main pass")
 
 			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);
-			rs().setCamera(m_camera.get());
-			rs().addRenderOps(m_renderOps);
-			rs().endPass();
-		}
-
-		//-- 4. decal manager.
-		{
-			SCOPED_TIME_MEASURER_EX("decals")
-
-			m_renderOps.clear();
-			m_decalManager->gatherRenderOps(m_renderOps);
-
-			rs().beginPass(RenderSystem::PASS_DECAL);
 			rs().setCamera(m_camera.get());
 			rs().addRenderOps(m_renderOps);
 			rs().endPass();

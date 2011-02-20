@@ -209,10 +209,27 @@ namespace render
 
 			BlendStateDesc bDesc;
 			bDesc.blendEnable[0] = true;
-			bDesc.srcBlend  = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
-			bDesc.destBlend = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
-			bDesc.blendOp   = BlendStateDesc::BLEND_OP_ADD;
+			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlend		 = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendOp		 = BlendStateDesc::BLEND_OP_ADD;
+			bDesc.srcBlendAlpha  = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlendAlpha = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendAlphaOp   = BlendStateDesc::BLEND_OP_ADD;
 			pass.m_stateB = m_device->createBlendState(bDesc);
+
+			//-- create decals mask texture.
+			{
+				ITexture::Desc desc;
+				desc.width     = m_screenRes.width;
+				desc.height    = m_screenRes.height;
+				desc.bindFalgs = ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
+				desc.format	   = ITexture::FORMAT_RGBA8;
+				desc.texType   = ITexture::TYPE_2D;
+
+				pass.m_rt = m_device->createTexture(desc, NULL, 0);
+				if (!pass.m_rt)
+					return false;
+			}
 		}
 		
 		//-- 3. PASS_MAIN_COLOR
@@ -332,7 +349,8 @@ namespace render
 		case PASS_DECAL:
 			{
 				PassDesc& pass = m_passes[PASS_DECAL];
-				m_device->backToMainFrameBuffer();
+				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
+				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);

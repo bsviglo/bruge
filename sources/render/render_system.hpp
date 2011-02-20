@@ -112,6 +112,7 @@ namespace render
 		Materials*			materials()				 { return &m_materials; }
 		PostProcessing*		postProcessing()		 { return &m_postProcessing; }
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
+		ITexture*			decalsMask()			 { return m_passes[PASS_DECAL].m_rt.get(); }
 
 	private:
 		// console functions.

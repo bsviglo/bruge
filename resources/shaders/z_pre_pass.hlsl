@@ -9,29 +9,28 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
-	vs_out main(vs_in_common i)
-	{
-		vs_out o;
+vs_out main(vs_in_common i)
+{
+	vs_out o;
 
-		float4 wPos	= mul(float4(i.pos, 1), g_worldMat);
-		o.pos		= mul(wPos, g_viewProjMat);
-		o.cPos 		= o.pos;
-		o.tc   		= i.texCoord;
-		
-		return o;
-	};
+	float4 wPos	= mul(float4(i.pos, 1), g_worldMat);
+	o.pos		= mul(wPos, g_viewProjMat);
+	o.cPos 		= o.pos;
+	o.tc   		= i.texCoord;
+	
+	return o;
+};
 
 #endif
 
 
 #ifdef _FRAGMENT_SHADER_
 
-sampler 		  t_auto_diffuseMap_sml;
-Texture2D<float4> t_auto_diffuseMap_tex;
+texture2D(float4, t_auto_diffuseMap);
 
-	float4 main(vs_out i) : SV_TARGET
-	{
-		return i.cPos.z / i.cPos.w;
-	};
+float4 main(vs_out i) : SV_TARGET
+{
+	return i.cPos.z / i.cPos.w;
+};
 	
 #endif
