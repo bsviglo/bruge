@@ -127,6 +127,7 @@ namespace render
 		//-- load shader.
 		Handle			getShader(const char* name);
 		VertexLayoutID	getVertexLayout(Handle shader, const std::string& desc);
+		IShader*		shader(Handle handle);
 
 		const RenderOp& renderOp() const { return *m_renderOp; }
 		const Camera&   camera() const   { return *m_camera; }

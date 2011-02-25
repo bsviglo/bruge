@@ -170,9 +170,55 @@ namespace render
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
 		{
-			return false;
+			return nullptr;
 		}
 		return createMaterial(doc.document_element(), nullptr);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool Materials::createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data)
+	{
+		pugi::xml_document doc;
+		if (!doc.load_buffer(data.ptr(), data.length()))
+		{
+			return false;
+		}
+
+		pugi::xml_node root = doc.document_element();
+		std::string name	= root.name();
+
+		if (name == "materials")
+		{
+			for (auto mat = root.child("material"); mat; mat = mat.next_sibling("material"))
+			{
+				if (Ptr<Material> m = createMaterial(mat, nullptr))
+				{
+					out.push_back(m);
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+		else if (name == "material")
+		{
+			if (Ptr<Material> m = createMaterial(root, nullptr))
+			{
+				out.push_back(m);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			assert(0);
+			return false;
+		}
+	
+		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------

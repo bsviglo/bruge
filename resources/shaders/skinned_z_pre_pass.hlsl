@@ -1,3 +1,5 @@
+#include "common.hlsl"
+
 //-- Note: we can experiment with data packing. This is far from ideal data packing rules.
 //--	   It looks like it look only for simplicity to undestading what is going here.
 struct vs_out
@@ -24,22 +26,6 @@ tbuffer tb_auto_Weights
 tbuffer tb_auto_MatrixPalette
 {
 	float4x4 g_bones[256];
-};
-
-//-- per frame auto variables.
-cbuffer cb_auto_PerFrame
-{
-	float4x4 g_viewMat;
-	float4x4 g_viewProjMat;
-	float4x4 g_invViewProjMat;
-	float4	 g_screenRes;
-};
-
-//-- per instance auto variables.
-cbuffer cb_auto_PerInstance
-{
-	float4x4 g_worldMat;
-	float4x4 g_MVPMat;
 };
 
 #ifdef _VERTEX_SHADER_

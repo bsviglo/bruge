@@ -1,7 +1,5 @@
 <material name="diffuse">
   <properties>
-	  <property name="diffuseMap" type="texture" value="textures/metalbox1.dds">
-		<sampler filter="0" wrapping="0" />
-	  </property>
+	  <property name="diffuseMap" type="texture" value="textures/metalbox1.dds"/>
   </properties>
 </material>

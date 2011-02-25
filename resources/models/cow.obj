@@ -1,6 +1,6 @@
 # Blender v2.55 (sub 0) OBJ File: 'untitled.blend'
 # www.blender.org
-mat_desc materials/cow.mtl
+mtllib materials/cow.mtl
 o Mesh.006_hoofs
 v 1.970051 -3.141862 -1.065178
 v 2.110033 -3.148257 -1.068816

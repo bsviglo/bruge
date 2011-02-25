@@ -1,0 +1,5 @@
+<material name="diffuse">
+  <properties>
+	  <property name="diffuseMap" type="texture" value="textures/pole.dds"/>
+  </properties>
+</material>

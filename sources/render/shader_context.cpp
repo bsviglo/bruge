@@ -26,14 +26,16 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
-			m_value.m_viewMat		 = m_sc.camera().viewMatrix();
-			m_value.m_viewProjMat	 = m_sc.camera().viewProjMatrix();
-			m_value.m_invViewProjMat = m_sc.camera().invViewProjMatrix();
+			m_value.m_viewMat				= m_sc.camera().viewMatrix();
+			m_value.m_viewProjMat			= m_sc.camera().viewProjMatrix();
+			m_value.m_invViewProjMat		= m_sc.camera().invViewProjMatrix();
+			m_value.m_lastViewProjMat		= rs().lastViewProjMat();
+			m_value.m_invLastViewProjMat	= rs().invLastViewProjMat();
 
-			m_value.m_screenRes.x	 = rs().screenRes().width;
-			m_value.m_screenRes.y	 = rs().screenRes().height;
-			m_value.m_screenRes.z	 = 1.0f / rs().screenRes().width;
-			m_value.m_screenRes.w	 = 1.0f / rs().screenRes().height;
+			m_value.m_screenRes.x			= rs().screenRes().width;
+			m_value.m_screenRes.y			= rs().screenRes().height;
+			m_value.m_screenRes.z			= 1.0f / rs().screenRes().width;
+			m_value.m_screenRes.w			= 1.0f / rs().screenRes().height;
 
 			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
 		}
@@ -44,6 +46,8 @@ namespace
 			mat4f m_viewMat;
 			mat4f m_viewProjMat;
 			mat4f m_invViewProjMat;
+			mat4f m_lastViewProjMat;
+			mat4f m_invLastViewProjMat;
 			vec4f m_screenRes;
 		};
 		mutable PerFrameCB  m_value;
@@ -269,6 +273,7 @@ namespace
 		SamplerStateID m_samplerID;
 		ShaderContext& m_sc;
 	};
+
 	
 }
 //--------------------------------------------------------------------------------------------------
@@ -465,6 +470,15 @@ namespace render
 		}
 
 		return CONST_INVALID_HANDLE;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	IShader* ShaderContext::shader(Handle handle)
+	{
+		assert(handle != CONST_INVALID_HANDLE && handle < static_cast<int>(m_shaderCache.size()));
+
+		ShaderPair& sPair = m_shaderCache[handle];
+		return sPair.first.get();
 	}
 
 	//----------------------------------------------------------------------------------------------

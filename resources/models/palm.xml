@@ -1,0 +1,5 @@
+<game_object>
+  <render file="models\palm.obj"/>
+  <physics/>
+  <audio/>
+</game_object>

@@ -114,6 +114,14 @@ namespace render
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 		ITexture*			decalsMask()			 { return m_passes[PASS_DECAL].m_rt.get(); }
 
+		const mat4f&		lastViewProjMat() const				{ return m_lastViewProjMat; }
+		const mat4f&		invLastViewProjMat() const			{ return m_invLastViewProjMat; }
+		void				lastViewProjMat(const mat4f& vpMat)
+		{
+			m_lastViewProjMat = vpMat;
+			m_invLastViewProjMat = m_lastViewProjMat.getInverted();
+		}
+
 	private:
 		// console functions.
 		int _printGAPIType();
@@ -135,6 +143,10 @@ namespace render
 		Camera*				m_camera; //-- ToDo: use render camera instead.
 		EPassType			m_pass;
 		RenderOps			m_renderOps;
+
+		//-- last view projection matrix.
+		mat4f				m_lastViewProjMat;
+		mat4f				m_invLastViewProjMat;
 
 		//-- some addition resources for different render passes.
 		PassDesc			m_passes[PASS_COUNT];

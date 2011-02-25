@@ -1,7 +1,7 @@
 #pragma once
 
 #include "prerequisites.h"
-#include "Functors.h"
+#include "Functors.hpp"
 
 #include "render/render_common.h"
 #include "render/Color.h"
@@ -135,31 +135,87 @@ namespace brUGE
 		uint						m_linesPerScreen;
 		uint						m_maxSymbolsPerLine;	// максимальное количество символов в строке
 	};
+
+
+	//-- It's very useful in case when we want to add to the console simple accessor to the global
+	//-- variable.
+	//----------------------------------------------------------------------------------------------
+	template<typename T>
+	class FunctorValue : public Functor
+	{
+	public:
+		FunctorValue(T* value)	:	m_value(value) { }
+
+		virtual void operator() (const ParamList& params)
+		{
+			if (params.size() == 0)
+			{
+				brUGE::Console::instance().printWarning(utils::parseFrom(*m_value));
+			}
+			else if (params.size() == 1)
+			{
+				*m_value = utils::parseTo<T>(params[0]);
+			}
+			else
+			{
+				throw std::runtime_error("0 or 1 arg is expected.");
+			}
+		}
+
+	private:
+		T* m_value;
+	};
+
+	//-- It's very useful in case when we want to add to the console simple accessor to the class
+	//-- member variable.
+	//----------------------------------------------------------------------------------------------
+	template<typename T, typename OBJ>
+	class FunctorObjValue : public Functor
+	{
+	public:
+		FunctorObjValue(OBJ* obj, T OBJ::* value)	:	m_value(value), m_object(obj) { }
+
+		virtual void operator() (const ParamList& params)
+		{
+			if (params.size() == 0)
+			{
+				brUGE::Console::instance().printWarning(utils::parseFrom(m_object->*m_value));
+			}
+			else if (params.size() == 1)
+			{
+				m_object->*m_value = utils::parseTo<T>(params[0]);
+			}
+			else
+			{
+				throw std::runtime_error("0 or 1 arg is expected.");
+			}
+		}
+
+	private:
+		typedef T OBJ::* ObjValuePtrType;
+
+		ObjValuePtrType m_value;
+		OBJ*			m_object;
+	};
 	
 } //brUGE
 
-// Макросы для облегчения занесения текстовых сообщения в консоль.
-// Поддерживаются два типа макросов, ConPrint - принимает на вход brString
-// строку или строку формата и список пораметров - с-like стиль,
-// форматированные строки (работает аналогично printf).
 
 #define ConPrint	brUGE::Console::instance().print
 #define ConWarning	brUGE::Console::instance().printWarning
 #define ConError	brUGE::Console::instance().printError
 
-// Регистрация консольных комманд. Под коммандой понимается функция которая принимает
-// на вход список параметров ввиде вектора строк и возвращет void.
-// Консольными коммандами(функциями) могут быть как глобальные или статические функции так и
-// методы класса, в этом случае кроме метода(который тоже должен соблюдать сигнатуру
-// консольных комманд) необходимо также передевать имя и экземпляр этого класса.
-// Note: Лучше всего регистрацию функций проводить внутри конструктора класса.
-// Note: За преобразованием типов, количеством параметров и допустимостью значений
-//				необходимо следить вручную из вызывающей функции.
-// Note: Пример регистрации можно посмотреть в конструкторе Console.
 
-#define REGISTER_CONSOLE_FUNC(m_name, funcName)\
-	brUGE::Console::instance().registerCommand(m_name, new FunctorFunc(funcName))
+#define REGISTER_CONSOLE_VALUE(m_name, type, value) \
+	brUGE::Console::instance().registerCommand(m_name, new FunctorValue<type>(&value))
 
-#define REGISTER_CONSOLE_METHOD(m_name, funcName, className)\
-	brUGE::Console::instance().registerCommand(m_name,\
-		new FunctorMethod<className>(this, &className::funcName) )
+#define REGISTER_CONSOLE_MEMBER_VALUE(m_name, type, value, className)	\
+	brUGE::Console::instance().registerCommand(m_name,			\
+		new FunctorObjValue<type, className>(this, &className::value))
+
+#define REGISTER_CONSOLE_FUNC(m_name, func)	\
+	brUGE::Console::instance().registerCommand(m_name, new FunctorFunc(func))
+
+#define REGISTER_CONSOLE_METHOD(m_name, func, className)		\
+	brUGE::Console::instance().registerCommand(m_name,			\
+		new FunctorMethod<className>(this, &className::func))

@@ -1,4 +1,4 @@
-mat_desc materials/debug_solid.mtl
+mtllib materials/debug_solid.mtl
 v 0.500000 -0.500000 -0.500000
 v 0.500000 -0.500000 0.500000
 v -0.500000 -0.500000 0.500000

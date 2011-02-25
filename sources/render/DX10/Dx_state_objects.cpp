@@ -125,6 +125,7 @@ namespace render
 		dxDesc.CullMode = dxCullMode[desc.cullMode];
 		dxDesc.FrontCounterClockwise = desc.frontCounterClockwise;
 		dxDesc.ScissorEnable		 = desc.scissorEnable;
+		dxDesc.MultisampleEnable	 = desc.multisampleEnable;
 		
 		// ToDo: to be completed.
 
@@ -133,7 +134,6 @@ namespace render
 		dxDesc.DepthBiasClamp		 = 0.0f;
 		dxDesc.SlopeScaledDepthBias	 = 0.0f;
 		dxDesc.DepthClipEnable		 = FALSE;
-		dxDesc.MultisampleEnable	 = FALSE;
 		dxDesc.AntialiasedLineEnable = FALSE;
 		
 		HRESULT hr = dxDevice()->CreateRasterizerState(&dxDesc, &state);

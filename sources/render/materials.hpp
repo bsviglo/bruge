@@ -48,8 +48,9 @@ namespace render
 		bool init();
 		bool fini();
 
-		Ptr<Material> createMaterial(const utils::ROData& data);
-		Ptr<Material> createMaterial(const pugi::xml_node& section, UIDesc* uiDesc);
+		Ptr<Material>	createMaterial (const utils::ROData& data);
+		Ptr<Material>	createMaterial (const pugi::xml_node& section, UIDesc* uiDesc);
+		bool			createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data);
 
 	private:
 		typedef std::map<std::string, RenderMat> MaterialsMap;

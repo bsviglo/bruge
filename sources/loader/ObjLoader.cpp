@@ -157,22 +157,23 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	Ptr<Mesh> ObjLoader::load(const ROData& data)
 	{
-		Ptr<Mesh>			 out = new Mesh();
-		vec3f				 v;
-		vec2f				 t;
-		int					 vi[30];
-		int					 ti[30];
-		string				 str, cmd, args;
-		string				 mat = "materials/default.mtl";
-		bool				 hasTexCoords  = false;
-		char				 lastCommand   = '\0';
-		vector<Mesh::Vertex> vertices;
-		vector<Mesh::Face>   faces;
-		vector<Mesh::Face>   texFaces;
-		vector<TexCoord>	 texCoords;
-		int					 startVertex   = 1;
-		int					 startTexCoord = 1;
-		int					 startFace     = 1;
+		Ptr<Mesh>					out = new Mesh();
+		vec3f						v;
+		vec2f						t;
+		int							vi[30];
+		int							ti[30];
+		string						str, cmd, args;
+		bool						hasTexCoords  = false;
+		char						lastCommand   = '\0';
+		vector<Mesh::Vertex>		vertices;
+		vector<Mesh::Face>			faces;
+		vector<Mesh::Face>			texFaces;
+		vector<TexCoord>			texCoords;
+		int							startVertex   = 1;
+		int							startTexCoord = 1;
+		int							startFace     = 1;
+		std::vector<Ptr<Material>>	mtllib;
+		uint						numSubMeshes = 0;
 
 		while (data.getString(str, '\n' ))
 		{
@@ -185,7 +186,7 @@ namespace brUGE
 			parseString(str, cmd, args);
 
 			//-- check for start of next mesh.
-			if (cmd[0] == 'v' && (lastCommand == 'f' || lastCommand == 'g'))	
+			if (cmd[0] == 'v' && (lastCommand == 'f' || lastCommand == 'g' || lastCommand == 'o'))	
 			{
 				Mesh::SubMesh* submesh = 0;
 
@@ -202,14 +203,14 @@ namespace brUGE
 					submesh = createSubMesh(outVertices, outFaces);
 				}
 
-				//-- ToDo: try to load material for this submesh.
+				//-- try to get material for this submesh.
 				{
-					RODataPtr mData = FileSystem::instance().readFile("resources/" + mat);
-					if (!mData.get() || !(submesh->material = rs().materials()->createMaterial(*mData.get())))
+					if (numSubMeshes >= mtllib.size())
 					{
-						ERROR_MSG("Can't load submesh material %s.", mat.c_str());
-						return 0;
+						ERROR_MSG("Model has mesh without material.");
+						return false;
 					}
+					submesh->material = mtllib[numSubMeshes];
 				}
 
 				out->attach(submesh);
@@ -222,6 +223,8 @@ namespace brUGE
 				texCoords.clear();
 				faces.clear();
 				texFaces.clear();
+
+				++numSubMeshes;
 			}
 
 			//-- get vertex.
@@ -280,9 +283,17 @@ namespace brUGE
 					}
 				}
 			}
-			else if (cmd == "mat_desc")
+			else if (cmd == "mtllib")
 			{
-				mat = args;
+				//-- load materials lib for this model.
+				//-- Note: materials lib may contain more then one material one for each model
+				//--	   submesh. Appropriate material selected by sequential number of the mesh.
+				RODataPtr mData = FileSystem::instance().readFile("resources/" + args);
+				if (!mData.get() || !rs().materials()->createMaterials(mtllib, *mData.get()))
+				{
+					ERROR_MSG("Can't load materials library %s for model.", args.c_str());
+					return 0;
+				}
 			}
 		}
 
@@ -304,14 +315,14 @@ namespace brUGE
 				submesh = createSubMesh(outVertices, outFaces);
 			}
 
-			//-- ToDo: try to load material for this submesh.
+			//-- try to get material for this submesh.
 			{
-				RODataPtr mData = os::FileSystem::instance().readFile("resources/" + mat);
-				if (!mData.get() || !(submesh->material = rs().materials()->createMaterial(*mData.get())))
+				if (numSubMeshes >= mtllib.size())
 				{
-					ERROR_MSG("Can't load submesh material %s.", mat.c_str());
-					return 0;
+					ERROR_MSG("Model has mesh without material.");
+					return false;
 				}
+				submesh->material = mtllib[numSubMeshes];
 			}
 
 			out->attach(submesh);

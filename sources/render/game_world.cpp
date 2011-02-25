@@ -209,9 +209,12 @@ namespace brUGE
 			}
 			else
 			{
-				const char* desc = physicsNode.attribute("file").value();
-
-				m_physObj = Engine::instance().physicWorld().addPhysicDef(desc, &m_transform, objID);
+				if (auto desc = physicsNode.attribute("file"))
+				{
+					m_physObj = Engine::instance().physicWorld().addPhysicDef(
+						desc.value(), &m_transform, objID
+						);
+				}
 			}
 		}
 

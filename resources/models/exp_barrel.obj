@@ -1,13 +1,4 @@
-# 
-# Wavefront OBJ file
-# Converted by the DEEP Exploration 3.5.10.1242
-# Right Hemisphere, LTD
-# http://www.righthemisphere.com/
-# 
-# object Object #0
-
-mat_desc materials/exp_barrel.mtl
-
+mtllib materials/exp_barrel.mtl
 g Object__0
 v 0 -0.5 -0.366667
 v -0.183333 -0.5 -0.317543

@@ -112,8 +112,8 @@ namespace render
 		sd.BufferDesc.RefreshRate.Denominator	= 1;
 		sd.BufferUsage							= DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
 		sd.OutputWindow							= m_hWnd;
-		sd.SampleDesc.Count						= 1;
-		sd.SampleDesc.Quality					= 0;
+		sd.SampleDesc.Count						= m_videoMode.multiSampling.m_count;
+		sd.SampleDesc.Quality					= m_videoMode.multiSampling.m_quality;
 		sd.Windowed								= !m_videoMode.fullScreen;
 		sd.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
 	
@@ -200,8 +200,8 @@ namespace render
 			ITexture::Desc desc;
 			desc.width			= m_videoMode.width;
 			desc.height			= m_videoMode.height;
-			desc.sample.count	= 1;
-			desc.sample.quality = 0;
+			desc.sample.count	= m_videoMode.multiSampling.m_count;
+			desc.sample.quality = m_videoMode.multiSampling.m_quality;
 			desc.texType   		= ITexture::TYPE_2D;
 			desc.format    		= ITexture::FORMAT_RGBA8;
 			desc.bindFalgs 		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
@@ -220,11 +220,22 @@ namespace render
 			ITexture::Desc desc;
 			desc.width			= m_videoMode.width;
 			desc.height			= m_videoMode.height;
-			desc.sample.count	= 1;
-			desc.sample.quality = 0;
+			desc.sample.count	= m_videoMode.multiSampling.m_count;
+			desc.sample.quality = m_videoMode.multiSampling.m_quality;
 			desc.texType		= ITexture::TYPE_2D;
 			desc.format			= ITexture::FORMAT_D32F;
-			desc.bindFalgs		= ITexture::BIND_DEPTH_STENCIL | ITexture::BIND_SHADER_RESOURCE;
+
+			//-- Note: DX10.0 hardware doesn't support both depth stencil view and shader resource
+			//--	   view over MSAA depth buffer.
+			if (desc.sample.count > 1)
+			{
+				desc.bindFalgs = ITexture::BIND_DEPTH_STENCIL;
+			}
+			else
+			{
+				desc.bindFalgs = ITexture::BIND_DEPTH_STENCIL | ITexture::BIND_SHADER_RESOURCE;
+			}
+			
 
 			Ptr<DXTexture> texture = new DXTexture(desc);
 			if (!texture->init())

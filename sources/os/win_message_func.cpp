@@ -43,6 +43,22 @@ namespace
 		{1440,  900, 32},
 		{1680, 1050, 32}
 	};
+
+	//--
+	MultiSampling multiSamplingTypes[] = 
+	{
+		MultiSampling( 1,  0),
+		MultiSampling( 2,  2),
+		MultiSampling( 4,  4),
+		MultiSampling( 8,  8)
+	};
+
+	//--
+	std::string toStr(const MultiSampling& ms)
+	{
+		if (ms.m_count == 1 && ms.m_quality == 0)	return "off";
+		else										return utils::makeStr("MSAA x%d", ms.m_count);
+	}
 	
 	template<typename Type, size_t size>
 	size_t array_size(Type (&) [size]) { return size; }
@@ -134,25 +150,26 @@ namespace os
 				SendMessage(g_modeBox,		   CB_RESETCONTENT, 0, 0); 
 				SendMessage(g_antialiasingBox, CB_RESETCONTENT, 0, 0); 
 				
-				// выбор рендера.
+				//-- api type.
 				SendMessage(g_renderApiBox, CB_ADDSTRING, 0, (LPARAM)"OpenGL 3.*");
 				SendMessage(g_renderApiBox, CB_ADDSTRING, 0, (LPARAM)"Direct3D 10");
 
-				// выбор разрешения экрана.
+				//-- screen resolutions.
 				for( uint i = 0; i < array_size(dResolutions); ++i)
 					SendMessage(g_resolutionsBox, CB_ADDSTRING, 0, (LPARAM)toStr(dResolutions[i]).c_str());
 
-				// выбор режима: полноэкранные или оконный.
+				//-- screen mode.
 				SendMessage(g_modeBox, CB_ADDSTRING, 0, (LPARAM)"windowed");
 				SendMessage(g_modeBox, CB_ADDSTRING, 0, (LPARAM)"full-screen");
 
-				// выбор режима для удаление aliasing-a.
-				SendMessage(g_antialiasingBox, CB_ADDSTRING, 0, (LPARAM)"off");
+				//-- anti-aliasing mode.
+				for( uint i = 0; i < array_size(multiSamplingTypes); ++i)
+					SendMessage(g_antialiasingBox, CB_ADDSTRING, 0, (LPARAM)toStr(multiSamplingTypes[i]).c_str());
 
 				SendMessage(g_renderApiBox,	   CB_SETCURSEL, 1, (LPARAM)"Direct3D 10"); 
 				SendMessage(g_resolutionsBox,  CB_SETCURSEL, 0, (LPARAM)toStr(dResolutions[0]).c_str()); 
 				SendMessage(g_modeBox,		   CB_SETCURSEL, 0, (LPARAM)"windowed"); 
-				SendMessage(g_antialiasingBox, CB_SETCURSEL, 0, (LPARAM)"off"); 
+				SendMessage(g_antialiasingBox, CB_SETCURSEL, 0, (LPARAM)toStr(multiSamplingTypes[0]).c_str()); 
 
 				return TRUE;
 			}
@@ -161,22 +178,35 @@ namespace os
 			{
 			case IDOK:
 				{
+					uint index = 0;
 					render::VideoMode videoMode;
 					
-					uint index = (uint)SendMessage(g_resolutionsBox, CB_GETCURSEL, 0, 0);
-					videoMode.width	 = dResolutions[index].width;
-					videoMode.height = dResolutions[index].height;
-					videoMode.bpp	 = dResolutions[index].bpp;
-					videoMode.depth	 = 24;
+					//-- screen resolution.
+					{
+						index = static_cast<uint>(SendMessage(g_resolutionsBox, CB_GETCURSEL, 0, 0));
+						videoMode.width	 = dResolutions[index].width;
+						videoMode.height = dResolutions[index].height;
+						videoMode.bpp	 = dResolutions[index].bpp;
+						videoMode.depth	 = 24;
+					}
 
-					index = (uint)SendMessage(g_renderApiBox, CB_GETCURSEL, 0, 0);
-					g_renderAPI = static_cast<render::ERenderAPIType>(index);
-
-					videoMode.fullScreen = ((uint)SendMessage(g_modeBox, CB_GETCURSEL, 0, 0)) != 0;
-
-					index = (uint)SendMessage(g_antialiasingBox, CB_GETCURSEL, 0, 0);
-
-					// TODO: обрабатывать выбор режима антиалиасинга.
+					//-- render API.
+					{
+						index = static_cast<uint>(SendMessage(g_renderApiBox, CB_GETCURSEL, 0, 0));
+						g_renderAPI = static_cast<render::ERenderAPIType>(index);
+					}
+					
+					//-- screen mode.
+					{
+						index = static_cast<uint>(SendMessage(g_modeBox, CB_GETCURSEL, 0, 0));
+						videoMode.fullScreen = (index != 0);
+					}
+					
+					//-- anti-aliasing.
+					{
+						index = static_cast<uint>(SendMessage(g_antialiasingBox, CB_GETCURSEL, 0, 0));
+						videoMode.multiSampling = multiSamplingTypes[index];
+					}
 
 					Engine::instance().setVideoMode(videoMode);
 					

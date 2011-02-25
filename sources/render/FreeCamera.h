@@ -40,11 +40,6 @@ namespace brUGE
 		void _strafe(float value);
 		void _throw(float value);
 
-		// Консольные фукнции.
-		int _setSensitivity	(float sens);
-		int _setAcceleration(float accl);
-		int _setSpeed		(float speed);
-	
 	private:
 		bool	m_updateInput;
 		bool	m_drawDebug;

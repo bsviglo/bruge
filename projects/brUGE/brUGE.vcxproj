@@ -164,6 +164,7 @@
     <ClCompile Include="..\..\sources\render\Font.cpp" />
     <ClCompile Include="..\..\sources\render\Frustum.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
@@ -227,6 +228,7 @@
     <ClInclude Include="..\..\sources\render\Font.h" />
     <ClInclude Include="..\..\sources\render\Frustum.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Mesh.hpp" />
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />

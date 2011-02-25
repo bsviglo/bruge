@@ -172,7 +172,8 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 	
 			BlendStateDesc bDesc;
@@ -181,11 +182,13 @@ namespace render
 			//-- create depth texture.
 			{
 				ITexture::Desc desc;
-				desc.width     = m_screenRes.width;
-				desc.height    = m_screenRes.height;
-				desc.bindFalgs = ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
-				desc.format	   = ITexture::FORMAT_R32F;
-				desc.texType   = ITexture::TYPE_2D;
+				desc.width			= m_screenRes.width;
+				desc.height			= m_screenRes.height;
+				desc.sample.count	= m_videoMode.multiSampling.m_count;
+				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
+				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
+				desc.format			= ITexture::FORMAT_R32F;
+				desc.texType		= ITexture::TYPE_2D;
 
 				pass.m_rt = m_device->createTexture(desc, NULL, 0);
 				if (!pass.m_rt)
@@ -210,7 +213,7 @@ namespace render
 			BlendStateDesc bDesc;
 			bDesc.blendEnable[0] = true;
 			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
-			bDesc.destBlend		 = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.destBlend	 	 = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
 			bDesc.blendOp		 = BlendStateDesc::BLEND_OP_ADD;
 			bDesc.srcBlendAlpha  = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
 			bDesc.destBlendAlpha = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
@@ -243,7 +246,8 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
@@ -364,7 +368,7 @@ namespace render
 				PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
 				m_device->backToMainFrameBuffer();
-				m_device->clear(CLEAR_COLOR, Color(0.25f,0.25f,0.25f,1), 0.0f, 0);
+				m_device->clear(CLEAR_COLOR, Color(0.5f,0.5f,0.5f,1), 0.0f, 0);
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);

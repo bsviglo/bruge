@@ -4,11 +4,25 @@
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
 #include "gui/imgui_render.hpp"
+#include "console/Console.h"
 #include "console/TimingPanel.h"
 
 using namespace brUGE;
 using namespace brUGE::utils;
 using namespace brUGE::math;
+
+
+//-- start unnamed namespace.
+//--------------------------------------------------------------------------------------------------
+namespace
+{
+
+	bool g_showVisibilityBoxes = false;
+
+}
+//--------------------------------------------------------------------------------------------------
+//-- end unnamed namespace.
+
 
 namespace brUGE
 {
@@ -18,6 +32,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool RenderWorld::init()
 	{
+
+		REGISTER_CONSOLE_VALUE("r_showVisibilityBoxes", bool, g_showVisibilityBoxes);
+
 		bool success = true;
 
 		m_renderOps.reserve(2000);
@@ -95,10 +112,10 @@ namespace render
 				{
 					continue;
 				}
-				//else
-				//{
-				//	m_debugDrawer->drawAABB(inst.m_transform->m_worldBounds, Color(1,0,0,0));
-				//}
+				else if (g_showVisibilityBoxes)
+				{
+					m_debugDrawer->drawAABB(inst.m_transform->m_worldBounds, Color(1,0,0,0));
+				}
 
 				//-- 2. gather render operations.
 				if (inst.m_mesh)

@@ -1,0 +1,17 @@
+<materials>
+	<material name="diffuse">
+		<properties>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmLeaves.dds"/>
+		</properties>
+	</material>
+	<material name="diffuse">
+		<properties>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmBark.dds"/>
+		</properties>
+	</material>
+	<material name="diffuse">
+		<properties>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmFrond.dds"/>
+		</properties>
+	</material>
+</materials>

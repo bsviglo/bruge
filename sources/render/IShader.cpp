@@ -25,6 +25,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::setUniformBlock(const char* name, const void* data, uint size)
 	{
+		assert(name != nullptr);
+		assert(data != nullptr);
+		assert(size > 0);
+
 		IndexEx* ublockIndex = NULL;
 		if (m_search_ubuffers.search(name, ublockIndex))
 		{
@@ -34,6 +38,11 @@ namespace render
 				if (id != INVALID_ID && m_ubuffers[id].data.data != NULL)
 				{
 					UniformBlockDesc& ublock = m_ubuffers[id].data;
+
+					assert(ublock.data != nullptr);
+					assert(ublock.size > 0);
+
+					
 					memcpy(ublock.data, data, size);
 					ublock.isDirty = true;
 					return true;

@@ -57,9 +57,6 @@ namespace render
 
 	private:
 		void _swapBuffers();
-		
-		//-- console functions.
-		int _drawDebugInfo(bool);
 
 	private:
 		bool						m_isEnabled;

@@ -19,10 +19,10 @@ namespace brUGE
 			m_drawDebug(true),
 			m_pos(0.0f, 0.0f, 0.0f)
 	{
-		// Регистрация консольных комманд.
-		REGISTER_CONSOLE_METHOD("fc_sens", _setSensitivity, FreeCamera);
-		REGISTER_CONSOLE_METHOD("fc_accel", _setAcceleration, FreeCamera);
-		REGISTER_CONSOLE_METHOD("fc_speed", _setSpeed, FreeCamera);
+		//-- console functions and variables.
+		REGISTER_CONSOLE_MEMBER_VALUE("fc_sens",  float, m_mouseSens,  FreeCamera);
+		REGISTER_CONSOLE_MEMBER_VALUE("fc_accel", float, m_mouseAccel, FreeCamera);
+		REGISTER_CONSOLE_MEMBER_VALUE("fc_speed", float, m_speed,	   FreeCamera);
 
 		//-- register watchers.
 		REGISTER_RO_MEMBER_WATCHER("camera position", vec3f, FreeCamera, m_pos);
@@ -109,31 +109,4 @@ namespace brUGE
 		m_pos += up().scale(value);	
 	}
 	
-	// Консольные фукнции. 
-	//------------------------------------------
-
-	//------------------------------------------
-	int FreeCamera::_setSensitivity(float sens)
-	{
-		if (sens == 0)	ConWarning("%.3f", m_mouseSens);
-		else			m_mouseSens = sens;
-		return 0;
-	}
-	
-	//------------------------------------------
-	int FreeCamera::_setAcceleration(float accl)
-	{
-		if (accl == 0)	ConWarning("%.3f", m_mouseAccel);
-		else			m_mouseAccel = accl;
-		return 0;
-	}
-
-	//------------------------------------------
-	int FreeCamera::_setSpeed(float speed)
-	{
-		if (speed == 0)	ConWarning("%.3f", m_speed);
-		else			m_speed = speed;
-		return 0;
-	}
-
 } // brUGE

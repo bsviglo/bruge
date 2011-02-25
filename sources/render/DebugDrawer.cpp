@@ -27,7 +27,7 @@ namespace render
 	//---------------------------------------------------------------------------------------------
 	bool DebugDrawer::init()
 	{
-		REGISTER_CONSOLE_METHOD("r_drawDebugInfo", _drawDebugInfo, DebugDrawer);
+		REGISTER_CONSOLE_MEMBER_VALUE("r_drawDebugInfo", bool, m_isEnabled, DebugDrawer);
 		m_vertices.reserve(1024);
 
 		//-- create wire geometry vertex buffer.
@@ -534,13 +534,6 @@ namespace render
 				m_textDataVec.clear();
 			}
 		}
-	}
-	
-	//---------------------------------------------------------------------------------------------
-	int DebugDrawer::_drawDebugInfo(bool flag)
-	{
-		m_isEnabled = flag;
-		return 0;
 	}
 
 } // render

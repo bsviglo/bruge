@@ -97,6 +97,14 @@ bool Demo::init()
 		}
 	}
 
+	mat.setIdentity();
+	mat.postTranslation(0.0f, 0.0f, 20.0f);
+	for (uint i = 0; i < 5; ++i)
+	{
+		mat.postTranslation(-5, 0, 0);
+		gameWorld.addGameObj("resources/models/palm.xml", &mat);
+	}
+
 
 	//mat.setScale(0.1f, 0.1f, 0.1f);
 	mat.setIdentity();

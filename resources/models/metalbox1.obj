@@ -1,13 +1,4 @@
-# 
-# Wavefront OBJ file
-# Converted by the DEEP Exploration 3.5.10.1242
-# Right Hemisphere, LTD
-# http://www.righthemisphere.com/
-# 
-# object Object #0
-
-mat_desc materials/metalbox1.mtl
-
+mtllib materials/metalbox1.mtl
 g Object__0
 v 0.2912 0.218412 0.446155
 v 0.2912 0.218412 -0.446155

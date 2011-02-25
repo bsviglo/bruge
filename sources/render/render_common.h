@@ -45,17 +45,28 @@ namespace render
 		RENDER_API_DX10,
 	};
 
+	//-- multi-sampling info.
+	struct MultiSampling
+	{
+		MultiSampling() : m_count(1), m_quality(0) { } 
+		MultiSampling(uint count, uint quality) : m_count(count), m_quality(quality) { } 
+
+		uint m_count;
+		uint m_quality;
+	};
+
 	//-- video mode info.
 	struct VideoMode
 	{
-		uint width;
-		uint height;
-		uint bpp;
-		uint depth;
-		uint stencil;
-		uint frequancy;
-		bool vSync;
-		bool fullScreen;
+		uint			width;
+		uint			height;
+		uint			bpp;
+		uint			depth;
+		uint			stencil;
+		uint			frequancy;
+		MultiSampling	multiSampling;
+		bool			vSync;
+		bool			fullScreen;
 	};
 
 /*

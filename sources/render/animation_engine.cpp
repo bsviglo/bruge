@@ -33,20 +33,6 @@ namespace
 	//----------------------------------------------------------------------------------------------
 	bool g_drawSkeletons = false;
 	bool g_drawNodes = false;
-	
-	//----------------------------------------------------------------------------------------------
-	int drawSkeletons(bool flag)
-	{
-		g_drawSkeletons = flag;
-		return 0;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	int drawNodes(bool flag)
-	{
-		g_drawNodes = flag;
-		return 0;
-	}
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -60,9 +46,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::init()
 	{
-		//-- register console funcs.
-		REGISTER_CONSOLE_FUNC("anim_drawSkeletons",  drawSkeletons);
-		REGISTER_CONSOLE_FUNC("anim_drawNodes", drawNodes);
+		//-- register console functions and values.
+		REGISTER_CONSOLE_VALUE("anim_drawSkeletons", bool, g_drawSkeletons);
+		REGISTER_CONSOLE_VALUE("anim_drawNodes",	 bool, g_drawNodes);
 
 		return true;
 	}
