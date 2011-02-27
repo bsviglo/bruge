@@ -10,11 +10,18 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::setConstantAsRawData(const char* name, const void* data, uint size)
 	{
+		assert(name != nullptr);
+		assert(data != nullptr);
+		assert(size > 0);
+
 		Index* constIndex = NULL;
 		if (m_search_constants.search(name, constIndex))
 		{
 			Constant& c = m_constants[*constIndex];
 			UniformBlockDesc& ublock = m_ubuffers[c.ublockIndex].data;
+
+			assert(c.size == size);
+
 			memcpy(ublock.data + c.offset, data, size);
 			ublock.isDirty = true;
 			return true;
@@ -41,7 +48,7 @@ namespace render
 
 					assert(ublock.data != nullptr);
 					assert(ublock.size > 0);
-
+					assert(ublock.size >= size);
 					
 					memcpy(ublock.data, data, size);
 					ublock.isDirty = true;
@@ -55,6 +62,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::changeUniformBuffer(const char* name, const Ptr<IBuffer>& newBuffer)
 	{
+		assert(name != nullptr);
+		assert(newBuffer.isValid());
+
 		IndexEx* ublockIndex = NULL;
 		if (m_search_ubuffers.search(name, ublockIndex))
 		{
@@ -79,6 +89,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::setSampler(const char* name, SamplerStateID state)
 	{
+		assert(name != nullptr);
+		assert(state != CONST_INVALID_HANDLE);
+
 		IndexEx* samplerIndex = NULL;
 		if (m_search_samplers.search(name, samplerIndex))
 		{
@@ -98,6 +111,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::setTexture(const char* name, ITexture* texture)
 	{
+		assert(name != nullptr);
+		assert(texture != nullptr);
+
 		IndexEx* textureIndex = NULL;
 		if (m_search_textures.search(name, textureIndex))
 		{
@@ -116,6 +132,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool IShader::setTextureBuffer(const char* name, IBuffer* buffer)
 	{
+		assert(name != nullptr);
+		assert(buffer != nullptr);
+
 		IndexEx* tbufferIndex = NULL;
 		if (m_search_tbuffers.search(name, tbufferIndex))
 		{

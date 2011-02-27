@@ -1,0 +1,13 @@
+<materials>
+	<material name="dir_lights_resolve">
+		<properties/>
+	</material>
+	<!--
+	<material name="point_lights_resolve">
+		<properties/>
+	</material>
+	<material name="spot_lights_resolve">
+		<properties/>
+	</material>
+	-->
+</materials>

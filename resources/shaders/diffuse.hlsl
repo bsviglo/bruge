@@ -14,6 +14,7 @@ vs_out_common main(vs_in_common i)
 
 texture2D(float4, t_auto_diffuseMap);
 texture2D(float4, t_auto_decalsMask);
+texture2D(float4, t_auto_lightsMask);
 
 float4 main(vs_out_common i) : SV_TARGET
 {
@@ -21,19 +22,14 @@ float4 main(vs_out_common i) : SV_TARGET
 	float2 ssc		  = i.pos.xy * g_screenRes.zw;
 	float4 srcColor   = sample2D(t_auto_diffuseMap, i.texCoord.xy);
 	float4 decalColor = sample2D(t_auto_decalsMask, ssc);
+	float4 lightsMask = sample2D(t_auto_lightsMask, ssc);
 	
-	float3 outRGB     = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);
+	float3 colorRGB = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);
+
+    float3 chrom = lightsMask.rgb / (G_EPS + luminance(lightsMask.rgb));
+    float3 spec  = chrom * lightsMask.a;
 	
-	//--
-	float3 dir = -g_worldLightPos + i.wPos;
-
-	float3 normal = normalize(i.normal);
-	dir = normalize(dir);
-
-	float  light = max(dot(normal, dir), 0.15f);
-	float3 oCol  = outRGB * light;
-
-	return float4(oCol, 1.0f);
+	return float4(lightsMask.rgb * colorRGB + 0.1f * spec, 1.0f);
 };
 	
 #endif

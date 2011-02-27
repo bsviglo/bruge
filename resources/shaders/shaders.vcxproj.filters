@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{a277bee7-98c3-4739-bff9-24f93d1256e0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ambient.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="common.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="console.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="debug_solid.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="debug_wire.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="decals.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="diffuse.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="diffuse_skinned.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="dir_lights_resolve.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="dlaa.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="font.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="gui.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="point_lights_resolve.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="post_processing.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skinned_z_pre_pass.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="spot_lights_resolve.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ssaa.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="test.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="z_pre_pass.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

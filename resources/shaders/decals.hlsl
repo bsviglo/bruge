@@ -11,6 +11,7 @@ struct vs_out
 	float4 row2			: TEXCOORD3;
 	float4 row3			: TEXCOORD4;
 	float2 invScale		: TEXCOORD5;
+	float3 vsDir		: TEXCOORD6;
 };
 
 struct Instance
@@ -107,10 +108,15 @@ vs_out main(vs_in i)
 	};
 
 	//-- 5. Now do regular vertex shader with usage of the previous calculated data.
-	float4 wPos	  = mul(float4(i.pos, 1.0f), worldMat);
+	float4 wPos	= mul(float4(i.pos, 1.0f), worldMat);
+
+	//-- 6. calculate view vector to properly restore world space position.
+	float3 vsDir = (wPos.xyz - g_cameraPos.xyz);
+
 	o.pos		  = mul(wPos, g_viewProjMat);
 	o.instanceId  = i.instanceId;
 	o.invScale	  = 1.0f / scale.xy;
+	o.vsDir		  = vsDir;
 
 	o.row0 = lookAtMat[0];
 	o.row1 = lookAtMat[1];
@@ -124,7 +130,7 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
-texture2D(float, t_auto_depthMap);
+texture2D(float4, t_auto_depthMap);
 texture2D(float4, diffuse);
 
 //-------------------------------------------------------------------------------------------------
@@ -132,23 +138,17 @@ float4 main(vs_out i) : SV_TARGET
 {
 	//-- calculate texture coordinates and clip coordinates.
 	float2 texCoord = i.pos.xy * g_screenRes.zw;
-	float2 clipPos;
-	clipPos.x = +2.0f * texCoord.x - 1.0f;
-	clipPos.y = -2.0f * texCoord.y + 1.0f;
 	
-	//-- read depth.
-	float pixelDepth = sample2D(t_auto_depthMap, texCoord.xy);
-
-	//-- transform to world space.
-	float4 pixelWorldPos  = mul(float4(clipPos.x, clipPos.y, pixelDepth, 1.0f), g_invViewProjMat);
-	pixelWorldPos /= pixelWorldPos.w;
+	float  viewZ = sample2D(t_auto_depthMap, texCoord.xy).w;
+	float3 vDir  = normalize(i.vsDir);
+	float3 pixelWorldPos = g_cameraPos + vDir * viewZ;
 
 	//-- reconstruct decal projection matrix.
 	float4x4 decalViewProjMat = { i.row0, i.row1, i.row2, i.row3 };
 
 	//-- calculate texture coordinates for projection texture.
 	//-- 1. apply (inv Translate * inv Rotate)
-	float4 pixelClipPosInTexSpace = mul(pixelWorldPos, decalViewProjMat);
+	float4 pixelClipPosInTexSpace = mul(float4(pixelWorldPos, 1.0f), decalViewProjMat);
 
 	//-- 2. apply (inv Scale)
 	pixelClipPosInTexSpace.xy *= 2.0f * i.invScale;

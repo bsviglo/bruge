@@ -94,7 +94,7 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::destroy()
+	bool DebugDrawer::fini()
 	{
 		//-- release render resources.
 
@@ -109,6 +109,8 @@ namespace render
 
 		//-- text rendering.
 		m_font.reset();
+
+		return true;
 	}
 
 	//---------------------------------------------------------------------------------------------

@@ -187,7 +187,7 @@ namespace render
 				desc.sample.count	= m_videoMode.multiSampling.m_count;
 				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
 				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
-				desc.format			= ITexture::FORMAT_R32F;
+				desc.format			= ITexture::FORMAT_RGBA16F;
 				desc.texType		= ITexture::TYPE_2D;
 
 				pass.m_rt = m_device->createTexture(desc, NULL, 0);
@@ -234,8 +234,49 @@ namespace render
 					return false;
 			}
 		}
+
+		//-- 3. PASS_LIGHT
+		{
+			PassDesc& pass = m_passes[PASS_LIGHT];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			bDesc.blendEnable[0] = true;
+			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.destBlend	 	 = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.blendOp		 = BlendStateDesc::BLEND_OP_ADD;
+			bDesc.srcBlendAlpha  = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.destBlendAlpha = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.blendAlphaOp   = BlendStateDesc::BLEND_OP_ADD;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+
+			//-- create decals mask texture.
+			{
+				ITexture::Desc desc;
+				desc.width			= m_screenRes.width;
+				desc.height			= m_screenRes.height;
+				desc.sample.count	= m_videoMode.multiSampling.m_count;
+				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
+				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
+				desc.format			= ITexture::FORMAT_RGBA16F;
+				desc.texType		= ITexture::TYPE_2D;
+
+				pass.m_rt = m_device->createTexture(desc, NULL, 0);
+				if (!pass.m_rt)
+					return false;
+			}
+		}
 		
-		//-- 3. PASS_MAIN_COLOR
+		//-- 4. PASS_MAIN_COLOR
 		{
 			PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
@@ -254,7 +295,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 4. PASS_DEBUG_WIRE
+		//-- 5. PASS_DEBUG_WIRE
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
@@ -271,7 +312,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 5. PASS_DEBUG_SOLID
+		//-- 6. PASS_DEBUG_SOLID
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
 
@@ -325,14 +366,40 @@ namespace render
 	{
 		m_pass = type;
 
-		switch (type)
+		switch (m_pass)
 		{
 		case PASS_Z_ONLY:
 			{
-				PassDesc& pass = m_passes[PASS_Z_ONLY];
+				PassDesc& pass = m_passes[m_pass];
 
 				m_device->clear(CLEAR_DEPTH, Color(), 1.0f, 0);
 				m_device->clearColorRT(pass.m_rt.get(), Color(1,1,1,1));
+				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				break;
+			}
+		case PASS_DECAL:
+			{
+				PassDesc& pass = m_passes[m_pass];
+				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
+				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				break;
+			}
+		case PASS_LIGHT:
+			{
+				PassDesc& pass = m_passes[m_pass];
+				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
 				m_device->setRasterizerState(pass.m_stateR);
@@ -350,22 +417,9 @@ namespace render
 			{
 				break;
 			}
-		case PASS_DECAL:
-			{
-				PassDesc& pass = m_passes[PASS_DECAL];
-				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
-				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
-
-				m_device->setRasterizerState(pass.m_stateR);
-				m_device->setDepthStencilState(pass.m_stateDS, 0);
-				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
-
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
-				break;
-			}
 		case PASS_MAIN_COLOR:
 			{
-				PassDesc& pass = m_passes[PASS_MAIN_COLOR];
+				PassDesc& pass = m_passes[m_pass];
 
 				m_device->backToMainFrameBuffer();
 				m_device->clear(CLEAR_COLOR, Color(0.5f,0.5f,0.5f,1), 0.0f, 0);
@@ -383,7 +437,7 @@ namespace render
 			}
 		case PASS_DEBUG_WIRE:
 			{
-				PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
+				PassDesc& pass = m_passes[m_pass];
 
 				m_device->backToMainFrameBuffer();
 
@@ -396,7 +450,7 @@ namespace render
 			}
 		case PASS_DEBUG_SOLID:
 			{
-				PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
+				PassDesc& pass = m_passes[m_pass];
 
 				m_device->backToMainFrameBuffer();
 
@@ -474,9 +528,19 @@ namespace render
 			if (ro.m_instanceCount != 0)
 			{
 				assert(ro.m_instanceTB);
-				m_device->drawIndexedInstanced(
-					ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
-					);	
+
+				if (ro.m_IB)
+				{
+					m_device->drawIndexedInstanced(
+						ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
+						);
+				}
+				else
+				{
+					m_device->drawInstanced(
+						ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
+						);
+				}
 			}
 			else
 			{

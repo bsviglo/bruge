@@ -166,6 +166,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\sources\render\light_manager.cpp" />
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
     <ClCompile Include="..\..\sources\render\physic_world.cpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="..\..\sources\render\IRenderDevice.h" />
     <ClInclude Include="..\..\sources\render\IShader.h" />
     <ClInclude Include="..\..\sources\render\ITexture.h" />
+    <ClInclude Include="..\..\sources\render\light_manager.hpp" />
     <ClInclude Include="..\..\sources\render\materials.hpp" />
     <ClInclude Include="..\..\sources\render\post_processing.hpp" />
     <ClInclude Include="..\..\sources\render\render_common.h" />
@@ -254,6 +256,7 @@
     <ClInclude Include="..\..\sources\build_time.h" />
     <ClInclude Include="..\..\sources\Exception.h" />
     <ClInclude Include="..\..\sources\prerequisites.h" />
+    <ClInclude Include="..\..\sources\render\vertex_format.hpp" />
     <ClInclude Include="..\..\sources\win32Res\resource.h" />
   </ItemGroup>
   <ItemGroup>

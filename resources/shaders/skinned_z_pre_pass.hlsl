@@ -5,7 +5,7 @@
 struct vs_out
 {
 	float4 pos	: SV_POSITION;
-	float4 cPos : TEXCOORD0;
+	float3 wPos	: TEXCOORD0;
 	float2 tc	: TEXCOORD1;
 };
 
@@ -37,6 +37,7 @@ float3 boneTransf(in uint idx, in float3 pos)
     return mul(float4(pos, 1.0f), bone).xyz;
 }
 
+//-------------------------------------------------------------------------------------------------
 struct vs_in
 {                                           
 	float3 normal		: NORMAL;
@@ -58,7 +59,7 @@ vs_out main(vs_in input)
     }
     
 	o.pos  = mul(float4(worldPos, 1.0f), g_viewProjMat);
-	o.cPos = o.pos;
+	o.wPos = worldPos;
 	o.tc   = input.tc;
 
     return o;
@@ -68,12 +69,14 @@ vs_out main(vs_in input)
 
 #ifdef _FRAGMENT_SHADER_
 
-sampler 		  t_auto_diffuseMap_sml;
-Texture2D<float4> t_auto_diffuseMap_tex;
+//-------------------------------------------------------------------------------------------------
+texture2D(float4, t_auto_diffuseMap);
 
-	float4 main(vs_out i) : SV_TARGET
-	{
-		return i.cPos.z / i.cPos.w;
-	};
+//-------------------------------------------------------------------------------------------------
+float4 main(vs_out i) : SV_TARGET
+{
+	float dist = length(i.wPos - g_cameraPos.xyz);
+	return float4(0,0,0, dist);
+};
 	
 #endif

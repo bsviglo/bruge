@@ -24,7 +24,7 @@ namespace render
 		~DebugDrawer() {}
 
 		bool init();
-		void destroy();
+		bool fini();
 
 		//-- wire meshes.
 		void drawLine		(const vec3f& start, const vec3f& end, const Color& color);

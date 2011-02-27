@@ -51,7 +51,7 @@ namespace render
 
 		//-- 2. setup full-screen quad.
 		{
-			VertexXYZTC vertices[4];
+			VertexXYZUV vertices[4];
 
 			//-- left-top
 			vertices[0].m_pos.set(-1.f, 1.f, 0.0f);
@@ -69,7 +69,7 @@ namespace render
 			vertices[3].m_pos.set(1.f, -1.f, 0.0f);
 			vertices[3].m_tc.set (1.f, 1.f);
 
-			if (!(m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZTC))))
+			if (!(m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
 		}
 

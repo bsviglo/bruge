@@ -2,6 +2,7 @@
 
 #include "prerequisites.h"
 #include "materials.hpp"
+#include "vertex_format.hpp"
 #include <vector>
 #include <map>
 
@@ -32,11 +33,6 @@ namespace render
 		Ptr<ITexture> find(const char* rtName);
 
 	private:
-		struct VertexXYZTC
-		{
-			vec3f m_pos;
-			vec2f m_tc;
-		};
 
 		struct RTDesc
 		{

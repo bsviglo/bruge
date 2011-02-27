@@ -3,6 +3,7 @@
 #include "Exception.h"
 #include "utils/Thread.h"
 #include "render/IRenderDevice.h"
+#include "gui/imgui.h"
 
 using namespace brUGE;
 using namespace brUGE::render;

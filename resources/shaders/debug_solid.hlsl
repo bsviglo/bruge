@@ -1,5 +1,6 @@
 #include "common.hlsl"
 
+//-------------------------------------------------------------------------------------------------
 struct vs_out
 {
 	float4 pos		: SV_POSITION;
@@ -8,6 +9,7 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
+//-------------------------------------------------------------------------------------------------
 struct vs_in
 {                                           
 	float3 pos		  : POSITION;
@@ -16,6 +18,7 @@ struct vs_in
 	uint   instanceId : SV_InstanceID;
 };
 
+//-------------------------------------------------------------------------------------------------
 struct Instance
 {
 	float4x4 m_worldMat;
@@ -37,12 +40,7 @@ vs_out main(vs_in i)
 	
 	float4 wPos	= mul(float4(i.pos, 1.0f), inst.m_worldMat);
 	o.pos		= mul(wPos, g_viewProjMat);
-		
-	float3 dir    = normalize(g_worldLightPos - wPos.xyz);
-	float3 normal = normalize(mul(float4(i.normal, 0), inst.m_worldMat).xyz);
-	float  light  = min(0.5f, max(dot(normal, dir), 0.1f));
-
-	o.color	= inst.m_color * light;	
+	o.color		= inst.m_color;	
 	
     return o;
 }
@@ -51,6 +49,7 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
+//-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {	
 	return i.color;

@@ -62,14 +62,14 @@ namespace render
 	class RenderSystem : public utils::Singleton<RenderSystem>
 	{
 	public:
-		//-- ToDo:
+		//-- ToDo: reconsider this representation of the render passes.
 		enum EPassType
 		{
 			PASS_Z_ONLY,	
-			PASS_SHADOW_CAST,
-			PASS_SHADOW_RECEIVE,
 			PASS_DECAL,
 			PASS_LIGHT,
+			PASS_SHADOW_CAST,
+			PASS_SHADOW_RECEIVE,
 			PASS_MAIN_COLOR,
 			PASS_POST_PROCESSING,
 			PASS_DEBUG_WIRE,
@@ -113,6 +113,7 @@ namespace render
 		PostProcessing*		postProcessing()		 { return &m_postProcessing; }
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 		ITexture*			decalsMask()			 { return m_passes[PASS_DECAL].m_rt.get(); }
+		ITexture*			lightsMask()			 { return m_passes[PASS_LIGHT].m_rt.get(); }
 
 		const mat4f&		lastViewProjMat() const				{ return m_lastViewProjMat; }
 		const mat4f&		invLastViewProjMat() const			{ return m_invLastViewProjMat; }

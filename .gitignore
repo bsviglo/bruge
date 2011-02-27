@@ -1,0 +1,35 @@
+#-- brUGE 2011(C)
+#------------------------------------------------------------------------------
+
+#-- common project folders.
+#------------------------------------------------------------------------------
+/Output
+
+#-- C++ files and related to them intermediate files.
+#------------------------------------------------------------------------------
+*.user
+*.ncb
+*.log
+*.pdb
+*.idl
+*.idb
+*.bsc
+*.ib_tag
+*.ib_pdb_index
+*.htm
+*.sbr
+*.suo
+*.dep
+*.manifest
+*.vpj
+*.pch
+*.ilk
+*.aps
+*.tlog
+*.cache
+*.unsuccessfulbuild
+*.lastbuildstate
+*.opensdf
+*.sdf
+*.ipch
+*.manifest.res

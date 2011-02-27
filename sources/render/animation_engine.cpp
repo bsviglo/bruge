@@ -4,6 +4,7 @@
 #include "math/math_all.hpp"
 #include "game_world.hpp"
 #include "render_world.hpp"
+#include "DebugDrawer.h"
 
 using namespace brUGE::os;
 using namespace brUGE::utils;

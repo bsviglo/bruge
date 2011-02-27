@@ -50,6 +50,9 @@
     <Filter Include="render\framework\post processing">
       <UniqueIdentifier>{7c637e0e-deee-4c19-b069-d818cf7bfce9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\lights">
+      <UniqueIdentifier>{f7316f3c-5b73-41ca-b05d-e43fb4e1b3cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -156,6 +159,9 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\post_processing.cpp">
       <Filter>render\framework\post processing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\light_manager.cpp">
+      <Filter>render\framework\lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +284,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\shader_context.hpp">
       <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\light_manager.hpp">
+      <Filter>render\framework\lights</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\vertex_format.hpp">
+      <Filter>render\framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

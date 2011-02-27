@@ -36,4 +36,8 @@
 	<params vertex="xyztc" pass0="ssaa"/>
   </material>
   
+  <material name="dir_lights_resolve" multipass="false" bumpMaped="false" skinned="false">
+	<params vertex="xyztc" pass0="dir_lights_resolve"/>
+  </material>
+  
 </materials>

@@ -1,5 +1,7 @@
 #include "engine/Engine.h"
 #include "render/decal_manager.hpp"
+#include "render/DebugDrawer.h"
+#include "render/light_manager.hpp"
 #include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
@@ -62,6 +64,12 @@ bool Demo::init()
 	GameWorld&		 gameWorld  = engine.gameWorld();
 	AnimationEngine& animEngine = engine.animationEngine();
 
+	DirectionLight light;
+	light.m_dir   = vec3f(0.5, -0.5, 0.5).getNormalized();
+	light.m_color = Color(1,1,1,1);
+
+	/*Handle lightID = */engine.renderWorld().lightsManager().addDirLight(light);
+
 	mat4f mat;
 	mat.setIdentity();
 
@@ -71,11 +79,11 @@ bool Demo::init()
 	gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
-	for (uint i = 0; i < 10; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
-		for (uint j = 0; j < 10; ++j)
+		for (uint j = 0; j < 5; ++j)
 		{
-			for (uint k = 0; k < 10; ++k)
+			for (uint k = 0; k < 5; ++k)
 			{
 				mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 				mat.postTranslation(-15, 25, -15);

@@ -6,6 +6,10 @@
 #include "gui/imgui_render.hpp"
 #include "console/Console.h"
 #include "console/TimingPanel.h"
+#include "DebugDrawer.h"
+#include "gui/imgui_render.hpp"
+#include "decal_manager.hpp"
+#include "light_manager.hpp"
 
 using namespace brUGE;
 using namespace brUGE::utils;
@@ -28,6 +32,17 @@ namespace brUGE
 {
 namespace render
 {
+	//----------------------------------------------------------------------------------------------
+	RenderWorld::RenderWorld()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	RenderWorld::~RenderWorld()
+	{
+
+	}
 
 	//----------------------------------------------------------------------------------------------
 	bool RenderWorld::init()
@@ -41,10 +56,12 @@ namespace render
 		m_debugDrawer.reset(new DebugDrawer);
 		m_decalManager.reset(new DecalManager);
 		m_imguiRender.reset(new imguiRender);
+		m_lightsManager.reset(new LightsManager);
 
 		success &= m_debugDrawer->init();
 		success &= m_decalManager->init();
 		success &= m_imguiRender->init();
+		success &= m_lightsManager->init();
 
 		return success;
 	}
@@ -54,28 +71,21 @@ namespace render
 	{
 		bool success = true;
 
-		for (uint i = 0; i < m_lightInstances.size(); ++i)
-			delete m_lightInstances[i];
-
 		for (uint i = 0; i < m_meshInstances.size(); ++i)
 			delete m_meshInstances[i];
 
 		m_renderOps.clear();
-		m_lightInstances.clear();
 		m_meshInstances.clear();
 
-		if (m_debugDrawer)
-			m_debugDrawer->destroy();
-
-		if (m_decalManager)
-			m_decalManager->fini();
-
-		if (m_imguiRender)
-			m_imguiRender->fini();
+		m_debugDrawer->fini();
+		m_decalManager->fini();
+		m_imguiRender->fini();
+		m_lightsManager->fini();
 
 		m_debugDrawer.reset();
 		m_decalManager.reset();
 		m_imguiRender.reset();
+		m_lightsManager.reset();
 
 		return success;
 	}
@@ -83,6 +93,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void RenderWorld::update(float dt)
 	{
+		m_lightsManager->update(dt);
 		m_decalManager->update(dt);
 		RenderSystem::instance().postProcessing()->update(dt);
 	}
@@ -144,7 +155,7 @@ namespace render
 		
 		//-- 2. z-only pass.
 		{
-			SCOPED_TIME_MEASURER_EX("z-pre pass")
+			SCOPED_TIME_MEASURER_EX("z-pass")
 			
 			rs().beginPass(RenderSystem::PASS_Z_ONLY);
 			rs().setCamera(m_camera.get());
@@ -154,7 +165,7 @@ namespace render
 
 		//-- 3. decal manager.
 		{
-			SCOPED_TIME_MEASURER_EX("decals")
+			SCOPED_TIME_MEASURER_EX("decal-pass")
 
 			RenderOps ops;
 			m_decalManager->gatherRenderOps(ops);
@@ -164,10 +175,23 @@ namespace render
 			rs().addRenderOps(ops);
 			rs().endPass();
 		}
-		
-		//-- 4. main pass.
+
+		//-- 4. light pass
 		{
-			SCOPED_TIME_MEASURER_EX("main pass")
+			SCOPED_TIME_MEASURER_EX("light-pass")
+
+			RenderOps ops;
+			m_lightsManager->gatherROPs(ops);
+
+			rs().beginPass(RenderSystem::PASS_LIGHT);
+			rs().setCamera(m_camera.get());
+			rs().addRenderOps(ops);
+			rs().endPass();
+		}
+		
+		//-- 5. main pass.
+		{
+			SCOPED_TIME_MEASURER_EX("main-pass")
 
 			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);
 			rs().setCamera(m_camera.get());
@@ -175,14 +199,14 @@ namespace render
 			rs().endPass();
 		}
 
-		//-- 5. draw post-processing.
+		//-- 6. draw post-processing.
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
 
 			rs().postProcessing()->draw();
 		}
 
-		//-- 6. update debug drawer.
+		//-- 7. update debug drawer.
 		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
 		//-- ToDo: reconsider.
 		{
@@ -191,7 +215,7 @@ namespace render
 			m_debugDrawer->draw();
 		}
 
-		//-- 7. draw imgui.
+		//-- 8. draw imgui.
 		{
 			SCOPED_TIME_MEASURER_EX("imgui")
 
@@ -199,37 +223,6 @@ namespace render
 		}
 
 		m_renderOps.clear();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	Handle RenderWorld::addLightDef(const LightInstance::Desc& desc)
-	{
-		LightInstance* lInst = new LightInstance();
-		lInst->m_data = desc;
-
-		m_lightInstances.push_back(lInst);
-		return m_lightInstances.size() - 1;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool RenderWorld::delLightDef(Handle handle)
-	{
-		if (handle == CONST_INVALID_HANDLE || static_cast<size_t>(handle) >= m_lightInstances.size())
-			return false;
-
-		delete m_lightInstances[handle];
-		m_lightInstances[handle] = NULL;
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	LightInstance* RenderWorld::getLightDef(Handle handle)
-	{
-		if (handle == CONST_INVALID_HANDLE || static_cast<size_t>(handle) >= m_lightInstances.size())
-			return nullptr;
-
-		return m_lightInstances[handle];
 	}
 
 	//----------------------------------------------------------------------------------------------

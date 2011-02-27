@@ -16,6 +16,38 @@ using namespace brUGE::os;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
+	//----------------------------------------------------------------------------------------------
+	class GlobalProperty : public IProperty
+	{
+	public:
+		GlobalProperty(ShaderContext& sc) : m_sc(sc) { }
+		virtual ~GlobalProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			m_value.m_screenRes.x = rs().screenRes().width;
+			m_value.m_screenRes.y = rs().screenRes().height;
+			m_value.m_screenRes.z = 1.0f / m_value.m_screenRes.x;
+			m_value.m_screenRes.w = 1.0f / m_value.m_screenRes.y;
+
+			m_value.m_farNearPlane.x = m_sc.camera().projection().nearDist;
+			m_value.m_farNearPlane.y = m_sc.camera().projection().farDist;
+			m_value.m_farNearPlane.z = m_value.m_farNearPlane.x + m_value.m_farNearPlane.y;
+			m_value.m_farNearPlane.w = 1.0f / m_value.m_farNearPlane.z;
+
+			return shader.setUniformBlock("cb_auto_Global", &m_value, sizeof(GlobalCB));
+		}
+
+	private:
+		struct GlobalCB
+		{
+			vec4f m_screenRes;
+			vec4f m_farNearPlane;
+		};
+		mutable GlobalCB m_value;
+		ShaderContext&	 m_sc;
+	};
+
 
 	//----------------------------------------------------------------------------------------------
 	class PerFrameProperty : public IProperty
@@ -26,16 +58,13 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
+			m_value.m_cameraPos				= m_sc.camera().position().toVec4();
 			m_value.m_viewMat				= m_sc.camera().viewMatrix();
+			m_value.m_invViewProjMat		= m_sc.camera().invViewMatrix();
 			m_value.m_viewProjMat			= m_sc.camera().viewProjMatrix();
 			m_value.m_invViewProjMat		= m_sc.camera().invViewProjMatrix();
 			m_value.m_lastViewProjMat		= rs().lastViewProjMat();
 			m_value.m_invLastViewProjMat	= rs().invLastViewProjMat();
-
-			m_value.m_screenRes.x			= rs().screenRes().width;
-			m_value.m_screenRes.y			= rs().screenRes().height;
-			m_value.m_screenRes.z			= 1.0f / rs().screenRes().width;
-			m_value.m_screenRes.w			= 1.0f / rs().screenRes().height;
 
 			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
 		}
@@ -43,12 +72,13 @@ namespace
 	private:
 		struct PerFrameCB
 		{
+			vec4f m_cameraPos;
 			mat4f m_viewMat;
+			mat4f m_invViewMat;
 			mat4f m_viewProjMat;
 			mat4f m_invViewProjMat;
 			mat4f m_lastViewProjMat;
 			mat4f m_invLastViewProjMat;
-			vec4f m_screenRes;
 		};
 		mutable PerFrameCB  m_value;
 		ShaderContext&		m_sc;
@@ -93,6 +123,9 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
+			//-- ToDo:
+			if (!m_sc.renderOp().m_weightsTB) return false;
+
 			return shader.setTextureBuffer("tb_auto_Weights", m_sc.renderOp().m_weightsTB);
 		}
 
@@ -274,6 +307,37 @@ namespace
 		ShaderContext& m_sc;
 	};
 
+
+	//----------------------------------------------------------------------------------------------
+	class LightsMaskAutoProperty : public IProperty
+	{
+	public:
+		LightsMaskAutoProperty(ShaderContext& sc)	: m_sc(sc)
+		{
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_NEAREST;
+			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			m_samplerID			= render::rd()->createSamplerState(sDesc);
+		}
+
+		virtual ~LightsMaskAutoProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			bool result = true;
+
+			result &= shader.setTexture("t_auto_lightsMask_tex", rs().lightsMask());
+			result &= shader.setSampler("t_auto_lightsMask_sml", m_samplerID);
+
+			return result;
+		}
+
+	private:
+		SamplerStateID m_samplerID;
+		ShaderContext& m_sc;
+	};
 	
 }
 //--------------------------------------------------------------------------------------------------
@@ -309,6 +373,7 @@ namespace render
 		rd()->setShaderIncludes(m_shaderIncludes.get());
 
 		//-- register auto-constants.
+		m_autoProperties["cb_auto_Global"]			= new GlobalProperty(*this);
 		m_autoProperties["cb_auto_PerFrame"]		= new PerFrameProperty(*this);
 		m_autoProperties["cb_auto_PerInstance"]		= new PerInstanceProperty(*this);
 		m_autoProperties["tb_auto_Weights"]			= new WeightsProperty(*this);
@@ -318,6 +383,7 @@ namespace render
 		m_autoProperties["t_auto_bumpMap"]			= new TextureAutoProperty(*this, "bumpMap", false);
 		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
 		m_autoProperties["t_auto_decalsMask"]		= new DecalsMaskAutoProperty(*this);
+		m_autoProperties["t_auto_lightsMask"]		= new LightsMaskAutoProperty(*this);
 
 		return true;
 	}
