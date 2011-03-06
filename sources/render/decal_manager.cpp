@@ -28,15 +28,6 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool DecalManager::init()
 	{
-		//-- load decals material.
-		{
-			RODataPtr file = FileSystem::instance().readFile("resources/materials/decals.mtl");
-			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
-			{
-				return false;
-			}
-		}
-
 		//-- create geometry instancing buffers.
 		{
 			m_staticTB = rd()->createBuffer(
@@ -54,6 +45,35 @@ namespace render
 				ERROR_MSG("Can't create texture buffers.");
 				return false;
 			}
+		}
+
+		//-- load decals textures.
+		std::unique_ptr<TextureProperty> prop;
+		{
+			Ptr<ITexture> tex = ResourcesManager::instance().loadTexture("textures/decal.dds");
+
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_TRILINEAR_ANISO;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.wrapS			= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.wrapT			= SamplerStateDesc::ADRESS_MODE_BORDER;
+			sDesc.maxAnisotropy = 16;
+			sDesc.borderColour	= Color(0,0,0,0);
+
+			SamplerStateID stateS = rd()->createSamplerState(sDesc);
+
+			prop.reset(new TextureProperty("diffuse", tex, stateS));
+		}
+
+		//-- load decals material.
+		{
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/decals.mtl");
+			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
+			{
+				return false;
+			}
+
+			m_material->addProperty(prop.release());
 		}
 
 		//-- load standard system unit cube mesh.

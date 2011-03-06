@@ -42,6 +42,24 @@ namespace
 		else							return ShaderContext::SHADER_RENDER_PASS_COUNT;
 	}
 
+	//----------------------------------------------------------------------------------------------
+	SamplerStateDesc::ETexFilter getFilter(const std::string& type)
+	{
+		if		(type == "POINT")		return SamplerStateDesc::FILTER_NEAREST;
+		else if	(type == "BILINEAR")	return SamplerStateDesc::FILTER_BILINEAR;
+		else if (type == "TRINILEAR")	return SamplerStateDesc::FILTER_TRILINEAR;
+		else if (type == "ANISO")		return SamplerStateDesc::FILTER_TRILINEAR_ANISO;
+		else							{ assert(0); return SamplerStateDesc::FILTER_NEAREST; }
+	}
+
+	//----------------------------------------------------------------------------------------------
+	SamplerStateDesc::ETexAddressMode getWrapping(const std::string& type)
+	{
+		if		(type == "CLAMP")	return SamplerStateDesc::ADRESS_MODE_CLAMP;
+		else if (type == "WRAP")	return SamplerStateDesc::ADRESS_MODE_WRAP;
+		else if (type == "MIRROR")	return SamplerStateDesc::ADRESS_MODE_MIRROR;
+		else						{ assert(0); return SamplerStateDesc::ADRESS_MODE_CLAMP; }
+	}
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -298,7 +316,32 @@ namespace render
 					}
 					else
 					{
-						out->m_props.push_back(new TextureProperty(name, tex));
+						SamplerStateID stateS = CONST_INVALID_HANDLE;
+						if (auto sampler = prop.child("sampler"))
+						{
+							SamplerStateDesc::ETexAddressMode wrapMode   = getWrapping(sampler.attribute("wrapping").value());
+							SamplerStateDesc::ETexFilter	  filterMode = getFilter(sampler.attribute("filter").value());
+
+							SamplerStateDesc sDesc;
+							sDesc.minMagFilter	= filterMode;
+							sDesc.wrapR			= wrapMode;
+							sDesc.wrapS			= wrapMode;
+							sDesc.wrapT			= wrapMode;
+
+							if (wrapMode == SamplerStateDesc::FILTER_TRILINEAR_ANISO)
+							{
+								sDesc.maxAnisotropy = 16;
+							}
+
+							stateS = rd()->createSamplerState(sDesc);
+						}
+						else
+						{
+							SamplerStateDesc sDesc;
+							stateS = rd()->createSamplerState(sDesc);
+						}
+
+						out->m_props.push_back(new TextureProperty(name, tex, stateS));
 					}
 				}
 				else if (type == "float")
@@ -406,6 +449,15 @@ namespace render
 			delete m_props[i];
 
 		m_props.clear();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Material::addProperty(IProperty* prop)
+	{
+		m_props.push_back(prop);
+
+		m_fx.m_props	  = (m_props.size() > 0) ? &m_props[0] : nullptr;
+		m_fx.m_propsCount = m_props.size();
 	}
 
 } //-- render

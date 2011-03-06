@@ -180,7 +180,6 @@ namespace render
 		enum ETexFilter
 		{
 			FILTER_NEAREST,
-			FILTER_LINEAR,
 			FILTER_BILINEAR,
 			FILTER_TRILINEAR,
 			FILTER_BILINEAR_ANISO,

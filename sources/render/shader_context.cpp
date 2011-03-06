@@ -365,10 +365,6 @@ namespace brUGE
 {
 namespace render
 {
-
-	//-- ToDo: reconsider.
-	/*static*/ SamplerStateID TextureProperty::m_samplerID = CONST_INVALID_HANDLE;
-
 	//----------------------------------------------------------------------------------------------
 	ShaderContext::ShaderContext()
 		:	m_renderOp(NULL)
@@ -688,8 +684,9 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	TextureProperty::TextureProperty(const std::string& name, const Ptr<ITexture>& texture)
-		:	m_texture(texture)
+	TextureProperty::TextureProperty(
+		const std::string& name, const Ptr<ITexture>& texture, SamplerStateID state)
+		:	m_texture(texture), m_stateS(state)
 	{
 		m_textureName = utils::makeStr("%s_tex", name.c_str());
 		m_samplerName = utils::makeStr("%s_sml", name.c_str());
@@ -698,25 +695,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool TextureProperty::apply(IShader& shader) const
 	{
-		//-- ToDo: reconsider.
-		static bool inited = false;
-		if (!inited)
-		{
-			SamplerStateDesc sDesc;
-			sDesc.minMagFilter	= SamplerStateDesc::FILTER_BILINEAR;
-			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
-			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_BORDER;
-			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_BORDER;
-			sDesc.borderColour  = Color(0,0,0,0);
-			m_samplerID			= render::rd()->createSamplerState(sDesc);
-
-			inited = true;
-		}
-
 		bool result = true;
 
 		result &= shader.setTexture(m_textureName.c_str(), m_texture.get());
-		result &= shader.setSampler(m_samplerName.c_str(), m_samplerID);
+		result &= shader.setSampler(m_samplerName.c_str(), m_stateS);
 
 		return result;
 	}

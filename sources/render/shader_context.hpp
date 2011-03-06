@@ -26,13 +26,8 @@ namespace render
 	//-- 2. auto   - means that this property is shared between another shader and maybe shader stages.
 	//--             e.g. ViewMat, ProjMat, CameraPos and so on.
 	//----------------------------------------------------------------------------------------------
-	class IProperty
+	class IProperty : public NonCopyable
 	{
-	private:
-		//-- make non-copyable.
-		IProperty(const IProperty&);
-		IProperty& operator = (const IProperty&);
-
 	public:
 		IProperty() { }
 		virtual ~IProperty() { }
@@ -70,14 +65,21 @@ namespace render
 	class TextureProperty : public IProperty
 	{
 	public:
-		TextureProperty(const std::string& name, const Ptr<ITexture>& texture);
+		TextureProperty(const std::string& name, const Ptr<ITexture>& texture, SamplerStateID state);
+		~TextureProperty() { }
+
 		virtual bool apply(IShader& shader) const;
 
+		void set(const Ptr<ITexture>& value)
+		{
+			m_texture = value;
+		}
+
 	private:
-		static SamplerStateID	m_samplerID;
-		std::string				m_textureName;
-		std::string				m_samplerName;
-		Ptr<ITexture>			m_texture;
+		SamplerStateID	m_stateS;
+		std::string		m_textureName;
+		std::string		m_samplerName;
+		Ptr<ITexture>	m_texture;
 	};
 
 

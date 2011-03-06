@@ -1,5 +1,3 @@
 <material shader="decals" vertex="xyzuvn">
-	<properties>
-		<property name="diffuse" type="texture" value="textures/decal.dds"/>
-	</properties>
+	<properties/>
 </material>

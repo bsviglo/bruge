@@ -15,7 +15,7 @@ namespace render
 	//-- ToDo: document 
 	//-- ToDo: needed reconsiderations.
 	//----------------------------------------------------------------------------------------------
-	class PostProcessing
+	class PostProcessing : public NonCopyable
 	{
 	public:
 		PostProcessing();
@@ -45,8 +45,9 @@ namespace render
 		{
 			struct Pass
 			{
-				Pass() : m_isEnabled(false), m_clearRT(false) { }
+				Pass() : m_copyBB(false), m_isEnabled(false), m_clearRT(false) { }
 
+				bool		  m_copyBB;
 				bool		  m_isEnabled;
 				bool		  m_clearRT;
 				std::string   m_name;

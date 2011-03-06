@@ -100,6 +100,9 @@ namespace render
 		Material();
 		~Material();
 
+		//-- Note: when we add new property to the material we also give it ownership for this
+		//--	   property.
+		void			addProperty(IProperty* prop);
 		const RenderFx* renderFx() const { return &m_fx; }
 
 	private:
