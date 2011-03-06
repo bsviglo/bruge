@@ -3,11 +3,13 @@
 #include "os/FileSystem.h"
 #include "loader/ResourcesManager.h"
 #include "utils/ArgParser.h"
+#include "utils/string_utils.h"
 #include "post_processing.hpp"
 
 using namespace brUGE;
 using namespace brUGE::os;
 using namespace brUGE::utils;
+using namespace brUGE::render;
 
 //-- start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
@@ -15,6 +17,31 @@ namespace
 {
 	//-- xml file.
 	const char* g_materialsDescXML = "resources/system/materials.xml";
+
+	//-- Returns vector of pins based on the incoming text representation.
+	//----------------------------------------------------------------------------------------------
+	uint getPins(std::vector<std::string>& out, const char* pins)
+	{
+		StrTokenizer tokenizer(pins, " |");
+		std::string	token;
+
+		while (tokenizer.hasMoreTokens())
+		{
+			tokenizer.nextToken(token);
+			out.push_back(token);
+		}
+		return out.size();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	ShaderContext::EShaderRenderPassType getPassType(const std::string& type)
+	{
+		if      (type == "Z_PRE_PASS")	return ShaderContext::SHADER_RENDER_PASS_Z_ONLY;
+		else if (type == "SHADOW_CAST") return ShaderContext::SHADER_RENDER_PASS_SHADOW_CAST;
+		else if (type == "MAIN_COLOR")	return ShaderContext::SHADER_RENDER_PASS_MAIN_COLOR;
+		else							return ShaderContext::SHADER_RENDER_PASS_COUNT;
+	}
+
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -57,102 +84,59 @@ namespace render
 		}
 
 		//-- parse individual materials.
-		for (auto mat =  doc.document_element().child("material"); mat; mat = mat.next_sibling("material"))
+		for (auto mat = doc.document_element().child("material"); mat; mat = mat.next_sibling("material"))
 		{
 			//-- material data.
-			RenderMat renderMat;
+			Ptr<MatShader> rMat(new MatShader);
 
-			renderMat.m_isMultipass = mat.attribute("multipass").as_bool();
-			renderMat.m_isBumpMaped = mat.attribute("bumpMaped").as_bool();
-			renderMat.m_isSkinned   = mat.attribute("skinned").as_bool();
-
+			rMat->m_isBumpMaped = mat.attribute("bumped").as_bool();
+			rMat->m_isSkinned   = mat.attribute("skinned").as_bool();
+			rMat->m_isMultipass = true;
 			const char* name   = mat.attribute("name").value();
-			auto		params = mat.child("params");
 
-			if (renderMat.m_isMultipass)
+			for (auto pass = mat.child("pass"); pass; pass = pass.next_sibling("pass"))
 			{
-				//-- z pre pass.
-				if (auto param = params.attribute("pass0"))
+				const char* type	  = pass.attribute("type").value();
+				const char* vertexStr = pass.attribute("vertex").value();
+				const char* shaderStr = pass.attribute("shader").value();
+				const char* pinsStr   = pass.attribute("pins").value();
+
+				ShaderContext::EShaderRenderPassType passType = getPassType(type);
+				if (passType == ShaderContext::SHADER_RENDER_PASS_COUNT)
 				{
-					renderMat.m_shaders[0] = rs().shaderContext()->getShader(param.value());
-					assert(renderMat.m_shaders[0] != CONST_INVALID_HANDLE);
-				}
-				else
-				{
-					assert(0);
+					ERROR_MSG("Undefined pass %s.", type);
+					return false;
 				}
 
-				//-- shadow casting pass.
-				/*
-				if (auto param = params.attribute("pass1"))
-				{
-					renderMat.m_shaders[1] = rs().shaderContext()->getShader(param.value());
-					assert(renderMat.m_shaders[1] != CONST_INVALID_HANDLE);
-				}
-				*/
+				std::pair<Handle, Handle>& shader = rMat->m_shader[passType];
+				//-- ToDo: more checking.
 
-				//-- main color pass.
-				if (auto param = params.attribute("pass2"))
-				{
-					renderMat.m_shaders[2] = rs().shaderContext()->getShader(param.value());
-					assert(renderMat.m_shaders[2] != CONST_INVALID_HANDLE);
-				}
-				else
-				{
-					assert(0);
-				}
+				std::vector<std::string> vPins;
+				getPins(vPins, pinsStr);
 
-				//-- vertex declaration.
-				if (auto param = params.attribute("vertex"))
+				shader.first  = rs().shaderContext()->getShader(shaderStr, &vPins);
+				shader.second = rs().shaderContext()->getVertexLayout(shader.first, vertexStr);
+				
+				if (shader.first == CONST_INVALID_HANDLE || shader.second == CONST_INVALID_HANDLE)
 				{
-					renderMat.m_vertDecl = rs().shaderContext()->getVertexLayout(
-						renderMat.m_shaders[2], param.value()
+					ERROR_MSG("Can't create shader %s, or shader's input signature doesn't match"\
+						"to vertex layout %s.", shaderStr, vertexStr
 						);
-					assert(renderMat.m_vertDecl != CONST_INVALID_HANDLE);
-				}
-				else
-				{
-					assert(0);
+					return false;
 				}
 			}
-			else
-			{
-				//-- shader.
-				if (auto param = params.attribute("pass0"))
-				{
-					renderMat.m_shaders[0] = rs().shaderContext()->getShader(param.value());
-					assert(renderMat.m_shaders[0] != CONST_INVALID_HANDLE);
-				}
-				else
-				{
-					assert(0);
-				}
 
-				//-- vertex declaration.
-				if (auto param = params.attribute("vertex"))
-				{
-					renderMat.m_vertDecl = rs().shaderContext()->getVertexLayout(
-						renderMat.m_shaders[0], param.value()
-						);
-					assert(renderMat.m_vertDecl != CONST_INVALID_HANDLE);
-				}
-				else
-				{
-					assert(0);
-				}
-			}
-			
 			auto iter = m_materials.find(name);
 			if (iter != m_materials.end())
 			{
-				assert(0);
+				ERROR_MSG("Duplication material with name %s. The last one was ignored", name);
+				return false;
 			}
 			else
 			{
-				m_materials[name] = renderMat;
+				m_materials[name] = rMat;
 			}
 		}
-
 		return true;
 	}
 
@@ -227,19 +211,43 @@ namespace render
 		Ptr<Material> out(new Material());
 
 		//-- parse shader.
-		if (auto name = section.attribute("name"))
+		if (auto param = section.attribute("use"))
 		{
-			auto iter = m_materials.find(name.value());
+			auto iter = m_materials.find(param.value());
 			if (iter != m_materials.end())
 			{
-				out->m_fx.m_shader = &iter->second;
+				out->m_matShader = iter->second;
+				out->m_fx.m_shader = iter->second.get();
 			}
 			else
 			{
-				assert(0);
+				ERROR_MSG("Material with name %s doesn't exist.", param.value());
 				return nullptr;
 			}
 		}
+		else
+		{
+			ShaderContext& sc = *rs().shaderContext();
+
+			const char* shader = section.attribute("shader").value();
+			const char* vertex = section.attribute("vertex").value();
+
+			Ptr<Materials::MatShader> matShader(new Materials::MatShader);
+
+			matShader->m_shader[0].first  = sc.getShader(shader, nullptr);
+			matShader->m_shader[0].second = sc.getVertexLayout(matShader->m_shader[0].first, vertex);
+
+			if (matShader->m_shader[0].first  == CONST_INVALID_HANDLE ||
+				matShader->m_shader[0].second == CONST_INVALID_HANDLE)
+			{
+				ERROR_MSG("Invalid material shader or vertex declaration.");
+				return nullptr;
+			}
+
+			out->m_matShader = matShader;
+			out->m_fx.m_shader = matShader.get();
+		}
+
 
 		//-- parse shader properties.
 		if (auto props = section.child("properties"))
@@ -254,10 +262,10 @@ namespace render
 					const char* texName = prop.attribute("value").value();
 
 					//-- ToDo: reconsider. Probably needed creating some texture manager, which
-					//--	   can generalize idea behind texture loading. I.e. it gives us oppor-
-					//--	   tunities to interpret render targets from post-processing framework
-					//--	   as well as another common textures, which are implicitly loaded from
-					//--	   the hard disk.
+					//--	   can generalize idea behind texture loading. I.e. it gives us
+					//--	   opportunities to interpret render targets from post-processing
+					//--	   framework as well as another common textures, which are implicitly
+					//--	   loaded from the hard disk.
 					Ptr<ITexture> tex;
 					{
 						//-- 1. first search texture among post-processing's render targets.
@@ -296,6 +304,21 @@ namespace render
 				else if (type == "float")
 				{
 					float val = prop.attribute("value").as_float();
+
+					//-- firstly try to load system resources.
+					if (name == "alphaRef")
+					{
+						out->m_alphaRef = val / 256.0f;
+						out->m_fx.m_sysProps.m_alphaRef = val / 256.0f;
+						continue;
+					}
+					else if (name == "doubleSided")
+					{
+						out->m_doubleSided = static_cast<bool>(val);
+						out->m_fx.m_sysProps.m_doubleSided = static_cast<bool>(val);
+						continue;
+					}
+					
 					NumericProperty<float>* shaderProp = new NumericProperty<float>(name, val);
 
 					auto ui = prop.child("ui");
@@ -336,6 +359,12 @@ namespace render
 
 					out->m_props.push_back(shaderProp);
 				}
+				else if (type == "vec4")
+				{
+					vec4f val = parseTo<vec4f>(prop.attribute("value").value());
+					NumericProperty<vec4f>* shaderProp = new NumericProperty<vec4f>(name, val);
+					out->m_props.push_back(shaderProp);
+				}
 				else
 				{
 					assert(!"another types currently are not implemented.");
@@ -351,11 +380,17 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Materials::RenderMat::RenderMat()
-		: m_isSkinned(false), m_isBumpMaped(false), m_isMultipass(false), m_vertDecl(CONST_INVALID_HANDLE)
+	Materials::MatShader::MatShader()
+		: m_isSkinned(false), m_isBumpMaped(false), m_isMultipass(false)
 	{
 		for (uint i = 0; i < ShaderContext::SHADER_RENDER_PASS_COUNT; ++i)
-			m_shaders[i] = CONST_INVALID_HANDLE;
+			m_shader[i] = std::make_pair(CONST_INVALID_HANDLE, CONST_INVALID_HANDLE);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Materials::MatShader::~MatShader()
+	{
+
 	}
 
 	//----------------------------------------------------------------------------------------------

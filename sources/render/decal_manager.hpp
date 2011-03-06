@@ -15,13 +15,8 @@ namespace render
 	class Mesh;
 
 	//----------------------------------------------------------------------------------------------
-	class DecalManager
+	class DecalManager : public NonCopyable
 	{
-	private:
-		//-- make non-copyable.
-		DecalManager(const DecalManager&);
-		DecalManager& operator = (const DecalManager&);
-
 	public:
 		DecalManager();
 		~DecalManager();

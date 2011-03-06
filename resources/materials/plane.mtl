@@ -1,5 +1,5 @@
-<material name="diffuse">
-  <properties>
-	  <property name="diffuseMap" type="texture" value="textures/ground.dds"/>
-  </properties>
+<material use="diffuse">
+    <properties>
+        <property name="diffuseMap" type="texture" value="textures/ground.dds"/>
+    </properties>
 </material>

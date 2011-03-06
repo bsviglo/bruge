@@ -74,11 +74,11 @@ namespace brUGE
 
 		float dt = 0;
 		MSG msg	= { 0 };
-		Thread thread;
+		//Thread thread;
 
-		m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		thread.createThread(Engine::_eventGenerator);
-		thread.setPriority(THREAD_PRIORITY_TIME_CRITICAL);
+		//m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		//thread.createThread(Engine::_eventGenerator);
+		//thread.setPriority(THREAD_PRIORITY_TIME_CRITICAL);
 
 		//-- do main cycle.
 		while (m_isWorking)
@@ -163,7 +163,13 @@ namespace brUGE
 				//-- wait next frame.
 				{
 					SCOPED_TIME_MEASURER_EX("CPU idle")
-					WaitForSingleObject(m_hEvent, INFINITE);
+					uint curDelta = static_cast<uint>(dt * 1000);
+					uint maxDelta = static_cast<uint>(1000.0f / m_maxFPS);
+					if (curDelta < maxDelta)
+					{
+						::Sleep(maxDelta - curDelta);
+					}
+					//WaitForSingleObject(m_hEvent, INFINITE);
 				}
 			}
 			m_timingPanel->stop();

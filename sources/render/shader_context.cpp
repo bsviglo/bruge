@@ -17,6 +17,19 @@ using namespace brUGE::os;
 namespace
 {
 	//----------------------------------------------------------------------------------------------
+	uint calcPinsCode(const std::vector<std::string>& pins)
+	{
+		uint code = 0;
+		for (auto i = pins.begin(); i != pins.end(); ++i)
+		{
+			if		(*i == "PIN_ALPHA_TEST")	code |= ShaderContext::PIN_ALPHA_TEST;
+			else if (*i == "PIN_BUMP_MAP")		code |= ShaderContext::PIN_BUMP_MAP;
+			else								assert(!"Invalid pin code.");
+		}
+		return code;
+	}
+
+	//----------------------------------------------------------------------------------------------
 	class GlobalProperty : public IProperty
 	{
 	public:
@@ -58,13 +71,13 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
-			m_value.m_cameraPos				= m_sc.camera().position().toVec4();
-			m_value.m_viewMat				= m_sc.camera().viewMatrix();
-			m_value.m_invViewProjMat		= m_sc.camera().invViewMatrix();
-			m_value.m_viewProjMat			= m_sc.camera().viewProjMatrix();
-			m_value.m_invViewProjMat		= m_sc.camera().invViewProjMatrix();
-			m_value.m_lastViewProjMat		= rs().lastViewProjMat();
-			m_value.m_invLastViewProjMat	= rs().invLastViewProjMat();
+			m_value.m_cameraPos			 = m_sc.camera().position().toVec4();
+			m_value.m_viewMat			 = m_sc.camera().viewMatrix();
+			m_value.m_invViewProjMat	 = m_sc.camera().invViewMatrix();
+			m_value.m_viewProjMat		 = m_sc.camera().viewProjMatrix();
+			m_value.m_invViewProjMat	 = m_sc.camera().invViewProjMatrix();
+			m_value.m_lastViewProjMat	 = rs().lastViewProjMat();
+			m_value.m_invLastViewProjMat = rs().invLastViewProjMat();
 
 			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
 		}
@@ -97,8 +110,10 @@ namespace
 			//-- ToDo:
 			if (!m_sc.renderOp().m_worldMat) return false;
 
-			m_value.worldMat = *m_sc.renderOp().m_worldMat;
-			m_value.MVPMat   = mult(m_value.worldMat, m_sc.camera().viewProjMatrix());
+			m_value.m_worldMat = *m_sc.renderOp().m_worldMat;
+			m_value.m_MVPMat   = mult(m_value.m_worldMat, m_sc.camera().viewProjMatrix());
+			m_value.m_MVMat	   = mult(m_value.m_worldMat, m_sc.camera().viewMatrix());
+			m_value.m_alphaRef = m_sc.renderOp().m_material->m_sysProps.m_alphaRef;
 
 			return shader.setUniformBlock("cb_auto_PerInstance", &m_value, sizeof(PerInstanceCB));
 		}
@@ -106,8 +121,10 @@ namespace
 	private:
 		struct PerInstanceCB
 		{
-			mat4f worldMat;
-			mat4f MVPMat;
+			mat4f m_worldMat;
+			mat4f m_MVPMat;
+			mat4f m_MVMat;
+			float m_alphaRef;
 		};
 		mutable PerInstanceCB m_value;
 		ShaderContext&		  m_sc;
@@ -403,7 +420,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle ShaderContext::loadShader(const char* name)
+	Handle ShaderContext::loadShader(const char* name, const std::vector<std::string>* pins)
 	{
 		FileSystem& fs = FileSystem::instance();
 
@@ -419,7 +436,22 @@ namespace render
 		std::string src;
 		data->getAsString(src);
 
-		Ptr<IShader> shader = rd()->createShader(src.c_str(), NULL, 0);
+		std::vector<ShaderMacro> macroses;
+		if (pins)
+		{
+			for (auto i = pins->begin(); i != pins->end(); ++i)
+			{
+				ShaderMacro macro;
+				macro.name  = i->c_str();
+				macro.value = "1";
+
+				macroses.push_back(macro);
+			}
+		}
+
+		Ptr<IShader> shader = rd()->createShader(
+			src.c_str(), macroses.empty() ? nullptr : &macroses[0], macroses.size()
+			);
 		if (shader)	
 		{
 			//-- ToDo: find auto properties. For now we set the all auto properties to the shader
@@ -431,7 +463,7 @@ namespace render
 				props.push_back(iter->second);
 			}
 
-			//-- add to shader cash.
+			//-- add to shader cache.
 			m_shaderCache.push_back(make_pair(shader, props));
 
 			//-- add to shader search map.
@@ -444,16 +476,22 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle ShaderContext::getShader(const char* name)
+	Handle ShaderContext::getShader(const char* name, const std::vector<std::string>* pins)
 	{
-		auto iter = m_searchMap.find(name);
+		std::string fullName = name;
+		if (pins)
+		{
+			fullName = makeStr("%s_%d", name, calcPinsCode(*pins));
+		}
+		
+		auto iter = m_searchMap.find(fullName);
 		if (iter != m_searchMap.end())
 		{
 			return iter->second;
 		}
 		else
 		{
-			return loadShader(name);
+			return loadShader(name, pins);
 		}
 	}
 
@@ -488,7 +526,7 @@ namespace render
 			};
 			return rd()->createVertexLayout(desc, 2, *shader);
 		}
-		else if (desc == "xyztc")
+		else if (desc == "xyzuv")
 		{
 			VertexDesc desc[] = 
 			{
@@ -497,7 +535,7 @@ namespace render
 			};
 			return rd()->createVertexLayout(desc, 2, *shader);
 		}
-		else if (desc == "xyztcn")
+		else if (desc == "xyzuvn")
 		{
 			VertexDesc desc[] = 
 			{
@@ -507,19 +545,19 @@ namespace render
 			};
 			return rd()->createVertexLayout(desc, 3, *shader);
 		}
-		else if (desc == "xyztcntb")
+		else if (desc == "xyzuvntb")
 		{
 			VertexDesc desc[] = 
 			{
 				{ 0, TYPE_POSITION,	 FORMAT_FLOAT, 3},
 				{ 0, TYPE_TEXCOORD,  FORMAT_FLOAT, 2},
 				{ 0, TYPE_NORMAL,    FORMAT_FLOAT, 3},
-				{ 1, TYPE_TEXCOORD1, FORMAT_FLOAT, 3},
-				{ 1, TYPE_TEXCOORD1, FORMAT_FLOAT, 3}
+				{ 1, TYPE_TANGENT,   FORMAT_FLOAT, 3},
+				{ 1, TYPE_BINORMAL,  FORMAT_FLOAT, 3}
 			};
 			return rd()->createVertexLayout(desc, 5, *shader);
 		}
-		else if (desc == "ntc2ui")
+		else if (desc == "nuv2ui")
 		{
 			VertexDesc desc[] = 
 			{
@@ -570,11 +608,11 @@ namespace render
 
 		if (fx.m_shader->m_isMultipass)
 		{
-			shaderID = fx.m_shader->m_shaders[pass];
+			shaderID = fx.m_shader->m_shader[pass].first;
 		}
 		else
 		{
-			shaderID = fx.m_shader->m_shaders[0];
+			shaderID = fx.m_shader->m_shader[0].first;
 		}
 
 		assert(shaderID != CONST_INVALID_HANDLE);

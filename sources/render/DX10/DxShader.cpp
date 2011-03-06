@@ -26,7 +26,7 @@ namespace
 		const ShaderMacro* macros, uint mSize, ID3D10Blob** byteCode)
 	{
 		//-- convert to dx10 shader macro type.
-		std::vector<D3D10_SHADER_MACRO> d3d10Macros(mSize);
+		std::vector<D3D10_SHADER_MACRO> d3d10Macros;
 		{
 			D3D10_SHADER_MACRO macro;
 

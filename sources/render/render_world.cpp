@@ -77,10 +77,10 @@ namespace render
 		m_renderOps.clear();
 		m_meshInstances.clear();
 
-		m_debugDrawer->fini();
-		m_decalManager->fini();
-		m_imguiRender->fini();
-		m_lightsManager->fini();
+		if (m_debugDrawer)		m_debugDrawer->fini();
+		if (m_decalManager)		m_decalManager->fini();
+		if (m_imguiRender)		m_imguiRender->fini();
+		if (m_lightsManager)	m_lightsManager->fini();
 
 		m_debugDrawer.reset();
 		m_decalManager.reset();
@@ -203,7 +203,10 @@ namespace render
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
 
+			rs().beginPass(RenderSystem::PASS_POST_PROCESSING);
+			rs().addRenderOps(RenderOps());
 			rs().postProcessing()->draw();
+			rs().endPass();
 		}
 
 		//-- 7. update debug drawer.

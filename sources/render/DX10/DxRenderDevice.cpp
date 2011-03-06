@@ -571,17 +571,26 @@ namespace render
 	{
 		std::vector<D3D10_INPUT_ELEMENT_DESC> dxDescs(count);
 		D3D10_INPUT_ELEMENT_DESC oDesc;
-		size_t size = 0;
+
+		size_t sizes[MAX_VERTEX_STREAMS];
+		for (uint i = 0; i < MAX_VERTEX_STREAMS; ++i)
+			sizes[i] = 0;
 
 		for (uint i = 0; i < count; ++i)
 		{
 			const VertexDesc& iDesc = vd[i];
 
+			if (iDesc.stream >= MAX_VERTEX_STREAMS)
+			{
+				ERROR_MSG("Too many streams in vertex declaration. Maximum allowed is %d", MAX_VERTEX_STREAMS);
+				return CONST_INVALID_HANDLE;
+			}
+			
 			oDesc.InputSlot			= iDesc.stream;
 			oDesc.SemanticName		= dxSemantics[iDesc.type].name;
 			oDesc.SemanticIndex		= dxSemantics[iDesc.type].index;
 			oDesc.Format			= dxVertFormats[iDesc.format][iDesc.size - 1];
-			oDesc.AlignedByteOffset	= size;
+			oDesc.AlignedByteOffset	= sizes[iDesc.stream];
 			
 			// ToDo: reconsider with respect to instancing.
 			oDesc.InputSlotClass		= D3D10_INPUT_PER_VERTEX_DATA; 
@@ -590,7 +599,7 @@ namespace render
 			dxDescs[i] = oDesc;
 			
 			//-- calculate offset.
-			size += dxVertFormatSize[iDesc.format] * iDesc.size;
+			sizes[iDesc.stream] += dxVertFormatSize[iDesc.format] * iDesc.size;
 		}
 		
 		ComPtr<ID3D10InputLayout> dxLayout;

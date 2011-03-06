@@ -107,5 +107,8 @@
     <ClInclude Include="..\..\sources\math\math_all.hpp">
       <Filter>math</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sources\utils\NonCopyable.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

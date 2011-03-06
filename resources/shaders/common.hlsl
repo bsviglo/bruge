@@ -13,6 +13,10 @@
 #define sample1D(name, tc) name##_tex.Sample(name##_sml, tc)	
 #define sample2D(name, tc) name##_tex.Sample(name##_sml, tc)
 
+//-- Available pins.
+//#define PIN_ALPHA_TEST
+//#define PIN_BUMP_MAP
+
 //-- static variables.
 static float G_EPS = 0.0001f;
 
@@ -40,38 +44,12 @@ cbuffer cb_auto_PerInstance
 {
 	float4x4 g_worldMat;
 	float4x4 g_MVPMat;
-};
-
-//-- vertex 2 fragment.
-struct vs_out_common
-{
-	float4 pos		: SV_POSITION;	
-	float2 texCoord	: TEXCOORD0;
-	float3 wPos		: TEXCOORD1;
-	float3 normal	: TEXCOORD2;
+	float4x4 g_MVMat;
+	float    g_alphaRef;
 };
 
 #ifdef _VERTEX_SHADER_
 
-struct vs_in_common
-{                                           
-	float3 pos		: POSITION;
-	float2 texCoord	: TEXCOORD0;
-	float3 normal	: NORMAL;
-};
-
-vs_out_common vs_common(vs_in_common i)
-{
-    vs_out_common o;
-	
-	float4 wPos	= mul(float4(i.pos, 1), g_worldMat);
-	o.wPos		= wPos.xyz;
-	o.pos		= mul(wPos, g_viewProjMat);
-	o.normal	= mul(float4(i.normal, 0), g_worldMat).xyz;
-	o.texCoord	= i.texCoord;
-
-    return o;
-}
 
 #endif
 

@@ -4,6 +4,9 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{a277bee7-98c3-4739-bff9-24f93d1256e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="materials">
+      <UniqueIdentifier>{d96e65ae-1af6-4956-b953-1ea4b48c1e66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ambient.hlsl">
@@ -62,6 +65,55 @@
     </None>
     <None Include="z_pre_pass.hlsl">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="z_pre_pass_bump.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\system\materials.xml" />
+    <None Include="..\materials\cow.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\debug_solid.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\debug_wire.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\decals.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\exp_barrel.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\gui.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\lights.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\metalbox1.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\p_barrel.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\palm.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\plane.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\player.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\pole.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\ssaa.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\woodGate.mtl">
+      <Filter>materials</Filter>
     </None>
   </ItemGroup>
 </Project>

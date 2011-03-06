@@ -1,4 +1,3 @@
-<material name="ambient">
-  <properties>
-  </properties>
+<material use="ambient">
+    <properties/>
 </material>

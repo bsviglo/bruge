@@ -1,5 +1,5 @@
 <materials>
-	<material name="dir_lights_resolve">
+	<material shader="dir_lights_resolve" vertex="xyzuv">
 		<properties/>
 	</material>
 	<!--

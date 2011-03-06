@@ -1,43 +1,28 @@
-<materials>
-  
-  <material name="diffuse" multipass="true" bumpMaped="false" skinned="false">
-    <params vertex="xyztcn" pass0="z_pre_pass" pass1="cast_shadow_map" pass2="diffuse"/>
-  </material>
+<materialslib>
 
-  <material name="diffuse_skinned" multipass="true" bumpMaped="false" skinned="true">
-    <params vertex="ntc2ui" pass0="skinned_z_pre_pass" pass1="skinned_cast_shadow_map" pass2="diffuse_skinned"/>
-  </material>
+	<material name="ambient" bumped="false" skinned="false">
+		<pass type="Z_PRE_PASS" vertex="xyzuvn" shader="z_pre_pass"/>
+		<pass type="MAIN_COLOR" vertex="xyzuvn" shader="ambient"/>
+	</material>
+  
+	<material name ="diffuse" bumped="false" skinned="false">
+		<pass type="Z_PRE_PASS" vertex="xyzuvn" shader="z_pre_pass"/>
+		<pass type="MAIN_COLOR" vertex="xyzuvn" shader="diffuse"/>
+	</material>
 
-  <material name="ambient" multipass="true" bumpMaped="false" skinned="false">
-    <params vertex="xyztcn" pass0="z_pre_pass" pass1="cast_shadow_map" pass2="ambient"/>
-  </material>
+	<material name="bump" bumped="true" skinned="false">
+		<pass type="Z_PRE_PASS" vertex="xyzuvntb" shader="z_pre_pass" pins="PIN_BUMP_MAP"/>
+		<pass type="MAIN_COLOR" vertex="xyzuvntb" shader="diffuse" pins="PIN_BUMP_MAP"/>
+	</material>
 
-  <material name="debug_wire"  multipass="false" bumpMaped="false" skinned="false">
-    <params vertex="xyzc" pass0="debug_wire"/>
-  </material>
+	<material name="bump_alpha_test" bumped="true" skinned="false">
+		<pass type="Z_PRE_PASS" vertex="xyzuvntb" shader="z_pre_pass" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
+		<pass type="MAIN_COLOR" vertex="xyzuvntb" shader="diffuse" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
+	</material>
 
-  <material name="debug_solid" multipass="false" bumpMaped="false" skinned="false">
-    <params vertex="xyztcn" pass0="debug_solid"/>
-  </material>
-
-  <material name="decals" multipass="false" bumpMaped="false" skinned="false">
-    <params vertex="xyztcn" pass0="decals"/>
-  </material> 
-  
-  <material name="gui" multipass="false" bumpMaped="false" skinned="false">
-	<params vertex="xyzc" pass0="gui"/>
-  </material>
-  
-  <material name="test" multipass="false" bumpMaped="false" skinned="false">
-	<params vertex="xyztc" pass0="test"/>
-  </material>
-  
-  <material name="ssaa" multipass="false" bumpMaped="false" skinned="false">
-	<params vertex="xyztc" pass0="ssaa"/>
-  </material>
-  
-  <material name="dir_lights_resolve" multipass="false" bumpMaped="false" skinned="false">
-	<params vertex="xyztc" pass0="dir_lights_resolve"/>
-  </material>
-  
-</materials>
+	<material name="diffuse_skinned" bumped="false" skinned="true">
+		<pass type="Z_PRE_PASS" vertex="nuv2ui" shader="skinned_z_pre_pass"/>
+		<pass type="MAIN_COLOR" vertex="nuv2ui" shader="diffuse_skinned"/>
+	</material>
+ 
+</materialslib>

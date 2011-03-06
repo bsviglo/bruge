@@ -13,8 +13,8 @@ namespace render
 	//-- shader macro struct.
 	struct ShaderMacro
 	{
-		char* name;
-		char* value;
+		const char* name;
+		const char* value;
 	};
 
 

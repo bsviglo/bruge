@@ -21,24 +21,20 @@ namespace render
 	//-- needed materials descriptions will be read from the materials.xml file and then used
 	//-- to formulate desired material.
 	//----------------------------------------------------------------------------------------------
-	class Materials
+	class Materials : public NonCopyable
 	{
-	private:
-		//-- make non-copyable.
-		Materials(const Materials&);
-		Materials& operator = (const Materials&);
-
 	public:
-		struct RenderMat
+
+		struct MatShader : public RefCount, public NonCopyable
 		{
-			RenderMat();
+			MatShader();
+			~MatShader();
 
-			bool   m_isSkinned;
-			bool   m_isBumpMaped;
-			bool   m_isMultipass;
+			bool m_isSkinned;
+			bool m_isBumpMaped;
+			bool m_isMultipass;
 
-			Handle m_vertDecl;
-			Handle m_shaders[ShaderContext::SHADER_RENDER_PASS_COUNT];
+			std::pair<Handle, Handle> m_shader[ShaderContext::SHADER_RENDER_PASS_COUNT];
 		};
 
 	public:
@@ -53,7 +49,7 @@ namespace render
 		bool			createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data);
 
 	private:
-		typedef std::map<std::string, RenderMat> MaterialsMap;
+		typedef std::map<std::string, Ptr<MatShader>> MaterialsMap;
 
 		MaterialsMap m_materials;
 	};
@@ -63,49 +59,42 @@ namespace render
 	//-- the material. I.e. render doesn't worry about any kind of the memory management here.
 	//-- ToDo: need some reconsideration in the near future.
 	//----------------------------------------------------------------------------------------------
-	struct RenderFx
+	struct RenderFx : public NonCopyable
 	{
-	private:
-		//-- make non-copyable.
-		RenderFx(const RenderFx&);
-		RenderFx& operator = (const RenderFx&);
-
 	public:
-
 		RenderFx()
 			:	m_shader(nullptr), m_props(nullptr), m_propsCount(0) { }
 
-		struct SysProperties
+		struct SysPropertiesData
 		{
-			SysProperties() : m_bumpMap(nullptr), m_diffuseMap(nullptr) { }
+			SysPropertiesData()
+				:	m_bumpMap(nullptr), m_diffuseMap(nullptr),
+					m_alphaRef(1), m_doubleSided(false) { }
 
 			ITexture*	m_bumpMap;
 			ITexture*	m_diffuseMap;
+			float		m_alphaRef;
+			bool		m_doubleSided;
 		};
 
 		//-- shader(-s) and vertex declaration.
-		Materials::RenderMat* m_shader;
+		Materials::MatShader* m_shader;
 
 		//-- user defined properties.
 		IProperty**			  m_props;
 		uint				  m_propsCount;
 
 		//-- system auto properties may are used for more then one render pass.
-		SysProperties		  m_sysProps;
+		SysPropertiesData	  m_sysProps;
 	};
 
 
 	//-- Presents render system vision about the material. I.e. it manages the all things
 	//-- related to the resources management and loading.
 	//----------------------------------------------------------------------------------------------
-	class Material : public utils::RefCount
+	class Material : public RefCount, public NonCopyable
 	{
 		friend class Materials;
-
-	private:
-		//-- make non-copyable.
-		Material(const Material&);
-		Material& operator = (const Material&);
 
 	public:
 		Material();
@@ -114,12 +103,15 @@ namespace render
 		const RenderFx* renderFx() const { return &m_fx; }
 
 	private:
-		RenderFx		m_fx;
+		RenderFx					m_fx;
+		Properties					m_props;
+		Ptr<Materials::MatShader>	m_matShader;
 
-		Properties		m_props;
-
+		//-- system resources are shared between more than one render pass.
 		Ptr<ITexture>	m_diffuseTex;
 		Ptr<ITexture>	m_bumpTex;
+		float			m_alphaRef;
+		bool			m_doubleSided;
 	};
 
 

@@ -25,9 +25,9 @@ namespace
 	ShaderContext::EShaderRenderPassType g_render2shaderPass[] = 
 	{
 		ShaderContext::SHADER_RENDER_PASS_Z_ONLY,
+		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
+		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
 		ShaderContext::SHADER_RENDER_PASS_SHADOW_CAST,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
 		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
 		ShaderContext::SHADER_RENDER_PASS_MAIN_COLOR,
 		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
@@ -175,6 +175,9 @@ namespace render
 			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
+			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
 	
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -291,6 +294,9 @@ namespace render
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
+			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
+			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
@@ -320,6 +326,23 @@ namespace render
 			dsDesc.depthWriteMask = true;
 			dsDesc.depthEnable	  = true;
 			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- POST_PROCESSING
+		{
+			PassDesc& pass = m_passes[PASS_POST_PROCESSING];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = false;
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
@@ -508,15 +531,30 @@ namespace render
 		for (uint i = 0; i < ops.size(); ++i)
 		{
 			RenderOp&					ro = ops[i];
-			const Materials::RenderMat& rm = *ro.m_material->m_shader;
+			const RenderFx&				fx = *ro.m_material;
+			const Materials::MatShader& sm = *fx.m_shader;
 
-			m_device->setVertexLayout(rm.m_vertDecl);
-			m_device->setVertexBuffer(0, ro.m_mainVB);
+			m_device->setVertexLayout(sm.m_shader[g_render2shaderPass[m_pass]].second);
 
-			if (rm.m_isBumpMaped)
+			if (fx.m_sysProps.m_doubleSided)
 			{
-				m_device->setVertexBuffer(1, ro.m_tangentVB);
+				rd()->setRasterizerState(m_passes[m_pass].m_stateR_doubleSided);
 			}
+			else
+			{
+				rd()->setRasterizerState(m_passes[m_pass].m_stateR);
+			}
+
+			if (sm.m_isBumpMaped)
+			{
+				IBuffer* buffers[2] = { ro.m_mainVB, ro.m_tangentVB };
+				m_device->setVertexBuffers(0, buffers, 2);
+			}
+			else
+			{
+				m_device->setVertexBuffer(0, ro.m_mainVB);
+			}
+
 			if (ro.m_IB)
 			{
 				m_device->setIndexBuffer(ro.m_IB);

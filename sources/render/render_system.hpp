@@ -82,6 +82,7 @@ namespace render
 			Ptr<ITexture>		m_rt;
 			DepthStencilStateID m_stateDS;
 			RasterizerStateID	m_stateR;
+			RasterizerStateID	m_stateR_doubleSided;
 			BlendStateID		m_stateB;
 		};
 

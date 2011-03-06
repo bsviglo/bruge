@@ -1,5 +1,5 @@
-<material name="diffuse_skinned">
-  <properties>
-	  <property name="diffuseMap" type="texture" value="textures/body_d.dds"/>
-  </properties>
+<material use="diffuse_skinned">
+    <properties>
+        <property name="diffuseMap" type="texture" value="textures/body_d.dds"/>
+    </properties>
 </material>

@@ -10,7 +10,7 @@ struct vs_out
 
 struct vs_in
 {                                           
-	float4 pos	: POSITION;
+	float3 pos	: POSITION;
 	float2 tc	: TEXCOORD0;
 };
 
@@ -19,7 +19,7 @@ vs_out main(vs_in i)
 {
     vs_out o;
 	
-	o.pos  = i.pos;
+	o.pos  = float4(i.pos, 1.0f);
 	o.tc   = i.tc;
 	
     return o;

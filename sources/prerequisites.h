@@ -2,11 +2,13 @@
 
 #include "math/math_types.hpp"
 #include "utils/Ptr.h"
+#include "utils/NonCopyable.hpp"
 
 namespace brUGE
 {
 	using utils::RefCount;
 	using utils::Ptr;
+	using utils::NonCopyable;
 }
 
 //-- turn off something useless warnings.

@@ -11,7 +11,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\materials\cow.mtl" />
+    <None Include="..\materials\debug_solid.mtl" />
+    <None Include="..\materials\debug_wire.mtl" />
+    <None Include="..\materials\decals.mtl" />
+    <None Include="..\materials\exp_barrel.mtl" />
+    <None Include="..\materials\gui.mtl" />
+    <None Include="..\materials\lights.mtl" />
+    <None Include="..\materials\metalbox1.mtl" />
+    <None Include="..\materials\palm.mtl" />
+    <None Include="..\materials\plane.mtl" />
+    <None Include="..\materials\player.mtl" />
+    <None Include="..\materials\pole.mtl" />
+    <None Include="..\materials\p_barrel.mtl" />
+    <None Include="..\materials\ssaa.mtl">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="..\materials\woodGate.mtl" />
+    <None Include="..\system\materials.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ambient.hlsl" />
+    <None Include="z_pre_pass_bump.hlsl" />
     <None Include="common.hlsl" />
     <None Include="console.hlsl" />
     <None Include="debug_solid.hlsl" />

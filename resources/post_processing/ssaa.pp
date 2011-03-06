@@ -10,7 +10,7 @@
 	-->
 	
 	<pass name="ssaa" rt="BB" clearRT="false" enabled="true">
-		<material name="ssaa">
+		<material vertex="xyzuv" shader="ssaa">
 		  <properties>
 			<property name="g_filterWidth" type="float" value="1.75">
 				<ui type="slider" range="vec2f(0,5)" step="0.01"/>

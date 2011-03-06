@@ -108,6 +108,7 @@
     <ClInclude Include="..\..\sources\utils\DynamicLib.h" />
     <ClInclude Include="..\..\sources\utils\LogManager.h" />
     <ClInclude Include="..\..\sources\os\os_utils.hpp" />
+    <ClInclude Include="..\..\sources\utils\NonCopyable.hpp" />
     <ClInclude Include="..\..\sources\utils\Ptr.h" />
     <ClInclude Include="..\..\sources\utils\Singleton.h" />
     <ClInclude Include="..\..\sources\utils\string_utils.h" />

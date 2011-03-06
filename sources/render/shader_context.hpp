@@ -117,6 +117,15 @@ namespace render
 			SHADER_RENDER_PASS_COUNT
 		};
 
+		enum EShaderPin
+		{
+			PIN_NO_ONE	   = 0,
+			PIN_BUMP_MAP   = 1 << 0,
+			PIN_ALPHA_TEST = 1 << 1,
+
+			PIN_MAX_COUNT  = 2
+		};
+
 	public:
 		ShaderContext();
 		~ShaderContext();
@@ -125,7 +134,7 @@ namespace render
 		bool fini();
 
 		//-- load shader.
-		Handle			getShader(const char* name);
+		Handle			getShader(const char* name, const std::vector<std::string>* pins);
 		VertexLayoutID	getVertexLayout(Handle shader, const std::string& desc);
 		IShader*		shader(Handle handle);
 
@@ -136,7 +145,7 @@ namespace render
 		void			applyFor(RenderOp* op, EShaderRenderPassType pass);
 
 	private:
-		Handle loadShader(const char* name);
+		Handle loadShader(const char* name, const std::vector<std::string>* pins);
 
 	private:
 		typedef std::pair<Ptr<IShader>, Properties>	ShaderPair;
