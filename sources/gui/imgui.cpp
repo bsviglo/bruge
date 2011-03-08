@@ -472,7 +472,7 @@ bool imguiItem(const char* text, bool enabled)
 	return res;
 }
 
-bool imguiCheck(const char* text, bool checked, bool enabled)
+bool imguiCheck(const char* text, bool* checked, bool enabled)
 {
 	g_state.widgetId++;
 	unsigned int id = (g_state.areaId<<16) | g_state.widgetId;
@@ -489,7 +489,7 @@ bool imguiCheck(const char* text, bool checked, bool enabled)
 	const int cx = x+BUTTON_HEIGHT/2-CHECK_SIZE/2;
 	const int cy = y+BUTTON_HEIGHT/2-CHECK_SIZE/2;
 	addGfxCmdRoundedRect((float)cx-3, (float)cy-3, (float)CHECK_SIZE+6, (float)CHECK_SIZE+6, 4, imguiRGBA(128,128,128, isActive(id)?196:96));
-	if (checked)
+	if (*checked)
 	{
 		if (enabled)
 			addGfxCmdRoundedRect((float)cx, (float)cy, (float)CHECK_SIZE, (float)CHECK_SIZE, (float)CHECK_SIZE/2-1, imguiRGBA(255,255,255,isActive(id)?255:200));
@@ -502,10 +502,12 @@ bool imguiCheck(const char* text, bool checked, bool enabled)
 	else
 		addGfxCmdText(x+BUTTON_HEIGHT, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_LEFT, text, imguiRGBA(128,128,128,200));
 
+	if (res) *checked = !*checked;
+
 	return res;
 }
 
-bool imguiCollapse(const char* text, const char* subtext, bool checked, bool enabled)
+bool imguiCollapse(const char* text, const char* subtext, bool* checked, bool enabled)
 {
 	g_state.widgetId++;
 	unsigned int id = (g_state.areaId<<16) | g_state.widgetId;
@@ -522,7 +524,7 @@ bool imguiCollapse(const char* text, const char* subtext, bool checked, bool ena
 	bool over = enabled && inRect(x, y, w, h);
 	bool res = buttonLogic(id, over);
 	
-	if (checked)
+	if (*checked)
 		addGfxCmdTriangle(cx, cy, CHECK_SIZE, CHECK_SIZE, 2, imguiRGBA(255,255,255,isActive(id)?255:200));
 	else
 		addGfxCmdTriangle(cx, cy, CHECK_SIZE, CHECK_SIZE, 1, imguiRGBA(255,255,255,isActive(id)?255:200));
@@ -535,6 +537,8 @@ bool imguiCollapse(const char* text, const char* subtext, bool checked, bool ena
 	if (subtext)
 		addGfxCmdText(x+w-BUTTON_HEIGHT/2, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_RIGHT, subtext, imguiRGBA(255,255,255,128));
 	
+	if (res) *checked = !*checked;
+
 	return res;
 }
 

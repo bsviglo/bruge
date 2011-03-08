@@ -1,13 +1,6 @@
 <posteffect name="ssaa">
 	
-	<!--
-	<pass name="copy" rt="BBCopy" clearRT="false" enabled="false">
-		<material name="copyBB">
-		  <properties/>
-		</material>
-		<renderStates/>
-	</pass>
-	-->
+	<pass copyBB="1" rt="BBCopy" enabled="true"/>
 	
 	<pass name="ssaa" rt="BB" clearRT="false" enabled="true">
 		<material vertex="xyzuv" shader="ssaa">

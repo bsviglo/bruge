@@ -223,10 +223,8 @@ void Demo::gui()
 		imguiSlider("Slider", &slider[i], 0.0f, 20.0f, 0.01f);
 	}
 
-	if (imguiCheck("Show Log", showLog))
-		showLog = !showLog;
-	if (imguiCheck("Show Tools", showTools))
-		showTools = !showTools;
+	imguiCheck("Show Log", &showLog);
+	imguiCheck("Show Tools", &showTools);
 
 	imguiSeparator();
 	imguiLabel("Sample");

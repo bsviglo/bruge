@@ -277,10 +277,14 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::doSwapBuffers()
 	{
+#ifdef _DEBUG
+		HRESULT hr = 
+#endif // _DEBUG
+
 		m_dxgiSwapChain->Present(0, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
-		if (m_dxDevice.hasError())
+		if (FAILED(hr) || m_dxDevice.hasError())
 			ERROR_MSG("DXGI present failed.\nDesc: " + m_dxDevice.getErrorDesc());
 #endif // _DEBUG
 	}
@@ -319,6 +323,11 @@ namespace render
 	void DXRenderDevice::doCopyTexture(ITexture* src, ITexture* dst)
 	{
 		m_dxDevice->CopyResource(toDxTex(dst)->getTex(), toDxTex(src)->getTex());
+
+#if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
+		if (m_dxDevice.hasError())
+			ERROR_MSG("Copy resource failed.\nDesc: " + m_dxDevice.getErrorDesc());
+#endif // _DEBUG
 	}
 
 	//------------------------------------------

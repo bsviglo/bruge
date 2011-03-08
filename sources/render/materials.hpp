@@ -15,7 +15,7 @@ namespace render
 {
 
 	class  Material;
-	struct UIDesc;
+	struct MaterialUI;
 
 	//-- Presents data holder of the all materials in the engine. At the beginning of the game all
 	//-- needed materials descriptions will be read from the materials.xml file and then used
@@ -45,7 +45,7 @@ namespace render
 		bool fini();
 
 		Ptr<Material>	createMaterial (const utils::ROData& data);
-		Ptr<Material>	createMaterial (const pugi::xml_node& section, UIDesc* uiDesc);
+		Ptr<Material>	createMaterial (const pugi::xml_node& section, MaterialUI* uiDesc);
 		bool			createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data);
 
 	private:
@@ -122,7 +122,7 @@ namespace render
 	//-- some shader constants directly from the GUI interface if it exists. For example it's
 	//-- actively used in the post-processing framework to modify effect's parameters.
 	//----------------------------------------------------------------------------------------------
-	struct UIDesc
+	struct MaterialUI
 	{
 		struct SliderDesc
 		{

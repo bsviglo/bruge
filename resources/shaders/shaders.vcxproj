@@ -17,7 +17,9 @@
     <None Include="..\materials\decals.mtl" />
     <None Include="..\materials\exp_barrel.mtl" />
     <None Include="..\materials\gui.mtl" />
-    <None Include="..\materials\lights.mtl" />
+    <None Include="..\materials\lights.mtl">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\materials\metalbox1.mtl" />
     <None Include="..\materials\palm.mtl" />
     <None Include="..\materials\plane.mtl" />
@@ -28,6 +30,10 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="..\materials\woodGate.mtl" />
+    <None Include="..\post_processing\ssaa.pp" />
+    <None Include="..\post_processing\test.pp">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\system\materials.xml">
       <SubType>Designer</SubType>
     </None>

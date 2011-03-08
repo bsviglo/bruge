@@ -224,7 +224,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Material> Materials::createMaterial(const pugi::xml_node& section, UIDesc* uiDesc)
+	Ptr<Material> Materials::createMaterial(const pugi::xml_node& section, MaterialUI* uiDesc)
 	{
 		Ptr<Material> out(new Material());
 
@@ -371,7 +371,7 @@ namespace render
 						
 						if (uiType == "slider")
 						{
-							UIDesc::Slider slider;
+							MaterialUI::Slider slider;
 
 							slider.first.m_name  = name;
 							slider.first.m_range = parseTo<vec2f>(ui.attribute("range").value());
@@ -384,7 +384,7 @@ namespace render
 						}
 						else if (uiType == "checkbox")
 						{
-							UIDesc::CheckBox checkBox;
+							MaterialUI::CheckBox checkBox;
 
 							checkBox.first.m_name  = name;
 							checkBox.first.m_value = static_cast<bool>(val);

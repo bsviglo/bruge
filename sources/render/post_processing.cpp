@@ -5,17 +5,48 @@
 #include "gui/imgui.h"
 
 using namespace brUGE;
+using namespace brUGE::render;
 using namespace brUGE::utils;
 using namespace brUGE::os;
 using namespace brUGE::math;
+
+// start unnamed namespace.
+//--------------------------------------------------------------------------------------------------
+namespace
+{
+	const char* cfg = "resources/system/post_processing.xml";
+
+	//----------------------------------------------------------------------------------------------
+	void displayCheckBox(MaterialUI::CheckBox& cb, bool enabled)
+	{
+		MaterialUI::CheckBoxDesc& d = cb.first;
+
+		if (imguiCheck(d.m_name.c_str(), &d.m_value, enabled))
+		{
+			cb.second->set(static_cast<float>(d.m_value));
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void displaySlider(MaterialUI::Slider& sl, bool enabled)
+	{
+		MaterialUI::SliderDesc&	d = sl.first;
+
+		if (imguiSlider(d.m_name.c_str(), &d.m_value, d.m_range.x, d.m_range.y, d.m_step, enabled))
+		{
+			sl.second->set(d.m_value);
+		}
+	}
+}
+//--------------------------------------------------------------------------------------------------
+// end unnamed namespace.
 
 namespace brUGE
 {
 namespace render
 {
-
 	//----------------------------------------------------------------------------------------------
-	PostProcessing::PostProcessing() : m_curEffect(nullptr)
+	PostProcessing::PostProcessing() : m_curEffectID(-1)
 	{
 
 	}
@@ -30,24 +61,13 @@ namespace render
 	bool PostProcessing::init()
 	{
 		//-- 1. setup render targets.
+		if (!loadCfg())
 		{
-			ITexture::Desc desc;
-			desc.bindFalgs = ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
-			desc.format	   = ITexture::FORMAT_RGBA8;
-			desc.texType   = ITexture::TYPE_2D;
-			desc.width	   = rs().screenRes().width;
-			desc.height	   = rs().screenRes().height;
-
-			RTDesc rtDesc;
-			rtDesc.m_dims.x = rs().screenRes().width;
-			rtDesc.m_dims.y = rs().screenRes().height;
-			rtDesc.m_rt     = rd()->createTexture(desc, nullptr, 0);
-			
-			if (!rtDesc.m_rt)
-				return false;
-
-			m_rts["BBCopy"] = rtDesc;
+			return false;
 		}
+
+		//-- create UI.
+		m_ui.reset(new UI(*this));
 
 		//-- 2. setup full-screen quad.
 		{
@@ -69,7 +89,7 @@ namespace render
 			vertices[3].m_pos.set(1.f, -1.f, 0.0f);
 			vertices[3].m_tc.set (1.f, 1.f);
 
-			if (!(m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
+			if (!(m_fsQuad = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
 		}
 
@@ -77,23 +97,10 @@ namespace render
 		{
 			RenderOp op;
 			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_vb;
+			op.m_mainVB		  = &*m_fsQuad;
 			op.m_indicesCount = 4;
 
 			m_rops.push_back(op);
-		}
-
-		//-- 3. setup render states.
-		{
-			DepthStencilStateDesc dsDesc;
-			dsDesc.depthEnable = false;
-			m_stateDS = render::rd()->createDepthStencilState(dsDesc);
-
-			RasterizerStateDesc rDesc;
-			m_stateR = render::rd()->createRasterizedState(rDesc);
-
-			BlendStateDesc bDesc;
-			m_stateB = render::rd()->createBlendState(bDesc);
 		}
 
 		return true;
@@ -102,13 +109,14 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool PostProcessing::fini()
 	{
-		m_vb.reset();
+		m_fsQuad.reset();
 		m_rts.clear();
 
 		for (auto i = m_effects.begin(); i != m_effects.end(); ++i)
-			delete i->second;
+			delete *i;
 
 		m_effects.clear();
+		m_ui.reset();
 
 		return true;
 	}
@@ -116,59 +124,69 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void PostProcessing::update(float /*dt*/)
 	{
-		updateUI();
+		m_ui->update();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PostProcessing::draw()
 	{
-		if (!m_curEffect) return;
+		if (m_curEffectID == -1) return;
 
-		//-- ToDo:
-		//-- 1. copy back buffer into intermediate texture.
-		rd()->copyTexture(rd()->getMainColorRT(), m_rts["BBCopy"].m_rt.get());
+		PostEffect& effect = *m_effects[m_curEffectID];
 
 		//-- 2. do post-processing steps.
-		for (uint i = 0; i < m_curEffect->m_passes.size(); ++i)
+		for (uint i = 0; i < effect.m_passes.size(); ++i)
 		{
-			PostEffect::Pass& pass = m_curEffect->m_passes[i];
-			if (pass.m_isEnabled)
+			PostEffect::Pass& pass = effect.m_passes[i];
+
+			if (pass.m_enabled)
 			{
-				rd()->setRenderTarget(pass.m_rt, nullptr);
-				//rd()->setViewPort(pass.m_rt.m_dim.x, pass.m_rt.m_dim.y);
-				//if (pass.m_clearRT)
-				//	rd()->clearColorRT(pass.m_rt.m_rt.get(), Color(0,0,0,0));
+				if (pass.m_copyBB)
+				{
+					rd()->copyTexture(rd()->getMainColorRT(), pass.m_rt);
+				}
+				else
+				{
+					rd()->setViewPort(pass.m_dims.x, pass.m_dims.y);
+					rd()->setRenderTarget(pass.m_rt, nullptr);
+					if (pass.m_clearRT)
+					{
+						rd()->clearColorRT(pass.m_rt, Color(0,0,0,0));
+					}
 
-				m_rops[0].m_material = pass.m_material->renderFx();
-
-				rs().addImmediateRenderOps(m_rops);
+					m_rops[0].m_material = pass.m_material->renderFx();
+					rs().addImmediateRenderOps(m_rops);
+				}
 			}
 		}
+
+		rd()->setViewPort(rs().screenRes().width, rs().screenRes().height);
+		rd()->backToMainFrameBuffer();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PostProcessing::enable(const char* ppName)
 	{
 		//-- 1. try to find desired post-effect.
-		auto res = m_effects.find(ppName);
-		if (res != m_effects.end())
+		m_curEffectID = -1;
+		for (uint i = 0; i < m_effects.size(); ++i)
 		{
-			m_curEffect = res->second;
-		}
-		else
-		{
-			//-- ToDo:
-			if (loadPostEffect(ppName))
+			if (m_effects[i]->m_name == ppName)
 			{
-				m_curEffect = m_effects.find(ppName)->second;
+				m_curEffectID = i;
 			}
+		}
+
+		if (m_curEffectID == -1 && loadPostEffect(ppName))
+		{
+			m_curEffectID = m_effects.size() - 1;
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PostProcessing::disable()
 	{
-		m_curEffect = nullptr;
+		m_curEffectID = -1;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -183,70 +201,6 @@ namespace render
 		{
 			return nullptr;
 		}
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PostProcessing::updateUI()
-	{
-		bool isActive = false;
-		uint width	  = rs().screenRes().width;
-		uint height   = rs().screenRes().height;
-		
-		static int scroll = 0;
-
-		if (imguiBeginScrollArea("Post-processing", width-250-10, height-10-450, 250, 450, &scroll))
-			isActive = true;
-
-		if (m_curEffect)
-		{
-			imguiLabel(makeStr("Post-Effect: %s", m_curEffect->m_name.c_str()).c_str());
-			imguiIndent();
-
-			for (uint i = 0; i < m_curEffect->m_passes.size(); ++i)
-			{
-				imguiSeparatorLine();
-				PostEffect::Pass& pass = m_curEffect->m_passes[i];
-				UIDesc&			  ui   = pass.m_uiDesc;
-
-				if (imguiCheck("enable", pass.m_isEnabled))
-				{
-					pass.m_isEnabled = !pass.m_isEnabled;
-				}
-				imguiSeparator();
-
-				//-- update checkboxes.
-				for (uint j = 0; j < ui.m_checkBoxes.size(); ++j)
-				{
-					UIDesc::CheckBoxDesc&	desc = ui.m_checkBoxes[j].first;
-					NumericProperty<float>* prop = ui.m_checkBoxes[j].second;
-
-					if (imguiCheck(desc.m_name.c_str(), desc.m_value, pass.m_isEnabled))
-					{
-						desc.m_value = !desc.m_value;
-						prop->set(static_cast<float>(desc.m_value));
-					}
-				}
-
-				//-- update sliders
-				for (uint j = 0; j < ui.m_sliders.size(); ++j)
-				{
-					UIDesc::SliderDesc&		desc = ui.m_sliders[j].first;
-					NumericProperty<float>* prop = ui.m_sliders[j].second;
-
-					if (imguiSlider(desc.m_name.c_str(), &desc.m_value, desc.m_range.x, desc.m_range.y, desc.m_step, pass.m_isEnabled))
-					{
-						prop->set(desc.m_value);
-					}
-				}
-				imguiSeparatorLine();
-			}
-
-			imguiUnindent();
-		}
-		
-		imguiEndScrollArea();
-
-		return isActive;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -272,6 +226,7 @@ namespace render
 		pugi::xml_node effectNode = doc.document_element();
 
 		std::unique_ptr<PostEffect> postEffect(new PostEffect);
+		UI::PostEffectUI ui;
 
 		//-- parse post effect description.
 		if (auto name = effectNode.attribute("name"))
@@ -280,40 +235,44 @@ namespace render
 		}
 		else
 		{
-			assert(0);
 			return false;
 		}
 
 		//-- parse effect's passes.
-		for (pugi::xml_node prop = effectNode.child("pass"); prop; prop = prop.next_sibling("pass"))
+		for (auto prop = effectNode.child("pass"); prop; prop = prop.next_sibling("pass"))
 		{
 			PostEffect::Pass pass;
-			if (loadPostEffectPass(prop, pass))
+			UI::PostEffectUI::PassUI passUI;
+			if (loadPostEffectPass(prop, pass, &passUI))
 			{
 				postEffect->m_passes.push_back(pass);
+				ui.m_passesUI.push_back(passUI);
 			}
 			else
 			{
-				assert(0);
 				return false;
 			}
 		}
 
 		//-- add new post-effect.
-		m_effects[ppName] = postEffect.release();
+		m_effects.push_back(postEffect.release());
+		m_ui->addPostEffect(ui);
 
 		//-- all ok.
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PostProcessing::loadPostEffectPass(const pugi::xml_node& section, PostEffect::Pass& pass)
+	bool PostProcessing::loadPostEffectPass(
+		const pugi::xml_node& section, PostEffect::Pass& pass, UI::PostEffectUI::PassUI* passUI)
 	{
 		PostEffect::Pass out;
 
 		//-- 1. read common properties.
-		out.m_name		 = section.attribute("name").value();
-		out.m_isEnabled = section.attribute("enabled").as_bool();
+		out.m_name	  = section.attribute("name").value();
+		out.m_enabled = section.attribute("enabled").as_bool();
+		out.m_clearRT = section.attribute("clearRT").as_bool();
+		out.m_copyBB  = section.attribute("copyBB").as_bool();
 		
 		//-- 2. read render target name.
 		if (auto name = section.attribute("rt"))
@@ -328,9 +287,8 @@ namespace render
 			{
 				if (std::string(name.value()) == "BB")
 				{
-					out.m_rt     = rd()->getMainColorRT();
-					out.m_dims.x = rs().screenRes().width;
-					out.m_dims.y = rs().screenRes().height;
+					out.m_rt   = rd()->getMainColorRT();
+					out.m_dims = vec2ui(rs().screenRes().width, rs().screenRes().height);
 				}
 				else
 				{
@@ -338,30 +296,37 @@ namespace render
 					return false;
 				}
 			}
+
+			passUI->m_name = name.value();
 		}
 		else
 		{
-			assert(0);
 			return false;
+		}
+
+		//-- if pass is copyBB pass than just exist.
+		if (out.m_copyBB)
+		{
+			out.m_name = "BB copy";
+			pass = out;
+			return true;
 		}
 
 		//-- 3. read material.
 		if (auto sec = section.child("material"))
 		{
-			Ptr<Material> mat = rs().materials()->createMaterial(sec, &out.m_uiDesc);
-			if (mat)
+			if (auto mat = rs().materials()->createMaterial(sec, &passUI->m_desc))
 			{
 				out.m_material = mat;
 			}
 			else
 			{
-				assert(0);
+				ERROR_MSG("Can't load pass %s material.", out.m_name.c_str());
 				return false;
 			}
 		}
 		else
 		{
-			assert(0);
 			return false;
 		}
 
@@ -370,6 +335,186 @@ namespace render
 
 		pass = out;
 		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool PostProcessing::loadCfg()
+	{
+		RODataPtr data = FileSystem::instance().readFile(cfg);
+		if (!data.get())
+		{
+			ERROR_MSG("Can't load post processing cfg file.");
+			return false;
+		}
+
+		pugi::xml_document doc;
+		if (!doc.load_buffer(data->ptr(), data->length()))
+		{
+			ERROR_MSG("Most likely loading file '%s' is corrupted.", cfg);
+			return false;
+		}
+
+		pugi::xml_node cfgNode = doc.document_element();
+
+		if (auto param = cfgNode.attribute("dir"))
+		{
+			m_dir = param.value();
+		}
+		else
+		{
+			return false;
+		}
+
+		if (auto param = cfgNode.child("renderTargets"))
+		{
+			uint screenWidth  = rs().screenRes().width;
+			uint screenHeight = rs().screenRes().height;
+
+			for (auto rt = param.child("rt"); rt; rt = rt.next_sibling("rt"))
+			{
+				const char* name   = rt.attribute("name").value();
+				int			width  = pow(2.0f, rt.attribute("width").as_float())  * screenWidth;
+				int			height = pow(2.0f, rt.attribute("height").as_float()) * screenHeight;
+
+				ITexture::Desc desc;
+				desc.bindFalgs  = ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
+				desc.format	    = ITexture::FORMAT_RGBA8;
+				desc.texType    = ITexture::TYPE_2D;
+				desc.width		= width;
+				desc.height		= height;
+
+				RTDesc rtDesc;
+				rtDesc.m_dims.x = desc.width;
+				rtDesc.m_dims.y = desc.height;
+				rtDesc.m_rt		= rd()->createTexture(desc, nullptr, 0);
+
+				m_rts[name] = rtDesc;
+			}
+		}
+		else
+		{
+			return false;
+		}
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	PostProcessing::UI::UI(PostProcessing& pp) : m_pp(pp), m_scroll(0)
+	{
+	}
+
+	//----------------------------------------------------------------------------------------------
+	PostProcessing::UI::~UI()
+	{
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void PostProcessing::UI::update()
+	{
+		uint width	= rs().screenRes().width;
+		uint height = rs().screenRes().height;
+		
+		imguiBeginScrollArea("Post-processing", width-300-10, 10, 300, height-20, &m_scroll);
+
+		if (m_pp.m_curEffectID != -1)
+		{
+			PostEffect&		effect	 = *m_pp.m_effects[m_pp.m_curEffectID];
+			PostEffectUI&	effectUI = m_effectsUI[m_pp.m_curEffectID];
+
+			imguiLabel(makeStr("Post-Effect: %s", effect.m_name.c_str()).c_str());
+			imguiIndent();
+
+			for (uint i = 0; i < effect.m_passes.size(); ++i)
+			{
+				PostEffect::Pass&		pass    = effect.m_passes[i];
+				PostEffectUI::PassUI&	passUI  = effectUI.m_passesUI[i];
+				bool&					enabled = pass.m_enabled;
+
+				imguiSeparatorLine();
+				imguiLabel("Pass:");
+				imguiCollapse(pass.m_name.c_str(), nullptr, &passUI.m_hidden, enabled);
+
+				if (!passUI.m_hidden)
+				{
+					imguiIndent();
+					imguiCheck("enable", &enabled);
+
+					imguiLabel("Render Target:");
+					imguiCheck("clear RT", &pass.m_clearRT);
+
+					bool buttonEnable = ((int)i == m_selectRT.m_pass && enabled) || m_selectRT.m_pass == -1;
+					if (imguiButton(passUI.m_name.c_str(), buttonEnable))
+					{
+						m_selectRT.m_enabled = !m_selectRT.m_enabled;
+						m_selectRT.m_pass = m_selectRT.m_enabled ? i : -1;
+					}
+	
+					imguiSeparator();
+					imguiLabel("Shader properties:");
+
+					//-- update checkboxes.
+					for (uint j = 0; j < passUI.m_desc.m_checkBoxes.size(); ++j)
+					{
+						displayCheckBox(passUI.m_desc.m_checkBoxes[j], enabled);
+					}
+
+					//-- update sliders
+					for (uint j = 0; j < passUI.m_desc.m_sliders.size(); ++j)
+					{
+						displaySlider(passUI.m_desc.m_sliders[j], enabled);
+					}
+					imguiUnindent();
+				}
+			}
+			imguiUnindent();
+		}
+		imguiEndScrollArea();
+
+		//-- update select RT box.
+		updateSelectRTBox();
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void PostProcessing::UI::addPostEffect(PostEffectUI& ui)
+	{
+		m_effectsUI.push_back(ui);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void PostProcessing::UI::updateSelectRTBox()
+	{
+		if (m_selectRT.m_enabled)
+		{
+			uint width	= rs().screenRes().width;
+			uint height = rs().screenRes().height;
+
+			PostEffect::Pass&	  pass   = m_pp.m_effects[m_pp.m_curEffectID]->m_passes[m_selectRT.m_pass];
+			PostEffectUI::PassUI& passUI = m_effectsUI[m_pp.m_curEffectID].m_passesUI[m_selectRT.m_pass];
+
+			imguiBeginScrollArea("Render Targets", width-520, height-10-250, 200, 250, &m_selectRT.m_scroll);
+			for (auto i = m_pp.m_rts.begin(); i != m_pp.m_rts.end(); ++i)
+			{
+				if (imguiItem(i->first.c_str()))
+				{
+					passUI.m_name = i->first;
+					pass.m_rt	  = i->second.m_rt.get();
+					pass.m_dims	  = i->second.m_dims;
+
+					m_selectRT.m_enabled = false;
+					m_selectRT.m_pass = -1;
+				}
+			}
+			if (!pass.m_copyBB && imguiItem("BB"))
+			{
+				passUI.m_name = "BB";
+				pass.m_rt	  = rd()->getMainColorRT();
+				pass.m_dims	  = vec2ui(rs().screenRes().width, rs().screenRes().height);
+
+				m_selectRT.m_enabled = false;
+				m_selectRT.m_pass = -1;
+			}
+			imguiEndScrollArea();
+		}
 	}
 
 } //-- render
