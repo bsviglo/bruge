@@ -4,6 +4,7 @@
 		<rt name="BBCopy2" width="0" height="0"/>
 		<rt name="BBCopyDiv2" width="-1" height="-1"/>
 		<rt name="BBCopyDiv4" width="-2" height="-2"/>
+    <rt name="BBCopyDiv8" width="-3" height="-3"/>
 	</renderTargets>
 	<ui>
 		

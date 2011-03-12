@@ -522,11 +522,11 @@ namespace render
 	void RenderSystem::addImmediateRenderOps(const RenderOps& ops)
 	{
 		RenderOps rOps = ops;
-		_doDraw(rOps);
+		_doDraw(rOps, true);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderSystem::_doDraw(RenderOps& ops)
+	void RenderSystem::_doDraw(RenderOps& ops, bool immediate)
 	{
 		for (uint i = 0; i < ops.size(); ++i)
 		{
@@ -536,13 +536,16 @@ namespace render
 
 			m_device->setVertexLayout(sm.m_shader[g_render2shaderPass[m_pass]].second);
 
-			if (fx.m_sysProps.m_doubleSided)
+			if (!immediate)
 			{
-				rd()->setRasterizerState(m_passes[m_pass].m_stateR_doubleSided);
-			}
-			else
-			{
-				rd()->setRasterizerState(m_passes[m_pass].m_stateR);
+				if (fx.m_sysProps.m_doubleSided)
+				{
+					rd()->setRasterizerState(m_passes[m_pass].m_stateR_doubleSided);
+				}
+				else
+				{
+					rd()->setRasterizerState(m_passes[m_pass].m_stateR);
+				}
 			}
 
 			if (sm.m_isBumpMaped)

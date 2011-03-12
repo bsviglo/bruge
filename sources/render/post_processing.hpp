@@ -74,19 +74,19 @@ namespace render
 			{
 				struct PassUI
 				{
-					PassUI(MaterialUI desc, bool hidden) : m_desc(desc), m_hidden(hidden) { }
-					PassUI() : m_hidden(false) { }
+					PassUI(MaterialUI desc, bool hidden) : m_desc(desc), m_show(hidden) { }
+					PassUI() : m_show(false) { }
 
-					bool	    m_hidden;
+					bool	    m_show;
 					std::string m_name;
 					MaterialUI  m_desc;
 				};
 				typedef std::vector<PassUI> PassesUI;
 
-				PostEffectUI() : m_hidden(false) { }
-				PostEffectUI(bool hidden) : m_hidden(hidden) { }
+				PostEffectUI() : m_show(true) { }
+				PostEffectUI(bool show) : m_show(show) { }
 
-				bool	 m_hidden;
+				bool	 m_show;
 				PassesUI m_passesUI;
 			};
 			typedef std::vector<PostEffectUI> PostEffectsUI;
@@ -99,21 +99,40 @@ namespace render
 			void addPostEffect(PostEffectUI& ui);
 
 		private:
-			void updateSelectRTBox(); 
+			void displaySelectRT();
+			void displayEffectsList();
 
 			struct SelectRT
 			{
-				SelectRT() : m_enabled(false), m_pass(-1), m_scroll(0) { }
+				SelectRT()
+					:	m_enabled(false), m_changed(false), m_showBB(false), m_scroll(0),
+						m_name(nullptr), m_rt(nullptr), m_ptr(0) { }
+
+				bool  m_enabled;
+				bool  m_changed;
+				bool  m_showBB;
+				int   m_scroll;
+				void* m_ptr;
+
+				const char* m_name;
+				ITexture*   m_rt;
+				vec2ui		m_dims;
+			};
+
+			struct EffectsList
+			{
+				EffectsList() : m_enabled(false), m_scroll(0) { }
 
 				bool m_enabled;
-				int  m_pass;
 				int  m_scroll;
+				std::vector<std::string> m_list;
 			};
 
 			int				m_scroll;
 			PostProcessing& m_pp;
 			PostEffectsUI	m_effectsUI;
 			SelectRT		m_selectRT;
+			EffectsList		m_effectsList;
 		};
 		typedef std::unique_ptr<UI> UIPtr;
 

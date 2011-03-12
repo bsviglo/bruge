@@ -30,7 +30,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="..\materials\woodGate.mtl" />
-    <None Include="..\post_processing\ssaa.pp" />
+    <None Include="..\post_processing\ssaa.pp">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\post_processing\test.pp">
       <SubType>Designer</SubType>
     </None>
@@ -38,7 +40,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ambient.hlsl" />
-    <None Include="z_pre_pass_bump.hlsl" />
     <None Include="common.hlsl" />
     <None Include="console.hlsl" />
     <None Include="debug_solid.hlsl" />
@@ -50,6 +51,7 @@
     <None Include="dlaa.hlsl" />
     <None Include="font.hlsl" />
     <None Include="gui.hlsl" />
+    <None Include="ping_pong.hlsl" />
     <None Include="point_lights_resolve.hlsl" />
     <None Include="post_processing.hlsl" />
     <None Include="skinned_z_pre_pass.hlsl" />

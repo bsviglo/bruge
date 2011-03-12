@@ -21,7 +21,7 @@ vs_out main(vs_in i)
 	o.pos.y = (2.0f * i.pos.y * g_screenRes.w) - 1.0f;
 	o.pos.z = 0.0f;
 	o.pos.w = 1.0f;
-	o.color	   = i.color;
+	o.color	= i.color;
     return o;
 }
 

@@ -372,9 +372,15 @@ namespace render
 
 			for (auto rt = param.child("rt"); rt; rt = rt.next_sibling("rt"))
 			{
+				float w = rt.attribute("width").as_float();
+				float h = rt.attribute("height").as_float();
+
+				w = w < 0 ? 1.0f / pow(2.0f, abs(w)) : pow(2.0f, abs(w));
+				h = h < 0 ? 1.0f / pow(2.0f, abs(h)) : pow(2.0f, abs(h));
+				
 				const char* name   = rt.attribute("name").value();
-				int			width  = pow(2.0f, rt.attribute("width").as_float())  * screenWidth;
-				int			height = pow(2.0f, rt.attribute("height").as_float()) * screenHeight;
+				int			width  = w * screenWidth;
+				int			height = h * screenHeight;
 
 				ITexture::Desc desc;
 				desc.bindFalgs  = ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
@@ -416,13 +422,29 @@ namespace render
 		
 		imguiBeginScrollArea("Post-processing", width-300-10, 10, 300, height-20, &m_scroll);
 
+		imguiSeparatorLine();
+		imguiIndent(4);
+		if (imguiButton("Load"))
+		{
+			m_effectsList.m_enabled = !m_effectsList.m_enabled;
+			if (m_effectsList.m_enabled)
+			{
+				m_effectsList.m_list.clear();
+				FileSystem::instance().getFilesInDir("..\\resources\\post_processing", m_effectsList.m_list);
+			}
+		}
+		imguiButton("Save");
+		imguiUnindent(4);
+		imguiSeparatorLine();
+		imguiSeparator();
+
 		if (m_pp.m_curEffectID != -1)
 		{
 			PostEffect&		effect	 = *m_pp.m_effects[m_pp.m_curEffectID];
 			PostEffectUI&	effectUI = m_effectsUI[m_pp.m_curEffectID];
 
-			imguiLabel(makeStr("Post-Effect: %s", effect.m_name.c_str()).c_str());
 			imguiIndent();
+			imguiLabel(("Post-Effect: " + effect.m_name).c_str());
 
 			for (uint i = 0; i < effect.m_passes.size(); ++i)
 			{
@@ -431,24 +453,29 @@ namespace render
 				bool&					enabled = pass.m_enabled;
 
 				imguiSeparatorLine();
-				imguiLabel("Pass:");
-				imguiCollapse(pass.m_name.c_str(), nullptr, &passUI.m_hidden, enabled);
+				imguiCheck("enable", &enabled);
+				imguiCollapse(makeStr("Pass #%d: %s", i, pass.m_name.c_str()).c_str(), nullptr, &passUI.m_show, enabled);
 
-				if (!passUI.m_hidden)
+				if (passUI.m_show)
 				{
 					imguiIndent();
-					imguiCheck("enable", &enabled);
 
 					imguiLabel("Render Target:");
 					imguiCheck("clear RT", &pass.m_clearRT);
-
-					bool buttonEnable = ((int)i == m_selectRT.m_pass && enabled) || m_selectRT.m_pass == -1;
-					if (imguiButton(passUI.m_name.c_str(), buttonEnable))
+					if (imguiButton(passUI.m_name.c_str(), enabled))
 					{
 						m_selectRT.m_enabled = !m_selectRT.m_enabled;
-						m_selectRT.m_pass = m_selectRT.m_enabled ? i : -1;
+						m_selectRT.m_showBB  = pass.m_copyBB;
+						m_selectRT.m_ptr     = &pass;
 					}
-	
+					if (m_selectRT.m_changed && m_selectRT.m_ptr == &pass)
+					{
+						passUI.m_name = m_selectRT.m_name;
+						pass.m_rt	  = m_selectRT.m_rt;
+						pass.m_dims	  = m_selectRT.m_dims;
+						m_selectRT.m_changed = !m_selectRT.m_changed;
+					}
+
 					imguiSeparator();
 					imguiLabel("Shader properties:");
 
@@ -463,6 +490,28 @@ namespace render
 					{
 						displaySlider(passUI.m_desc.m_sliders[j], enabled);
 					}
+
+					//-- update comboboxes
+					for (uint j = 0; j < passUI.m_desc.m_comboBoxes.size(); ++j)
+					{
+						MaterialUI::ComboBox& comboBox = passUI.m_desc.m_comboBoxes[j];
+						if (!comboBox.first.m_rts)
+							continue;
+
+						imguiLabel(comboBox.first.m_name.c_str());
+						if (imguiButton(comboBox.first.m_value.c_str(), enabled))
+						{
+							m_selectRT.m_enabled = !m_selectRT.m_enabled;
+							m_selectRT.m_showBB  = true;
+							m_selectRT.m_ptr	 = &comboBox;
+						}
+						if (m_selectRT.m_changed && m_selectRT.m_ptr == &comboBox)
+						{
+							comboBox.first.m_value = m_selectRT.m_name;
+							comboBox.second->set(m_selectRT.m_rt);
+							m_selectRT.m_changed = !m_selectRT.m_changed;
+						}
+					}
 					imguiUnindent();
 				}
 			}
@@ -471,7 +520,8 @@ namespace render
 		imguiEndScrollArea();
 
 		//-- update select RT box.
-		updateSelectRTBox();
+		displaySelectRT();
+		displayEffectsList();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -481,37 +531,60 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PostProcessing::UI::updateSelectRTBox()
+	void PostProcessing::UI::displaySelectRT()
 	{
+		m_selectRT.m_changed = false;
+
 		if (m_selectRT.m_enabled)
 		{
 			uint width	= rs().screenRes().width;
 			uint height = rs().screenRes().height;
 
-			PostEffect::Pass&	  pass   = m_pp.m_effects[m_pp.m_curEffectID]->m_passes[m_selectRT.m_pass];
-			PostEffectUI::PassUI& passUI = m_effectsUI[m_pp.m_curEffectID].m_passesUI[m_selectRT.m_pass];
-
 			imguiBeginScrollArea("Render Targets", width-520, height-10-250, 200, 250, &m_selectRT.m_scroll);
+			if (!m_selectRT.m_showBB && imguiItem("BB"))
+			{
+				m_selectRT.m_name = "BB";
+				m_selectRT.m_rt	  = rd()->getMainColorRT();
+				m_selectRT.m_dims = vec2ui(rs().screenRes().width, rs().screenRes().height);
+
+				m_selectRT.m_enabled = false;
+				m_selectRT.m_changed = true;
+			}
 			for (auto i = m_pp.m_rts.begin(); i != m_pp.m_rts.end(); ++i)
 			{
 				if (imguiItem(i->first.c_str()))
 				{
-					passUI.m_name = i->first;
-					pass.m_rt	  = i->second.m_rt.get();
-					pass.m_dims	  = i->second.m_dims;
+					m_selectRT.m_name = i->first.c_str();
+					m_selectRT.m_rt	  = i->second.m_rt.get();
+					m_selectRT.m_dims = i->second.m_dims;
 
 					m_selectRT.m_enabled = false;
-					m_selectRT.m_pass = -1;
+					m_selectRT.m_changed = true;
 				}
 			}
-			if (!pass.m_copyBB && imguiItem("BB"))
-			{
-				passUI.m_name = "BB";
-				pass.m_rt	  = rd()->getMainColorRT();
-				pass.m_dims	  = vec2ui(rs().screenRes().width, rs().screenRes().height);
+			imguiEndScrollArea();
+		}
+	}
 
-				m_selectRT.m_enabled = false;
-				m_selectRT.m_pass = -1;
+	//----------------------------------------------------------------------------------------------
+	void PostProcessing::UI::displayEffectsList()
+	{
+		if (m_effectsList.m_enabled)
+		{
+			uint width	= rs().screenRes().width;
+			uint height = rs().screenRes().height;
+
+			imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_effectsList.m_scroll);
+
+			for (uint i = 0; i < m_effectsList.m_list.size(); ++i)
+			{
+				const char* name = m_effectsList.m_list[i].c_str();
+
+				if (imguiItem(name))
+				{
+					m_pp.enable(name);
+					m_effectsList.m_enabled = false;
+				}
 			}
 			imguiEndScrollArea();
 		}

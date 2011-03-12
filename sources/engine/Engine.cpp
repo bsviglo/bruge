@@ -112,15 +112,19 @@ namespace brUGE
 				{
 					SCOPED_TIME_MEASURER_EX("update")
 
+					//-- update timing panel.
+					m_timingPanel->update(dt);
+
+					//-- update input.
+					{
+						SCOPED_TIME_MEASURER_EX("input")
+						m_inputSystem.update();
+					}
+
 					//-- start updating imgui input.
 					imguiBeginFrame(
 						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
 						);
-
-					//-- update timing panel.
-					m_timingPanel->update(dt);
-
-					m_inputSystem.update();
 
 					m_gameWorld.beginUpdate(dt);
 
@@ -147,6 +151,7 @@ namespace brUGE
 
 					//-- finish updating imgui input.
 					imguiEndFrame();
+					m_imguiInput.scroll = 0;
 				}
 				
 				//-- do draw.

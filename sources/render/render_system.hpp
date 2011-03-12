@@ -130,7 +130,7 @@ namespace render
 
 		bool _initPasses();
 		bool _finiPasses();
-		void _doDraw(RenderOps& ops);
+		void _doDraw(RenderOps& ops, bool immediate = false);
 
 	private:
 		VideoMode			m_videoMode;

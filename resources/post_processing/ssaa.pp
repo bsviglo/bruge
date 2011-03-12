@@ -14,7 +14,9 @@
 			<property name="g_debug" type="float" value="0">
 				<ui type="checkbox"/>
 			</property>
-			<property name="g_sourceTex" type="texture" value="BBCopy"/>
+      <property name="g_sourceTex" type="texture" value="BBCopy">
+        <ui type="combobox"/>
+      </property>
 		  </properties>
 		</material>
 		<renderStates>

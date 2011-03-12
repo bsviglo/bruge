@@ -43,8 +43,8 @@ void imguiEndFrame();
 bool imguiBeginScrollArea(const char* name, int x, int y, int w, int h, int* scroll);
 void imguiEndScrollArea();
 
-void imguiIndent();
-void imguiUnindent();
+void imguiIndent(int size = 1);
+void imguiUnindent(int size = 1);
 void imguiSeparator();
 void imguiSeparatorLine();
 

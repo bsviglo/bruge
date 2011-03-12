@@ -142,11 +142,20 @@ namespace render
 			bool		m_value;
 		};
 
+		struct ComboBoxDesc
+		{
+			std::string m_name;
+			std::string m_value;
+			bool		m_rts;
+		};
+
 		typedef std::pair<SliderDesc,   NumericProperty<float>*> Slider;
 		typedef std::pair<CheckBoxDesc, NumericProperty<float>*> CheckBox;
+		typedef std::pair<ComboBoxDesc, TextureProperty*>		 ComboBox;
 
 		std::vector<Slider>   m_sliders;
 		std::vector<CheckBox> m_checkBoxes;
+		std::vector<ComboBox> m_comboBoxes;
 	};
 
 } //-- render

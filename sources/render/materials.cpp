@@ -341,7 +341,32 @@ namespace render
 							stateS = rd()->createSamplerState(sDesc);
 						}
 
-						out->m_props.push_back(new TextureProperty(name, tex, stateS));
+						TextureProperty* shaderProp = new TextureProperty(name, tex, stateS);
+
+						auto ui = prop.child("ui");
+						if (uiDesc && ui)
+						{
+							std::string uiType = ui.attribute("type").value();
+
+							if (uiType == "combobox")
+							{
+								MaterialUI::ComboBox comboBox;
+
+								comboBox.first.m_name  = name;
+								comboBox.first.m_value = texName;
+								comboBox.first.m_rts   = true;
+								comboBox.second = shaderProp;
+
+								uiDesc->m_comboBoxes.push_back(comboBox);
+							}
+							else
+							{
+								assert(!"another ui types currently are not implemented.");
+								return nullptr;
+							}
+						}
+
+						out->m_props.push_back(shaderProp);
 					}
 				}
 				else if (type == "float")

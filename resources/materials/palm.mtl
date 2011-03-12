@@ -2,23 +2,23 @@
 	<material use="bump_alpha_test">
 		<properties>
 			<property name="diffuseMap" type="texture" value="textures/palm/PalmLeaves.dds"/>
-            <property name="bumpMap" type="texture" value="textures/palm/PalmLeaves_Normal.dds"/>
-            <property name="alphaRef" type="float" value="128"/>
-            <property name="doubleSided" type="float" value="1"/>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmLeaves_Normal.dds"/>
+      <property name="alphaRef" type="float" value="128"/>
+      <property name="doubleSided" type="float" value="1"/>
 		</properties>
 	</material>
 	<material use="bump">
 		<properties>
 			<property name="diffuseMap" type="texture" value="textures/palm/PalmBark.dds"/>
-            <property name="bumpMap" type="texture" value="textures/palm/PalmBark_Normal.dds"/>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmBark_Normal.dds"/>
 		</properties>
 	</material>
 	<material use="bump_alpha_test">
 		<properties>
 			<property name="diffuseMap" type="texture" value="textures/palm/PalmFrond.dds"/>
-            <property name="bumpMap" type="texture" value="textures/palm/PalmFrond_Normal.dds"/>
-            <property name="alphaRef" type="float" value="128"/>
-            <property name="doubleSided" type="float" value="1"/>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmFrond_Normal.dds"/>
+      <property name="alphaRef" type="float" value="128"/>
+      <property name="doubleSided" type="float" value="1"/>
 		</properties>
 	</material>
 </materials>

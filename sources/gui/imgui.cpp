@@ -630,16 +630,16 @@ bool imguiSlider(const char* text, float* val, float vmin, float vmax, float vin
 }
 
 
-void imguiIndent()
+void imguiIndent(int size)
 {
-	g_state.widgetX += INDENT_SIZE;
-	g_state.widgetW -= INDENT_SIZE;
+	g_state.widgetX += INDENT_SIZE * size;
+	g_state.widgetW -= INDENT_SIZE * size;
 }
 
-void imguiUnindent()
+void imguiUnindent(int size)
 {
-	g_state.widgetX -= INDENT_SIZE;
-	g_state.widgetW += INDENT_SIZE;
+	g_state.widgetX -= INDENT_SIZE * size;
+	g_state.widgetW += INDENT_SIZE * size;
 }
 
 void imguiSeparator()

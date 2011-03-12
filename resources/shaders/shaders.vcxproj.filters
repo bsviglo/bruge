@@ -69,9 +69,6 @@
     <None Include="z_pre_pass.hlsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="z_pre_pass_bump.hlsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\system\materials.xml" />
     <None Include="..\materials\cow.mtl">
       <Filter>materials</Filter>
@@ -123,6 +120,9 @@
     </None>
     <None Include="..\post_processing\test.pp">
       <Filter>post-processing</Filter>
+    </None>
+    <None Include="ping_pong.hlsl">
+      <Filter>shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

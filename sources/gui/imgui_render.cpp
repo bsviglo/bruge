@@ -16,7 +16,7 @@ using namespace brUGE::os;
 namespace
 {
 	const uint  g_tempCoordCount	= 100;
-	const uint  g_circleVertsCount  = 4 * 4;
+	const uint  g_circleVertsCount  = 3 * 4;
 	float		g_circleVerts[g_circleVertsCount * 2];
 
 	typedef brUGE::render::imguiRender::GuiVertex GuiVertex;
