@@ -156,11 +156,7 @@ float4 main(vs_out i) : SV_TARGET
 	//-- 3. do perspective division.
 	pixelClipPosInTexSpace.xy /= pixelClipPosInTexSpace.w;
 
-	//-- convert to texture coordinates.
-	texCoord.x = 0.5f + 0.5f * pixelClipPosInTexSpace.x;
-	texCoord.y = 0.5f - 0.5f * pixelClipPosInTexSpace.y;
-
-	float4 oColor = sample2D(diffuse, texCoord.xy);
+	float4 oColor = sample2D(diffuse, CS2TS(pixelClipPosInTexSpace));
 
 	return oColor;
 }

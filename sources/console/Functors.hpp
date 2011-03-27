@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/ArgParser.h"
 #include <string>
 #include <vector>

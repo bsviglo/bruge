@@ -5,6 +5,7 @@
 #include "IRenderDevice.h"
 #include "render_dll_Interface.h"
 #include "materials.hpp"
+#include "shader_context.hpp"
 
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
@@ -67,7 +68,10 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	RenderSystem::RenderSystem() : m_renderAPI(RENDER_API_DX10)
+	RenderSystem::RenderSystem()
+		:	m_renderAPI(RENDER_API_DX10),
+			m_shaderContext(new ShaderContext)
+
 	{
 		//-- register console functions.
 		REGISTER_CONSOLE_METHOD("r_gapiType", _printGAPIType, RenderSystem);		
@@ -111,7 +115,7 @@ namespace render
 			return false;
 		}
 
-		if (!m_shaderContext.init())
+		if (!m_shaderContext->init())
 		{
 			return false;
 		}
@@ -141,7 +145,7 @@ namespace render
 			_finiPasses();
 			m_postProcessing.fini();
 			m_materials.fini();
-			m_shaderContext.fini();
+			m_shaderContext.reset();
 			m_device->resetToDefaults();
 			m_device->shutDown();
 
@@ -278,8 +282,67 @@ namespace render
 					return false;
 			}
 		}
+
+		//-- 4. PASS_SHADOW_CAST
+		{
+			PassDesc& pass = m_passes[PASS_SHADOW_CAST];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = true;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = 0;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
+			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- 5. PASS_SHADOW_RECEIVE
+		{
+			PassDesc& pass = m_passes[PASS_SHADOW_RECEIVE];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = false;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_ALWAYS;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = 0;
+
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+
+			//-- create shadows mask texture.
+			{
+				ITexture::Desc desc;
+				desc.width			= m_screenRes.width;
+				desc.height			= m_screenRes.height;
+				desc.sample.count	= m_videoMode.multiSampling.m_count;
+				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
+				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
+				desc.format			= ITexture::FORMAT_RGBA8;
+				desc.texType		= ITexture::TYPE_2D;
+
+				pass.m_rt = m_device->createTexture(desc, NULL, 0);
+				if (!pass.m_rt)
+					return false;
+			}
+		}
 		
-		//-- 4. PASS_MAIN_COLOR
+		//-- 6. PASS_MAIN_COLOR
 		{
 			PassDesc& pass = m_passes[PASS_MAIN_COLOR];
 
@@ -301,7 +364,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 5. PASS_DEBUG_WIRE
+		//-- 7. PASS_DEBUG_WIRE
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
 
@@ -318,7 +381,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- 6. PASS_DEBUG_SOLID
+		//-- 8. PASS_DEBUG_SOLID
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_SOLID];
 
@@ -336,7 +399,7 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
-		//-- POST_PROCESSING
+		//-- 9. POST_PROCESSING
 		{
 			PassDesc& pass = m_passes[PASS_POST_PROCESSING];
 
@@ -388,13 +451,12 @@ namespace render
 	bool RenderSystem::beginPass(EPassType type)
 	{
 		m_pass = type;
+		PassDesc& pass = m_passes[type];
 
-		switch (m_pass)
+		switch (type)
 		{
 		case PASS_Z_ONLY:
 			{
-				PassDesc& pass = m_passes[m_pass];
-
 				m_device->clear(CLEAR_DEPTH, Color(), 1.0f, 0);
 				m_device->clearColorRT(pass.m_rt.get(), Color(1,1,1,1));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
@@ -408,7 +470,6 @@ namespace render
 			}
 		case PASS_DECAL:
 			{
-				PassDesc& pass = m_passes[m_pass];
 				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
@@ -421,7 +482,6 @@ namespace render
 			}
 		case PASS_LIGHT:
 			{
-				PassDesc& pass = m_passes[m_pass];
 				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
@@ -434,16 +494,25 @@ namespace render
 			}
 		case PASS_SHADOW_CAST:
 			{
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 				break;
 			}
 		case PASS_SHADOW_RECEIVE:
 			{
+				m_device->clearColorRT(pass.m_rt.get(), Color(0,0,0,0));
+				m_device->setRenderTarget(pass.m_rt.get(), nullptr);
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_MAIN_COLOR:
 			{
-				PassDesc& pass = m_passes[m_pass];
-
 				m_device->backToMainFrameBuffer();
 				m_device->clear(CLEAR_COLOR, Color(0.5f,0.5f,0.5f,1), 0.0f, 0);
 
@@ -460,8 +529,6 @@ namespace render
 			}
 		case PASS_DEBUG_WIRE:
 			{
-				PassDesc& pass = m_passes[m_pass];
-
 				m_device->backToMainFrameBuffer();
 
 				m_device->setRasterizerState(pass.m_stateR);
@@ -473,8 +540,6 @@ namespace render
 			}
 		case PASS_DEBUG_SOLID:
 			{
-				PassDesc& pass = m_passes[m_pass];
-
 				m_device->backToMainFrameBuffer();
 
 				m_device->setRasterizerState(pass.m_stateR);
@@ -495,16 +560,16 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderSystem::setCamera(Camera* cam)
+	void RenderSystem::setCamera(const RenderCamera* cam)
 	{
 		assert(cam);
 
 		m_camera = cam;
-		m_shaderContext.setCamera(cam);
+		m_shaderContext->setCamera(cam);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderSystem::addRenderOps(const RenderOps& ops)
+	void RenderSystem::addROPs(const RenderOps& ops)
 	{
 		//-- ToDo: Do some kind of sorting of render operations.
 
@@ -515,11 +580,12 @@ namespace render
 	bool RenderSystem::endPass()
 	{
 		_doDraw(m_renderOps);
+		m_renderOps.clear();
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderSystem::addImmediateRenderOps(const RenderOps& ops)
+	void RenderSystem::addImmediateROPs(const RenderOps& ops)
 	{
 		RenderOps rOps = ops;
 		_doDraw(rOps, true);
@@ -564,7 +630,7 @@ namespace render
 			}
 
 			//-- apply shader for current pass.
-			m_shaderContext.applyFor(&ro, g_render2shaderPass[m_pass]);
+			m_shaderContext->applyFor(&ro, g_render2shaderPass[m_pass]);
 
 			if (ro.m_instanceCount != 0)
 			{

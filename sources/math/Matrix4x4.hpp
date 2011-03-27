@@ -81,7 +81,6 @@ namespace math
 
 		inline void					setLookAt			(const Vector3<T>& pos, const Vector3<T>& dir, const Vector3<T>& up);
 		inline void					setPerspectiveProj	(float gradFovy, float aspect, float zNear, float zFar);
-		// TODO: разобраться как она правильно работает.
 		inline void					setOrthogonalProj	(float width, float height, float zNear, float zFar);
 		
 		inline Matrix4x4<T>&		preRotateX		(float radianAngle)							{ Matrix4x4<T> m; m.setRotateX(radianAngle); 	return ( *this = mult(m, *this)); }
@@ -421,16 +420,15 @@ namespace math
 	{
 		// 2/w   0        0       0
 		// 0     2/h      0       0
-		// 0     0    1/(zn-zf)   0
-		// 0     0    zn/(zn-zf)  l
+		// 0     0    1/(zf-zn)   0
+		// 0     0    -zn/(zf-zn)  l
 
 		setZero();
-		float inv_d = 1.0f / (zNear - zFar);
 		
 		m00 = 2.0f / width;
 		m11 = 2.0f / height;
-		m22 = 1.0f / inv_d;
-		m32 = zNear / inv_d;
+		m22 = 1.0f / (zFar-zNear);
+		m32 = -zNear / (zFar-zNear);
 		m33 = 1.0f;
 	}
 	

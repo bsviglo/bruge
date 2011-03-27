@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Singleton.h"
 #include "utils/ArgParser.h"
 #include "render/Font.h"
@@ -105,7 +105,7 @@ namespace brUGE
 
 	//
 	//---------------------------------------------------------------------------------------------
-	class WatchersPanel : public utils::Singleton<WatchersPanel>
+	class WatchersPanel : public utils::Singleton<WatchersPanel>, public NonCopyable
 	{
 	public:
 		enum EWatcherAccess
@@ -119,7 +119,6 @@ namespace brUGE
 		~WatchersPanel();
 
 		bool init();
-		bool destroy();
 		
 		bool visible() const	{ return m_isVisible; }
 		void visible(bool flag) { m_isVisible = flag; }

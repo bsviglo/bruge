@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Singleton.h"
 #include "utils/Timer.h"
 #include "render/Font.h"
@@ -10,7 +10,7 @@
 namespace brUGE
 {
 	//---------------------------------------------------------------------------------------------
-	class TimingPanel : public utils::Singleton<TimingPanel>
+	class TimingPanel : public utils::Singleton<TimingPanel>, public NonCopyable
 	{
 	public:
 
@@ -100,7 +100,6 @@ namespace brUGE
 		~TimingPanel();
 
 		bool init();
-		bool destroy();
 		
 		//-- between calls of this functions performed the time measurement.
 		void start();

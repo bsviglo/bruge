@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Singleton.h"
 
 #ifndef WIN32_LEAN_AND_MEAN

@@ -33,9 +33,6 @@
     <None Include="diffuse.hlsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="diffuse_skinned.hlsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="dir_lights_resolve.hlsl">
       <Filter>shaders</Filter>
     </None>
@@ -122,6 +119,21 @@
       <Filter>post-processing</Filter>
     </None>
     <None Include="ping_pong.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadow_resolve.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\materials\shadows.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="skinned_cast_shadows.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="cast_shadows.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skinned_diffuse.hlsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

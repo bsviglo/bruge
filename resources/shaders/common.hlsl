@@ -55,11 +55,31 @@ cbuffer cb_auto_PerInstance
 
 #ifdef _FRAGMENT_SHADER_
 
-//-- compute luminance value for input RGB color.
+//-- computes luminance value for input RGB color.
 //--------------------------------------------------------------------------------------------------
 float luminance(in float3 rgb)
 {
 	return dot(rgb, float3(0.3f, 0.59f, 0.11f));
+}
+
+//-- restore world position.
+//--------------------------------------------------------------------------------------------------
+float3 restoreWorldPos(in float3 vDir, in float2 tc)
+{
+}
+
+//-- converts clip space position to texture space. I.e. from XY[-1, +1] -> UV[0, 1]
+//--------------------------------------------------------------------------------------------------
+float2 CS2TS(in float2 cs)
+{
+	return cs * float2(+0.5f, -0.5f) + float2(+0.5f, +0.5f);
+}
+
+//-- converts texture coordinates to clip space position. I.e. UV[0,1] -> XY[-1, +1]
+//--------------------------------------------------------------------------------------------------
+float TS2CS(in float2 ts)
+{
+	return ts * float2(+2.0f, +2.0f) + float2(+1.0f, -1.0f);
 }
 
 #endif

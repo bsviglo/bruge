@@ -1,6 +1,7 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
+#include "math/Matrix4x4.hpp"
 #include "utils/LogManager.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -18,7 +19,6 @@ namespace brUGE
 namespace render
 {
 	//-- predeclaration.
-	class Camera;
 	class DebugDrawer;
 	class RenderSystem;
 
@@ -83,6 +83,11 @@ namespace render
 	//------------------------------------------
 	struct Projection
 	{
+		Projection() : isOrtho(false) { }
+
+		bool	isOrtho;
+		float   width;
+		float   height;
 		float	fov;
 		float	nearDist;
 		float	farDist;			
@@ -93,6 +98,17 @@ namespace render
 	{
 		float width;
 		float height;
+	};
+
+	//-- represents
+	//----------------------------------------------------------------------------------------------
+	struct RenderCamera
+	{
+		Projection m_projInfo;
+		mat4f m_view;
+		mat4f m_invView;
+		mat4f m_proj;
+		mat4f m_viewProj;
 	};
 
 } // render

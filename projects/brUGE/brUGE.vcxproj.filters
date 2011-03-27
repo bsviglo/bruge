@@ -53,6 +53,12 @@
     <Filter Include="render\framework\lights">
       <UniqueIdentifier>{f7316f3c-5b73-41ca-b05d-e43fb4e1b3cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\shadows">
+      <UniqueIdentifier>{8af848bd-afda-4759-820e-8c1af0f7ef68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\framework\meshes">
+      <UniqueIdentifier>{f67e80ad-a707-45f6-83c6-41674961c8a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -112,12 +118,6 @@
     <ClCompile Include="..\..\sources\render\Font.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\render\Frustum.cpp">
-      <Filter>render\framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\Mesh.cpp">
-      <Filter>render\framework</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\render_system.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
@@ -162,6 +162,18 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\light_manager.cpp">
       <Filter>render\framework\lights</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\mesh_manager.cpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Mesh.cpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Frustum.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\shadow_manager.cpp">
+      <Filter>render\framework\shadows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -237,12 +249,6 @@
     <ClInclude Include="..\..\sources\render\Font.h">
       <Filter>render\framework</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\Frustum.h">
-      <Filter>render\framework</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\Mesh.hpp">
-      <Filter>render\framework</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h">
       <Filter>render\framework</Filter>
     </ClInclude>
@@ -259,9 +265,6 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\Exception.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\prerequisites.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\win32Res\resource.h">
@@ -290,6 +293,21 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\vertex_format.hpp">
       <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\shadow_manager.hpp">
+      <Filter>render\framework\shadows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\mesh_manager.hpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\prerequisites.hpp">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Mesh.hpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Frustum.h">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

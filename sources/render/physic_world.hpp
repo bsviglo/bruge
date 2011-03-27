@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Data.hpp"
 #include "math/Vector3.hpp"
 
@@ -140,14 +140,13 @@ namespace physic
 	//-- Manages of all physical instances in the game, and updates dynamics simulation and
 	//-- collision detection.
 	//----------------------------------------------------------------------------------------------
-	class PhysicWorld
+	class PhysicWorld : public NonCopyable
 	{
 	public:
 		PhysicWorld();
 		~PhysicWorld();
 
 		bool		init();
-		bool		fini();
 
 		//-- detect collisions. Called once per frame to update the whole game world.
 		void		detectCollisions(float dt);
@@ -176,10 +175,6 @@ namespace physic
 		PhysDebugDrawer										m_debugDrawer;
 
 		std::map<std::string, PhysObjDesc*>					m_physObjDescs;
-
-	private:
-		PhysicWorld(const PhysicWorld&);
-		PhysicWorld& operator = (const PhysicWorld&);
 	};
 
 } //-- physic

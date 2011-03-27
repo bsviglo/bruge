@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "materials.hpp"
 #include "vertex_format.hpp"
 #include <vector>

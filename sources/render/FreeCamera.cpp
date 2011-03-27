@@ -7,8 +7,8 @@ namespace brUGE
 {
 
 	//------------------------------------------
-	FreeCamera::FreeCamera(const render::Projection *projection /*= NULL*/)
-		:	render::Camera(projection),
+	FreeCamera::FreeCamera(const render::Projection& projection)
+		:	Camera(projection),
 			m_speed(10.0f),
 			m_mouseSens(0.25f),
 			m_mouseAccel(20.0f),
@@ -42,11 +42,10 @@ namespace brUGE
 	{
 		m_updateInput = updateInput;
 		
-		if (m_drawDebug)		drawViewFrustum();
 		if (!m_updateInput)		return;
 
-		_moveByKey(dt);
-		_setEuler(m_pos, math::degToRad(m_pitch), math::degToRad(m_yaw), 0.0f);
+		moveByKey(dt);
+		setEuler(m_pos, math::degToRad(m_pitch), math::degToRad(m_yaw), 0.0f);
 	}
 
 	// 
@@ -71,7 +70,7 @@ namespace brUGE
 	
 	// 
 	//------------------------------------------
-	void FreeCamera::_moveByKey(float dt)
+	void FreeCamera::moveByKey(float dt)
 	{
 		if (Console::instance().visible()) return;
 
@@ -83,30 +82,30 @@ namespace brUGE
 		//-- adjust by time.
 		multiplier *= dt;
 
-		if (im.isKeyDown(DIK_W))	_move	( multiplier * m_speed);	//W
-		if (im.isKeyDown(DIK_S))	_move	(-multiplier * m_speed);	//S
-		if (im.isKeyDown(DIK_D))	_strafe	( multiplier * m_speed);	//A
-		if (im.isKeyDown(DIK_A))	_strafe	(-multiplier * m_speed);	//D
-		if (im.isKeyDown(DIK_E))	_throw	( multiplier * m_speed);	//Q
-		if (im.isKeyDown(DIK_Q))	_throw	(-multiplier * m_speed);	//E
+		if (im.isKeyDown(DIK_W)) move  (+multiplier * m_speed);	//W
+		if (im.isKeyDown(DIK_S)) move  (-multiplier * m_speed);	//S
+		if (im.isKeyDown(DIK_D)) strafe(+multiplier * m_speed);	//A
+		if (im.isKeyDown(DIK_A)) strafe(-multiplier * m_speed);	//D
+		if (im.isKeyDown(DIK_E)) rise  (+multiplier * m_speed);	//Q
+		if (im.isKeyDown(DIK_Q)) rise  (-multiplier * m_speed);	//E
 	}
 
 	//------------------------------------------
-	void FreeCamera::_move(float value)
+	void FreeCamera::move(float value)
 	{
 		m_pos += direction().scale(value);
 	}
 	
 	//------------------------------------------
-	void FreeCamera::_strafe(float value)
+	void FreeCamera::strafe(float value)
 	{
 		m_pos += side().scale(value);	
 	}
 
 	//------------------------------------------
-	void FreeCamera::_throw(float value)
+	void FreeCamera::rise(float value)
 	{
 		m_pos += up().scale(value);	
 	}
 	
-} // brUGE
+} //-- brUGE

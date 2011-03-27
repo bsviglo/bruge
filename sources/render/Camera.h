@@ -1,26 +1,26 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_common.h"
 #include "math/math_all.hpp"
 
 namespace brUGE
 {
-namespace render
-{
 
-	//
-	// Базой класс камеры.
-	//------------------------------------------------------------
+	//-- Base camera.
+	//----------------------------------------------------------------------------------------------
 	class Camera : public utils::RefCount
 	{
 	public:
+
+		//-- ToDo: rework interface.
+
 		// Можно создать камеру с собственой настройкой перспективной камеры, т.е.
 		// персонально для этой камеры, а можно воспользоваться перспективой, которая
 		// задана поумолчанию в рендере. Изменение переспективы в камере видет только к
 		// изменению усеченной пирамиды видимости данной камеры.
 		//------------------------------------------
-		Camera(const Projection* projection = NULL);
+		Camera(const render::Projection& projection);
 		virtual ~Camera() { }
 		
 		// Функции вызываемая каждый фрейм, она обновляет всю информацию
@@ -34,49 +34,18 @@ namespace render
 		//------------------------------------------
 		virtual void updateMouse(float /*dx*/, float /*dy*/, float /*dz*/) {}
 
-		// Производит отрисовку пирамиды видимости камеры.
-		//------------------------------------------
-		void drawViewFrustum() const;
-
-		const Projection& 	projection() const			{ return m_projInfo; }
-		const mat4f&		viewProjMatrix() const		{ return m_viewProjMat; }
-		const mat4f&		invViewProjMatrix() const	{ return m_invViewProjMat; }
-
-		const vec3f&		side() const				{ return m_side; }
-		const vec3f&		up() const					{ return m_up; }
-		const vec3f&		direction() const			{ return m_dir; }
-		const vec3f&		position() const			{ return m_pos; }
-		
-		const mat4f&		viewMatrix() const			{ return m_viewMat; }
-		const mat4f&		invViewMatrix() const		{ return m_invViewMat; }
+		const render::RenderCamera& renderCam() const			{ return m_renderCam; } 
+		const vec3f&				side() const;
+		const vec3f&				up() const;
+		const vec3f&				direction() const;
+		const vec3f&				position() const;
 
 	protected:
-		// Функции для облегчения задания матрицы вида камеры.
-		void _set(const mat4f &mat);
-		void _setLookAt(const vec3f &pos, const vec3f &dir, const vec3f &up);
-		void _setEuler(const vec3f &pos, float pitch, float yaw, float roll);
-
-		// Консольные функции.
-		int _printMatrix(std::string type);
-	
-	private:
-		void _init(const Projection  *projection);
+		void setLookAt(const vec3f &pos, const vec3f &dir, const vec3f &up);
+		void setEuler(const vec3f &pos, float pitch, float yaw, float roll);
 
 	private:
-		ScreenResolution m_screen;
-		Projection m_projInfo;
-
-		mat4f m_viewMat;
-		mat4f m_invViewMat;
-		mat4f m_projMat;
-		mat4f m_viewProjMat;
-		mat4f m_invViewProjMat;
-		
-		vec3f m_side;
-		vec3f m_up;
-		vec3f m_dir;
-		vec3f m_pos;
+		render::RenderCamera m_renderCam;
 	};
 
-} // render
-} // brUGE
+} //-- brUGE

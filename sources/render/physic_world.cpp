@@ -113,7 +113,12 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	PhysicWorld::~PhysicWorld()
 	{
-
+		//-- ToDo:
+		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
+			delete i->second;
+		
+		//-- ToDo: to guaranty the right calling sequence of destructors.
+		m_dynamicsWorld.reset();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -141,23 +146,6 @@ namespace physic
 
 		//-- 7. set debug drawer.
 		m_dynamicsWorld->setDebugDrawer(&m_debugDrawer);
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::fini()
-	{
-		//-- ToDo:
-		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
-			delete i->second;
-
-		m_physObjDescs.clear();
-		m_dynamicsWorld.reset();
-		m_solver.reset();
-		m_broadphase.reset();
-		m_dispatcher.reset();
-		m_collisionCfg.reset();
 
 		return true;
 	}

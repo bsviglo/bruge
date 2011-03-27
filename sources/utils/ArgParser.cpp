@@ -1,4 +1,4 @@
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/string_utils.h"
 #include "math/Vector2.hpp"
 #include "math/Vector3.hpp"

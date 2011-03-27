@@ -1,34 +1,38 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Singleton.h"
-#include "utils/string_utils.h"
 #include "utils/Timer.h"
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
-#include "render/Camera.h"
-#include "render/FreeCamera.h"
 #include "control/InputManager.h"
 #include "loader/ResourcesManager.h"
 #include "os/WinApp.h"
 #include "os/FileSystem.h"
 #include <memory>
 
-#include "render/render_system.hpp"
-#include "render/render_world.hpp"
-#include "render/animation_engine.hpp"
-#include "render/game_world.hpp"
-#include "render/physic_world.hpp"
-
 namespace brUGE
 {
 	class IDemo;
-	
-	// Optional dialog showed before starting the engine.
-	// Give opportunity to choice desired engine options.
+	class GameWorld;
+
+	namespace render
+	{
+		class AnimationEngine;
+		class RenderWorld;
+	}
+
+	namespace physic
+	{
+		class PhysicWorld;
+	}
+
+
+	//-- Optional dialog showed before starting the engine. Gives opportunity to choice desired
+	//-- engine options.
 	//----------------------------------------------------------------------------------------------
-	class EngineConfigDialog
+	class EngineConfigDialog : public NonCopyable
 	{
 	public:
 		EngineConfigDialog();
@@ -37,48 +41,42 @@ namespace brUGE
 		bool display();
 	};
 
+
 	//-- Entry point of the brUGE.
 	//----------------------------------------------------------------------------------------------
-	class Engine : public utils::Singleton<Engine>, public IInputListener
+	class Engine : public utils::Singleton<Engine>, public IInputListener, public NonCopyable
 	{
 	public:
 		Engine();
 		~Engine();
 		
-		//-- init sub-systems of engine.
-		void init(HINSTANCE hInstance, IDemo* demo);
+		void						init(HINSTANCE hInstance, IDemo* demo);
+		void						shutdown();
 		
 		//-- entry point of engine.
-		int  run();
-		void stop();
+		int							run();
+		void						stop();
 		
-		//-- de-init sub-systems of the engine.
-		//-- Note: must not throwing exceptions.
-		void shutdown();
+		void						updateFrame(float dt);
+		void						drawFrame(float dt);
 
-		void updateFrame(float dt);
-		void drawFrame(float dt);
-
-		virtual void handleMouseClick	(const MouseEvent &me);
-		virtual void handleMouseMove	(const MouseAxisEvent &mae);
-		virtual void handleKeyboardEvent(const KeyboardEvent &ke);
+		virtual void				handleMouseClick(const MouseEvent &me);
+		virtual void				handleMouseMove(const MouseAxisEvent &mae);
+		virtual void				handleKeyboardEvent(const KeyboardEvent &ke);
 
 		HINSTANCE					getHInstance()	  { return m_hInstance; }
 		
 		render::VideoMode&			getVideoMode()    { return m_videoMode; }
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
 
-
-		GameWorld&					gameWorld()			{ return m_gameWorld; }
-		render::RenderWorld&		renderWorld()		{ return m_renderWorld; }
-		render::RenderSystem&		renderSystem()		{ return m_renderSys; }
-		physic::PhysicWorld&		physicWorld()		{ return m_physicWorld; }
-		render::AnimationEngine&	animationEngine()	{ return m_animEngine; }
+		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
+		render::RenderWorld&		renderWorld()		{ return *m_renderWorld.get();	}
+		render::RenderSystem&		renderSystem()		{ return m_renderSys;			}
+		physic::PhysicWorld&		physicWorld()		{ return *m_physicWorld.get();	}
+		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
 	private:
-		// Функция вторичного потока, она генерирует новое сообщение каждые 20 милесекунд
-		// Это нужно для поддержания стабильного FPS.
-		//------------------------------------------
+		//-- ToDo: reconsider. It seems useless.
 		static DWORD WINAPI _eventGenerator(LPVOID lpParameter);
 		static DWORD WINAPI _bgTask_loadGameResources(LPVOID lpParameter);
 
@@ -93,37 +91,37 @@ namespace brUGE
 		int _showFPS(bool show);
 
 	private:
-		os::FileSystem		 			m_fileSystem;
-		utils::LogManager	 			m_logManager; 
+		os::FileSystem		 						m_fileSystem;
+		utils::LogManager	 						m_logManager; 
 
-		std::string			 			m_title;
-		HINSTANCE			 			m_hInstance;
-		HANDLE				 			m_hThread;
-		DWORD				 			m_threadId;
-		HWND				 			m_hWnd;
+		std::string			 						m_title;
+		HINSTANCE			 						m_hInstance;
+		HANDLE				 						m_hThread;
+		DWORD				 						m_threadId;
+		HWND				 						m_hWnd;
 
-		static uint						m_maxFPS;
-		static HANDLE		 			m_hEvent;
-		static bool			 			m_isWorking;
+		static uint									m_maxFPS;
+		static HANDLE		 						m_hEvent;
+		static bool			 						m_isWorking;
 		
-		std::unique_ptr<IDemo>			m_demo;
-		std::unique_ptr<Console>		m_console;
-		std::unique_ptr<WatchersPanel>	m_watchersPanel;
-		std::unique_ptr<TimingPanel>	m_timingPanel;
-		render::VideoMode	 			m_videoMode;
-		utils::Timer		 			m_timer;
-		os::WinApp			 			m_mainWindow;
-		render::RenderSystem 			m_renderSys;
-		InputManager		 			m_inputSystem;
-		ResourcesManager	 			m_resManager;
-		EngineConfigDialog				m_configDialog;
+		std::unique_ptr<IDemo>						m_demo;
+		std::unique_ptr<Console>					m_console;
+		std::unique_ptr<WatchersPanel>				m_watchersPanel;
+		std::unique_ptr<TimingPanel>				m_timingPanel;
+		render::VideoMode	 						m_videoMode;
+		utils::Timer		 						m_timer;
+		os::WinApp			 						m_mainWindow;
+		render::RenderSystem 						m_renderSys;
+		InputManager		 						m_inputSystem;
+		EngineConfigDialog							m_configDialog;
+	
+		std::unique_ptr<ResourcesManager>			m_resManager;
+		std::unique_ptr<GameWorld>					m_gameWorld;
+		std::unique_ptr<render::RenderWorld>		m_renderWorld;
+		std::unique_ptr<physic::PhysicWorld>		m_physicWorld;
+		std::unique_ptr<render::AnimationEngine>	m_animEngine;
 
-		GameWorld						m_gameWorld;
-		render::RenderWorld				m_renderWorld;
-		physic::PhysicWorld				m_physicWorld;
-		render::AnimationEngine			m_animEngine;
-		//render::CollisionWorld			m_collisionWorld;
-
+		//-- ToDo: Try to find better approach to bring together imgui with our engine.
 		struct imguiInput
 		{
 			int  mx, my;

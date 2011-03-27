@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Data.hpp"
 #include "render/Mesh.hpp"
 
@@ -23,7 +23,7 @@ namespace render
 	{
 	public:
 		Animation();
-		~Animation();
+		virtual ~Animation();
 
 		bool load(const utils::ROData& data);
 
@@ -113,11 +113,13 @@ namespace render
 	//-- animation on the arbitrary geometry set and to hide complexity of this task inside his
 	//-- implementation.
 	//----------------------------------------------------------------------------------------------
-	class AnimationEngine
+	class AnimationEngine : public NonCopyable
 	{
 	public:
+		AnimationEngine();
+		~AnimationEngine();
+
 		bool			init();
-		bool			fini();
 
 		//-- animate all the requested animations.
 		void			animate		(float dt);

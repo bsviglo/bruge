@@ -5,8 +5,15 @@
 #include "render/IRenderDevice.h"
 #include "gui/imgui.h"
 
+#include "render/render_system.hpp"
+#include "render/render_world.hpp"
+#include "render/animation_engine.hpp"
+#include "render/game_world.hpp"
+#include "render/physic_world.hpp"
+
 using namespace brUGE;
 using namespace brUGE::render;
+using namespace brUGE::physic;
 using namespace brUGE::utils;
 using namespace brUGE::os;
 using namespace brUGE::math;
@@ -41,7 +48,12 @@ namespace brUGE
 		m_logManager("log", true, false),
 		m_console(new Console()),
 		m_watchersPanel(new WatchersPanel()),
-		m_timingPanel(new TimingPanel())
+		m_timingPanel(new TimingPanel()),
+		m_gameWorld(new GameWorld()),
+		m_animEngine(new AnimationEngine()),
+		m_renderWorld(new RenderWorld()),
+		m_resManager(new ResourcesManager()),
+		m_physicWorld(new PhysicWorld())
 	{
 		//-- init COM-system. That is necessary for DirectInput.
 		CoInitialize(NULL);
@@ -126,28 +138,28 @@ namespace brUGE
 						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
 						);
 
-					m_gameWorld.beginUpdate(dt);
+					m_gameWorld->beginUpdate(dt);
 
 					//-- update animation.
 					{
 						SCOPED_TIME_MEASURER_EX("animation")
-						m_animEngine.animate(dt);
+						m_animEngine->animate(dt);
 					}
 					
 					//-- simulate physics.
 					{
 						SCOPED_TIME_MEASURER_EX("physic")
-						m_physicWorld.simulateDynamics(dt);
+						m_physicWorld->simulateDynamics(dt);
 					}
 
-					m_renderWorld.update(dt);
+					m_renderWorld->update(dt);
 
 					//-- ToDo: some old stuff.
 					updateFrame(dt);
 
 					//m_collisionWorld.update(dt);
 
-					m_gameWorld.endUpdate();
+					m_gameWorld->endUpdate();
 
 					//-- finish updating imgui input.
 					imguiEndFrame();
@@ -159,7 +171,7 @@ namespace brUGE
 					SCOPED_TIME_MEASURER_EX("draw")
 
 					m_renderSys.beginFrame();
-					m_renderWorld.resolveVisibility();
+					m_renderWorld->resolveVisibility();
 					//-- ToDo: some old stuff.
 					drawFrame(dt);
 					m_renderSys.endFrame();
@@ -266,7 +278,7 @@ namespace brUGE
 		ConError(g_engineName);
 
 		INFO_MSG("Init resource system ... ");
-		if (!m_resManager.init())
+		if (!m_resManager->init())
 		{
 			BR_EXCEPT("Can't init resource system.");
 		}
@@ -325,22 +337,22 @@ namespace brUGE
 		ssManager = soundSystem->createSSManager("");
 		LOG("Initialization sound system ... completed.");
 */
-		if (!m_physicWorld.init())
+		if (!m_physicWorld->init())
 		{
 			BR_EXCEPT("Can't init physic world.");
 		}
 
-		if (!m_renderWorld.init())
+		if (!m_renderWorld->init())
 		{
 			BR_EXCEPT("Can't init render world.");
 		}
 
-		if (!m_animEngine.init())
+		if (!m_animEngine->init())
 		{
 			BR_EXCEPT("Can't init animation engine.");
 		}
 
-		if (!m_gameWorld.init())
+		if (!m_gameWorld->init())
 		{
 			BR_EXCEPT("Can't init game world.");
 		}
@@ -367,32 +379,14 @@ namespace brUGE
 			m_demo.reset();
 		}
 		
-		//-- shutdown console.
-		if (m_console.get())
-		{
-			m_console.reset();
-		}
-
-		//-- shutdown watchers panel.
-		if (m_watchersPanel.get())
-		{
-			m_watchersPanel->destroy();
-			m_watchersPanel.reset();
-		}
-
-		//-- shutdown timing panel.
-		if (m_timingPanel.get())
-		{
-			m_timingPanel->destroy();
-			m_timingPanel.reset();
-		}
-
-		m_gameWorld.fini();
-		m_animEngine.fini();
-		m_renderWorld.fini();
-		m_physicWorld.fini();
-
-		m_resManager.shutdown();
+		m_console.reset();
+		m_watchersPanel.reset();
+		m_timingPanel.reset();
+		m_gameWorld.reset();
+		m_animEngine.reset();
+		m_renderWorld.reset();
+		m_physicWorld.reset();
+		m_resManager.reset();
 
 		//-- release render system.
 		_releaseRenderSystem();

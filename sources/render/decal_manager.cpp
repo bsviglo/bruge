@@ -110,18 +110,6 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool DecalManager::fini()
-	{
-		m_staticTB.reset();
-		m_dynamicTB.reset();
-		m_material.reset();
-		m_unitCube.reset();
-		m_ROPs.clear();
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
 	void DecalManager::update(float /*dt*/)
 	{
 		//-- 1. update static decals.

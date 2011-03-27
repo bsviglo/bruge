@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "imgui.h"
 #include "render/Color.h"
 #include "render/materials.hpp"
@@ -42,8 +42,6 @@ namespace render
 		~imguiRender();
 
 		bool init();
-		bool fini();
-
 		void draw();
 
 	private:

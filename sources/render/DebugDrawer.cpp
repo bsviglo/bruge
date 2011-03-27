@@ -25,6 +25,12 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
+	DebugDrawer::~DebugDrawer()
+	{
+
+	}
+
+	//---------------------------------------------------------------------------------------------
 	bool DebugDrawer::init()
 	{
 		REGISTER_CONSOLE_MEMBER_VALUE("r_drawDebugInfo", bool, m_isEnabled, DebugDrawer);
@@ -89,26 +95,6 @@ namespace render
 			if (!m_font.isValid())
 				return false;
 		}
-
-		return true;
-	}
-
-	//---------------------------------------------------------------------------------------------
-	bool DebugDrawer::fini()
-	{
-		//-- release render resources.
-
-		//-- wire geometry.
-		m_VB.reset();
-		m_wireMaterial.reset();
-
-		//-- solid geometry.
-		m_instancingTB.reset();
-		for (uint i = 0; i < MT_COUNT; ++i)
-			m_meshes[i].reset();
-
-		//-- text rendering.
-		m_font.reset();
 
 		return true;
 	}
@@ -286,22 +272,22 @@ namespace render
 		m_vertices.push_back(VertDesc(v4, color.toVec4()));
 		m_vertices.push_back(VertDesc(v8, color.toVec4()));
 
+		//------------------------------------------------------------------------------------------
 		/*
 		mat4f transf;
 		transf.setPerspectiveProj(fov, aspect, nearDist, farDist);
+		transf.preMultiply(orient);
 		transf.invert();
-		transf = orient;
-		//transf.postMultiply(orient);
 		
-		vec3f v1 = transf.applyToPoint(vec3f(-1.f, 1.f, 1.f));
-		vec3f v2 = transf.applyToPoint(vec3f(-1.f, 1.f,-1.f));
-		vec3f v3 = transf.applyToPoint(vec3f( 1.f, 1.f,-1.f));
-		vec3f v4 = transf.applyToPoint(vec3f( 1.f, 1.f, 1.f));
+		vec4f v1 = transf.applyToPoint(vec4f(-1.f, 1.f, 1.f, 1.0f));
+		vec4f v2 = transf.applyToPoint(vec4f(-1.f, 1.f, 0.f, 1.0f));
+		vec4f v3 = transf.applyToPoint(vec4f( 1.f, 1.f, 0.f, 1.0f));
+		vec4f v4 = transf.applyToPoint(vec4f( 1.f, 1.f, 1.f, 1.0f));
 
-		vec3f v5 = transf.applyToPoint(vec3f(-1.f,-1.f, 1.f));
-		vec3f v6 = transf.applyToPoint(vec3f(-1.f,-1.f,-1.f));
-		vec3f v7 = transf.applyToPoint(vec3f( 1.f,-1.f,-1.f));
-		vec3f v8 = transf.applyToPoint(vec3f( 1.f,-1.f, 1.f));
+		vec4f v5 = transf.applyToPoint(vec4f(-1.f,-1.f, 1.f, 1.0f));
+		vec4f v6 = transf.applyToPoint(vec4f(-1.f,-1.f, 0.f, 1.0f));
+		vec4f v7 = transf.applyToPoint(vec4f( 1.f,-1.f, 0.f, 1.0f));
+		vec4f v8 = transf.applyToPoint(vec4f( 1.f,-1.f, 1.f, 1.0f));
 		
 		// верхн€€ плоскость.
 		m_vertices.push_back(VertDesc(v1, color));
@@ -484,7 +470,7 @@ namespace render
 			}
 
 			rs().beginPass(RenderSystem::PASS_DEBUG_SOLID);
-			rs().addRenderOps(rops);
+			rs().addROPs(rops);
 			rs().endPass();
 
 			//-- clear caches.
@@ -501,7 +487,7 @@ namespace render
 			m_wireROPs[0].m_indicesCount = m_vertices.size();
 
 			rs().beginPass(RenderSystem::PASS_DEBUG_WIRE);
-			rs().addRenderOps(m_wireROPs);
+			rs().addROPs(m_wireROPs);
 			rs().endPass();
 
 			//-- clear caches.
@@ -518,7 +504,7 @@ namespace render
 				{
 					const TextData& data = m_textDataVec[i];
 
-					vec4f projPos = rs().camera().viewProjMatrix().applyToPoint(data.m_pos.toVec4());
+					vec4f projPos = rs().camera()->m_viewProj.applyToPoint(data.m_pos.toVec4());
 					if (!almostZero(projPos.w) && projPos.w > 0)
 					{
 						vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);

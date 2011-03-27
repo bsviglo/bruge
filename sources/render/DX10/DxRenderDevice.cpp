@@ -104,7 +104,7 @@ namespace render
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd));
 
-		sd.BufferCount							= 2;
+		sd.BufferCount							= 1;
 		sd.BufferDesc.Width						= m_videoMode.width;
 		sd.BufferDesc.Height					= m_videoMode.height;
 		sd.BufferDesc.Format					= DXGI_FORMAT_R8G8B8A8_UNORM;

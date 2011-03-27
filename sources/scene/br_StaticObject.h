@@ -1,7 +1,7 @@
 #ifndef _BR_STATICOBJECT_H_
 #define _BR_STATICOBJECT_H_
 
-#include "br_Prerequisites.h"
+#include "br_prerequisites.hpp"
 #include "Math/br_MathTypes.h"
 
 namespace brUGE

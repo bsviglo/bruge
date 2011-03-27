@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_common.h"
 #include "shader_context.hpp"
 #include "utils/Data.hpp"
@@ -34,6 +34,7 @@ namespace render
 			bool m_isBumpMaped;
 			bool m_isMultipass;
 
+			//-- <shader, vertex declaration> pair.
 			std::pair<Handle, Handle> m_shader[ShaderContext::SHADER_RENDER_PASS_COUNT];
 		};
 

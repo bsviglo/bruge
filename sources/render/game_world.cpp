@@ -2,62 +2,41 @@
 
 #include "engine/Engine.h"
 #include "os/FileSystem.h"
+#include "render/animation_engine.hpp"
 #include "render/render_system.hpp"
 #include "render/render_world.hpp"
+#include "render/mesh_manager.hpp"
 #include "render/physic_world.hpp"
 
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
 
 using namespace brUGE::math;
-
-//-- start unnamed namespace.
-//--------------------------------------------------------------------------------------------------
-namespace
-{
-
-	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
-	//----------------------------------------------------------------------------------------------
-	inline mat4f quatToMat4x4(const quat& q, const vec3f& pos)
-	{
-		mat4f out;
-
-		//-- 1. rotation part.
-		out = q.toMat4();
-		out.transpose();
-
-		//-- 2. translation part.
-		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
-
-		return out;
-	}
-
-}
-//--------------------------------------------------------------------------------------------------
-//-- end unnamed namespace.
-
+using namespace brUGE::utils;
+using namespace brUGE::os;
+using namespace brUGE::render;
 
 namespace brUGE
 {
-	using namespace utils;
-	using namespace os;
-	using namespace render;
-
 	//----------------------------------------------------------------------------------------------
-	bool GameWorld::init()
+	GameWorld::GameWorld()
 	{
-		return true;
+
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool GameWorld::fini()
+	GameWorld::~GameWorld()
 	{
 		for (uint i = 0; i < m_objs.size(); ++i)
 		{
 			delete m_objs[i];
 		}
 		m_objs.clear();
-
+	}
+	
+	//----------------------------------------------------------------------------------------------
+	bool GameWorld::init()
+	{
 		return true;
 	}
 
@@ -145,7 +124,17 @@ namespace brUGE
 
 		pugi::xml_node objectDesc = doc.document_element();
 
-		//-- 1. load render part of the game object.
+		MeshManager& meshManager = Engine::instance().renderWorld().meshManager();
+
+		//-- 1. setup root matrix.
+		{
+			if (orient)	m_transform.m_worldMat = *orient;
+			else		m_transform.m_worldMat.setIdentity();
+
+			m_transform.m_nodes.push_back(new Node("root", m_transform.m_worldMat));
+		}
+
+		//-- 2. load render part of the game object.
 		{
 			pugi::xml_node renderNode = objectDesc.child("render");
 			if (renderNode.empty())
@@ -157,46 +146,7 @@ namespace brUGE
 				MeshInstance::Desc desc;
 				desc.fileName = renderNode.attribute("file").value();
 
-				m_meshInst = Engine::instance().renderWorld().addMeshDef(desc, &m_transform);
-			}
-		}
-
-		//-- 2. setup transform of the game object.
-		{
-			MeshInstance* meshInst = Engine::instance().renderWorld().getMeshDef(m_meshInst);
-
-			//-- 2.1. setup root matrix.
-			if (orient)	m_transform.m_worldMat = *orient;
-			else		m_transform.m_worldMat.setIdentity();
-
-			//-- 2.2. setup nodes bucket.
-			m_transform.m_nodes.push_back(new Node("root", m_transform.m_worldMat));
-
-			//-- 2.3. if model is animated, then gather all the skeleton bones as nodes.
-			if (meshInst->m_skinnedMesh)
-			{
-				//-- 2.3.1. resize mesh world palette to match the bones count in the skinned mesh.
-				meshInst->m_worldPalette.resize(meshInst->m_skinnedMesh->skeleton().size());
-
-				//-- 2.3.2. initialize nodes. 
-				for (uint i = 0; i < meshInst->m_worldPalette.size(); ++i)
-				{
-					const Joint& joint   = meshInst->m_skinnedMesh->skeleton()[i];
-					mat4f&		 nodeMat = meshInst->m_worldPalette[i];
-
-					//-- set default initial value.
-					nodeMat = quatToMat4x4(joint.m_transform.orient, joint.m_transform.pos);
-
-					m_transform.m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
-				}
-
-				m_transform.m_localBounds = meshInst->m_skinnedMesh->bounds();
-				m_transform.m_worldBounds = meshInst->m_skinnedMesh->bounds().getTranformed(m_transform.m_worldMat);
-			}
-			else
-			{
-				m_transform.m_localBounds = meshInst->m_mesh->bounds();
-				m_transform.m_worldBounds = meshInst->m_mesh->bounds().getTranformed(m_transform.m_worldMat);
+				m_meshInst = meshManager.addMesh(desc, &m_transform);
 			}
 		}
 
@@ -220,13 +170,13 @@ namespace brUGE
 
 		//-- 4. setup animation part.
 		{
-			MeshInstance* meshInst = Engine::instance().renderWorld().getMeshDef(m_meshInst);
+			MeshInstance& meshInst = meshManager.getMesh(m_meshInst);
 
-			if (meshInst->m_skinnedMesh)
+			if (meshInst.m_skinnedMesh)
 			{
 				AnimationData::Desc desc;
 				desc.m_idleAnim  = nullptr;
-				desc.m_meshInst  = meshInst;
+				desc.m_meshInst  = &meshInst;
 				desc.m_transform = &m_transform;
 
 				m_animCtrl = Engine::instance().animationEngine().addAnimDef(desc);

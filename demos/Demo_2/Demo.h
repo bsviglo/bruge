@@ -1,12 +1,17 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "engine/IDemo.h"
 #include "render/FreeCamera.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
 using namespace brUGE::render;
+
+namespace brUGE
+{
+	class Node;
+}
 
 //--------------------------------------------------------------------------------------------------
 class Demo : public brUGE::IDemo

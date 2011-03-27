@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_common.h"
 #include "Color.h"
 #include "materials.hpp"
@@ -54,8 +54,6 @@ namespace render
 		~LightsManager();
 
 		bool					init();
-		bool					fini();
-
 		void					update(float dt);
 		uint					gatherROPs(RenderOps& ops) const;
 

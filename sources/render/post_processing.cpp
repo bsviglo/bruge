@@ -155,7 +155,7 @@ namespace render
 					}
 
 					m_rops[0].m_material = pass.m_material->renderFx();
-					rs().addImmediateRenderOps(m_rops);
+					rs().addImmediateROPs(m_rops);
 				}
 			}
 		}

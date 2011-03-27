@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "Camera.h"
 
 namespace brUGE
@@ -10,10 +10,10 @@ namespace brUGE
 	// ќн получает информацию о пользовательском вводе: положении мыши и клавишь и 
 	// на их основе производит обновление.
 	//----------------------------------------------------------------------------------------------
-	class FreeCamera : public render::Camera
+	class FreeCamera : public Camera
 	{
 	public:
-		FreeCamera(const render::Projection *projection = NULL);
+		FreeCamera(const render::Projection& projection);
 		virtual ~FreeCamera() { }
 		
 		// смотри Camera.
@@ -35,10 +35,10 @@ namespace brUGE
 		void setMouseAcceleration(float accel)	{ m_mouseAccel = accel; }
 
 	private:
-		void _moveByKey(float dt);
-		void _move(float value);										
-		void _strafe(float value);
-		void _throw(float value);
+		void moveByKey(float dt);
+		void move(float value);				
+		void strafe(float value);
+		void rise(float value);
 
 	private:
 		bool	m_updateInput;
@@ -53,5 +53,5 @@ namespace brUGE
 		vec3f	m_pos;
 	};
 
-} // brUGE
+} //-- brUGE
 

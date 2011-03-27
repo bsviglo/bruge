@@ -1,7 +1,11 @@
 #include "engine/Engine.h"
+#include "render/game_world.hpp"
 #include "render/decal_manager.hpp"
 #include "render/DebugDrawer.h"
 #include "render/light_manager.hpp"
+#include "render/render_world.hpp"
+#include "render/animation_engine.hpp"
+#include "render/physic_world.hpp"
 #include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
@@ -54,10 +58,10 @@ bool Demo::init()
 	{
 		Projection proj;
 		proj.fov	  = 60.0f;
-		proj.nearDist = 0.1f;
-		proj.farDist  = 250.0f;
+		proj.nearDist = 1.0f;
+		proj.farDist  = 200.0f;
 
-		m_camera = new FreeCamera(&proj);
+		m_camera = new FreeCamera(proj);
 	}
 
 	Engine&			 engine     = Engine::instance();

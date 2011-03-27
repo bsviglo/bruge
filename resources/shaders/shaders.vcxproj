@@ -26,6 +26,7 @@
     <None Include="..\materials\player.mtl" />
     <None Include="..\materials\pole.mtl" />
     <None Include="..\materials\p_barrel.mtl" />
+    <None Include="..\materials\shadows.mtl" />
     <None Include="..\materials\ssaa.mtl">
       <SubType>Designer</SubType>
     </None>
@@ -40,13 +41,14 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ambient.hlsl" />
+    <None Include="cast_shadows.hlsl" />
     <None Include="common.hlsl" />
     <None Include="console.hlsl" />
     <None Include="debug_solid.hlsl" />
     <None Include="debug_wire.hlsl" />
     <None Include="decals.hlsl" />
     <None Include="diffuse.hlsl" />
-    <None Include="diffuse_skinned.hlsl" />
+    <None Include="skinned_diffuse.hlsl" />
     <None Include="dir_lights_resolve.hlsl" />
     <None Include="dlaa.hlsl" />
     <None Include="font.hlsl" />
@@ -54,6 +56,8 @@
     <None Include="ping_pong.hlsl" />
     <None Include="point_lights_resolve.hlsl" />
     <None Include="post_processing.hlsl" />
+    <None Include="shadow_resolve.hlsl" />
+    <None Include="skinned_cast_shadows.hlsl" />
     <None Include="skinned_z_pre_pass.hlsl" />
     <None Include="spot_lights_resolve.hlsl" />
     <None Include="ssaa.hlsl" />

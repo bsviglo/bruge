@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "utils/Ptr.h"
 #include "utils/Singleton.h"
 #include "render/render_common.h"
@@ -25,14 +25,13 @@ namespace brUGE
 	typedef Ptr<utils::ROData> RODataPtr;
 
 	//----------------------------------------------------------------------------------------------
-	class ResourcesManager : public utils::Singleton<ResourcesManager>
+	class ResourcesManager : public utils::Singleton<ResourcesManager>, public NonCopyable
 	{
 	public:
 		ResourcesManager();
 		~ResourcesManager();
 
 		bool init();
-		void shutdown();
 
 		//-- ToDo:
 		//Ptr<render::Model>			loadModel  		(const char* name, bool loadCollision = true);

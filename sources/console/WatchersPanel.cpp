@@ -61,13 +61,6 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	bool WatchersPanel::destroy()
-	{
-		m_font.reset();
-		return true;
-	}
-
-	//---------------------------------------------------------------------------------------------
 	void WatchersPanel::update(float /*dt*/)
 	{
 		SCOPED_TIME_MEASURER_EX("WatchersPanel update")

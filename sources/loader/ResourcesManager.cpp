@@ -24,7 +24,9 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	ResourcesManager::~ResourcesManager()
 	{ 
+		m_texLoader.shutdown();
 
+		//-- caches automatically are cleared here.
 	}
 	
 	//----------------------------------------------------------------------------------------------
@@ -36,20 +38,6 @@ namespace brUGE
 		return success;
 	}
 
-	//----------------------------------------------------------------------------------------------
-	void ResourcesManager::shutdown()
-	{
-		m_texLoader.shutdown();
-		
-		//-- clear caches.
-		m_texturesCache.clear();
-		m_meshesCache.clear();
-		m_skinnedMeshesCache.clear();
-		m_shadersCache.clear();
-		m_fontsCache.clear();
-		//m_animationsCashe.clear();
-	}
-	
 	//----------------------------------------------------------------------------------------------
 	Ptr<ITexture> ResourcesManager::loadTexture(const char* name)
 	{

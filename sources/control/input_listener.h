@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 
 //define default version of DirectInput 8
 #define DIRECTINPUT_VERSION 0x0800

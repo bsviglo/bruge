@@ -145,31 +145,6 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool LightsManager::fini()
-	{
-		m_dirLights.clear();
-		m_pointLights.clear();
-		m_spotLights.clear();
-
-		m_gpuDirLights.clear();
-		m_gpuPointLights.clear();
-		m_gpuSpotLights.clear();
-
-		m_unitCube.reset();
-		m_fsQuadVB.reset();
-
-		m_dirLightsTB.reset();
-		m_pointLightsTB.reset();
-		m_spotLightsTB.reset();
-
-		m_dirLightMaterial.reset();
-		m_pointLightMaterial.reset();
-		m_spotLightMaterial.reset();
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
 	Handle LightsManager::addDirLight(const DirectionLight& light)
 	{
 		return addLight(m_dirLights, light);

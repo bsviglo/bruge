@@ -7,7 +7,6 @@
 #include "render/IShader.h"
 #include "render/IRenderDevice.h"
 #include "render/state_objects.h"
-#include "render/shader_context.hpp"
 #include "render/materials.hpp"
 #include "render/post_processing.hpp"
 
@@ -22,6 +21,7 @@ namespace render
 
 	struct RenderFx;
 
+	//-- ToDo:
 	//-- Represents the minimum quantum of the engine render system work.
 	//----------------------------------------------------------------------------------------------
 	struct RenderOp
@@ -97,24 +97,25 @@ namespace render
 		bool endFrame();
 
 		bool beginPass(EPassType type);
-		void setCamera(Camera* cam);
-		void addRenderOps(const RenderOps& ops);
+		void setCamera(const RenderCamera* cam);
+		void addROPs(const RenderOps& ops);
 		bool endPass();
 
 		//-- ToDo:
-		void addImmediateRenderOps(const RenderOps& ops);
+		void addImmediateROPs(const RenderOps& ops);
 
-		const Camera&		camera()		const	 { return *m_camera; }
+		const RenderCamera*	camera()		const	 { return m_camera; }
 		ERenderAPIType		gapi()			const	 { return m_renderAPI; }
 		ScreenResolution	screenRes()		const	 { return m_screenRes;  }
-		Projection			projection()	const	 { return m_projection; }
 		IRenderDevice*		device()		const	 { return m_device; }
-		ShaderContext*		shaderContext()			 { return &m_shaderContext; }
+		ShaderContext*		shaderContext()			 { return m_shaderContext.get(); }
 		Materials*			materials()				 { return &m_materials; }
 		PostProcessing*		postProcessing()		 { return &m_postProcessing; }
+
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 		ITexture*			decalsMask()			 { return m_passes[PASS_DECAL].m_rt.get(); }
 		ITexture*			lightsMask()			 { return m_passes[PASS_LIGHT].m_rt.get(); }
+		ITexture*			shadowsMask()			 { return m_passes[PASS_SHADOW_RECEIVE].m_rt.get(); }
 
 		const mat4f&		lastViewProjMat() const				{ return m_lastViewProjMat; }
 		const mat4f&		invLastViewProjMat() const			{ return m_invLastViewProjMat; }
@@ -133,16 +134,17 @@ namespace render
 		void _doDraw(RenderOps& ops, bool immediate = false);
 
 	private:
+		typedef std::unique_ptr<ShaderContext> ShaderContextPtr;
+
 		VideoMode			m_videoMode;
-		Projection			m_projection;
 		ScreenResolution	m_screenRes;
 		ERenderAPIType		m_renderAPI;
 		utils::DynamicLib	m_dynamicLib;
-		ShaderContext		m_shaderContext;
+		ShaderContextPtr	m_shaderContext;
 		Materials			m_materials;
 		PostProcessing		m_postProcessing;
 
-		Camera*				m_camera; //-- ToDo: use render camera instead.
+		const RenderCamera*	m_camera;
 		EPassType			m_pass;
 		RenderOps			m_renderOps;
 

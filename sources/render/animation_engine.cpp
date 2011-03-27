@@ -4,6 +4,7 @@
 #include "math/math_all.hpp"
 #include "game_world.hpp"
 #include "render_world.hpp"
+#include "mesh_manager.hpp"
 #include "DebugDrawer.h"
 
 using namespace brUGE::os;
@@ -43,6 +44,20 @@ namespace brUGE
 {
 namespace render
 {
+	//----------------------------------------------------------------------------------------------
+	AnimationEngine::AnimationEngine()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	AnimationEngine::~AnimationEngine()
+	{
+		for (uint i = 0; i < m_animCtrls.size(); ++i)
+			delete m_animCtrls[i];
+
+		m_animCtrls.clear();
+	}
 
 	//----------------------------------------------------------------------------------------------
 	bool AnimationEngine::init()
@@ -51,16 +66,6 @@ namespace render
 		REGISTER_CONSOLE_VALUE("anim_drawSkeletons", bool, g_drawSkeletons);
 		REGISTER_CONSOLE_VALUE("anim_drawNodes",	 bool, g_drawNodes);
 
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool AnimationEngine::fini()
-	{
-		for (uint i = 0; i < m_animCtrls.size(); ++i)
-			delete m_animCtrls[i];
-
-		m_animCtrls.clear();
 		return true;
 	}
 

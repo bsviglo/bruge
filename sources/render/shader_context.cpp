@@ -43,8 +43,9 @@ namespace
 			m_value.m_screenRes.z = 1.0f / m_value.m_screenRes.x;
 			m_value.m_screenRes.w = 1.0f / m_value.m_screenRes.y;
 
-			m_value.m_farNearPlane.x = m_sc.camera().projection().nearDist;
-			m_value.m_farNearPlane.y = m_sc.camera().projection().farDist;
+			//-- ToDo: reconsider.
+			m_value.m_farNearPlane.x = m_sc.camera()->m_projInfo.nearDist;
+			m_value.m_farNearPlane.y = m_sc.camera()->m_projInfo.farDist;
 			m_value.m_farNearPlane.z = m_value.m_farNearPlane.x + m_value.m_farNearPlane.y;
 			m_value.m_farNearPlane.w = 1.0f / m_value.m_farNearPlane.z;
 
@@ -71,11 +72,11 @@ namespace
 
 		virtual bool apply(IShader& shader) const
 		{
-			m_value.m_cameraPos			 = m_sc.camera().position().toVec4();
-			m_value.m_viewMat			 = m_sc.camera().viewMatrix();
-			m_value.m_invViewProjMat	 = m_sc.camera().invViewMatrix();
-			m_value.m_viewProjMat		 = m_sc.camera().viewProjMatrix();
-			m_value.m_invViewProjMat	 = m_sc.camera().invViewProjMatrix();
+			m_value.m_cameraPos			 = m_sc.camera()->m_invView.applyToOrigin().toVec4();
+			m_value.m_viewMat			 = m_sc.camera()->m_view;
+			m_value.m_invViewProjMat	 = m_sc.camera()->m_invView;
+			m_value.m_viewProjMat		 = m_sc.camera()->m_viewProj;
+			m_value.m_invViewProjMat	 = m_sc.camera()->m_viewProj.getInverted();
 			m_value.m_lastViewProjMat	 = rs().lastViewProjMat();
 			m_value.m_invLastViewProjMat = rs().invLastViewProjMat();
 
@@ -111,8 +112,8 @@ namespace
 			if (!m_sc.renderOp().m_worldMat) return false;
 
 			m_value.m_worldMat = *m_sc.renderOp().m_worldMat;
-			m_value.m_MVPMat   = mult(m_value.m_worldMat, m_sc.camera().viewProjMatrix());
-			m_value.m_MVMat	   = mult(m_value.m_worldMat, m_sc.camera().viewMatrix());
+			m_value.m_MVPMat   = mult(m_value.m_worldMat, m_sc.camera()->m_viewProj);
+			m_value.m_MVMat	   = mult(m_value.m_worldMat, m_sc.camera()->m_view);
 			m_value.m_alphaRef = m_sc.renderOp().m_material->m_sysProps.m_alphaRef;
 
 			return shader.setUniformBlock("cb_auto_PerInstance", &m_value, sizeof(PerInstanceCB));
@@ -355,6 +356,38 @@ namespace
 		SamplerStateID m_samplerID;
 		ShaderContext& m_sc;
 	};
+
+
+	//----------------------------------------------------------------------------------------------
+	class ShadowsMaskAutoProperty : public IProperty
+	{
+	public:
+		ShadowsMaskAutoProperty(ShaderContext& sc)	: m_sc(sc)
+		{
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_NEAREST;
+			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			m_samplerID			= render::rd()->createSamplerState(sDesc);
+		}
+
+		virtual ~ShadowsMaskAutoProperty() { }
+
+		virtual bool apply(IShader& shader) const
+		{
+			bool result = true;
+
+			result &= shader.setTexture("t_auto_shadowsMask_tex", rs().shadowsMask());
+			result &= shader.setSampler("t_auto_shadowsMask_sml", m_samplerID);
+
+			return result;
+		}
+
+	private:
+		SamplerStateID m_samplerID;
+		ShaderContext& m_sc;
+	};
 	
 }
 //--------------------------------------------------------------------------------------------------
@@ -375,7 +408,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	ShaderContext::~ShaderContext()
 	{
-
+		for (auto iter = m_autoProperties.begin(); iter != m_autoProperties.end(); ++iter)
+			delete iter->second;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -397,20 +431,7 @@ namespace render
 		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
 		m_autoProperties["t_auto_decalsMask"]		= new DecalsMaskAutoProperty(*this);
 		m_autoProperties["t_auto_lightsMask"]		= new LightsMaskAutoProperty(*this);
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool ShaderContext::fini()
-	{
-		for (auto iter = m_autoProperties.begin(); iter != m_autoProperties.end(); ++iter)
-			delete iter->second;
-
-		m_shaderIncludes.reset();
-		m_shaderCache.clear();
-		m_searchMap.clear();
-		m_autoProperties.clear();
+		m_autoProperties["t_auto_shadowsMask"]		= new ShadowsMaskAutoProperty(*this);
 
 		return true;
 	}
@@ -582,7 +603,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void ShaderContext::setCamera(Camera* cam)
+	void ShaderContext::setCamera(const RenderCamera* cam)
 	{
 		assert(cam);
 

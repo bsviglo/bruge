@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_system.hpp"
 #include "math/Vector3.hpp"
 #include "math/Vector4.hpp"
@@ -22,8 +22,6 @@ namespace render
 		~DecalManager();
 
 		bool init();
-		bool fini();
-
 		void update(float dt);
 		void resolveVisibility();
 		uint gatherRenderOps(RenderOps& ops) const;

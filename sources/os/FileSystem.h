@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "Exception.h"
 #include "utils/Data.hpp"
 #include "utils/Singleton.h"

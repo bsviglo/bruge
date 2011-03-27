@@ -35,7 +35,7 @@ namespace render
 	}
 
 	//------------------------------------------
-	void IRenderDevice::doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil)
+	void IRenderDevice::clearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil)
 	{
 		assert(dsrt != 0 && "render target is not a valid texture.");
 		assert(dsrt->getDesc().bindFalgs & ITexture::BIND_DEPTH_STENCIL && "texture must have BIND_DEPTH_STENCIL flag.");

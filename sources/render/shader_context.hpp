@@ -132,19 +132,18 @@ namespace render
 		ShaderContext();
 		~ShaderContext();
 
-		bool init();
-		bool fini();
+		bool				init();
 
 		//-- load shader.
-		Handle			getShader(const char* name, const std::vector<std::string>* pins);
-		VertexLayoutID	getVertexLayout(Handle shader, const std::string& desc);
-		IShader*		shader(Handle handle);
+		Handle				getShader(const char* name, const std::vector<std::string>* pins);
+		VertexLayoutID		getVertexLayout(Handle shader, const std::string& desc);
+		IShader*			shader(Handle handle);
 
-		const RenderOp& renderOp() const { return *m_renderOp; }
-		const Camera&   camera() const   { return *m_camera; }
+		const RenderOp&		renderOp() const { return *m_renderOp; }
+		const RenderCamera* camera() const   { return m_camera; }
 
-		void			setCamera(Camera* cam);
-		void			applyFor(RenderOp* op, EShaderRenderPassType pass);
+		void				setCamera(const RenderCamera* cam);
+		void				applyFor(RenderOp* op, EShaderRenderPassType pass);
 
 	private:
 		Handle loadShader(const char* name, const std::vector<std::string>* pins);
@@ -160,7 +159,7 @@ namespace render
 		ShaderAutoProperties m_shaderCache;
 		AutoProperties		 m_autoProperties;
 		RenderOp*		 	 m_renderOp;
-		Camera*				 m_camera;
+		const RenderCamera*	 m_camera;
 		ShaderIncludeImplPtr m_shaderIncludes;
 	};
 

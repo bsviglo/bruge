@@ -1,0 +1,5 @@
+<materials>
+	<material shader="shadow_resolve" vertex="xyzuv">
+		<properties/>
+	</material>
+</materials>

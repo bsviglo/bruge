@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "math/math_types.h"
 #include "math/Plane.hpp"
 

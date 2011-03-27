@@ -236,16 +236,6 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool imguiRender::fini()
-	{
-		m_vb.reset();
-		m_font.reset();
-		m_material.reset();
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
 	void imguiRender::draw()
 	{
 		const imguiGfxCmd* q = imguiGetRenderQueue();
@@ -440,7 +430,7 @@ namespace render
 			rd()->setBlendState(m_stateB, NULL, 0xffffffff);
 			rd()->setRasterizerState(m_scissor ? m_stateR_scissor : m_stateR);
 
-			rs().addImmediateRenderOps(m_geomROPs);
+			rs().addImmediateROPs(m_geomROPs);
 
 			m_vertices.clear();
 		}

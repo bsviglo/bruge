@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_common.h"
 #include "math/Vector2.hpp"
 #include "math/Vector3.hpp"

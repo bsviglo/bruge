@@ -1,5 +1,6 @@
-<material use="diffuse">
+<material use="bump">
     <properties>
 	    <property name="diffuseMap" type="texture" value="textures/exp_barrel.dds"/>
+      <property name="bumpMap" type="texture" value="textures/exp_barrel_normal.dds"/>
     </properties>
 </material>

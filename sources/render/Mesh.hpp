@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prerequisites.h"
+#include "prerequisites.hpp"
 #include "render_common.h"
 #include "render/IRenderDevice.h"
 #include "render/render_system.hpp"
