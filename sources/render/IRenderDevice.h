@@ -90,7 +90,7 @@ namespace render
 		void			shutDown() { doShutDown(); }
 		
 		//-- frame buffer operations.
-		void			setViewPort(uint width, uint height) { doSetViewPort(width, height); }
+		void			setViewPort(uint x, uint y, uint width, uint height) { doSetViewPort(x, y, width, height); }
 		void			setScissorRect(uint x, uint y, uint width, uint height) { doSetScissorRect(x, y, width, height); }
 		void			swapBuffers();
 		void			resetToDefaults();
@@ -164,7 +164,7 @@ namespace render
 		virtual bool				doInit(HWND hWindow, const VideoMode& videoMode) = 0;
 		virtual void				doShutDown() = 0; 
 
-		virtual void				doSetViewPort(uint width, uint height) = 0;
+		virtual void				doSetViewPort(uint x, uint y, uint width, uint height) = 0;
 		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height) = 0;
 		virtual void				doSwapBuffers() = 0;
 		virtual void				doResetToDefaults() = 0;
@@ -228,7 +228,17 @@ namespace render
 		struct RenderTarget
 		{
 			RenderTarget() : num(0), depth(NULL)
-				{ for (uint i = 0; i < MAX_MRTS; ++i) colors[i] = NULL; }
+			{
+				reset();
+			}
+
+			void reset()
+			{
+				for (uint i = 0; i < MAX_MRTS; ++i)
+				{
+					colors[i] = NULL;
+				}
+			}
 
 			ITexture* colors[MAX_MRTS];
 			uint	  num;

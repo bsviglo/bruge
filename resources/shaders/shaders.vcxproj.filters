@@ -136,5 +136,11 @@
     <None Include="skinned_diffuse.hlsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="..\materials\stone.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="depth_based_blur.hlsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

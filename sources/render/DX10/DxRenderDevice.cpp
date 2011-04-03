@@ -277,7 +277,7 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::doSwapBuffers()
 	{
-#ifdef _DEBUG
+#if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		HRESULT hr = 
 #endif // _DEBUG
 
@@ -297,14 +297,13 @@ namespace render
 	}
 
 	//------------------------------------------
-	void DXRenderDevice::doSetViewPort(uint width, uint height)
+	void DXRenderDevice::doSetViewPort(uint x, uint y, uint width, uint height)
 	{
-		if (m_dxCurViewPort.Width != width || m_dxCurViewPort.Height != height)
-		{
-			m_dxCurViewPort.Width  = width;
-			m_dxCurViewPort.Height = height;
-			m_dxDevice->RSSetViewports(1, &m_dxCurViewPort);
-		}
+		m_dxCurViewPort.TopLeftX = x;
+		m_dxCurViewPort.TopLeftY = y;
+		m_dxCurViewPort.Width    = width;
+		m_dxCurViewPort.Height   = height;
+		m_dxDevice->RSSetViewports(1, &m_dxCurViewPort);
 	}
 
 	//------------------------------------------

@@ -147,7 +147,7 @@ namespace render
 				}
 				else
 				{
-					rd()->setViewPort(pass.m_dims.x, pass.m_dims.y);
+					rd()->setViewPort(0, 0, pass.m_dims.x, pass.m_dims.y);
 					rd()->setRenderTarget(pass.m_rt, nullptr);
 					if (pass.m_clearRT)
 					{
@@ -160,7 +160,7 @@ namespace render
 			}
 		}
 
-		rd()->setViewPort(rs().screenRes().width, rs().screenRes().height);
+		rd()->setViewPort(0, 0, rs().screenRes().width, rs().screenRes().height);
 		rd()->backToMainFrameBuffer();
 	}
 

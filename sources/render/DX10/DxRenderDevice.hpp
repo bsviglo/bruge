@@ -28,7 +28,7 @@ namespace render
 
 		virtual void				doSwapBuffers();
 		virtual void				doResetToDefaults();
-		virtual void				doSetViewPort(uint width, uint height);
+		virtual void				doSetViewPort(uint x, uint y, uint width, uint height);
 		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height);
 
 		virtual void				doCopyTexture(ITexture* src, ITexture* dst);

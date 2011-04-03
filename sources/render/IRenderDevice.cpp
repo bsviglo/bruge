@@ -77,7 +77,7 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::setRenderTarget(ITexture* colorRT, ITexture* depthRT)
 	{
-		for (uint i = 0; i < MAX_MRTS; ++i) m_curRTs.colors[i] = NULL;
+		m_curRTs.reset();
 
 		m_curRTs.colors[0] = colorRT;
 		m_curRTs.num	   = 1;
@@ -89,7 +89,7 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::setRenderTargets(ITexture** colorRTs, uint numRTs, ITexture* depthRT)
 	{
-		for (uint i = 0; i < MAX_MRTS; ++i) m_curRTs.colors[i] = NULL;
+		m_curRTs.reset();
 
 		for (uint i = 0; i < numRTs; ++i)
 			m_curRTs.colors[i] = colorRTs[i];
@@ -104,7 +104,7 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::backToMainFrameBuffer()
 	{
-		for (uint i = 0; i < MAX_MRTS; ++i) m_curRTs.colors[i] = NULL;
+		m_curRTs.reset();
 
 		m_curRTs.num       = 1;
 		m_curRTs.colors[0] = m_mainColorRT.get();

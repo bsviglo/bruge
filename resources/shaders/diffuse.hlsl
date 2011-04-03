@@ -62,7 +62,7 @@ float4 main(vs_out i) : SV_TARGET
 	colorRGB = lightsMask.rgb * colorRGB + 0.1f * spec;
 
 	//-- calculate shadows factor.
-	colorRGB *= 1.0f - shadowsMask.x;
+	colorRGB *= max(0.25f, 1.0f - shadowsMask.x);
 	
 	return float4(colorRGB, 1.0f);
 };

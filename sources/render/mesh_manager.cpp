@@ -13,6 +13,7 @@ using namespace brUGE::math;
 namespace
 {
 	//-- console variables.
+	bool g_enableCulling = true;
 	bool g_showVisibilityBoxes = false;
 
 	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
@@ -58,7 +59,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool MeshManager::init()
 	{
-		REGISTER_CONSOLE_VALUE("r_showVisibilityBoxes", bool, g_showVisibilityBoxes);
+		REGISTER_CONSOLE_VALUE("r_showVisibilityBoxes",		bool, g_showVisibilityBoxes);
+		REGISTER_CONSOLE_VALUE("r_enableVisibilityCulling",	bool, g_enableCulling);
 
 		return true;
 	}
@@ -77,7 +79,7 @@ namespace render
 			const MeshInstance& inst = *m_meshInstances[i];
 
 			//-- 1. cull frustum against AABB.
-			if (inst.m_transform->m_worldBounds.calculateOutcode(viewPort) != 0)
+			if (g_enableCulling && inst.m_transform->m_worldBounds.calculateOutcode(viewPort) != 0)
 			{
 				continue;
 			}

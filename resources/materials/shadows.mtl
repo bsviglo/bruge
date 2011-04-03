@@ -2,4 +2,7 @@
 	<material shader="shadow_resolve" vertex="xyzuv">
 		<properties/>
 	</material>
+  <material shader="depth_based_blur" vertex="xyzuv">
+    <properties/>
+  </material>
 </materials>

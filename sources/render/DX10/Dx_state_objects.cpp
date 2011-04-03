@@ -125,15 +125,15 @@ namespace render
 		dxDesc.FrontCounterClockwise = desc.frontCounterClockwise;
 		dxDesc.ScissorEnable		 = desc.scissorEnable;
 		dxDesc.MultisampleEnable	 = desc.multisampleEnable;
+		dxDesc.DepthBias			 = desc.depthBiasFactor;
+		dxDesc.DepthBiasClamp		 = 0.0f;
+		dxDesc.SlopeScaledDepthBias	 = desc.depthBiasUnits;
+		dxDesc.AntialiasedLineEnable = desc.antialiasedLineEnable;
 		
 		// ToDo: to be completed.
 
 		// while defaults.
-		dxDesc.DepthBias			 = 0;
-		dxDesc.DepthBiasClamp		 = 0.0f;
-		dxDesc.SlopeScaledDepthBias	 = 0.0f;
 		dxDesc.DepthClipEnable		 = FALSE;
-		dxDesc.AntialiasedLineEnable = FALSE;
 		
 		HRESULT hr = dxDevice()->CreateRasterizerState(&dxDesc, &state);
 

@@ -38,8 +38,8 @@ namespace render
 		EFillMode	fillMode;
 		ECullMode	cullMode;
 		bool		frontCounterClockwise;
-
-		// TODO: Еще требует продумывания.
+		
+		//-- represents depth bias and slope scaled depth bias respectively.
 		float		depthBiasFactor;
 		float		depthBiasUnits;
 

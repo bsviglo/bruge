@@ -18,6 +18,7 @@ namespace math
 		inline explicit Vector3(const T* const data)							{ assert(data); x = data[0]; y = data[1]; z = data[2]; }
 		
 		inline void				operator *=		(T scale)						{ x*=scale; y*=scale; z*=scale; }
+		inline void				operator /=		(const Vector3<T>& rt)			{ x/=rt.x; y/=rt.y; z/=rt.z; }
 		inline void				operator *=		(const Vector3<T>& rt)			{ x*=rt.x; y*=rt.y; z*=rt.z; }
 		inline void 			operator +=		(const Vector3<T>& rt)			{ x+=rt.x; y+=rt.y; z+=rt.z; }
 		inline void 			operator -=		(const Vector3<T>& rt)			{ x-=rt.x; y-=rt.y; z-=rt.z; }

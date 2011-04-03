@@ -19,94 +19,77 @@ namespace math
 	class Matrix4x4
 	{
 	public:
-		inline Matrix4x4()																	{ setZero(); }
-		inline explicit Matrix4x4(const T* const lt)										{ set(lt); }
-		inline Matrix4x4(const Matrix4x4<T>& lt)											{ set(lt); }
+		inline Matrix4x4()								{ setZero(); }
+		inline explicit Matrix4x4(const T* const lt)	{ set(lt); }
+		inline Matrix4x4(const Matrix4x4<T>& lt)		{ set(lt); }
+		inline Matrix4x4(T v00, T v01, T v02, T v03, T v10, T v11, T v12, T v13, T v20, T v21, T v22, T v23, T v30, T v31, T v32, T v33);
+		inline Matrix4x4(Vector4<T> row0, Vector4<T> row1, Vector4<T> row2, Vector4<T> row3);
 
-		inline Matrix4x4(
-			T v00, T v01, T v02, T v03,
-			T v10, T v11, T v12, T v13,
-			T v20, T v21, T v22, T v23,
-			T v30, T v31, T v32, T v33)
-		{ 
-			m00=v00; m01=v01; m02=v02; m03=v03; 
-			m10=v10; m11=v11; m12=v12; m13=v13; 
-			m20=v20; m21=v21; m22=v22; m23=v23; 
-			m30=v30; m31=v31; m32=v32; m33=v33; 
-		}
+		inline Matrix4x4<T>&		operator =  			(const Matrix4x4<T>& lt)					{ set(lt); return *this; }
+		inline Matrix4x4<T>&		operator =  			(const T* lt)								{ set(lt); return *this; }
 
-		inline Matrix4x4(Vector4<T> row0, Vector4<T> row1, Vector4<T> row2, Vector4<T> row3)
-		{ 
-			m00=row0.x; m01=row0.y; m02=row0.z; m03=row0.w; 
-			m10=row1.x; m11=row1.y; m12=row1.z; m13=row1.w; 
-			m20=row2.x; m21=row2.y; m22=row2.z; m23=row2.w; 
-			m30=row3.x; m31=row3.y; m32=row3.z; m33=row3.w; 
-		}
-
-		inline Matrix4x4<T>&		operator =  	(const Matrix4x4<T>& lt)					{ set(lt); return *this; }
-		inline Matrix4x4<T>&		operator =  	(const T* lt)								{ set(lt); return *this; }
-
-		inline T&					operator [] 	(unsigned int i)							{ assert(i < 16);			return data[i]; }
-		inline const T&				operator [] 	(unsigned int i) const						{ assert(i < 16);			return data[i]; }
-		inline T&					operator () 	(unsigned int i, unsigned int j)			{ assert(i < 4 && j < 4);	return data[i * 4 + j]; }		
-		inline const T&				operator () 	(unsigned int i, unsigned int j) const		{ assert(i < 4 && j < 4);	return data[i * 4 + j]; }
+		inline T&					operator [] 			(unsigned int i)							{ assert(i < 16);			return data[i]; }
+		inline const T&				operator [] 			(unsigned int i) const						{ assert(i < 16);			return data[i]; }
+		inline T&					operator () 			(unsigned int i, unsigned int j)			{ assert(i < 4 && j < 4);	return data[i * 4 + j]; }		
+		inline const T&				operator () 			(unsigned int i, unsigned int j) const		{ assert(i < 4 && j < 4);	return data[i * 4 + j]; }
 
 		
 		// multiply this matrix left by lt.
-		inline Matrix4x4<T>&		preMultiply		(const Matrix4x4<T>& lt) 					{ return (*this = mult(lt, *this)); }
+		inline Matrix4x4<T>&		preMultiply				(const Matrix4x4<T>& lt) 					{ return (*this = mult(lt, *this)); }
 		// multiply this matrix right by rt.	
-		inline Matrix4x4<T>&		postMultiply	(const Matrix4x4<T>& rt) 					{ return (*this = mult(*this, rt)); }
+		inline Matrix4x4<T>&		postMultiply			(const Matrix4x4<T>& rt) 					{ return (*this = mult(*this, rt)); }
 
-		inline void					transpose		();
-		inline void					invert			();
-		inline void					setIdentity		();
-		inline void					setZero			();
+		inline void					transpose				();
+		inline void					invert					();
+		inline void					setIdentity				();
+		inline void					setZero					();
 
-		inline void					set				(const Matrix4x4<T>& lt);
-		inline void					set				(const T* lt);
+		inline void					set						(const Matrix4x4<T>& lt);
+		inline void					set						(const T* lt);
 
-		inline Matrix4x4<T>			getTranspose	() const 									{ Matrix4x4<T> m = *this; m.transpose(); return m; }
-		inline Matrix4x4<T>			getInverted		() const 									{ Matrix4x4<T> m = *this; m.invert(); return m; }
+		inline Matrix4x4<T>			getTranspose			() const 									{ Matrix4x4<T> m = *this; m.transpose(); return m; }
+		inline Matrix4x4<T>			getInverted				() const 									{ Matrix4x4<T> m = *this; m.invert(); return m; }
 
-		inline void					setTranslation	(const Vector3<T>& translation);
-		inline void					setTranslation	(float x, float y, float z);
-		inline void					setScale		(const Vector3<T>& scale);
-		inline void					setScale		(float x, float y, float z);
-		inline void					setRotateX		(float radianAngle);
-		inline void					setRotateY		(float radianAngle);
-		inline void					setRotateZ		(float radianAngle);
-		// TODO: требует еще тестирование. Возмножно неправильная работа.
-		inline void					setRotateYPR	(const Vector3<T>& radianAngles);
-		inline void					setRotateYPR	(float radianYaw, float radianPitch, float radianRoll);
+		inline void					setTranslation			(const Vector3<T>& translation);
+		inline void					setTranslation			(float x, float y, float z);
+		inline void					setScale				(const Vector3<T>& scale);
+		inline void					setScale				(float x, float y, float z);
+		inline void					setRotateX				(float radianAngle);
+		inline void					setRotateY				(float radianAngle);
+		inline void					setRotateZ				(float radianAngle);
+		// TODO: test it.
+		inline void					setRotateYPR			(const Vector3<T>& radianAngles);
+		inline void					setRotateYPR			(float radianYaw, float radianPitch, float radianRoll);
 
-		inline void					setLookAt			(const Vector3<T>& pos, const Vector3<T>& dir, const Vector3<T>& up);
-		inline void					setPerspectiveProj	(float gradFovy, float aspect, float zNear, float zFar);
-		inline void					setOrthogonalProj	(float width, float height, float zNear, float zFar);
+		inline void					setLookAt				(const Vector3<T>& pos, const Vector3<T>& dir, const Vector3<T>& up);
+		inline void					setPerspectiveProj		(float gradFovy, float aspect, float zNear, float zFar);
+		inline void					setOrthogonalProj		(float width, float height, float zNear, float zFar);
+		inline void					setOrthoOffCenterProj	(float l, float r, float b, float t, float zNear, float zFar);
 		
-		inline Matrix4x4<T>&		preRotateX		(float radianAngle)							{ Matrix4x4<T> m; m.setRotateX(radianAngle); 	return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postRotateX		(float radianAngle)							{ Matrix4x4<T> m; m.setRotateX(radianAngle); 	return ( *this = mult(*this, m)); }
-		inline Matrix4x4<T>&		preRotateY		(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateY(radianAngle); 	return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postRotateY		(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateY(radianAngle); 	return ( *this = mult(*this, m)); }
-		inline Matrix4x4<T>&		preRotateZ		(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateZ(radianAngle); 	return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postRotateZ		(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateZ(radianAngle); 	return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preRotateX				(float radianAngle)							{ Matrix4x4<T> m; m.setRotateX(radianAngle); 	return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postRotateX				(float radianAngle)							{ Matrix4x4<T> m; m.setRotateX(radianAngle); 	return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preRotateY				(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateY(radianAngle); 	return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postRotateY				(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateY(radianAngle); 	return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preRotateZ				(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateZ(radianAngle); 	return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postRotateZ				(float radianAngle) 						{ Matrix4x4<T> m; m.setRotateZ(radianAngle); 	return ( *this = mult(*this, m)); }
 
-		inline Matrix4x4<T>&		preTranslation	(float x, float y, float z)					{ Matrix4x4<T> m; m.setTranslation(x,y,z);		return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postTranslation	(float x, float y, float z)					{ Matrix4x4<T> m; m.setTranslation(x,y,z);		return ( *this = mult(*this, m)); }
-		inline Matrix4x4<T>&		preTranslation	(const Vector3<T>& tr)						{ Matrix4x4<T> m; m.setTranslation(tr); 		return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postTranslation	(const Vector3<T>& tr)						{ Matrix4x4<T> m; m.setTranslation(tr); 		return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preTranslation			(float x, float y, float z)					{ Matrix4x4<T> m; m.setTranslation(x,y,z);		return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postTranslation			(float x, float y, float z)					{ Matrix4x4<T> m; m.setTranslation(x,y,z);		return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preTranslation			(const Vector3<T>& tr)						{ Matrix4x4<T> m; m.setTranslation(tr); 		return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postTranslation			(const Vector3<T>& tr)						{ Matrix4x4<T> m; m.setTranslation(tr); 		return ( *this = mult(*this, m)); }
 
-		inline Matrix4x4<T>&		preScale		(float x, float y, float z)					{ Matrix4x4<T> m; m.setScale(x,y,z); 			return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postScale		(float x, float y, float z)					{ Matrix4x4<T> m; m.setScale(x,y,z); 			return ( *this = mult(*this, m)); }
-		inline Matrix4x4<T>&		preScale		(const Vector3<T>& scl)						{ Matrix4x4<T> m; m.setScale(scl); 				return ( *this = mult(m, *this)); }
-		inline Matrix4x4<T>&		postScale		(const Vector3<T>& scl)						{ Matrix4x4<T> m; m.setScale(scl); 				return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preScale				(float x, float y, float z)					{ Matrix4x4<T> m; m.setScale(x,y,z); 			return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postScale				(float x, float y, float z)					{ Matrix4x4<T> m; m.setScale(x,y,z); 			return ( *this = mult(*this, m)); }
+		inline Matrix4x4<T>&		preScale				(const Vector3<T>& scl)						{ Matrix4x4<T> m; m.setScale(scl); 				return ( *this = mult(m, *this)); }
+		inline Matrix4x4<T>&		postScale				(const Vector3<T>& scl)						{ Matrix4x4<T> m; m.setScale(scl); 				return ( *this = mult(*this, m)); }
 
-		inline Vector3<T>			applyToPoint	(const Vector3<T>& point) const;
-		inline Vector4<T>			applyToPoint	(const Vector4<T>& point) const;
-		inline Vector3<T>			applyToVector	(const Vector3<T>& vec) const;
+		inline Vector3<T>			applyToPoint			(const Vector3<T>& point) const;
+		inline Vector4<T>			applyToPoint			(const Vector4<T>& point) const;
+		inline Vector3<T>			applyToVector			(const Vector3<T>& vec) const;
 
-		inline const Vector4<T>&	getRow			(uint i) const								{ assert(i < 4); return *reinterpret_cast<const Vector4<T>* >(&data[i * 4]); }
-		inline const Vector3<T>&	applyToUnitAxis (uint axis) const							{ assert(axis < 3); return *reinterpret_cast<const Vector3<T>* >(&data[axis * 4]); }
-		inline const Vector3<T>&	applyToOrigin	() const									{ return *reinterpret_cast<const Vector3<T>* >(&data[4 * 3]); }
+		inline const Vector4<T>&	getRow					(uint i) const								{ assert(i < 4); return *reinterpret_cast<const Vector4<T>* >(&data[i * 4]); }
+		inline const Vector3<T>&	applyToUnitAxis			(uint axis) const							{ assert(axis < 3); return *reinterpret_cast<const Vector3<T>* >(&data[axis * 4]); }
+		inline const Vector3<T>&	applyToOrigin			() const									{ return *reinterpret_cast<const Vector3<T>* >(&data[4 * 3]); }
 
 	public:
 		enum { X_AXIS = 0, Y_AXIS = 1, Z_AXIS = 2 };
@@ -124,6 +107,29 @@ namespace math
 			T data[16];
 		};
 	};
+
+
+	template <class T>
+	inline Matrix4x4<T>::Matrix4x4(
+		T v00, T v01, T v02, T v03,
+		T v10, T v11, T v12, T v13,
+		T v20, T v21, T v22, T v23,
+		T v30, T v31, T v32, T v33)
+	{ 
+		m00=v00; m01=v01; m02=v02; m03=v03; 
+		m10=v10; m11=v11; m12=v12; m13=v13; 
+		m20=v20; m21=v21; m22=v22; m23=v23; 
+		m30=v30; m31=v31; m32=v32; m33=v33; 
+	}
+
+	template <class T>
+	inline Matrix4x4<T>::Matrix4x4(Vector4<T> row0, Vector4<T> row1, Vector4<T> row2, Vector4<T> row3)
+	{ 
+		m00=row0.x; m01=row0.y; m02=row0.z; m03=row0.w; 
+		m10=row1.x; m11=row1.y; m12=row1.z; m13=row1.w; 
+		m20=row2.x; m21=row2.y; m22=row2.z; m23=row2.w; 
+		m30=row3.x; m31=row3.y; m32=row3.z; m33=row3.w; 
+	}
 
 	template <class T>
 	inline void Matrix4x4<T>::set(const Matrix4x4<T>& lt)
@@ -253,7 +259,7 @@ namespace math
 
 		/* calculate determinant */
 		T det = (m.m00*m00+m.m10*m01+m.m20*m02+m.m30*m03);
-		if (fabs(det) < 0.0000001f) assert(0);	
+		//if (fabs(det) < 0.0001f) assert(0);	
 
 		//divide the cofactor-matrix by the determinant.
 		T idet=(T)1.0/det;
@@ -405,6 +411,7 @@ namespace math
 		//	xScale = yScale / aspect ratio
 		
 		setZero();
+
 		float f = 1.0f / tanf(degToRad(gradFovy * 0.5f));
 		assert(f != 0);
 
@@ -429,6 +436,25 @@ namespace math
 		m11 = 2.0f / height;
 		m22 = 1.0f / (zFar-zNear);
 		m32 = -zNear / (zFar-zNear);
+		m33 = 1.0f;
+	}
+
+	template <class T>
+	inline void Matrix4x4<T>::setOrthoOffCenterProj(float l, float r, float b, float t, float zn, float zf)
+	{
+		//	2/(r-l)      0            0           0
+		//	0            2/(t-b)      0           0
+		//	0            0            1/(zf-zn)   0
+		//	(l+r)/(l-r)  (t+b)/(b-t)  zn/(zn-zf)  1
+		
+		setZero();
+
+		m00 = 2.0f / (r - l);
+		m11 = 2.0f / (t - b);
+		m22 = 1.0f / (zf - zn);
+		m30 = (l + r) / (l - r);
+		m31 = (t + b) / (b - t);
+		m32 = zn / (zn - zf);
 		m33 = 1.0f;
 	}
 	

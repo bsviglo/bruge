@@ -86,8 +86,10 @@ namespace render
 		Projection() : isOrtho(false) { }
 
 		bool	isOrtho;
+		bool	isOrthoSpec;
 		float   width;
 		float   height;
+		float	l,r,b,t;
 		float	fov;
 		float	nearDist;
 		float	farDist;			

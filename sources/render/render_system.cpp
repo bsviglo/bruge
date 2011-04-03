@@ -296,6 +296,8 @@ namespace render
 			RasterizerStateDesc rDesc;
 			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
 			rDesc.multisampleEnable = 0;
+			rDesc.depthBiasFactor	= 1.0f;
+			rDesc.depthBiasUnits	= 4.0f;
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
@@ -341,7 +343,7 @@ namespace render
 					return false;
 			}
 		}
-		
+
 		//-- 6. PASS_MAIN_COLOR
 		{
 			PassDesc& pass = m_passes[PASS_MAIN_COLOR];
@@ -375,6 +377,7 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
+			rDesc.antialiasedLineEnable = false;
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
@@ -465,7 +468,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_DECAL:
@@ -477,7 +480,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_LIGHT:
@@ -489,7 +492,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_SHADOW_CAST:
@@ -508,7 +511,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_MAIN_COLOR:
@@ -520,7 +523,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_POST_PROCESSING:
@@ -535,7 +538,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		case PASS_DEBUG_SOLID:
@@ -546,7 +549,7 @@ namespace render
 				m_device->setDepthStencilState(pass.m_stateDS, 0);
 				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
 
-				m_device->setViewPort(m_screenRes.width, m_screenRes.height);
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
 		default:

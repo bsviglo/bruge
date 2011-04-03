@@ -58,7 +58,7 @@ bool Demo::init()
 	{
 		Projection proj;
 		proj.fov	  = 60.0f;
-		proj.nearDist = 1.0f;
+		proj.nearDist = 0.25f;
 		proj.farDist  = 200.0f;
 
 		m_camera = new FreeCamera(proj);
@@ -111,12 +111,27 @@ bool Demo::init()
 
 	mat.setIdentity();
 	mat.postTranslation(0.0f, 0.0f, 20.0f);
-	for (uint i = 0; i < 5; ++i)
+	for (uint i = 0; i < 6; ++i)
 	{
-		mat.postTranslation(-5, 0, 0);
+		mat.postTranslation(-5, 0, 1);
 		gameWorld.addGameObj("resources/models/palm.xml", &mat);
 	}
 
+	mat.setIdentity();
+	mat.postTranslation(0.0f, 0.0f, -20.0f);
+	for (uint i = 0; i < 5; ++i)
+	{
+		mat.postTranslation(-5, 0, 0);
+		gameWorld.addGameObj("resources/models/pole.xml", &mat);
+	}
+
+	mat.setIdentity();
+	mat.postTranslation(10.0f, 0.0f, 0.0f);
+	for (uint i = 0; i < 15; ++i)
+	{
+		mat.postTranslation(-1, 0, 3);
+		gameWorld.addGameObj("resources/models/woodGate.xml", &mat);
+	}
 
 	//mat.setScale(0.1f, 0.1f, 0.1f);
 	mat.setIdentity();

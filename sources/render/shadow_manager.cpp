@@ -1,6 +1,7 @@
 #include "shadow_manager.hpp"
 #include "light_manager.hpp"
 #include "mesh_manager.hpp"
+#include "post_processing.hpp"
 #include "loader/ResourcesManager.h"
 #include "os/FileSystem.h"
 #include "math/math_all.hpp"
@@ -23,9 +24,23 @@ namespace
 	float g_farZ  = 0;
 	vec3f g_lightPos;
 	vec3f g_lightDir;
-	bool  g_adjustShadowVolume = false;
-	bool  g_adjustFrustum = false;
+	bool  g_adjustShadowVolume = true;
+	bool  g_useCullingMatrix = true;
+	bool  g_fitLightToTexels = true;
+	bool  g_blurShadows = true;
 	uint  g_ROPs = 0;
+	vec4f g_farDistances;
+	vec4f g_nearDistances;
+
+	//-- Represents shadow mapping c-buffer constants.
+	//----------------------------------------------------------------------------------------------
+	struct ShadowConstants
+	{
+		vec2f m_shadowMapRes;
+		vec2f m_invShadowMapRes;
+		float m_splitPlanes[4];
+		mat4f m_shadowMatrices[4];
+	};
 
 	//-- Practical split scheme:
 	//--
@@ -80,10 +95,6 @@ namespace
 		for (uint i = 0; i < 8; ++i)
 		{
 			vec3f point = points[i].toVec3().scale(1.0f / points[i].w);
-			if (g_adjustFrustum)
-			{
-				if (point.y < 0) point.y = 0;
-			}
 			aabb.include(point);
 		}
 	}
@@ -105,9 +116,16 @@ namespace
 	//----------------------------------------------------------------------------------------------
 	void calcLightViewMat(mat4f& viewMat, const AABB& aabb, const DirectionLight& dirLight)
 	{
-		float autoDist = aabb.getDimensions().length() * 0.5f;
-		vec3f lightPos = aabb.getCenter() - dirLight.m_dir.scale(autoDist);
-		viewMat.setLookAt(lightPos, dirLight.m_dir, vec3f(0,1,0));
+		if (g_fitLightToTexels)
+		{
+			viewMat.setLookAt(dirLight.m_dir.scale(-250.0f), dirLight.m_dir, vec3f(0,1,0));
+		}
+		else
+		{
+			float autoDist = aabb.getDimensions().length() * 5.0f;
+			vec3f lightPos = aabb.getCenter() - dirLight.m_dir.scale(autoDist);
+			viewMat.setLookAt(lightPos, dirLight.m_dir, vec3f(0,1,0));
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -118,10 +136,44 @@ namespace
 
 		//-- calculate orthogonal matrix parameters.
 		projInfo.isOrtho  = true;
-		projInfo.width    = lightAABB.getDimensions().x;
-		projInfo.height   = lightAABB.getDimensions().y;
+		projInfo.isOrthoSpec = false;
 		projInfo.nearDist = lightAABB.m_min.z;
 		projInfo.farDist  = lightAABB.m_max.z;
+
+		//-- ToDo: remove hard code for current shadow map resolution.
+		//-- Removes juggi edges when camera zooming and moving, but can't help in case if user
+		//-- rotates camera.
+		if (g_fitLightToTexels)
+		{
+			projInfo.isOrthoSpec = true;
+
+			vec3f minAABB = lightAABB.m_min;
+			vec3f maxAABB = lightAABB.m_max;
+
+			vec3f worldUnitsPerTexel = maxAABB - minAABB;
+			worldUnitsPerTexel *= 1.0f / 2048.0f;
+
+			minAABB /= worldUnitsPerTexel;
+			minAABB  = vec3f(floorf(minAABB.x), floorf(minAABB.y), 0);
+			minAABB *= worldUnitsPerTexel;
+
+			maxAABB /= worldUnitsPerTexel;
+			maxAABB  = vec3f(floorf(maxAABB.x), floorf(maxAABB.y), 0);
+			maxAABB *= worldUnitsPerTexel;
+
+			projInfo.l = minAABB.x;
+			projInfo.r = maxAABB.x;
+			projInfo.b = minAABB.y;
+			projInfo.t = maxAABB.y;
+		}
+		else
+		{
+			projInfo.width  = lightAABB.getDimensions().x;
+			projInfo.height = lightAABB.getDimensions().y;
+		}
+
+		g_width  = projInfo.width;
+		g_height = projInfo.height;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -136,9 +188,19 @@ namespace
 		mat4f	   lightProjMat;
 		{
 			calcLightProjInfo(projInfo, lightViewMat, aabb);
-			lightProjMat.setOrthogonalProj(
-				projInfo.width, projInfo.height, projInfo.nearDist, projInfo.farDist
-				);
+
+			if (projInfo.isOrthoSpec)
+			{
+				lightProjMat.setOrthoOffCenterProj(
+					projInfo.l, projInfo.r, projInfo.b, projInfo.t, projInfo.nearDist, projInfo.farDist
+					);
+			}
+			else
+			{
+				lightProjMat.setOrthogonalProj(
+					projInfo.width, projInfo.height, projInfo.nearDist, projInfo.farDist
+					);
+			}
 		}
 
 		//-- calculate render camera parameters.
@@ -162,10 +224,15 @@ namespace render
 
 	//----------------------------------------------------------------------------------------------
 	ShadowManager::ShadowManager()
-		: m_shadowMapRes(2048), m_splitShemeLambda(0.9f), m_splitCount(4)
+		: m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4)
 	{
-		REGISTER_CONSOLE_VALUE("shadow_adjust_volume",  bool,  g_adjustShadowVolume);
-		REGISTER_CONSOLE_VALUE("shadow_adjust_frustum", bool,  g_adjustFrustum);
+		REGISTER_CONSOLE_VALUE("r_shadow_adjust_volume",		bool,  g_adjustShadowVolume);
+		REGISTER_CONSOLE_VALUE("r_shadow_use_culling_mat",		bool,  g_useCullingMatrix);
+		REGISTER_CONSOLE_VALUE("r_shadow_fit_light_to_texels",	bool,  g_fitLightToTexels);
+		REGISTER_CONSOLE_VALUE("r_shadow_enable_blur",			bool,  g_blurShadows);
+
+		REGISTER_RO_WATCHER("shadow light far distances",  vec4f, g_farDistances);
+		REGISTER_RO_WATCHER("shadow light near distances", vec4f, g_nearDistances);
 
 		REGISTER_RO_WATCHER("shadow light pos",		vec3f, g_lightPos);
 		REGISTER_RO_WATCHER("shadow light dir",		vec3f, g_lightDir);
@@ -218,7 +285,28 @@ namespace render
 				return false;
 			}
 
+			if (mtllib.size() != 2)
+				return false;
+
 			m_shadowResolveMaterial	= mtllib[0];
+			m_shadowBlurMaterial	= mtllib[1];
+		}
+
+		//-- load noise texture.
+		{
+			m_noiseMap = ResourcesManager::instance().loadTexture("textures/noise.dds");
+			if (!m_noiseMap)
+				return false;
+
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_NEAREST;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_WRAP;
+			sDesc.wrapS			= SamplerStateDesc::ADRESS_MODE_WRAP;
+			sDesc.wrapT			= SamplerStateDesc::ADRESS_MODE_WRAP;
+
+			m_noiseMapSml = rd()->createSamplerState(sDesc);
+			if (m_noiseMapSml == CONST_INVALID_HANDLE)
+				return false;
 		}
 
 		//-- create rops for drawing.
@@ -230,23 +318,46 @@ namespace render
 			op.m_material	  = m_shadowResolveMaterial->renderFx();
 
 			m_receiveROPs.push_back(op);
+
+			op.m_material = m_shadowBlurMaterial->renderFx();
+			m_blurROPs.push_back(op);
 		}
 
-		//-- create shadow map
+		//-- create blur map.
+		{
+			m_blurMap = rs().postProcessing()->find("BBCopy");
+			if (!m_blurMap)
+				return false;
+
+			SamplerStateDesc sDesc;
+			sDesc.minMagFilter	= SamplerStateDesc::FILTER_BILINEAR;
+			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapS			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+			sDesc.wrapT			= SamplerStateDesc::ADRESS_MODE_CLAMP;
+
+			m_blurMapSml = rd()->createSamplerState(sDesc);
+			if (m_blurMapSml == CONST_INVALID_HANDLE)
+				return false;
+		}
+
+		//-- create shadow map.
 		{
 			ITexture::Desc desc;
-			desc.width		= m_shadowMapRes;
+			desc.width		= m_shadowMapRes * m_splitCount;
 			desc.height		= m_shadowMapRes;
 			desc.bindFalgs	= ITexture::BIND_DEPTH_STENCIL | ITexture::BIND_SHADER_RESOURCE;
 			desc.format		= ITexture::FORMAT_D32F;
 			desc.texType	= ITexture::TYPE_2D;
 
-			m_shadowMaps.resize(m_splitCount);
+			m_shadowMaps = rd()->createTexture(desc, NULL, 0);
+			if (!m_shadowMaps)
+				return false;
+
+			//-- create view port for the each individual shadow map.
+			m_shadowViewPorts.resize(m_splitCount);
 			for (uint i = 0; i < m_splitCount; ++i)
 			{
-				m_shadowMaps[i] = rd()->createTexture(desc, NULL, 0);
-				if (!m_shadowMaps[i])
-					return false;
+				m_shadowViewPorts[i] = vec4ui(m_shadowMapRes * i, 0, m_shadowMapRes, m_shadowMapRes);
 			}
 
 			SamplerStateDesc sDesc;
@@ -294,42 +405,86 @@ namespace render
 		}
 
 		//-- 3. gather ROPs for each particular split.
+
+		//-- 4. clear shadow map.
+		rd()->clearDepthStencilRT(CLEAR_DEPTH, m_shadowMaps.get(), 1.0f, 0);
+
 		g_ROPs = 0;
 		for (uint i = 0; i < m_splitCount; ++i)
 		{
-			RenderCamera& curCam = m_shadowCameras[i];
+			RenderCamera& curCam	  = m_shadowCameras[i];
+			Projection&   curProjInfo = curCam.m_projInfo;
 
 			m_castROPs.clear();
 
-			//-- Adjust shadow volume so, than it represents in the light view space the smaller area.
-			//-- For doing this we calculate AABB for all visible for current split meshes and try
-			//-- to compute how much area relative to the original split AABB it fits. If it does
-			//-- smaller then we can use it's AABB instead of the split AABB.
-			if (g_adjustShadowVolume)
+			//-- calculate view proj matrix for object culling.
+			mat4f cullingVPMat;
+			if (curProjInfo.isOrthoSpec)
 			{
-				AABB aabb;
-				meshManager.gatherROPs(m_castROPs, curCam.m_viewProj, &aabb);
-
-				Projection projInfo;
-				calcLightProjInfo(projInfo, curCam.m_view, aabb);
-
-				if (projInfo.width < curCam.m_projInfo.width)
-				{
-					calcLightCamera(curCam, aabb, dirLight);
-				}
+				cullingVPMat.setOrthoOffCenterProj(
+					curProjInfo.l, curProjInfo.r, curProjInfo.b, curProjInfo.t, 0, curProjInfo.farDist
+					);
 			}
 			else
 			{
-				meshManager.gatherROPs(m_castROPs, curCam.m_viewProj);
+				cullingVPMat.setOrthogonalProj(
+					curProjInfo.width, curProjInfo.height, 0, curProjInfo.farDist
+					);
 			}
-			g_ROPs += m_castROPs.size();
+			cullingVPMat.preMultiply(curCam.m_view);
+
+			//-- Try to make far near distance difference as small as possible.
+			if (g_adjustShadowVolume)
+			{
+				AABB aabb;
+				meshManager.gatherROPs(
+					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj, &aabb
+					);
+
+				Projection projInfo;
+				calcLightProjInfo(projInfo, curCam.m_view, aabb);
+				
+				//-- adjust shadow light near plane.
+				if (projInfo.nearDist > curProjInfo.nearDist)
+					curProjInfo.nearDist = projInfo.nearDist;
+				
+				//-- adjust shadow light far plane.
+				if (projInfo.farDist < curProjInfo.farDist)
+					curProjInfo.farDist = projInfo.farDist;
+
+				//-- calculate new projection matrix for current camera split.
+				if (curProjInfo.isOrthoSpec)
+				{
+					curCam.m_viewProj.setOrthoOffCenterProj(
+						curProjInfo.l, curProjInfo.r, curProjInfo.b, curProjInfo.t, 0, curProjInfo.farDist
+						);
+				}
+				else
+				{
+					curCam.m_viewProj.setOrthogonalProj(
+						curProjInfo.width, curProjInfo.height, curProjInfo.nearDist, curProjInfo.farDist
+						);
+				}
+				curCam.m_viewProj.preMultiply(curCam.m_view);
+			}
+			else
+			{
+				meshManager.gatherROPs(
+					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj
+					);
+			}
+
+			//-- update watchers.
+			g_ROPs			   += m_castROPs.size();
+			g_nearDistances[i]  = curProjInfo.nearDist;
+			g_farDistances[i]   = curProjInfo.farDist;
 
 			//-- draw ROPs into the particular shadow map.
 			{
+				const vec4ui& curViewPort = m_shadowViewPorts[i];
 				rs().beginPass(RenderSystem::PASS_SHADOW_CAST);
-				rd()->clearDepthStencilRT(CLEAR_DEPTH, m_shadowMaps[i].get(), 1.0f, 0);
-				rd()->setRenderTarget(nullptr, m_shadowMaps[i].get());
-				rd()->setViewPort(m_shadowMapRes, m_shadowMapRes);
+				rd()->setRenderTarget(nullptr, m_shadowMaps.get());
+				rd()->setViewPort(curViewPort.x, curViewPort.y, curViewPort.z, curViewPort.w);
 				rs().setCamera(&curCam);
 				rs().addROPs(m_castROPs);
 				rs().endPass();
@@ -340,31 +495,44 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void ShadowManager::receiveShadows(const RenderCamera* rCam)
 	{
-		//-- ToDo: make texture array instead of the set of individual textures.
 		Handle shaderID = m_receiveROPs[0].m_material->m_shader->m_shader[0].first;
 		IShader* shader = rs().shaderContext()->shader(shaderID);
 		{
-			shader->setVec4f("g_splitPlanes", *reinterpret_cast<vec4f*>(&m_splitPlanes[1]));
-			shader->setVec4f("g_splitCount", vec4f(m_splitCount, 0, 0, 0));
-			shader->setMat4f("g_shadowMat0", m_shadowCameras[0].m_viewProj);
-			shader->setMat4f("g_shadowMat1", m_shadowCameras[1].m_viewProj);
-			shader->setMat4f("g_shadowMat2", m_shadowCameras[2].m_viewProj);
-			shader->setMat4f("g_shadowMat3", m_shadowCameras[3].m_viewProj);
+			ShadowConstants constants;
+			constants.m_shadowMapRes	  = vec2f(m_shadowMapRes, m_shadowMapRes);
+			constants.m_invShadowMapRes   = vec2f(1.0f / m_shadowMapRes, 1.0f / m_shadowMapRes);
+			for (uint i = 0; i < m_splitCount; ++i)
+			{
+				constants.m_shadowMatrices[i] = m_shadowCameras[i].m_viewProj;
+				constants.m_splitPlanes[i]	  = m_splitPlanes[i + 1];
+			}
 
-			shader->setTexture("g_shadowMap0_tex", m_shadowMaps[0].get());
-			shader->setSampler("g_shadowMap0_sml", m_shadowMapSml);
-			shader->setTexture("g_shadowMap1_tex", m_shadowMaps[1].get());
-			shader->setSampler("g_shadowMap1_sml", m_shadowMapSml);
-			shader->setTexture("g_shadowMap2_tex", m_shadowMaps[2].get());
-			shader->setSampler("g_shadowMap2_sml", m_shadowMapSml);
-			shader->setTexture("g_shadowMap3_tex", m_shadowMaps[3].get());
-			shader->setSampler("g_shadowMap3_sml", m_shadowMapSml);
+			shader->setUniformBlock("g_shadowConstants", &constants, sizeof(ShadowConstants));
+			shader->setTexture("g_shadowMap_tex", m_shadowMaps.get());
+			shader->setSampler("g_shadowMap_sml", m_shadowMapSml);
+			shader->setTexture("g_noiseMap_tex", m_noiseMap.get());
+			shader->setSampler("g_noiseMap_sml", m_noiseMapSml);
 		}
 
 		rs().beginPass(RenderSystem::PASS_SHADOW_RECEIVE);
 		rs().setCamera(rCam);
 		rs().addImmediateROPs(m_receiveROPs);
 		rs().endPass();
+
+		//-- do optional blur pass.
+		if (g_blurShadows)
+		{
+			Handle shaderID = m_blurROPs[0].m_material->m_shader->m_shader[0].first;
+			IShader* shader = rs().shaderContext()->shader(shaderID);
+			{
+				shader->setTexture("g_srcMap_tex", m_blurMap.get());
+				shader->setSampler("g_srcMap_sml", m_blurMapSml);
+			}
+
+			rd()->copyTexture(rs().shadowsMask(), m_blurMap.get());
+			rd()->setRenderTarget(rs().shadowsMask(), nullptr);
+			rs().addImmediateROPs(m_blurROPs);
+		}
 	}
 
 } //-- render
