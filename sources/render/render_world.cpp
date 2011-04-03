@@ -59,6 +59,7 @@ namespace render
 		m_meshManager->update(dt);
 		m_lightsManager->update(dt);
 		m_decalManager->update(dt);
+		m_shadowManager->update(dt);
 		RenderSystem::instance().postProcessing()->update(dt);
 	}
 
@@ -69,7 +70,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderWorld::resolveVisibility()
+	void RenderWorld::draw()
 	{
 		//-- 1. resolve visibility
 		{

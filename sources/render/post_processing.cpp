@@ -2,6 +2,7 @@
 #include "os/FileSystem.h"
 #include "render_system.hpp"
 #include "materials.hpp"
+#include "console/Console.h"
 #include "gui/imgui.h"
 
 using namespace brUGE;
@@ -46,7 +47,7 @@ namespace brUGE
 namespace render
 {
 	//----------------------------------------------------------------------------------------------
-	PostProcessing::PostProcessing() : m_curEffectID(-1)
+	PostProcessing::PostProcessing() : m_curEffectID(-1), m_uiEnabled(false)
 	{
 
 	}
@@ -60,6 +61,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool PostProcessing::init()
 	{
+		REGISTER_CONSOLE_MEMBER_VALUE("r_post_process_enable_ui", bool, m_uiEnabled, PostProcessing);
+
 		//-- 1. setup render targets.
 		if (!loadCfg())
 		{
@@ -124,7 +127,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void PostProcessing::update(float /*dt*/)
 	{
-		m_ui->update();
+		if (m_uiEnabled) m_ui->update();
 	}
 
 	//----------------------------------------------------------------------------------------------

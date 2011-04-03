@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "console/WatchersPanel.h"
 #include "console/Console.h"
+#include "gui/imgui.h"
 
 using namespace brUGE::os;
 using namespace brUGE::math;
@@ -224,12 +225,14 @@ namespace render
 
 	//----------------------------------------------------------------------------------------------
 	ShadowManager::ShadowManager()
-		: m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4)
+		:	m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4), m_uiEnabled(false),
+			m_autoSplitSheme(true), m_bias(1.0f), m_slopeScaleBias(4.0f)
 	{
 		REGISTER_CONSOLE_VALUE("r_shadow_adjust_volume",		bool,  g_adjustShadowVolume);
 		REGISTER_CONSOLE_VALUE("r_shadow_use_culling_mat",		bool,  g_useCullingMatrix);
 		REGISTER_CONSOLE_VALUE("r_shadow_fit_light_to_texels",	bool,  g_fitLightToTexels);
 		REGISTER_CONSOLE_VALUE("r_shadow_enable_blur",			bool,  g_blurShadows);
+		REGISTER_CONSOLE_MEMBER_VALUE("r_shadow_enable_ui",		bool, m_uiEnabled, ShadowManager);
 
 		REGISTER_RO_WATCHER("shadow light far distances",  vec4f, g_farDistances);
 		REGISTER_RO_WATCHER("shadow light near distances", vec4f, g_nearDistances);
@@ -373,8 +376,18 @@ namespace render
 
 		//-- ToDo:
 		m_shadowCameras.resize(m_splitCount);
+		m_splitPlanes.resize(m_splitCount, 0);
+
+		//-- create UI.
+		m_ui.reset(new UI(*this));
 
 		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void ShadowManager::update(float /*dt*/)
+	{
+		if (m_uiEnabled) m_ui->update();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -386,10 +399,14 @@ namespace render
 		//-- Now for each split generate shadow map.
 
 		//-- 1. calculate split planes.
-		calcSpitPlanes(
-			m_splitPlanes, cam.m_projInfo.nearDist, cam.m_projInfo.farDist,
-			m_splitShemeLambda, m_splitCount
-			);
+		m_cameraFarNearDist.set(cam.m_projInfo.nearDist, cam.m_projInfo.farDist);
+		if (m_autoSplitSheme)
+		{
+			calcSpitPlanes(
+				m_splitPlanes, m_cameraFarNearDist.x, m_cameraFarNearDist.y,
+				m_splitShemeLambda, m_splitCount
+				);
+		}
 
 		//-- 2. calculate shadow light camera for each split.
 		for (uint i = 0; i < m_splitCount; ++i)
@@ -534,6 +551,62 @@ namespace render
 			rs().addImmediateROPs(m_blurROPs);
 		}
 	}
+	
+	//----------------------------------------------------------------------------------------------
+	ShadowManager::UI::UI(ShadowManager& sm) : m_self(sm), m_scroll(0)
+	{
+	}
+
+	//----------------------------------------------------------------------------------------------
+	ShadowManager::UI::~UI()
+	{
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void ShadowManager::UI::update()
+	{
+		uint width	= rs().screenRes().width;
+		uint height = rs().screenRes().height;
+		
+		imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
+		{
+			imguiCheck("adjust shadow volume", &g_adjustShadowVolume);
+			imguiCheck("use culling matrix",   &g_useCullingMatrix);
+			imguiCheck("fit light to texels",  &g_fitLightToTexels);
+			imguiCheck("blur shadows",		   &g_blurShadows);
+
+			imguiSeparatorLine();
+			imguiLabel("split sheme:");
+			{
+				imguiIndent();
+				imguiCheck("auto split sheme", &m_self.m_autoSplitSheme);
+				imguiSlider("split sheme lambda", &m_self.m_splitShemeLambda, 0.0f, 1.0f, 0.01f);
+
+				imguiLabel("split planes:");
+				for (uint i = 1; i <= m_self.m_splitCount; ++i)
+				{
+					imguiSlider(
+						"split", &m_self.m_splitPlanes[i],
+						m_self.m_cameraFarNearDist.x, m_self.m_cameraFarNearDist.y, 0.1f,
+						!m_self.m_autoSplitSheme
+						);
+				}
+
+				imguiUnindent();
+			}
+
+			imguiSeparatorLine();
+			imguiLabel("biasing:");
+			{
+				imguiIndent();
+				imguiSlider("depth bias factor", &m_self.m_bias, 0.0f, 5.0f, 0.01f);
+				imguiSlider("depth slope scale bias units", &m_self.m_slopeScaleBias, 0.0f, 20.0f, 0.01f);
+				imguiUnindent();
+			}
+		}
+		imguiEndScrollArea();
+	}
+
 
 } //-- render
 } //-- brUGE

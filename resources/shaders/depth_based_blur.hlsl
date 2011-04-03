@@ -38,8 +38,8 @@ texture2D(float4, t_auto_depthMap);
 texture2D(float4, g_srcMap);
 
 //-- Gaussian 3x3 filter.
-static float  g_depthThreshold = 0.25f;
-static float  g_blurRadius = 2.0f;
+static float  g_depthThreshold = 0.05f;
+static float  g_blurRadius = 2.5f;
 static uint   g_samplesCount = 9;
 static float3 g_samples[] = 
 {

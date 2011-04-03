@@ -156,6 +156,7 @@ namespace render
 		//-- optional UI interface.
 		//-- ToDo: Maybe it will be better to create a separate post-processing editor.
 		//--	   But for now it's very expensive in terms of time.
+		bool			m_uiEnabled;
 		UIPtr			m_ui;
 	};
 

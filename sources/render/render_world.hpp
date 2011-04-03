@@ -35,7 +35,7 @@ namespace render
 		//-- resolve visibility.
 		void			update(float dt);
 		void			setCamera(const Ptr<Camera>& cam);
-		void			resolveVisibility();
+		void			draw();
 
 		DecalManager&	decalManager()  { return *m_decalManager.get(); }
 		LightsManager&	lightsManager() { return *m_lightsManager.get(); }

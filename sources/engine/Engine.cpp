@@ -171,7 +171,7 @@ namespace brUGE
 					SCOPED_TIME_MEASURER_EX("draw")
 
 					m_renderSys.beginFrame();
-					m_renderWorld->resolveVisibility();
+					m_renderWorld->draw();
 					//-- ToDo: some old stuff.
 					drawFrame(dt);
 					m_renderSys.endFrame();
