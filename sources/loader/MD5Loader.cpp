@@ -156,7 +156,7 @@ namespace brUGE
 			{
 				//-- ToDo: try to load material for this submesh.
 				RODataPtr mData = FileSystem::instance().readFile("resources/" + adjustArgs(args));
-				if (!mData.get() || !(submesh->material = rs().materials()->createMaterial(*mData.get())))
+				if (!mData.get() || !(submesh->material = rs().materials().createPipelineMaterial(*mData.get())))
 				{
 					ERROR_MSG("Can't load submesh material %s.", adjustArgs(args).c_str());
 					return false;

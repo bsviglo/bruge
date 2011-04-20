@@ -6,6 +6,7 @@
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
 #include "render/physic_world.hpp"
+#include "render/post_processing.hpp"
 #include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
@@ -118,6 +119,18 @@ bool Demo::init()
 	}
 
 	mat.setIdentity();
+	mat.postTranslation(5.0f, 0.0f, 5.0f);
+	for (uint i = 0; i < 3; ++i)
+	{
+		mat.postTranslation(+5, 0, 0);
+		for (uint j = 0; j < 3; ++j)
+		{
+			mat.postTranslation(0, 0, +5);
+			gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
+		}
+	}
+
+	mat.setIdentity();
 	mat.postTranslation(0.0f, 0.0f, -20.0f);
 	for (uint i = 0; i < 5; ++i)
 	{
@@ -167,7 +180,7 @@ bool Demo::init()
 	}
 	*/
 
-	rs().postProcessing()->enable("ssaa.pp");
+	engine.renderWorld().postProcessing().enable("ssaa.pp");
 
 	return true;
 }

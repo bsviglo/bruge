@@ -7,8 +7,7 @@
 #include "render/IShader.h"
 #include "render/IRenderDevice.h"
 #include "render/state_objects.h"
-#include "render/materials.hpp"
-#include "render/post_processing.hpp"
+#include "render/shader_context.hpp"
 
 #include <memory>
 #include <vector>
@@ -18,7 +17,8 @@ namespace brUGE
 {
 namespace render
 {
-
+	class  Materials;
+	class  ShaderContext;
 	struct RenderFx;
 
 	//-- ToDo:
@@ -43,7 +43,7 @@ namespace render
 		//-- addition data in case if mesh is animated.
 		IBuffer*			m_weightsTB;
 		const mat4f*		m_matrixPalette;
-		uint				m_matrixPaletteCount;
+		uint16				m_matrixPaletteCount;
 		//-- material of given sub-mesh.
 		const RenderFx*		m_material;
 		//-- world transformation.
@@ -59,7 +59,7 @@ namespace render
 
 	//-- The main class of the render system.
 	//----------------------------------------------------------------------------------------------
-	class RenderSystem : public utils::Singleton<RenderSystem>
+	class RenderSystem : public utils::Singleton<RenderSystem>, public NonCopyable
 	{
 	public:
 		//-- ToDo: reconsider this representation of the render passes.
@@ -104,13 +104,15 @@ namespace render
 		//-- ToDo:
 		void addImmediateROPs(const RenderOps& ops);
 
-		const RenderCamera*	camera()		const	 { return m_camera; }
-		ERenderAPIType		gapi()			const	 { return m_renderAPI; }
-		ScreenResolution	screenRes()		const	 { return m_screenRes;  }
-		IRenderDevice*		device()		const	 { return m_device; }
-		ShaderContext*		shaderContext()			 { return m_shaderContext.get(); }
-		Materials*			materials()				 { return &m_materials; }
-		PostProcessing*		postProcessing()		 { return &m_postProcessing; }
+		const RenderCamera*			camera()		const	 { return m_camera; }
+		ERenderAPIType				gapi()			const	 { return m_renderAPI; }
+		ScreenResolution			screenRes()		const	 { return m_screenRes;  }
+		IRenderDevice*				device()		const	 { return m_device; }
+		ShaderContext&				shaderContext()			 { return *m_shaderContext.get(); }
+		Materials&					materials()				 { return *m_materials.get(); }
+
+		//-- ToDo:
+		ShaderContext::EPassType	shaderPass(EPassType type) const;
 
 		ITexture*			depthTexture()			 { return m_passes[PASS_Z_ONLY].m_rt.get(); }
 		ITexture*			decalsMask()			 { return m_passes[PASS_DECAL].m_rt.get(); }
@@ -131,18 +133,18 @@ namespace render
 
 		bool _initPasses();
 		bool _finiPasses();
-		void _doDraw(RenderOps& ops, bool immediate = false);
+		void _doDraw(RenderOps& ops);
 
 	private:
-		typedef std::unique_ptr<ShaderContext> ShaderContextPtr;
+		typedef std::unique_ptr<ShaderContext>  ShaderContextPtr;
+		typedef std::unique_ptr<Materials>		MaterialsPtr;
 
 		VideoMode			m_videoMode;
 		ScreenResolution	m_screenRes;
 		ERenderAPIType		m_renderAPI;
 		utils::DynamicLib	m_dynamicLib;
 		ShaderContextPtr	m_shaderContext;
-		Materials			m_materials;
-		PostProcessing		m_postProcessing;
+		MaterialsPtr		m_materials;
 
 		const RenderCamera*	m_camera;
 		EPassType			m_pass;

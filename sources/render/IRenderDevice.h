@@ -17,36 +17,38 @@ namespace render
 	struct SamplerStateDesc;
 
 	//--
-	enum EAttributeFormat
+	enum EAttributeType
 	{
-		FORMAT_BYTE  = 0,
-		FORMAT_SHORT = 1,
-		FORMAT_INT	 = 2,
-		FORMAT_UINT  = 3,
-		FORMAT_FLOAT = 4
+		TYPE_BYTE  = 0,
+		TYPE_SHORT = 1,
+		TYPE_INT   = 2,
+		TYPE_UINT  = 3,
+		TYPE_FLOAT = 4,
+		TYPE_UNKNOWN
 	};
 
 	//--
-	enum EAttributeType
+	enum EAttributeSemantic
 	{
-		TYPE_POSITION  = 0,
-		TYPE_TEXCOORD  = 1,
-		TYPE_TEXCOORD0 = 1,
-		TYPE_TEXCOORD1 = 2,
-		TYPE_TEXCOORD2 = 3,
-		TYPE_NORMAL    = 4,
-		TYPE_TANGENT   = 5,
-		TYPE_BINORMAL  = 6,
-		TYPE_COLOR	   = 7,
+		SEMANTIC_POSITION  = 0,
+		SEMANTIC_TEXCOORD  = 1,
+		SEMANTIC_TEXCOORD0 = 1,
+		SEMANTIC_TEXCOORD1 = 2,
+		SEMANTIC_TEXCOORD2 = 3,
+		SEMANTIC_NORMAL    = 4,
+		SEMANTIC_TANGENT   = 5,
+		SEMANTIC_BINORMAL  = 6,
+		SEMANTIC_COLOR	   = 7,
+		SEMANTIC_UNKNOWN
 	};
 
 	//-- input data description to vertex shader.
 	struct VertexDesc 
 	{
-		uint			 stream;
-		EAttributeType   type;
-		EAttributeFormat format;
-		uint			 size;
+		uint			   stream;
+		EAttributeSemantic semantic;
+		EAttributeType     type;
+		uint			   size;
 	};
 	
 	//--

@@ -595,9 +595,9 @@ namespace render
 			}
 			
 			oDesc.InputSlot			= iDesc.stream;
-			oDesc.SemanticName		= dxSemantics[iDesc.type].name;
-			oDesc.SemanticIndex		= dxSemantics[iDesc.type].index;
-			oDesc.Format			= dxVertFormats[iDesc.format][iDesc.size - 1];
+			oDesc.SemanticName		= dxSemantics[iDesc.semantic].name;
+			oDesc.SemanticIndex		= dxSemantics[iDesc.semantic].index;
+			oDesc.Format			= dxVertFormats[iDesc.type][iDesc.size - 1];
 			oDesc.AlignedByteOffset	= sizes[iDesc.stream];
 			
 			// ToDo: reconsider with respect to instancing.
@@ -607,7 +607,7 @@ namespace render
 			dxDescs[i] = oDesc;
 			
 			//-- calculate offset.
-			sizes[iDesc.stream] += dxVertFormatSize[iDesc.format] * iDesc.size;
+			sizes[iDesc.stream] += dxVertFormatSize[iDesc.type] * iDesc.size;
 		}
 		
 		ComPtr<ID3D10InputLayout> dxLayout;

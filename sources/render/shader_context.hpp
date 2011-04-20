@@ -16,8 +16,18 @@ namespace render
 {
 
 	//-- forward declaration.
+	class  VertexDeclarations;
 	struct RenderOp;
 	typedef std::vector<RenderOp> RenderOps;
+
+
+	//----------------------------------------------------------------------------------------------
+	struct RenderStateProperties
+	{
+		RenderStateProperties() : m_doubleSided(false) { }
+
+		bool m_doubleSided;
+	};
 
 
 	//-- The property of particular material. It represents some shader constants and another
@@ -31,33 +41,63 @@ namespace render
 	public:
 		IProperty() { }
 		virtual ~IProperty() { }
-		virtual bool apply(IShader& shader) const = 0;
-
+	
+		virtual bool   operator() (Handle handle, IShader& shader) const = 0;
+		virtual Handle handle	  (const char* name, const IShader& shader) const = 0;
 	};
-	typedef std::vector<IProperty*> Properties;
+	typedef std::pair<Handle, IProperty*> PropertyPair;
+	typedef std::vector<PropertyPair>	  Properties;
 
 
 	//----------------------------------------------------------------------------------------------
-	template<typename T>
-	class NumericProperty : public IProperty
+	class FloatProperty : public IProperty
 	{
 	public:
-		NumericProperty(const std::string& name, const T& value)
-			:	m_name(name), m_value(value) { }
+		FloatProperty(float value) : m_value(value) { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator() (Handle handle, IShader& shader) const
 		{
-			return shader.setConstantAsRawData(m_name.c_str(), &m_value, sizeof(T));
+			return shader.setFloat(handle, m_value);
 		}
 
-		void set(const T& value)
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleFloat(name);
+		}
+
+		void set(float value)
 		{
 			m_value = value;
 		}
 
 	private:
-		std::string	m_name;
-		T			m_value;
+		float m_value;
+	};
+
+
+	//----------------------------------------------------------------------------------------------
+	class Vec4fProperty : public IProperty
+	{
+	public:
+		Vec4fProperty(const vec4f& value) : m_value(value) { }
+
+		virtual bool operator() (Handle handle, IShader& shader) const
+		{
+			return shader.setVec4f(handle, m_value);
+		}
+
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleVec4f(name);
+		}
+
+		void set(const vec4f& value)
+		{
+			m_value = value;
+		}
+
+	private:
+		vec4f m_value;
 	};
 
 
@@ -65,27 +105,35 @@ namespace render
 	class TextureProperty : public IProperty
 	{
 	public:
-		TextureProperty(const std::string& name, const Ptr<ITexture>& texture, SamplerStateID state);
-		~TextureProperty() { }
+		TextureProperty(const Ptr<ITexture>& texture, SamplerStateID state)
+			:	m_texture(texture), m_stateS(state) { }
 
-		virtual bool apply(IShader& shader) const;
-
-		void set(const Ptr<ITexture>& value)
+		virtual bool operator() (Handle handle, IShader& shader) const
 		{
-			m_texture = value;
+			return shader.setTexture(handle, m_texture.get(), m_stateS);
+		}
+
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTexture(name);
+		}
+
+		void set(const Ptr<ITexture>& value = nullptr, SamplerStateID state = CONST_INVALID_HANDLE)
+		{
+			if (value.isValid())				m_texture = value;
+			if (state != CONST_INVALID_HANDLE)	m_stateS  = state;
+			
 		}
 
 	private:
 		SamplerStateID	m_stateS;
-		std::string		m_textureName;
-		std::string		m_samplerName;
 		Ptr<ITexture>	m_texture;
 	};
 
 
 	//-- Shader include interface implementation.
 	//----------------------------------------------------------------------------------------------
-	class ShaderIncludeImpl : public render::IShaderInclude
+	class ShaderIncludeImpl : public IShaderInclude
 	{
 	public:
 		ShaderIncludeImpl(const std::string& path);
@@ -110,13 +158,13 @@ namespace render
 	class ShaderContext
 	{
 	public:
-		enum EShaderRenderPassType
+		enum EPassType
 		{
-			SHADER_RENDER_PASS_UNDEFINED	= 0,
-			SHADER_RENDER_PASS_Z_ONLY		= 0,
-			SHADER_RENDER_PASS_SHADOW_CAST	= 1,
-			SHADER_RENDER_PASS_MAIN_COLOR	= 2,
-			SHADER_RENDER_PASS_COUNT
+			PASS_UNDEFINED	 = 0,
+			PASS_Z_ONLY		 = 0,
+			PASS_SHADOW_CAST = 1,
+			PASS_MAIN_COLOR	 = 2,
+			PASS_COUNT
 		};
 
 		enum EShaderPin
@@ -133,17 +181,19 @@ namespace render
 		~ShaderContext();
 
 		bool				init();
+		bool				updateGlobalConstants();
+		bool				updatePerFrameViewConstants();
 
 		//-- load shader.
 		Handle				getShader(const char* name, const std::vector<std::string>* pins);
-		VertexLayoutID		getVertexLayout(Handle shader, const std::string& desc);
+		VertexLayoutID		getVertexLayout(const char* name, Handle shader);
 		IShader*			shader(Handle handle);
 
 		const RenderOp&		renderOp() const { return *m_renderOp; }
 		const RenderCamera* camera() const   { return m_camera; }
 
 		void				setCamera(const RenderCamera* cam);
-		void				applyFor(RenderOp* op, EShaderRenderPassType pass);
+		void				applyFor(RenderOp* op);
 
 	private:
 		Handle loadShader(const char* name, const std::vector<std::string>* pins);
@@ -152,15 +202,46 @@ namespace render
 		typedef std::pair<Ptr<IShader>, Properties>	ShaderPair;
 		typedef std::vector<ShaderPair>				ShaderAutoProperties;
 		typedef std::map<std::string, IProperty*>	AutoProperties;
-		typedef std::auto_ptr<ShaderIncludeImpl>	ShaderIncludeImplPtr;
 		typedef std::map<std::string, Handle>		ShaderSearchMap;
+		typedef std::auto_ptr<ShaderIncludeImpl>	ShaderIncludeImplPtr;
+		typedef std::auto_ptr<VertexDeclarations>	VertexDeclarationsPtr;
 
-		ShaderSearchMap		 m_searchMap;
-		ShaderAutoProperties m_shaderCache;
-		AutoProperties		 m_autoProperties;
-		RenderOp*		 	 m_renderOp;
-		const RenderCamera*	 m_camera;
-		ShaderIncludeImplPtr m_shaderIncludes;
+		ShaderSearchMap		  m_searchMap;
+		ShaderAutoProperties  m_shaderCache;
+		AutoProperties		  m_autoProperties;
+		RenderOp*		 	  m_renderOp;
+		const RenderCamera*	  m_camera;
+		ShaderIncludeImplPtr  m_shaderIncludes;
+		VertexDeclarationsPtr m_vertexDeclarations;
+
+		//-- ToDo:
+
+		//--
+		struct GlobalConstants
+		{
+			vec4f m_time;
+		};
+
+		//--
+		struct PerFrameConstants
+		{
+			vec4f m_screenRes;
+			vec4f m_farNearPlane;
+			vec4f m_cameraPos;
+			mat4f m_viewMat;
+			mat4f m_invViewMat;
+			mat4f m_projMat;
+			mat4f m_invProjMat;
+			mat4f m_viewProjMat;
+			mat4f m_invViewProjMat;
+			mat4f m_lastViewProjMat;
+			mat4f m_invLastViewProjMat;
+		};
+
+		Ptr<IBuffer>		m_globalCB;
+		Ptr<IBuffer>		m_perframeCB;
+		GlobalConstants		m_globalConstants;
+		PerFrameConstants	m_perframeConstants;
 	};
 
 } // render

@@ -142,5 +142,13 @@
     <None Include="depth_based_blur.hlsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="..\system\post_processing.xml" />
+    <None Include="..\system\vertex_formats.xml" />
+    <None Include="empty.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\materials\empty.mtl">
+      <Filter>materials</Filter>
+    </None>
   </ItemGroup>
 </Project>

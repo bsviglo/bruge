@@ -205,7 +205,6 @@
     <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp" />
-    <ClCompile Include="..\..\sources\render\IShader.cpp" />
     <ClCompile Include="..\..\sources\render\game_world.cpp" />
     <ClCompile Include="..\..\sources\render\Camera.cpp" />
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
@@ -226,6 +225,7 @@
     <ClCompile Include="..\..\sources\render\animation_engine.cpp" />
     <ClCompile Include="..\..\sources\render\shader_context.cpp" />
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp" />
+    <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
     <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -320,6 +320,7 @@
     <ClInclude Include="..\..\sources\Exception.h" />
     <ClInclude Include="..\..\sources\prerequisites.hpp" />
     <ClInclude Include="..\..\sources\render\vertex_format.hpp" />
+    <ClInclude Include="..\..\sources\render\vertex_declarations.hpp" />
     <ClInclude Include="..\..\sources\win32Res\resource.h" />
   </ItemGroup>
   <ItemGroup>

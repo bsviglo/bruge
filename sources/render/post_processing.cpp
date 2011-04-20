@@ -55,7 +55,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	PostProcessing::~PostProcessing()
 	{
-
+		for (auto i = m_effects.begin(); i != m_effects.end(); ++i)
+			delete *i;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -105,21 +106,6 @@ namespace render
 
 			m_rops.push_back(op);
 		}
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PostProcessing::fini()
-	{
-		m_fsQuad.reset();
-		m_rts.clear();
-
-		for (auto i = m_effects.begin(); i != m_effects.end(); ++i)
-			delete *i;
-
-		m_effects.clear();
-		m_ui.reset();
 
 		return true;
 	}
@@ -318,7 +304,7 @@ namespace render
 		//-- 3. read material.
 		if (auto sec = section.child("material"))
 		{
-			if (auto mat = rs().materials()->createMaterial(sec, &passUI->m_desc))
+			if (auto mat = rs().materials().createMaterial(sec, &passUI->m_desc))
 			{
 				out.m_material = mat;
 			}

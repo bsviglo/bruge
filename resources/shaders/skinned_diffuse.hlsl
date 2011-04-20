@@ -66,14 +66,14 @@ vs_out main(vs_in input)
 
 #ifdef _FRAGMENT_SHADER_
 
-texture2D(float4, t_auto_diffuseMap);
+texture2D(float4, diffuseMap);
 texture2D(float4, t_auto_decalsMask);
 
 //-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {
 	float2 ssc		  = i.pos.xy * g_screenRes.zw;
-	float4 srcColor   = sample2D(t_auto_diffuseMap, i.tc.xy);
+	float4 srcColor   = sample2D(diffuseMap, i.tc.xy);
 	float4 decalColor = sample2D(t_auto_decalsMask, ssc);
 	
 	float3 outRGB     = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);

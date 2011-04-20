@@ -52,18 +52,18 @@ vs_out main(vs_in i)
 
 //--------------------------------------------------------------------------------------------------
 #ifdef PIN_ALPHA_TEST
-	texture2D(float4, t_auto_diffuseMap);
+	texture2D(float4, diffuseMap);
 #endif
 
 #ifdef PIN_BUMP_MAP
-	texture2D(float4, t_auto_bumpMap);
+	texture2D(float4, bumpMap);
 #endif
 
 //--------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {
 #ifdef PIN_ALPHA_TEST
-	float alpha = sample2D(t_auto_diffuseMap, i.tc).a;
+	float alpha = sample2D(diffuseMap, i.tc).a;
 	if (g_alphaRef >= alpha)
 		discard;
 #endif
@@ -71,7 +71,7 @@ float4 main(vs_out i) : SV_TARGET
 	float  dist = length(i.wPos - g_cameraPos.xyz);
 
 #ifdef PIN_BUMP_MAP
-	float3 nn   = (2.0f * sample2D(t_auto_bumpMap, i.tc).xyz - float3(1,1,1));
+	float3 nn   = (2.0f * sample2D(bumpMap, i.tc).xyz - float3(1,1,1));
 	float3 norm = normalize(nn.x * i.tangent + nn.y * i.binormal + nn.z * i.normal);
 #else
 	float3 norm = normalize(i.normal);

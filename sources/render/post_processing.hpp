@@ -23,7 +23,6 @@ namespace render
 		~PostProcessing();
 
 		bool init();
-		bool fini();
 
 		void update(float dt);
 		void draw();

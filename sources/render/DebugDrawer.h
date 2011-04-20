@@ -12,6 +12,7 @@ namespace render
 {
 	class Mesh;
 	class Font;
+	class Material;
 
 	//-- Debug information drawer.
 	//-- It gathers drawing information from all its drawing methods and then draw all this
@@ -103,6 +104,7 @@ namespace render
 		};
 		std::vector<MeshInstance>	m_meshCaches[MT_COUNT];
 		Ptr<Mesh>					m_meshes[MT_COUNT];
+		Ptr<Material>				m_solidMaterial;
 		Ptr<IBuffer>				m_instancingTB;
 	};
 

@@ -70,7 +70,7 @@ vs_out main(vs_in input)
 #ifdef _FRAGMENT_SHADER_
 
 //-------------------------------------------------------------------------------------------------
-texture2D(float4, t_auto_diffuseMap);
+texture2D(float4, diffuseMap);
 
 //-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET

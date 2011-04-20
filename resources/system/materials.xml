@@ -1,33 +1,78 @@
 <materialslib>
 
-	<material name="ambient" bumped="false" skinned="false">
-		<pass type="Z_PRE_PASS"  vertex="xyzuvn" shader="z_pre_pass"/>
-		<pass type="MAIN_COLOR"  vertex="xyzuvn" shader="ambient"/>
-    <pass type="SHADOW_CAST" vertex="xyzuvn" shader="cast_shadows"/>
-	</material>
+  <material name="empty">
+    <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="empty"/>
+    </pass>
+    <pass type="MAIN_COLOR"  vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="empty"/>
+    </pass>
+    <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="empty"/>
+    </pass>
+  </material>
+
+  <pipeline_shader name="ambient">
+    <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="z_pre_pass"/>
+    </pass>
+    <pass type="MAIN_COLOR" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="ambient"/>
+    </pass>
+    <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="cast_shadows"/>
+    </pass>
+	</pipeline_shader>
+
+  <material name="diffuse">
+    <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="z_pre_pass"/>
+      <!--<shader type="INSTANCING" src="z_pre_pass" pins="PIN_INSTANCING"/>-->
+    </pass>
+    <pass type="MAIN_COLOR" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="diffuse"/>
+      <!--<shader type="INSTANCING" src="diffuse" pins="PIN_INSTANCING"/>-->
+    </pass>
+    <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="cast_shadows"/>
+      <!--<shader type="INSTANCING" src="cast_shadows" pins="PIN_INSTANCING"/>-->
+    </pass>
+  </material>
+
+  <material name="bump">
+    <pass type="Z_PRE_PASS" vertex="xyzuvntb" bumped="true" skinned="false">
+      <shader type="NORMAL" src="z_pre_pass" pins="PIN_BUMP_MAP"/>
+    </pass>
+    <pass type="MAIN_COLOR" vertex="xyzuvn"  bumped="false" skinned="false">
+      <shader type="NORMAL" src="diffuse"/>
+    </pass>
+    <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="cast_shadows" pins="PIN_BUMP_MAP"/>
+    </pass>
+  </material>
+
+  <material name="bump_alpha_test">
+    <pass type="Z_PRE_PASS" vertex="xyzuvntb" bumped="true" skinned="false">
+      <shader type="NORMAL" src="z_pre_pass" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
+    </pass>
+    <pass type="MAIN_COLOR" vertex="xyzuvn"  bumped="false" skinned="false">
+      <shader type="NORMAL" src="diffuse" pins="PIN_ALPHA_TEST"/>
+    </pass>
+    <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
+      <shader type="NORMAL" src="cast_shadows" pins="PIN_ALPHA_TEST"/>
+    </pass>
+  </material>
+
+  <material name="diffuse_skinned">
+    <pass type="Z_PRE_PASS"   vertex="nuv2ui" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned_z_pre_pass"/>
+    </pass>
+    <pass type="MAIN_COLOR"   vertex="nuv2ui" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned_diffuse"/>
+    </pass>
+    <pass type="SHADOW_CAST"  vertex="nuv2ui" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned_cast_shadows"/>
+    </pass>
+  </material>
   
-	<material name ="diffuse" bumped="false" skinned="false">
-		<pass type="Z_PRE_PASS"  vertex="xyzuvn" shader="z_pre_pass"/>
-		<pass type="MAIN_COLOR"  vertex="xyzuvn" shader="diffuse"/>
-    <pass type="SHADOW_CAST" vertex="xyzuvn" shader="cast_shadows"/>
-	</material>
-
-	<material name="bump" bumped="true" skinned="false">
-		<pass type="Z_PRE_PASS"  vertex="xyzuvntb" shader="z_pre_pass" pins="PIN_BUMP_MAP"/>
-		<pass type="MAIN_COLOR"  vertex="xyzuvntb" shader="diffuse" pins="PIN_BUMP_MAP"/>
-    <pass type="SHADOW_CAST" vertex="xyzuvntb" shader="cast_shadows" pins="PIN_BUMP_MAP"/>
-	</material>
-
-	<material name="bump_alpha_test" bumped="true" skinned="false">
-		<pass type="Z_PRE_PASS"  vertex="xyzuvntb" shader="z_pre_pass" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
-		<pass type="MAIN_COLOR"  vertex="xyzuvntb" shader="diffuse" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
-    <pass type="SHADOW_CAST" vertex="xyzuvntb" shader="cast_shadows" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
-	</material>
-
-	<material name="diffuse_skinned" bumped="false" skinned="true">
-		<pass type="Z_PRE_PASS"  vertex="nuv2ui" shader="skinned_z_pre_pass"/>
-		<pass type="MAIN_COLOR"  vertex="nuv2ui" shader="skinned_diffuse"/>
-    <pass type="SHADOW_CAST" vertex="nuv2ui" shader="skinned_cast_shadows"/>
-	</material>
- 
 </materialslib>

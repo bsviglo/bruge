@@ -3,9 +3,7 @@
 //--------------------------------------------------------------------------------------------------
 struct vs_out
 {
-	float4 pos		: SV_POSITION;	
-	float2 texCoord	: TEXCOORD0;
-	float4 color	: COLOR0;
+	float4 pos : SV_POSITION;
 };
 
 #ifdef _VERTEX_SHADER_
@@ -13,32 +11,29 @@ struct vs_out
 //--------------------------------------------------------------------------------------------------
 struct vs_in
 {                                           
-	float4 pos		: POSITION;
-	float2 texCoord	: TEXCOORD0;
-	float4 color	: COLOR0;
+	float3 pos	    : POSITION;
+	float2 tc	    : TEXCOORD0;
+	float3 normal   : NORMAL;
 };
 
 //--------------------------------------------------------------------------------------------------
 vs_out main(vs_in i)
 {
-    vs_out o;
-	o.texCoord = i.texCoord;
-	o.pos	   = i.pos;
-	o.color	   = i.color;
-    return o;
-}
+	vs_out o;
+	o.pos = mul(float4(i.pos, 1), g_MVPMat);
+	return o;
+};
 
 #endif
+
 
 #ifdef _FRAGMENT_SHADER_
 
 //--------------------------------------------------------------------------------------------------
-texture2D(float, font);
-
-//--------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
-{	
-    return float4(i.color.xyz, i.color.w * sample2D(font, i.texCoord));
-}
-
+{
+	discard;
+	return float4(1,1,1,1);
+};
+	
 #endif

@@ -157,23 +157,23 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	Ptr<Mesh> ObjLoader::load(const ROData& data)
 	{
-		Ptr<Mesh>					out = new Mesh();
-		vec3f						v;
-		vec2f						t;
-		int							vi[30];
-		int							ti[30];
-		string						str, cmd, args;
-		bool						hasTexCoords  = false;
-		char						lastCommand   = '\0';
-		vector<Mesh::Vertex>		vertices;
-		vector<Mesh::Face>			faces;
-		vector<Mesh::Face>			texFaces;
-		vector<TexCoord>			texCoords;
-		int							startVertex   = 1;
-		int							startTexCoord = 1;
-		int							startFace     = 1;
-		std::vector<Ptr<Material>>	mtllib;
-		uint						numSubMeshes = 0;
+		Ptr<Mesh>					        out = new Mesh();
+		vec3f						        v;
+		vec2f						        t;
+		int							        vi[30];
+		int							        ti[30];
+		string						        str, cmd, args;
+		bool						        hasTexCoords  = false;
+		char						        lastCommand   = '\0';
+		vector<Mesh::Vertex>		        vertices;
+		vector<Mesh::Face>			        faces;
+		vector<Mesh::Face>			        texFaces;
+		vector<TexCoord>			        texCoords;
+		int							        startVertex   = 1;
+		int							        startTexCoord = 1;
+		int							        startFace     = 1;
+		std::vector<Ptr<PipelineMaterial>>	mtllib;
+		uint								numSubMeshes = 0;
 
 		while (data.getString(str, '\n' ))
 		{
@@ -289,7 +289,7 @@ namespace brUGE
 				//-- Note: materials lib may contain more then one material one for each model
 				//--	   submesh. Appropriate material selected by sequential number of the mesh.
 				RODataPtr mData = FileSystem::instance().readFile("resources/" + args);
-				if (!mData.get() || !rs().materials()->createMaterials(mtllib, *mData.get()))
+				if (!mData.get() || !rs().materials().createPipelineMaterials(mtllib, *mData.get()))
 				{
 					ERROR_MSG("Can't load materials library %s for model.", args.c_str());
 					return 0;

@@ -1,5 +1,7 @@
 <material use="diffuse">
     <properties>
-        <property name="diffuseMap" type="texture" value="textures/ground.dds"/>
+      <property name="diffuseMap" type="texture" value="textures/ground.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
     </properties>
 </material>

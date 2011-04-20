@@ -15,6 +15,7 @@ namespace render
 {
 
 	class  Material;
+	class  PipelineMaterial;
 	struct MaterialUI;
 
 	//-- Presents data holder of the all materials in the engine. At the beginning of the game all
@@ -25,68 +26,116 @@ namespace render
 	{
 	public:
 
-		struct MatShader : public RefCount, public NonCopyable
+		//------------------------------------------------------------------------------------------
+		struct PipelineShader
 		{
-			MatShader();
-			~MatShader();
+			struct Pass
+			{
+				Pass()
+					:	m_skinned(false), m_bumped(false), m_normal(CONST_INVALID_HANDLE),
+						m_instanced(CONST_INVALID_HANDLE), m_vertexDclr(CONST_INVALID_HANDLE) { }
 
-			bool m_isSkinned;
-			bool m_isBumpMaped;
-			bool m_isMultipass;
+				bool			m_skinned;
+				bool			m_bumped;
+				Handle			m_normal;
+				Handle			m_instanced;
+				VertexLayoutID	m_vertexDclr;
+			};
 
-			//-- <shader, vertex declaration> pair.
-			std::pair<Handle, Handle> m_shader[ShaderContext::SHADER_RENDER_PASS_COUNT];
+			Pass m_passes[ShaderContext::PASS_COUNT];
 		};
+
+		typedef std::map<std::string, IProperty*> PropertyMap;
 
 	public:
 		Materials();
 		~Materials();
 
-		bool init();
-		bool fini();
+		bool					init();
 
-		Ptr<Material>	createMaterial (const utils::ROData& data);
-		Ptr<Material>	createMaterial (const pugi::xml_node& section, MaterialUI* uiDesc);
-		bool			createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data);
+		Ptr<Material>			createMaterial			(const utils::ROData& data);
+		Ptr<Material>			createMaterial			(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
+		bool					createMaterials			(std::vector<Ptr<Material>>& out, const utils::ROData& data);
+
+		Ptr<PipelineMaterial>	createPipelineMaterial	(const utils::ROData& data);
+		Ptr<PipelineMaterial>	createPipelineMaterial	(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
+		bool					createPipelineMaterials	(std::vector<Ptr<PipelineMaterial>>& out, const utils::ROData& data);
 
 	private:
-		typedef std::map<std::string, Ptr<MatShader>> MaterialsMap;
+		bool loadProps(
+			PropertyMap& oPpropsMap, const pugi::xml_node& section
+			);
 
-		MaterialsMap m_materials;
+		bool loadRenderStates(
+			RenderStateProperties& oRSProps, const pugi::xml_node& section
+			);
+
+		bool loadUI(
+			MaterialUI& oUI, PropertyMap& propsMap, const pugi::xml_node& section
+			);
+
+		bool gatherPropsForShader(
+			Properties& oProps, PropertyMap& oPropsMap,
+			const IShader& shader, bool warningIfNotExist = false
+			);
+
+		typedef std::map<std::string, PipelineShader> PipelineShadersMap;
+		PipelineShadersMap m_pipelineShaders;
 	};
 
 
 	//-- Represents material of the given geometry. It represents only the render vision about
 	//-- the material. I.e. render doesn't worry about any kind of the memory management here.
-	//-- ToDo: need some reconsideration in the near future.
 	//----------------------------------------------------------------------------------------------
 	struct RenderFx : public NonCopyable
 	{
 	public:
 		RenderFx()
-			:	m_shader(nullptr), m_props(nullptr), m_propsCount(0) { }
+			:	m_shader(CONST_INVALID_HANDLE), m_vertexDlcr(CONST_INVALID_HANDLE), m_props(nullptr),
+				m_propsCount(0), m_rsProps(nullptr), m_skinned(false), m_bumped(false) { }
 
-		struct SysPropertiesData
-		{
-			SysPropertiesData()
-				:	m_bumpMap(nullptr), m_diffuseMap(nullptr),
-					m_alphaRef(1), m_doubleSided(false) { }
-
-			ITexture*	m_bumpMap;
-			ITexture*	m_diffuseMap;
-			float		m_alphaRef;
-			bool		m_doubleSided;
-		};
-
-		//-- shader(-s) and vertex declaration.
-		Materials::MatShader* m_shader;
+		//-- shader and vertex declaration.
+		VertexLayoutID			m_vertexDlcr;
+		Handle					m_shader;
 
 		//-- user defined properties.
-		IProperty**			  m_props;
-		uint				  m_propsCount;
+		PropertyPair*			m_props;
+		uint16					m_propsCount;
+
+		//-- user defined render state properties.
+		RenderStateProperties*	m_rsProps;
 
 		//-- system auto properties may are used for more then one render pass.
-		SysPropertiesData	  m_sysProps;
+		bool					m_skinned;
+		bool					m_bumped;
+	};
+
+
+	//----------------------------------------------------------------------------------------------
+	class PipelineMaterial : public RefCount, public NonCopyable
+	{
+		friend class Materials;
+		
+	public:
+		PipelineMaterial();
+		~PipelineMaterial();
+
+		const RenderFx* renderFx(ShaderContext::EPassType pass, bool instanced = false);
+
+	private:
+		struct Pass
+		{
+			bool		m_instanced;
+			RenderFx	m_normalFx;
+			Properties	m_normalProps;
+			RenderFx	m_instancedFx;
+			Properties	m_instancedProps;
+		};
+		
+		Pass						m_passes[ShaderContext::PASS_COUNT];
+		Materials::PipelineShader*	m_shaders;
+		Materials::PropertyMap		m_propsMap;
+		RenderStateProperties		m_rsProps;
 	};
 
 
@@ -103,19 +152,18 @@ namespace render
 
 		//-- Note: when we add new property to the material we also give it ownership for this
 		//--	   property.
-		void			addProperty(IProperty* prop);
-		const RenderFx* renderFx() const { return &m_fx; }
+		void			addProperty	(const char* name, IProperty* prop);
+		IProperty*		getProperty (const char* name);
+		const RenderFx* renderFx	() const { return &m_fx; }
 
 	private:
-		RenderFx					m_fx;
-		Properties					m_props;
-		Ptr<Materials::MatShader>	m_matShader;
+		RenderFx				m_fx;
+		Properties				m_props;
 
-		//-- system resources are shared between more than one render pass.
-		Ptr<ITexture>	m_diffuseTex;
-		Ptr<ITexture>	m_bumpTex;
-		float			m_alphaRef;
-		bool			m_doubleSided;
+		RenderStateProperties	m_rsProps;
+		Materials::PropertyMap	m_propsMap;
+		Handle					m_shader;
+		VertexLayoutID			m_vertexDclr;
 	};
 
 
@@ -150,9 +198,9 @@ namespace render
 			bool		m_rts;
 		};
 
-		typedef std::pair<SliderDesc,   NumericProperty<float>*> Slider;
-		typedef std::pair<CheckBoxDesc, NumericProperty<float>*> CheckBox;
-		typedef std::pair<ComboBoxDesc, TextureProperty*>		 ComboBox;
+		typedef std::pair<SliderDesc,   FloatProperty*>    Slider;
+		typedef std::pair<CheckBoxDesc, FloatProperty*>	  CheckBox;
+		typedef std::pair<ComboBoxDesc, TextureProperty*> ComboBox;
 
 		std::vector<Slider>   m_sliders;
 		std::vector<CheckBox> m_checkBoxes;

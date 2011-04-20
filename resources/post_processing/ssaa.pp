@@ -19,9 +19,6 @@
       </property>
 		  </properties>
 		</material>
-		<renderStates>
-			<!-- <state name="depthEnabled" value="true"/> -->
-		</renderStates>
 	</pass>
 	
 	<!-- ... another posteffect's passes put here. -->	

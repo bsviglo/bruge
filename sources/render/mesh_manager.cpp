@@ -72,7 +72,9 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	uint MeshManager::gatherROPs(RenderOps& rops, const mat4f& viewPort, AABB* aabb)
+	uint MeshManager::gatherROPs(
+		RenderSystem::EPassType pass, bool instanced, RenderOps& rops,
+		const mat4f& viewPort, AABB* aabb)
 	{
 		for (uint i = 0; i < m_meshInstances.size(); ++i)
 		{
@@ -96,7 +98,7 @@ namespace render
 			//-- 2. gather render operations.
 			if (inst.m_mesh)
 			{
-				uint count = inst.m_mesh->gatherRenderOps(rops);
+				uint count = inst.m_mesh->gatherROPs(pass, instanced, rops);
 				for (uint i = rops.size() - count; i < rops.size(); ++i)
 				{
 					RenderOp& rop = rops[i];
@@ -105,7 +107,7 @@ namespace render
 			}
 			else if (inst.m_skinnedMesh)
 			{
-				uint count = inst.m_skinnedMesh->gatherRenderOps(rops);
+				uint count = inst.m_skinnedMesh->gatherROPs(pass, instanced, rops);
 				for (uint i = rops.size() - count; i < rops.size(); ++i)
 				{
 					RenderOp& rop = rops[i];

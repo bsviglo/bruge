@@ -45,7 +45,7 @@ namespace render
 		//-- load wire material.
 		{
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/debug_wire.mtl");
-			if (!file || !(m_wireMaterial = rs().materials()->createMaterial(*file)))
+			if (!file || !(m_wireMaterial = rs().materials().createMaterial(*file)))
 			{
 				return false;
 			}
@@ -86,6 +86,13 @@ namespace render
 					ERROR_MSG("Failed to load one of the system models.");
 					return false;
 				}
+			}
+
+			//-- load solid material.
+			RODataPtr file = FileSystem::instance().readFile("resources/materials/debug_solid.mtl");
+			if (!file || !(m_solidMaterial = rs().materials().createMaterial(*file)))
+			{
+				return false;
 			}
 		}
 
@@ -460,8 +467,10 @@ namespace render
 			{
 				if (m_meshCaches[i].size())
 				{
-					m_meshes[i]->gatherRenderOps(rops);
+					//-- ToDo: reconsider.
+					m_meshes[i]->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
 
+					rops.back().m_material		= m_solidMaterial->renderFx();
 					rops.back().m_instanceTB	= m_instancingTB.get();
 					rops.back().m_instanceSize  = sizeof(MeshInstance);
 					rops.back().m_instanceCount = m_meshCaches[i].size();

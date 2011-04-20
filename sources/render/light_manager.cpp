@@ -90,7 +90,7 @@ namespace render
 		{
 			std::vector<Ptr<Material>> mtllib;
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/lights.mtl");
-			if (!file || !rs().materials()->createMaterials(mtllib, *file))
+			if (!file || !rs().materials().createMaterials(mtllib, *file))
 			{
 				return false;
 			}

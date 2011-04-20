@@ -103,9 +103,6 @@
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
       <Filter>render\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\render\IShader.cpp">
-      <Filter>render\core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\game_world.cpp">
       <Filter>render\worlds</Filter>
     </ClCompile>
@@ -174,6 +171,9 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp">
       <Filter>render\framework\shadows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\vertex_declarations.cpp">
+      <Filter>render\framework\materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +291,6 @@
     <ClInclude Include="..\..\sources\render\light_manager.hpp">
       <Filter>render\framework\lights</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\vertex_format.hpp">
-      <Filter>render\framework</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\shadow_manager.hpp">
       <Filter>render\framework\shadows</Filter>
     </ClInclude>
@@ -308,6 +305,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Frustum.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\vertex_format.hpp">
+      <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\vertex_declarations.hpp">
+      <Filter>render\framework\materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -360,7 +360,7 @@ namespace render
 		//-- load material.
 		{
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/gui.mtl");
-			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
+			if (!file || !(m_material = rs().materials().createMaterial(*file)))
 			{
 				return false;
 			}

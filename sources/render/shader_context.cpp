@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "os/FileSystem.h"
 #include "utils/string_utils.h"
+#include "vertex_declarations.hpp"
 
 using namespace brUGE;
 using namespace brUGE::render;
@@ -30,93 +31,25 @@ namespace
 	}
 
 	//----------------------------------------------------------------------------------------------
-	class GlobalProperty : public IProperty
-	{
-	public:
-		GlobalProperty(ShaderContext& sc) : m_sc(sc) { }
-		virtual ~GlobalProperty() { }
-
-		virtual bool apply(IShader& shader) const
-		{
-			m_value.m_screenRes.x = rs().screenRes().width;
-			m_value.m_screenRes.y = rs().screenRes().height;
-			m_value.m_screenRes.z = 1.0f / m_value.m_screenRes.x;
-			m_value.m_screenRes.w = 1.0f / m_value.m_screenRes.y;
-
-			//-- ToDo: reconsider.
-			m_value.m_farNearPlane.x = m_sc.camera()->m_projInfo.nearDist;
-			m_value.m_farNearPlane.y = m_sc.camera()->m_projInfo.farDist;
-			m_value.m_farNearPlane.z = m_value.m_farNearPlane.x + m_value.m_farNearPlane.y;
-			m_value.m_farNearPlane.w = 1.0f / m_value.m_farNearPlane.z;
-
-			return shader.setUniformBlock("cb_auto_Global", &m_value, sizeof(GlobalCB));
-		}
-
-	private:
-		struct GlobalCB
-		{
-			vec4f m_screenRes;
-			vec4f m_farNearPlane;
-		};
-		mutable GlobalCB m_value;
-		ShaderContext&	 m_sc;
-	};
-
-
-	//----------------------------------------------------------------------------------------------
-	class PerFrameProperty : public IProperty
-	{
-	public:
-		PerFrameProperty(ShaderContext& sc) : m_sc(sc) { }
-		virtual ~PerFrameProperty() { }
-
-		virtual bool apply(IShader& shader) const
-		{
-			m_value.m_cameraPos			 = m_sc.camera()->m_invView.applyToOrigin().toVec4();
-			m_value.m_viewMat			 = m_sc.camera()->m_view;
-			m_value.m_invViewProjMat	 = m_sc.camera()->m_invView;
-			m_value.m_viewProjMat		 = m_sc.camera()->m_viewProj;
-			m_value.m_invViewProjMat	 = m_sc.camera()->m_viewProj.getInverted();
-			m_value.m_lastViewProjMat	 = rs().lastViewProjMat();
-			m_value.m_invLastViewProjMat = rs().invLastViewProjMat();
-
-			return shader.setUniformBlock("cb_auto_PerFrame", &m_value, sizeof(PerFrameCB));
-		}
-
-	private:
-		struct PerFrameCB
-		{
-			vec4f m_cameraPos;
-			mat4f m_viewMat;
-			mat4f m_invViewMat;
-			mat4f m_viewProjMat;
-			mat4f m_invViewProjMat;
-			mat4f m_lastViewProjMat;
-			mat4f m_invLastViewProjMat;
-		};
-		mutable PerFrameCB  m_value;
-		ShaderContext&		m_sc;
-	};
-
-
-	//----------------------------------------------------------------------------------------------
 	class PerInstanceProperty : public IProperty
 	{
 	public:
 		PerInstanceProperty(ShaderContext& sc) : m_sc(sc) { }
 		virtual ~PerInstanceProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator() (Handle handle, IShader& shader) const
 		{
-			//-- ToDo:
-			if (!m_sc.renderOp().m_worldMat) return false;
-
 			m_value.m_worldMat = *m_sc.renderOp().m_worldMat;
 			m_value.m_MVPMat   = mult(m_value.m_worldMat, m_sc.camera()->m_viewProj);
 			m_value.m_MVMat	   = mult(m_value.m_worldMat, m_sc.camera()->m_view);
-			m_value.m_alphaRef = m_sc.renderOp().m_material->m_sysProps.m_alphaRef;
+			m_value.m_alphaRef = 0;
 
-			return shader.setUniformBlock("cb_auto_PerInstance", &m_value, sizeof(PerInstanceCB));
+			return shader.setUniformBlock(handle, &m_value, sizeof(PerInstanceCB));
+		}
+
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleUniformBlock(name);
 		}
 
 	private:
@@ -126,6 +59,7 @@ namespace
 			mat4f m_MVPMat;
 			mat4f m_MVMat;
 			float m_alphaRef;
+			float m_padding[3];
 		};
 		mutable PerInstanceCB m_value;
 		ShaderContext&		  m_sc;
@@ -139,12 +73,14 @@ namespace
 		WeightsProperty(ShaderContext& sc) : m_sc(sc) { }
 		virtual ~WeightsProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			//-- ToDo:
-			if (!m_sc.renderOp().m_weightsTB) return false;
+			return shader.setTextureBuffer(handle, m_sc.renderOp().m_weightsTB);
+		}
 
-			return shader.setTextureBuffer("tb_auto_Weights", m_sc.renderOp().m_weightsTB);
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTextureBuffer(name);
 		}
 
 	private:
@@ -164,20 +100,20 @@ namespace
 		}
 		virtual ~MatrixPaletteProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			//-- ToDo:
-			if (!m_sc.renderOp().m_matrixPaletteCount) return false;
-
 			const RenderOp& ro = m_sc.renderOp();
-
 			if (mat4f* mp = m_matrixPaletteTB->map<mat4f>(IBuffer::ACCESS_WRITE_DISCARD))
 			{
 				memcpy(mp, ro.m_matrixPalette, sizeof(mat4f) * ro.m_matrixPaletteCount);
 				m_matrixPaletteTB->unmap();
 			}
+			return shader.setTextureBuffer(handle, m_matrixPaletteTB.get());
+		}
 
-			return shader.setTextureBuffer("tb_auto_MatrixPalette", m_matrixPaletteTB.get());
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTextureBuffer(name);
 		}
 
 	private:
@@ -193,71 +129,23 @@ namespace
 		InstancingProperty(ShaderContext& sc) : m_sc(sc) { }
 		virtual ~InstancingProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			//-- ToDo:
-			if (!m_sc.renderOp().m_instanceCount) return false;
-
 			const RenderOp& ro = m_sc.renderOp();
-
 			if (void* mp = ro.m_instanceTB->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
 			{
 				memcpy(mp, ro.m_instanceData, ro.m_instanceSize * ro.m_instanceCount);
 				ro.m_instanceTB->unmap();
 			}
+			return shader.setTextureBuffer(handle, m_sc.renderOp().m_instanceTB);
+		}
 
-			return shader.setTextureBuffer("tb_auto_Instancing", m_sc.renderOp().m_instanceTB);
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTextureBuffer(name);
 		}
 
 	private:
-		ShaderContext& m_sc;
-	};
-
-
-	//----------------------------------------------------------------------------------------------
-	class TextureAutoProperty : public IProperty
-	{
-	public:
-		TextureAutoProperty(ShaderContext& sc, const char* name, bool isDiffuse)
-			:	m_sc(sc), m_isDiffuse(isDiffuse)
-		{
-			m_textureName = utils::makeStr("t_auto_%s_tex", name);
-			m_samplerName = utils::makeStr("t_auto_%s_sml", name);
-
-			SamplerStateDesc sDesc;
-			sDesc.minMagFilter	= SamplerStateDesc::FILTER_TRILINEAR_ANISO;
-			sDesc.wrapS		 	= SamplerStateDesc::ADRESS_MODE_WRAP;
-			sDesc.wrapT		 	= SamplerStateDesc::ADRESS_MODE_WRAP;
-			sDesc.wrapR			= SamplerStateDesc::ADRESS_MODE_WRAP;
-			sDesc.maxAnisotropy = 16;
-			m_samplerID			= render::rd()->createSamplerState(sDesc);
-		}
-
-		virtual ~TextureAutoProperty() { }
-
-		virtual bool apply(IShader& shader) const
-		{
-			ITexture* texture = nullptr;
-
-			if (m_isDiffuse)	texture =  m_sc.renderOp().m_material->m_sysProps.m_diffuseMap;
-			else				texture =  m_sc.renderOp().m_material->m_sysProps.m_bumpMap;
-
-			//-- ToDo:
-			if (!texture) return false;
-
-			bool result = true;
-
-			result &= shader.setTexture(m_textureName.c_str(), texture);
-			result &= shader.setSampler(m_samplerName.c_str(), m_samplerID);
-
-			return result;
-		}
-
-	private:
-		bool		   m_isDiffuse;
-		std::string	   m_textureName;
-		std::string	   m_samplerName;
-		SamplerStateID m_samplerID;
 		ShaderContext& m_sc;
 	};
 
@@ -278,14 +166,14 @@ namespace
 
 		virtual ~DepthMapAutoProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			bool result = true;
+			return shader.setTexture(handle, rs().depthTexture(), m_samplerID);
+		}
 
-			result &= shader.setTexture("t_auto_depthMap_tex", rs().depthTexture());
-			result &= shader.setSampler("t_auto_depthMap_sml", m_samplerID);
-
-			return result;
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTexture(name);
 		}
 
 	private:
@@ -310,14 +198,14 @@ namespace
 
 		virtual ~DecalsMaskAutoProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			bool result = true;
+			return shader.setTexture(handle, rs().decalsMask(), m_samplerID);
+		}
 
-			result &= shader.setTexture("t_auto_decalsMask_tex", rs().decalsMask());
-			result &= shader.setSampler("t_auto_decalsMask_sml", m_samplerID);
-
-			return result;
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTexture(name);
 		}
 
 	private:
@@ -342,14 +230,14 @@ namespace
 
 		virtual ~LightsMaskAutoProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			bool result = true;
+			return shader.setTexture(handle, rs().lightsMask(), m_samplerID);
+		}
 
-			result &= shader.setTexture("t_auto_lightsMask_tex", rs().lightsMask());
-			result &= shader.setSampler("t_auto_lightsMask_sml", m_samplerID);
-
-			return result;
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTexture(name);
 		}
 
 	private:
@@ -374,14 +262,14 @@ namespace
 
 		virtual ~ShadowsMaskAutoProperty() { }
 
-		virtual bool apply(IShader& shader) const
+		virtual bool operator () (Handle handle, IShader& shader) const
 		{
-			bool result = true;
+			return shader.setTexture(handle, rs().shadowsMask(), m_samplerID);
+		}
 
-			result &= shader.setTexture("t_auto_shadowsMask_tex", rs().shadowsMask());
-			result &= shader.setSampler("t_auto_shadowsMask_sml", m_samplerID);
-
-			return result;
+		virtual Handle handle(const char* name, const IShader& shader) const
+		{
+			return shader.getHandleTexture(name);
 		}
 
 	private:
@@ -419,19 +307,69 @@ namespace render
 		m_shaderIncludes.reset(new ShaderIncludeImpl("resources/shaders/"));
 		rd()->setShaderIncludes(m_shaderIncludes.get());
 
+		m_vertexDeclarations.reset(new VertexDeclarations);
+		if (!m_vertexDeclarations->init())
+			return false;
+
 		//-- register auto-constants.
-		m_autoProperties["cb_auto_Global"]			= new GlobalProperty(*this);
-		m_autoProperties["cb_auto_PerFrame"]		= new PerFrameProperty(*this);
 		m_autoProperties["cb_auto_PerInstance"]		= new PerInstanceProperty(*this);
 		m_autoProperties["tb_auto_Weights"]			= new WeightsProperty(*this);
 		m_autoProperties["tb_auto_MatrixPalette"]	= new MatrixPaletteProperty(*this);
 		m_autoProperties["tb_auto_Instancing"]		= new InstancingProperty(*this);
-		m_autoProperties["t_auto_diffuseMap"]		= new TextureAutoProperty(*this, "diffuseMap", true);
-		m_autoProperties["t_auto_bumpMap"]			= new TextureAutoProperty(*this, "bumpMap", false);
 		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
 		m_autoProperties["t_auto_decalsMask"]		= new DecalsMaskAutoProperty(*this);
 		m_autoProperties["t_auto_lightsMask"]		= new LightsMaskAutoProperty(*this);
 		m_autoProperties["t_auto_shadowsMask"]		= new ShadowsMaskAutoProperty(*this);
+
+		//-- init shader uniform buffers.
+		m_perframeCB = rd()->createBuffer(
+			IBuffer::TYPE_UNIFORM, nullptr, 1, sizeof(PerFrameConstants),
+			IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+			);
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool ShaderContext::updateGlobalConstants()
+	{
+		//-- ToDo:
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool ShaderContext::updatePerFrameViewConstants()
+	{
+		m_perframeConstants.m_screenRes.x		 = rs().screenRes().width;
+		m_perframeConstants.m_screenRes.y		 = rs().screenRes().height;
+		m_perframeConstants.m_screenRes.z		 = 1.0f / rs().screenRes().width;
+		m_perframeConstants.m_screenRes.w		 = 1.0f / rs().screenRes().height;
+
+		m_perframeConstants.m_farNearPlane.x	 = m_camera->m_projInfo.nearDist;
+		m_perframeConstants.m_farNearPlane.y	 = m_camera->m_projInfo.farDist;
+		m_perframeConstants.m_farNearPlane.z	 = m_camera->m_projInfo.nearDist + m_camera->m_projInfo.farDist;
+		m_perframeConstants.m_farNearPlane.w	 = 1.0f / m_perframeConstants.m_farNearPlane.z;
+
+		m_perframeConstants.m_cameraPos			 = m_camera->m_invView.applyToOrigin().toVec4();
+		m_perframeConstants.m_viewMat			 = m_camera->m_view;
+		m_perframeConstants.m_invViewMat		 = m_camera->m_invView;
+
+		m_perframeConstants.m_projMat			 = m_camera->m_proj;
+		m_perframeConstants.m_invProjMat		 = m_camera->m_proj.getInverted();
+
+		m_perframeConstants.m_viewProjMat		 = m_camera->m_viewProj;
+		m_perframeConstants.m_invViewProjMat	 = m_camera->m_viewProj.getInverted();
+
+		m_perframeConstants.m_lastViewProjMat	 = rs().lastViewProjMat();
+		m_perframeConstants.m_invLastViewProjMat = rs().invLastViewProjMat();
+
+		//-- update shader per-frame auto-constants.
+		PerFrameConstants* p = m_perframeCB->map<PerFrameConstants>(IBuffer::ACCESS_WRITE_DISCARD);
+		if (p)
+		{
+			*p = m_perframeConstants;
+			m_perframeCB->unmap();
+		}
 
 		return true;
 	}
@@ -471,13 +409,26 @@ namespace render
 			);
 		if (shader)	
 		{
-			//-- ToDo: find auto properties. For now we set the all auto properties to the shader
-			//--       but only needed will be applied.
+			//-- find auto properties.
 			Properties props;
-
-			for (auto iter = m_autoProperties.begin(); iter != m_autoProperties.end(); ++iter)
 			{
-				props.push_back(iter->second);
+				//-- ToDo: reconsider.
+				//-- retrive per-frame properties.
+				Handle handle = shader->getHandleUniformBlock("cb_auto_PerFrame");
+				if (handle != CONST_INVALID_HANDLE)
+				{
+					shader->changeUniformBuffer(handle, m_perframeCB);
+				}
+
+				//-- find another auto-properties.
+				for (auto iter = m_autoProperties.begin(); iter != m_autoProperties.end(); ++iter)
+				{
+					Handle handle = iter->second->handle(iter->first.c_str(), *shader.get());
+					if (handle != CONST_INVALID_HANDLE)
+					{
+						props.push_back(PropertyPair(handle, iter->second));
+					}
+				}
 			}
 
 			//-- add to shader cache.
@@ -513,90 +464,22 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	VertexLayoutID ShaderContext::getVertexLayout(Handle shaderID, const std::string& desc)
+	VertexLayoutID ShaderContext::getVertexLayout(const char* name, Handle shaderID)
 	{
-		IShader* shader = NULL;
 		if (shaderID == CONST_INVALID_HANDLE)
 		{
 			return CONST_INVALID_HANDLE;
 		}
 		else
 		{
-			shader = m_shaderCache[shaderID].first.get();
+			return m_vertexDeclarations->get(name, *m_shaderCache[shaderID].first.get());
 		}
-
-		if		(desc == "xyzc")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
-				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 4}
-			};
-			return rd()->createVertexLayout(desc, 2, *shader);
-		}
-		else if (desc == "xyzn")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
-				{ 0, TYPE_NORMAL,	FORMAT_FLOAT, 3}
-			};
-			return rd()->createVertexLayout(desc, 2, *shader);
-		}
-		else if (desc == "xyzuv")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
-				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 2}
-			};
-			return rd()->createVertexLayout(desc, 2, *shader);
-		}
-		else if (desc == "xyzuvn")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION,	FORMAT_FLOAT, 3},
-				{ 0, TYPE_TEXCOORD, FORMAT_FLOAT, 2},
-				{ 0, TYPE_NORMAL,   FORMAT_FLOAT, 3}
-			};
-			return rd()->createVertexLayout(desc, 3, *shader);
-		}
-		else if (desc == "xyzuvntb")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_POSITION,	 FORMAT_FLOAT, 3},
-				{ 0, TYPE_TEXCOORD,  FORMAT_FLOAT, 2},
-				{ 0, TYPE_NORMAL,    FORMAT_FLOAT, 3},
-				{ 1, TYPE_TANGENT,   FORMAT_FLOAT, 3},
-				{ 1, TYPE_BINORMAL,  FORMAT_FLOAT, 3}
-			};
-			return rd()->createVertexLayout(desc, 5, *shader);
-		}
-		else if (desc == "nuv2ui")
-		{
-			VertexDesc desc[] = 
-			{
-				{ 0, TYPE_NORMAL,	 FORMAT_FLOAT, 3},
-				{ 0, TYPE_TEXCOORD0, FORMAT_FLOAT, 2},
-				{ 0, TYPE_TEXCOORD1, FORMAT_UINT,  1},
-				{ 0, TYPE_TEXCOORD2, FORMAT_UINT,  1}
-			};
-			return rd()->createVertexLayout(desc, 4, *shader);
-		}
-		else
-		{
-			assert(0 && "not implemented yet.");
-		}
-
-		return CONST_INVALID_HANDLE;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	IShader* ShaderContext::shader(Handle handle)
 	{
-		assert(handle != CONST_INVALID_HANDLE && handle < static_cast<int>(m_shaderCache.size()));
+		assert(handle != CONST_INVALID_HANDLE);
 
 		ShaderPair& sPair = m_shaderCache[handle];
 		return sPair.first.get();
@@ -611,7 +494,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void ShaderContext::applyFor(RenderOp* op, EShaderRenderPassType pass)
+	void ShaderContext::applyFor(RenderOp* op)
 	{
 		m_renderOp = op;
 
@@ -620,33 +503,24 @@ namespace render
 		const RenderFx&	fx = *op->m_material;
 
 		assert(fx.m_shader);
-
-		Handle shaderID = CONST_INVALID_HANDLE;
-
-		if (fx.m_shader->m_isMultipass)
-		{
-			shaderID = fx.m_shader->m_shader[pass].first;
-		}
-		else
-		{
-			shaderID = fx.m_shader->m_shader[0].first;
-		}
-
-		assert(shaderID != CONST_INVALID_HANDLE);
 				
-		ShaderPair&		sp     = m_shaderCache[shaderID];
-		IShader*		shader = sp.first.get();
+		ShaderPair&	sp     = m_shaderCache[fx.m_shader];
+		IShader*	shader = sp.first.get();
+
+		assert(shader);
 
 		//-- apply auto-properties predefined for this type of shader.
 		for (auto i = sp.second.begin(); i != sp.second.end(); ++i)
 		{
-			(*i)->apply(*shader);
+			PropertyPair& pp = *i;
+			(*pp.second)(pp.first, *shader);
 		}
 
 		//-- apply user-configurable properties.
 		for (uint i = 0; i != fx.m_propsCount; ++i)
 		{
-			fx.m_props[i]->apply(*shader);
+			PropertyPair& pp = fx.m_props[i];
+			(*pp.second)(pp.first, *shader);
 		}
 
 		rd()->setShader(shader);
@@ -702,26 +576,6 @@ namespace render
 		}
 
 		return false;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	TextureProperty::TextureProperty(
-		const std::string& name, const Ptr<ITexture>& texture, SamplerStateID state)
-		:	m_texture(texture), m_stateS(state)
-	{
-		m_textureName = utils::makeStr("%s_tex", name.c_str());
-		m_samplerName = utils::makeStr("%s_sml", name.c_str());
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool TextureProperty::apply(IShader& shader) const
-	{
-		bool result = true;
-
-		result &= shader.setTexture(m_textureName.c_str(), m_texture.get());
-		result &= shader.setSampler(m_samplerName.c_str(), m_stateS);
-
-		return result;
 	}
 
 } //-- render

@@ -288,7 +288,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	uint Mesh::gatherRenderOps(RenderOps& ops) const
+	uint Mesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 
@@ -301,7 +301,7 @@ namespace render
 			op.m_mainVB			= &*sm.mainVB;
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material->renderFx();
+			op.m_material		= sm.material->renderFx(rs().shaderPass(pass), instanced);
 
 			ops.push_back(op);
 		}
@@ -358,7 +358,7 @@ namespace render
 */
 	
 	//----------------------------------------------------------------------------------------------
-	uint SkinnedMesh::gatherRenderOps(RenderOps& ops) const
+	uint SkinnedMesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 
@@ -372,7 +372,7 @@ namespace render
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_weightsTB		= &*sm.weightsTB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material->renderFx();
+			op.m_material		= sm.material->renderFx(rs().shaderPass(pass), instanced);
 
 			ops.push_back(op);
 		}

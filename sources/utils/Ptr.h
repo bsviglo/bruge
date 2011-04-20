@@ -121,7 +121,7 @@ namespace utils
 		
 		// perform type conversion at down inheritance hierarchy with checking of validity.
 		template <class Y>
-		inline Ptr<Y> castDown() const;
+		inline Ptr<Y> downCast() const;
 		
 		// perform implicit conversion.
 		template <class Y>
@@ -160,7 +160,7 @@ namespace utils
 	};
 
 	template<class T>
-	template<class Y> Ptr<Y> Ptr<T>::castDown() const
+	template<class Y> Ptr<Y> Ptr<T>::downCast() const
 	{
 		return Ptr<Y>(dynamic_cast<Y*>(m_object));
 	}

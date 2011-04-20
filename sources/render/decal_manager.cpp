@@ -62,18 +62,18 @@ namespace render
 
 			SamplerStateID stateS = rd()->createSamplerState(sDesc);
 
-			prop.reset(new TextureProperty("diffuse", tex, stateS));
+			prop.reset(new TextureProperty(tex, stateS));
 		}
 
 		//-- load decals material.
 		{
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/decals.mtl");
-			if (!file || !(m_material = rs().materials()->createMaterial(*file)))
+			if (!file || !(m_material = rs().materials().createMaterial(*file)))
 			{
 				return false;
 			}
 
-			m_material->addProperty(prop.release());
+			m_material->addProperty("diffuse", prop.release());
 		}
 
 		//-- load standard system unit cube mesh.
@@ -88,7 +88,8 @@ namespace render
 			
 			//-- create rops for drawing.
 			RenderOps rops;
-			m_unitCube->gatherRenderOps(rops);
+			//-- ToDo: reconsider.
+			m_unitCube->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
 			{
 				RenderOp& op  = rops[0];
 

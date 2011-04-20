@@ -15,6 +15,7 @@
     <None Include="..\materials\debug_solid.mtl" />
     <None Include="..\materials\debug_wire.mtl" />
     <None Include="..\materials\decals.mtl" />
+    <None Include="..\materials\empty.mtl" />
     <None Include="..\materials\exp_barrel.mtl">
       <SubType>Designer</SubType>
     </None>
@@ -23,12 +24,16 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="..\materials\metalbox1.mtl" />
-    <None Include="..\materials\palm.mtl" />
+    <None Include="..\materials\palm.mtl">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\materials\plane.mtl" />
     <None Include="..\materials\player.mtl" />
     <None Include="..\materials\pole.mtl" />
     <None Include="..\materials\p_barrel.mtl" />
-    <None Include="..\materials\shadows.mtl" />
+    <None Include="..\materials\shadows.mtl">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\materials\ssaa.mtl">
       <SubType>Designer</SubType>
     </None>
@@ -43,6 +48,10 @@
     <None Include="..\system\materials.xml">
       <SubType>Designer</SubType>
     </None>
+    <None Include="..\system\post_processing.xml" />
+    <None Include="..\system\vertex_formats.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ambient.hlsl" />
     <None Include="depth_based_blur.hlsl" />
     <None Include="cast_shadows.hlsl" />
@@ -52,6 +61,7 @@
     <None Include="debug_wire.hlsl" />
     <None Include="decals.hlsl" />
     <None Include="diffuse.hlsl" />
+    <None Include="empty.hlsl" />
     <None Include="skinned_diffuse.hlsl" />
     <None Include="dir_lights_resolve.hlsl" />
     <None Include="dlaa.hlsl" />

@@ -12,6 +12,7 @@
 #include "light_manager.hpp"
 #include "mesh_manager.hpp"
 #include "shadow_manager.hpp"
+#include "post_processing.hpp"
 
 using namespace brUGE;
 using namespace brUGE::utils;
@@ -29,9 +30,10 @@ namespace render
 			m_imguiRender(new imguiRender),
 			m_lightsManager(new LightsManager),
 			m_meshManager(new MeshManager),
-			m_shadowManager(new ShadowManager)
+			m_shadowManager(new ShadowManager),
+			m_postProcessing(new PostProcessing)
 	{
-		m_renderOps.reserve(2000);
+
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -49,6 +51,9 @@ namespace render
 		success &= m_imguiRender->init();
 		success &= m_lightsManager->init();
 		success &= m_meshManager->init();
+		
+		//-- ToDo: for now shadow manager initialization depends of post-processing framework. Fix this.
+		success &= m_postProcessing->init();
 		success &= m_shadowManager->init();
 		return success;
 	}
@@ -60,7 +65,7 @@ namespace render
 		m_lightsManager->update(dt);
 		m_decalManager->update(dt);
 		m_shadowManager->update(dt);
-		RenderSystem::instance().postProcessing()->update(dt);
+		m_postProcessing->update(dt);
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -72,24 +77,27 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void RenderWorld::draw()
 	{
-		//-- 1. resolve visibility
-		{
-			SCOPED_TIME_MEASURER_EX("resolve visibility")
-
-			m_meshManager->gatherROPs(m_renderOps, m_camera->renderCam().m_viewProj);
-		}
-		
-		//-- 2. z-only pass.
+		//-- 1. z-only pass.
 		{
 			SCOPED_TIME_MEASURER_EX("z-pass")
+
+			//-- gather all ROPs.
+			RenderOps ops;
+			{
+				SCOPED_TIME_MEASURER_EX("resolve visibility")
+				m_meshManager->gatherROPs(
+				RenderSystem::PASS_Z_ONLY, false, ops, m_camera->renderCam().m_viewProj
+				);
+			}
 			
 			rs().beginPass(RenderSystem::PASS_Z_ONLY);
 			rs().setCamera(&m_camera->renderCam());
-			rs().addROPs(m_renderOps);
+			rs().shaderContext().updatePerFrameViewConstants();
+			rs().addROPs(ops);
 			rs().endPass();
 		}
 
-		//-- 3. decal manager.
+		//-- 2. decal manager.
 		{
 			SCOPED_TIME_MEASURER_EX("decal-pass")
 
@@ -98,11 +106,12 @@ namespace render
 
 			rs().beginPass(RenderSystem::PASS_DECAL);
 			rs().setCamera(&m_camera->renderCam());
+			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
 			rs().endPass();
 		}
 
-		//-- 4. light pass
+		//-- 3. light pass
 		{
 			SCOPED_TIME_MEASURER_EX("light-pass")
 
@@ -111,45 +120,59 @@ namespace render
 
 			rs().beginPass(RenderSystem::PASS_LIGHT);
 			rs().setCamera(&m_camera->renderCam());
+			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
 			rs().endPass();
 		}
 
-		//-- 5. cast shadows
+		//-- 4. cast shadows
 		{
 			SCOPED_TIME_MEASURER_EX("cast shadows")
 
 			m_shadowManager->castShadows(m_camera->renderCam(), *m_lightsManager.get(), *m_meshManager.get());
 		}
 
-		//-- 6. resolve shadows.
+		//-- 5. resolve shadows.
 		{
 			SCOPED_TIME_MEASURER_EX("resolve shadows")
+
 
 			m_shadowManager->receiveShadows(&m_camera->renderCam());
 		}
 		
-		//-- 5. main pass.
+		//-- 6. main pass.
 		{
 			SCOPED_TIME_MEASURER_EX("main-pass")
 
+			//-- gather all ROPs.
+			RenderOps ops;
+			{
+				SCOPED_TIME_MEASURER_EX("resolve visibility")
+					m_meshManager->gatherROPs(
+					RenderSystem::PASS_MAIN_COLOR, false, ops, m_camera->renderCam().m_viewProj
+					);
+			}
+
 			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);
 			rs().setCamera(&m_camera->renderCam());
-			rs().addROPs(m_renderOps);
+			rs().shaderContext().updatePerFrameViewConstants();
+			rs().addROPs(ops);
 			rs().endPass();
 		}
 
-		//-- 6. draw post-processing.
+		//-- 7. draw post-processing.
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
 
 			rs().beginPass(RenderSystem::PASS_POST_PROCESSING);
 			rs().addROPs(RenderOps());
-			rs().postProcessing()->draw();
+			rs().setCamera(&m_camera->renderCam());
+			rs().shaderContext().updatePerFrameViewConstants();
+			m_postProcessing->draw();
 			rs().endPass();
 		}
 
-		//-- 7. update debug drawer.
+		//-- 8. update debug drawer.
 		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
 		//-- ToDo: reconsider.
 		{
@@ -158,14 +181,12 @@ namespace render
 			m_debugDrawer->draw();
 		}
 
-		//-- 8. draw imgui.
+		//-- 9. draw imgui.
 		{
 			SCOPED_TIME_MEASURER_EX("imgui")
 
 			m_imguiRender->draw();
 		}
-
-		m_renderOps.clear();
 	}
 
 } //-- render

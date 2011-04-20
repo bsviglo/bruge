@@ -42,17 +42,17 @@ namespace render
 		{
 			SubMesh() : indicesCount(0), primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST) { }
 
-			uint16				 indicesCount;
-			std::vector<Face>	 faces;
-			std::vector<Vertex>	 vertices;
-			std::vector<Tangent> tangents;
+			uint16				  indicesCount;
+			std::vector<Face>	  faces;
+			std::vector<Vertex>	  vertices;
+			std::vector<Tangent>  tangents;
 
 			//-- gpu hardware buffers. 
-			EPrimitiveTopology	 primTopolpgy;
-			Ptr<IBuffer>		 mainVB;
-			Ptr<IBuffer>		 tangentVB;
-			Ptr<IBuffer>		 IB;
-			Ptr<Material>		 material;
+			EPrimitiveTopology	  primTopolpgy;
+			Ptr<IBuffer>		  mainVB;
+			Ptr<IBuffer>		  tangentVB;
+			Ptr<IBuffer>		  IB;
+			Ptr<PipelineMaterial> material;
 
 			bool buildBuffers(bool useNVTriStipOptimization = false);
 			void buildTangents();
@@ -67,7 +67,7 @@ namespace render
 		void		attach(SubMesh* submesh) { m_submeshes.push_back(submesh); }
 		bool		build();
 		const AABB& bounds() const { return m_aabb; }
-		uint		gatherRenderOps(RenderOps& ops) const;
+		uint		gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
 		SubMeshes m_submeshes;
@@ -163,19 +163,19 @@ namespace render
 		{
 			SubMesh() : indicesCount(0), primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST) { }
 		
-			uint16				 indicesCount;
-			std::vector<Face>	 faces;
-			std::vector<Vertex>	 vertices;
-			std::vector<Tangent> tangents;
-			std::vector<Weight>	 weights;
+			uint16				  indicesCount;
+			std::vector<Face>	  faces;
+			std::vector<Vertex>	  vertices;
+			std::vector<Tangent>  tangents;
+			std::vector<Weight>	  weights;
 
 			//-- gpu hardware buffers.
-			EPrimitiveTopology	 primTopolpgy;
-			Ptr<IBuffer>		 mainVB;
-			Ptr<IBuffer>		 tangentVB;
-			Ptr<IBuffer>		 IB;
-			Ptr<IBuffer>		 weightsTB;
-			Ptr<Material>		 material;
+			EPrimitiveTopology	  primTopolpgy;
+			Ptr<IBuffer>		  mainVB;
+			Ptr<IBuffer>		  tangentVB;
+			Ptr<IBuffer>		  IB;
+			Ptr<IBuffer>		  weightsTB;
+			Ptr<PipelineMaterial> material;
 
 			bool buildBuffers  ();
 			void buildTangents (const Positions& positions);
@@ -192,7 +192,7 @@ namespace render
 		bool		  build();
 		const AABB&   bounds() const	 { return m_originAABB; }
 		const Joints& skeleton() const   { return m_joints; }
-		uint		  gatherRenderOps(RenderOps& ops) const;
+		uint		  gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
 		bool loadJoints (const utils::ROData& data);
