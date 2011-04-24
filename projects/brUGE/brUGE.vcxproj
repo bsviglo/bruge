@@ -225,6 +225,7 @@
     <ClCompile Include="..\..\sources\render\animation_engine.cpp" />
     <ClCompile Include="..\..\sources\render\shader_context.cpp" />
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp" />
+    <ClCompile Include="..\..\sources\render\SkyBox.cpp" />
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
     <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -280,6 +281,7 @@
     <ClInclude Include="..\..\sources\render\render_common.h" />
     <ClInclude Include="..\..\sources\render\shader_context.hpp" />
     <ClInclude Include="..\..\sources\render\shadow_manager.hpp" />
+    <ClInclude Include="..\..\sources\render\SkyBox.hpp" />
     <ClInclude Include="..\..\sources\render\state_objects.h" />
     <ClInclude Include="..\..\sources\render\game_world.hpp" />
     <ClInclude Include="..\..\sources\render\physic_world.hpp" />

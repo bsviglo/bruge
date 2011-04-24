@@ -13,6 +13,7 @@
 #include "mesh_manager.hpp"
 #include "shadow_manager.hpp"
 #include "post_processing.hpp"
+#include "SkyBox.hpp"
 
 using namespace brUGE;
 using namespace brUGE::utils;
@@ -31,7 +32,8 @@ namespace render
 			m_lightsManager(new LightsManager),
 			m_meshManager(new MeshManager),
 			m_shadowManager(new ShadowManager),
-			m_postProcessing(new PostProcessing)
+			m_postProcessing(new PostProcessing),
+			m_skyBox(new SkyBox)
 	{
 
 	}
@@ -51,6 +53,7 @@ namespace render
 		success &= m_imguiRender->init();
 		success &= m_lightsManager->init();
 		success &= m_meshManager->init();
+		success &= m_skyBox->init();
 		
 		//-- ToDo: for now shadow manager initialization depends of post-processing framework. Fix this.
 		success &= m_postProcessing->init();
@@ -160,7 +163,20 @@ namespace render
 			rs().endPass();
 		}
 
-		//-- 7. draw post-processing.
+		//-- 7. sky
+		{
+			SCOPED_TIME_MEASURER_EX("sky")
+			
+			RenderOps ops;
+			m_skyBox->gatherROPs(ops);
+			rs().beginPass(RenderSystem::PASS_SKY);
+			rs().setCamera(&m_camera->renderCam());
+			rs().shaderContext().updatePerFrameViewConstants();
+			rs().addROPs(ops);
+			rs().endPass();
+		}
+
+		//-- 8. draw post-processing.
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
 
@@ -172,7 +188,7 @@ namespace render
 			rs().endPass();
 		}
 
-		//-- 8. update debug drawer.
+		//-- 9. update debug drawer.
 		//-- Note: It implicitly activate passes PASS_DEBUG_WIRE and PASS_DEBUG_SOLID.
 		//-- ToDo: reconsider.
 		{
@@ -181,7 +197,7 @@ namespace render
 			m_debugDrawer->draw();
 		}
 
-		//-- 9. draw imgui.
+		//-- 10. draw imgui.
 		{
 			SCOPED_TIME_MEASURER_EX("imgui")
 

@@ -459,7 +459,7 @@ namespace render
 					//-- 3. ... raise error if we failed to load texture.
 					if (!tex)
 					{
-						ERROR_MSG("Can't load texture %s or find render target.", texName);
+						ERROR_MSG("Can't load texture <%s> or find render target.", texName);
 						return false;
 					}
 				}

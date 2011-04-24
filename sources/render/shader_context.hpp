@@ -236,6 +236,7 @@ namespace render
 			mat4f m_invViewProjMat;
 			mat4f m_lastViewProjMat;
 			mat4f m_invLastViewProjMat;
+			mat4f m_envTransform;
 		};
 
 		Ptr<IBuffer>		m_globalCB;

@@ -59,6 +59,9 @@
     <Filter Include="render\framework\meshes">
       <UniqueIdentifier>{f67e80ad-a707-45f6-83c6-41674961c8a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\sky">
+      <UniqueIdentifier>{2d814f5d-051e-425c-b964-ba38c8012b33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -174,6 +177,9 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp">
       <Filter>render\framework\materials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\SkyBox.cpp">
+      <Filter>render\framework\sky</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -311,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\vertex_declarations.hpp">
       <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\SkyBox.hpp">
+      <Filter>render\framework\sky</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

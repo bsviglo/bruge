@@ -52,7 +52,8 @@ namespace render
 			Ptr<IBuffer>		  mainVB;
 			Ptr<IBuffer>		  tangentVB;
 			Ptr<IBuffer>		  IB;
-			Ptr<PipelineMaterial> material;
+			Ptr<PipelineMaterial> pMaterial;
+			Ptr<Material>		  sMaterial;
 
 			bool buildBuffers(bool useNVTriStipOptimization = false);
 			void buildTangents();

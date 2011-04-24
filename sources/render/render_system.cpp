@@ -33,6 +33,7 @@ namespace
 		ShaderContext::PASS_MAIN_COLOR,
 		ShaderContext::PASS_UNDEFINED,
 		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_UNDEFINED,
 		ShaderContext::PASS_UNDEFINED
 	};
 
@@ -363,6 +364,25 @@ namespace render
 			pass.m_stateB = m_device->createBlendState(bDesc);
 		}
 
+		//-- PASS_SKY
+		{
+			PassDesc& pass = m_passes[PASS_SKY];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
 		//-- 7. PASS_DEBUG_WIRE
 		{
 			PassDesc& pass = m_passes[PASS_DEBUG_WIRE];
@@ -515,6 +535,17 @@ namespace render
 			{
 				m_device->backToMainFrameBuffer();
 				m_device->clear(CLEAR_COLOR, Color(0.5f,0.5f,0.5f,1), 0.0f, 0);
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
+				break;
+			}
+		case PASS_SKY:
+			{
+				m_device->backToMainFrameBuffer();
 
 				m_device->setRasterizerState(pass.m_stateR);
 				m_device->setDepthStencilState(pass.m_stateDS, 0);

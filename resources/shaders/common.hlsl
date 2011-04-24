@@ -40,6 +40,7 @@ cbuffer cb_auto_PerFrame
 	float4x4 g_invViewProjMat;
 	float4x4 g_lastViewProjMat;
 	float4x4 g_invLastViewProjMat;
+	float4x4 g_envTransform;
 };
 
 //-- per instance auto variables.

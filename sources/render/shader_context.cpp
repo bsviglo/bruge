@@ -362,6 +362,12 @@ namespace render
 
 		m_perframeConstants.m_lastViewProjMat	 = rs().lastViewProjMat();
 		m_perframeConstants.m_invLastViewProjMat = rs().invLastViewProjMat();
+	
+		//-- calculate environment transform by removing camera position from the transformation.
+		{
+			m_perframeConstants.m_envTransform = m_camera->m_viewProj;
+			m_perframeConstants.m_envTransform.preTranslation(m_camera->m_invView.applyToOrigin());
+		}
 
 		//-- update shader per-frame auto-constants.
 		PerFrameConstants* p = m_perframeCB->map<PerFrameConstants>(IBuffer::ACCESS_WRITE_DISCARD);

@@ -210,7 +210,8 @@ namespace render
 		//-- 5. create a new uniform buffer.
 		{
 			Ptr<IBuffer> buffer = m_device.createBuffer(IBuffer::TYPE_UNIFORM, NULL, 1, size,
-				IBuffer::USAGE_DEFAULT, IBuffer::CPU_ACCESS_NONE
+				//IBuffer::USAGE_DEFAULT, IBuffer::CPU_ACCESS_NONE
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 				);
 
 			ubuffer.m_buffer = buffer.downCast<DXBuffer>();
@@ -423,11 +424,17 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void DXShader::updateRes()
 	{
-		for (auto i = m_ubuffers.begin(); i < m_ubuffers.end(); ++i)
+		for (auto i = m_ubuffers.begin(); i != m_ubuffers.end(); ++i)
 		{
 			if (i->m_isDirty)
 			{
-				dxDevice()->UpdateSubresource(i->m_buffer->getBuffer(), 0, NULL, &i->m_data[0], 0, 0);
+				void* data = i->m_buffer->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
+				if (data)
+				{
+					memcpy(data, &i->m_data[0], i->m_size);
+					i->m_buffer->unmap();
+				}
+				//dxDevice()->UpdateSubresource(i->m_buffer->getBuffer(), 0, NULL, &i->m_data[0], 0, 0);
 				i->m_isDirty = false;
 			}
 		}

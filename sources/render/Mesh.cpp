@@ -301,7 +301,15 @@ namespace render
 			op.m_mainVB			= &*sm.mainVB;
 			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material->renderFx(rs().shaderPass(pass), instanced);
+
+			if (sm.pMaterial)
+			{
+				op.m_material = sm.pMaterial->renderFx(rs().shaderPass(pass), instanced);
+			}
+			else
+			{
+				op.m_material = sm.sMaterial->renderFx();
+			}
 
 			ops.push_back(op);
 		}
