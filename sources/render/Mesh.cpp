@@ -19,6 +19,9 @@ using namespace brUGE::utils;
 namespace
 {
 
+	//-- ToDo: reconsider.
+	uint g_instancingCounter = 0;
+
 	//----------------------------------------------------------------------------------------------
 	void buildTangentBasic(
 		const vec3f& pos1, const vec3f& pos2, const vec3f& pos3,
@@ -138,7 +141,7 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	Mesh::Mesh()
+	Mesh::Mesh() : m_instacingID(g_instancingCounter++)
 	{
 
 	}

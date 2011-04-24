@@ -28,9 +28,9 @@ namespace
 	}
 
 	//----------------------------------------------------------------------------------------------
-	uint random(uint maxValue)
+	int random(int maxValue)
 	{
-		return uint((rand() / float(RAND_MAX + 1)) * maxValue);
+		return int((rand() / float(RAND_MAX + 1)) * maxValue);
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -110,39 +110,39 @@ bool Demo::init()
 		}
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(0.0f, 0.0f, 20.0f);
-	for (uint i = 0; i < 6; ++i)
+	for (uint i = 0; i < 100; ++i)
 	{
-		mat.postTranslation(-5, 0, 1);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/palm.xml", &mat);
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(5.0f, 0.0f, 5.0f);
-	for (uint i = 0; i < 3; ++i)
+	for (uint i = 0; i < 100; ++i)
 	{
-		mat.postTranslation(+5, 0, 0);
-		for (uint j = 0; j < 3; ++j)
-		{
-			mat.postTranslation(0, 0, +5);
-			gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
-		}
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
+		gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(0.0f, 0.0f, -20.0f);
-	for (uint i = 0; i < 5; ++i)
+	for (uint i = 0; i < 100; ++i)
 	{
-		mat.postTranslation(-5, 0, 0);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/pole.xml", &mat);
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(10.0f, 0.0f, 0.0f);
-	for (uint i = 0; i < 15; ++i)
+	for (uint i = 0; i < 100; ++i)
 	{
-		mat.postTranslation(-1, 0, 3);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/woodGate.xml", &mat);
 	}
 

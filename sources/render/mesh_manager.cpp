@@ -1,4 +1,5 @@
 #include "mesh_manager.hpp"
+#include "mesh_collector.hpp"
 #include "game_world.hpp"
 #include "DebugDrawer.h"
 #include "utils/string_utils.h"
@@ -15,6 +16,7 @@ namespace
 	//-- console variables.
 	bool g_enableCulling = true;
 	bool g_showVisibilityBoxes = false;
+	bool g_enableInstancing = true;
 
 	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
 	//----------------------------------------------------------------------------------------------
@@ -42,7 +44,7 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	MeshManager::MeshManager()
+	MeshManager::MeshManager() : m_meshCollector(new MeshCollector)
 	{
 
 	}
@@ -61,8 +63,9 @@ namespace render
 	{
 		REGISTER_CONSOLE_VALUE("r_showVisibilityBoxes",		bool, g_showVisibilityBoxes);
 		REGISTER_CONSOLE_VALUE("r_enableVisibilityCulling",	bool, g_enableCulling);
+		REGISTER_CONSOLE_VALUE("r_enableInstancing",		bool, g_enableInstancing);
 
-		return true;
+		return m_meshCollector->init();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -76,6 +79,8 @@ namespace render
 		RenderSystem::EPassType pass, bool instanced, RenderOps& rops,
 		const mat4f& viewPort, AABB* aabb)
 	{
+		m_meshCollector->begin(pass);
+
 		for (uint i = 0; i < m_meshInstances.size(); ++i)
 		{
 			const MeshInstance& inst = *m_meshInstances[i];
@@ -98,11 +103,15 @@ namespace render
 			//-- 2. gather render operations.
 			if (inst.m_mesh)
 			{
-				uint count = inst.m_mesh->gatherROPs(pass, instanced, rops);
-				for (uint i = rops.size() - count; i < rops.size(); ++i)
+				//-- if mesh collector doesn't want to get this instance then process it as usual.
+				if (!g_enableInstancing || (g_enableInstancing && !m_meshCollector->addMeshInstance(inst)))
 				{
-					RenderOp& rop = rops[i];
-					rop.m_worldMat = &inst.m_transform->m_worldMat;
+					uint count = inst.m_mesh->gatherROPs(pass, instanced, rops);
+					for (uint i = rops.size() - count; i < rops.size(); ++i)
+					{
+						RenderOp& rop = rops[i];
+						rop.m_worldMat = &inst.m_transform->m_worldMat;
+					}
 				}
 			}
 			else if (inst.m_skinnedMesh)
@@ -118,6 +127,9 @@ namespace render
 				}
 			}
 		}
+
+		m_meshCollector->gatherROPs(rops);
+		m_meshCollector->end();
 
 		return rops.size();
 	}

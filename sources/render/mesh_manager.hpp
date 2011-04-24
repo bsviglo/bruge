@@ -7,11 +7,12 @@
 
 namespace brUGE
 {
-
 	struct Transform;
 
 namespace render
 {
+
+	class MeshCollector;
 
 	//----------------------------------------------------------------------------------------------
 	struct MeshInstance
@@ -47,9 +48,11 @@ namespace render
 		MeshInstance&		getMesh(Handle handle);
 
 	private:
+		typedef std::unique_ptr<MeshCollector> MeshCollectorPtr;
 		typedef std::vector<MeshInstance*> MeshInstances;
 
-		MeshInstances m_meshInstances;
+		MeshInstances    m_meshInstances;
+		MeshCollectorPtr m_meshCollector;
 	};
 
 } //-- render

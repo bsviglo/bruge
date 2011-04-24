@@ -25,6 +25,7 @@ namespace
 		{
 			if		(*i == "PIN_ALPHA_TEST")	code |= ShaderContext::PIN_ALPHA_TEST;
 			else if (*i == "PIN_BUMP_MAP")		code |= ShaderContext::PIN_BUMP_MAP;
+			else if (*i == "PIN_INSTANCED")		code |= ShaderContext::PIN_INSTANCED;
 			else								assert(!"Invalid pin code.");
 		}
 		return code;
@@ -39,7 +40,7 @@ namespace
 
 		virtual bool operator() (Handle handle, IShader& shader) const
 		{
-			m_value.m_worldMat = *m_sc.renderOp().m_worldMat;
+			m_value.m_worldMat = m_sc.renderOp().m_worldMat ? *m_sc.renderOp().m_worldMat : mat4f();
 			m_value.m_MVPMat   = mult(m_value.m_worldMat, m_sc.camera()->m_viewProj);
 			m_value.m_MVMat	   = mult(m_value.m_worldMat, m_sc.camera()->m_view);
 			m_value.m_alphaRef = 0;

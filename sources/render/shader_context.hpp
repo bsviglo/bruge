@@ -172,8 +172,9 @@ namespace render
 			PIN_NO_ONE	   = 0,
 			PIN_BUMP_MAP   = 1 << 0,
 			PIN_ALPHA_TEST = 1 << 1,
+			PIN_INSTANCED  = 1 << 2,
 
-			PIN_MAX_COUNT  = 2
+			PIN_MAX_COUNT  = 3
 		};
 
 	public:

@@ -67,12 +67,14 @@ namespace render
 
 		void		attach(SubMesh* submesh) { m_submeshes.push_back(submesh); }
 		bool		build();
+		int			instancingID() const { return m_instacingID; }
 		const AABB& bounds() const { return m_aabb; }
 		uint		gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
 		SubMeshes m_submeshes;
 		AABB	  m_aabb;
+		int		  m_instacingID;
 	};
 	
 	//-- auxiliary function helps us to create BSP from mesh.

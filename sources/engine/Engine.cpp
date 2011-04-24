@@ -180,6 +180,7 @@ namespace brUGE
 				}
 				
 				//-- wait next frame.
+				/*
 				{
 					SCOPED_TIME_MEASURER_EX("CPU idle")
 					uint curDelta = static_cast<uint>(dt * 1000);
@@ -190,6 +191,7 @@ namespace brUGE
 					}
 					//WaitForSingleObject(m_hEvent, INFINITE);
 				}
+				*/
 			}
 			m_timingPanel->stop();
 			//}

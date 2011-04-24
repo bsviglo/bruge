@@ -27,39 +27,45 @@
   <material name="diffuse">
     <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="z_pre_pass"/>
-      <!--<shader type="INSTANCING" src="z_pre_pass" pins="PIN_INSTANCING"/>-->
+      <shader type="INSTANCED" src="z_pre_pass" pins="PIN_INSTANCED"/>
     </pass>
     <pass type="MAIN_COLOR" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="diffuse"/>
-      <!--<shader type="INSTANCING" src="diffuse" pins="PIN_INSTANCING"/>-->
+      <shader type="INSTANCED" src="diffuse" pins="PIN_INSTANCED"/>
     </pass>
     <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="cast_shadows"/>
-      <!--<shader type="INSTANCING" src="cast_shadows" pins="PIN_INSTANCING"/>-->
+      <shader type="INSTANCED" src="cast_shadows" pins="PIN_INSTANCED"/>
     </pass>
   </material>
 
   <material name="bump">
     <pass type="Z_PRE_PASS" vertex="xyzuvntb" bumped="true" skinned="false">
       <shader type="NORMAL" src="z_pre_pass" pins="PIN_BUMP_MAP"/>
+      <shader type="INSTANCED" src="z_pre_pass" pins="PIN_BUMP_MAP|PIN_INSTANCED"/>
     </pass>
     <pass type="MAIN_COLOR" vertex="xyzuvn"  bumped="false" skinned="false">
       <shader type="NORMAL" src="diffuse"/>
+      <shader type="INSTANCED" src="diffuse" pins="PIN_INSTANCED"/>
     </pass>
     <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
-      <shader type="NORMAL" src="cast_shadows" pins="PIN_BUMP_MAP"/>
+      <shader type="NORMAL" src="cast_shadows"/>
+      <shader type="INSTANCED" src="cast_shadows" pins="PIN_INSTANCED"/>
     </pass>
   </material>
 
   <material name="bump_alpha_test">
     <pass type="Z_PRE_PASS" vertex="xyzuvntb" bumped="true" skinned="false">
       <shader type="NORMAL" src="z_pre_pass" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST"/>
+      <shader type="INSTANCED" src="z_pre_pass" pins="PIN_BUMP_MAP|PIN_ALPHA_TEST|PIN_INSTANCED"/>
     </pass>
     <pass type="MAIN_COLOR" vertex="xyzuvn"  bumped="false" skinned="false">
       <shader type="NORMAL" src="diffuse" pins="PIN_ALPHA_TEST"/>
+      <shader type="INSTANCED" src="diffuse" pins="PIN_ALPHA_TEST|PIN_INSTANCED"/>
     </pass>
     <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="cast_shadows" pins="PIN_ALPHA_TEST"/>
+      <shader type="INSTANCED" src="cast_shadows" pins="PIN_ALPHA_TEST|PIN_INSTANCED"/>
     </pass>
   </material>
 

@@ -181,6 +181,9 @@
     <ClCompile Include="..\..\sources\render\SkyBox.cpp">
       <Filter>render\framework\sky</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\render\mesh_collector.cpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Console.h">
@@ -320,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\SkyBox.hpp">
       <Filter>render\framework\sky</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\mesh_collector.hpp">
+      <Filter>render\framework\meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
