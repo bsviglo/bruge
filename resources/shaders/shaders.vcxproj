@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\materials\cow.mtl" />
+    <None Include="..\materials\date_palm.mtl" />
     <None Include="..\materials\debug_solid.mtl" />
     <None Include="..\materials\debug_wire.mtl" />
     <None Include="..\materials\decals.mtl" />
@@ -34,6 +35,7 @@
     <None Include="..\materials\shadows.mtl">
       <SubType>Designer</SubType>
     </None>
+    <None Include="..\materials\sky_box.mtl" />
     <None Include="..\materials\ssaa.mtl">
       <SubType>Designer</SubType>
     </None>
@@ -73,6 +75,7 @@
     <None Include="shadow_resolve.hlsl" />
     <None Include="skinned_cast_shadows.hlsl" />
     <None Include="skinned_z_pre_pass.hlsl" />
+    <None Include="sky_box.hlsl" />
     <None Include="spot_lights_resolve.hlsl" />
     <None Include="ssaa.hlsl" />
     <None Include="test.hlsl" />

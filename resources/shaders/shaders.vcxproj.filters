@@ -150,5 +150,14 @@
     <None Include="..\materials\empty.mtl">
       <Filter>materials</Filter>
     </None>
+    <None Include="sky_box.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\materials\sky_box.mtl">
+      <Filter>materials</Filter>
+    </None>
+    <None Include="..\materials\date_palm.mtl">
+      <Filter>materials</Filter>
+    </None>
   </ItemGroup>
 </Project>

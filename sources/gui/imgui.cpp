@@ -535,7 +535,7 @@ bool imguiCollapse(const char* text, const char* subtext, bool* checked, bool en
 		addGfxCmdText(x+BUTTON_HEIGHT, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_LEFT, text, imguiRGBA(128,128,128,200));
 
 	if (subtext)
-		addGfxCmdText(x+w-BUTTON_HEIGHT/2, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_RIGHT, subtext, imguiRGBA(255,255,255,128));
+		addGfxCmdText(x+w-BUTTON_HEIGHT/2, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_RIGHT, subtext, imguiRGBA(255,255,255,200));
 	
 	if (res) *checked = !*checked;
 
@@ -558,6 +558,17 @@ void imguiValue(const char* text)
 	g_state.widgetY -= BUTTON_HEIGHT;
 	
 	addGfxCmdText(x+w-BUTTON_HEIGHT/2, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_RIGHT, text, imguiRGBA(255,255,255,200));
+}
+
+void imguiKeyValue(const char* key, const char* value)
+{
+	const int x = g_state.widgetX;
+	const int y = g_state.widgetY - BUTTON_HEIGHT;
+	const int w = g_state.widgetW;
+	g_state.widgetY -= BUTTON_HEIGHT;
+
+	addGfxCmdText(x, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_LEFT, key, imguiRGBA(255,255,255,200));
+	addGfxCmdText(x+w-BUTTON_HEIGHT/2, y+BUTTON_HEIGHT/2-TEXT_HEIGHT/2, IMGUI_ALIGN_RIGHT, value, imguiRGBA(255,255,255,200));
 }
 
 bool imguiSlider(const char* text, float* val, float vmin, float vmax, float vinc, bool enabled)

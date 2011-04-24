@@ -442,7 +442,7 @@ namespace render
 			for (uint i = 0; i < m_texDrawOps.size(); ++i)
 			{
 				TextDrawOperation& op = m_texDrawOps[i];
-				m_font->draw2D(op.m_pos, op.m_color, op.m_text);
+				m_font->draw2D(op.m_pos, op.m_color, std::string(op.m_text));
 			}
 			m_font->endDraw();
 

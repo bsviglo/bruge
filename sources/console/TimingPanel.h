@@ -3,7 +3,6 @@
 #include "prerequisites.hpp"
 #include "utils/Singleton.h"
 #include "utils/Timer.h"
-#include "render/Font.h"
 #include <string>
 #include <vector>
 
@@ -32,10 +31,10 @@ namespace brUGE
 
 			struct Visual
 			{
-				Visual() : showChilds(true) { }
+				Visual() : showChilds(false) { }
 
 				bool		showChilds;
-				std::string common;
+				std::string	common;
 				std::string remainder;
 			};
 
@@ -44,7 +43,7 @@ namespace brUGE
 
 		//-- Describes an unique time measurer, it grabs timing between two calls of its function
 		//-- start() <-> stop();
-		class TimeMeasurer
+		class TimeMeasurer : public NonCopyable
 		{
 		public:
 			TimeMeasurer(MeasureNodeID node) : m_node(node) { }
@@ -76,10 +75,6 @@ namespace brUGE
 		private:
 			uint64		  m_startTime;
 			MeasureNodeID m_node;
-
-		private:
-			TimeMeasurer(const TimeMeasurer&);
-			TimeMeasurer& operator = (const TimeMeasurer&);
 		};
 
 		//-- Provides useful extension of TimeMeasurer, which gives us opportunity to don't care about
@@ -108,7 +103,7 @@ namespace brUGE
 		bool visible() const	{ return m_isVisible; }
 		void visible(bool flag) { m_isVisible = flag; m_needForceUpdate = flag; }
 
-		void draw  (float dt);
+		void visualize();
 		void update(float dt);
 
 	private:
@@ -118,7 +113,7 @@ namespace brUGE
 		inline MeasureNodeID	_insertNode	(const MeasureNode& node)	{ m_nodes.push_back(node); return m_nodes.size() - 1; }
 		inline MeasureNode&		_getNode	(MeasureNodeID nodeID)		{ return m_nodes[nodeID]; } 	
 
-		void _recursiveDraw(MeasureNodeID nodeID);
+		void _recursiveVisualize(MeasureNodeID nodeID);
 		void _recursiveUpdate(MeasureNodeID nodeID, uint level = 0);
 
 	private:
@@ -126,7 +121,6 @@ namespace brUGE
 
 		bool				m_isVisible;
 		bool				m_needForceUpdate;
-		vec2f				m_offset;
 		float				m_totalFrameTime;
 		uint				m_measuresPerUpdate;
 		TimeMeasurer		m_rootMeasurer;
@@ -135,8 +129,8 @@ namespace brUGE
 		MeasureNodeID		m_curNode;
 		MeasureNodes		m_nodes;
 
-		Ptr<render::Font>	m_font;
-		render::Font::Desc	m_fontDesc;
+		//-- visual
+		int					m_scroll;
 	};
 
 } // brUGE

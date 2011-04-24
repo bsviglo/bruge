@@ -56,6 +56,9 @@ namespace render
 	//------------------------------------------
 	void Font::print2D(const vec2f& pos, const Color& color, const std::string& text)
 	{
+		if (text.empty())
+			return;
+
 		_fillBuffer(pos, color, text);
 		_draw(text.length());
 	}
@@ -63,6 +66,9 @@ namespace render
 	//------------------------------------------
 	void Font::print2D(const vec2f& pos, const Color& color, const char* text, ...)
 	{
+		if (!text || strlen(text) == 0)
+			return;
+
 		va_list args;
 		char buffer[2048]; // 2 kbytes.
 		va_start(args, text);
@@ -91,6 +97,9 @@ namespace render
 	//------------------------------------------
 	void Font::draw2D(const vec2f& pos, const Color& color, const char* text, ...)
 	{
+		if (!text || strlen(text) == 0)
+			return;
+
 		va_list args;
 		char buffer[2048]; //-- 2 kbytes.
 		va_start(args, text);
@@ -111,6 +120,9 @@ namespace render
 	//------------------------------------------
 	void Font::draw2D(const vec2f& pos, const Color& color, const std::string& text)
 	{
+		if (text.empty())
+			return;
+
 		_fillBuffer(pos, color, text);
 		render::rd()->draw(PRIM_TOPOLOGY_TRIANGLE_STRIP, 0, text.length() * 4);
 	}
