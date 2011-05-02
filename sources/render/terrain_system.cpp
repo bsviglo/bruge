@@ -50,7 +50,7 @@ namespace
 				float len = 1.0f / sqrtf(dx * dx + dz * dz + 1.0f);
 
 				//-- get normal.
-				oNormals[offs++].set(-dx * len, -len, dz * len);
+				oNormals[offs++].set(-dx * len, dz * len, len);
 			}
 		}
 	}
@@ -231,7 +231,7 @@ namespace render
 
 		//-- load terrain height map.
 		{
-			RODataPtr file = FileSystem::instance().readFile("resources/terrain.raw");
+			RODataPtr file = FileSystem::instance().readFile("resources/textures/terrain/terrain.raw");
 			if (!file)
 				return false;
 
@@ -343,18 +343,15 @@ namespace render
 		}
 
 		//-- 2. create normals table.
-		//std::vector<vec3f> normals;
-		//normals.resize(size);
+		std::vector<vec3f> normals;
+		normals.resize(size);
 
 		convertHeights2Normals(
-			m_normalTable, normalizedHeightTable, m_tableSize, m_tableSize, m_heightUnits
+			m_normalTable, normalizedHeightTable, m_tableSize, m_tableSize, m_tableSize
 			);
 
-		//filterNormals(m_normalTable, normals, m_tableSize, m_tableSize);
-		//filterNormals(normals, m_normalTable, m_tableSize, m_tableSize);
-		//filterNormals(m_normalTable, normals, m_tableSize, m_tableSize);
-		//filterNormals(normals, m_normalTable, m_tableSize, m_tableSize);
-		//filterNormals(m_normalTable, normals, m_tableSize, m_tableSize);
+		filterNormals(normals, m_normalTable, m_tableSize, m_tableSize);
+		filterNormals(m_normalTable, normals, m_tableSize, m_tableSize);
 
 		return true;
 	}
@@ -390,7 +387,7 @@ namespace render
 					);
 
 				//-- world space AABB of the sector, but without y dimension. It will be calculated
-				//-- later when we will being create verex buffer for this sector.
+				//-- later when we will being create vertex buffer for this sector.
 				AABB sectorAABB(
 					vec3f(sectorWorldPos.x, 0.0f, sectorWorldPos.y),
 					vec3f(sectorWorldPos.x + sectorUnitsSize, 0.0f, sectorWorldPos.y + sectorUnitsSize)
@@ -418,7 +415,7 @@ namespace render
 		vec2f vert(0.0f,0.0f);
 		std::vector<VertexXZUV> vertices(m_sectorVerts * m_sectorVerts);
 
-		//-- fill the vertex stream with x,y positions and uv coordinates. All other data
+		//-- fill the vertex stream with x,y positions and uv-coordinates. All other data
 		//-- (height and surface normals) are stored in the vertex buffers of each terrain section.
 		for (uint x = 0; x < m_sectorVerts; ++x)
 		{
