@@ -21,25 +21,26 @@ namespace render
 	class  ShaderContext;
 	struct RenderFx;
 
-	//-- ToDo:
+	//-- ToDo: Make it much more generalized.
+	//-- ToDo: Compact it right after generalization.
 	//-- Represents the minimum quantum of the engine render system work.
 	//----------------------------------------------------------------------------------------------
 	struct RenderOp
 	{
 		RenderOp()
-			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_mainVB(0), m_tangentVB(0), m_IB(0),
-				m_weightsTB(0), m_matrixPaletteCount(0), m_matrixPalette(0), m_indicesCount(0),
+			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_VBs(nullptr), m_VBCount(0), m_IB(nullptr),
+				m_weightsTB(nullptr), m_matrixPaletteCount(0), m_matrixPalette(nullptr), m_indicesCount(0),
 				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr),
-				m_instanceData(nullptr), m_instanceSize(0)
+				m_instanceData(nullptr), m_instanceSize(0), m_userData(nullptr)
 		{ }
 
 		//-- primitive topology of geometry.
 		uint16				m_indicesCount;
 		EPrimitiveTopology	m_primTopolpgy;
-		//-- main data of static mesh.
+		//-- main data of static mesh and terrain.
 		IBuffer*			m_IB;
-		IBuffer*			m_mainVB;
-		IBuffer*			m_tangentVB;
+		IBuffer**			m_VBs;
+		uint8				m_VBCount;
 		//-- addition data in case if mesh is animated.
 		IBuffer*			m_weightsTB;
 		const mat4f*		m_matrixPalette;
@@ -53,6 +54,8 @@ namespace render
 		const void*			m_instanceData;
 		uint16				m_instanceSize;
 		uint16				m_instanceCount;
+		//-- user data.
+		const void*			m_userData;
 	};
 	typedef std::vector<RenderOp> RenderOps;
 
@@ -84,6 +87,7 @@ namespace render
 			DepthStencilStateID m_stateDS;
 			RasterizerStateID	m_stateR;
 			RasterizerStateID	m_stateR_doubleSided;
+			RasterizerStateID	m_stateR_wireframe;
 			BlendStateID		m_stateB;
 		};
 

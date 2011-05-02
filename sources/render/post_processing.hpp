@@ -149,6 +149,7 @@ namespace render
 		RenderTargetMap	m_rts;
 		RenderOps		m_rops;
 		Ptr<IBuffer>	m_fsQuad;
+		IBuffer*		m_pVB;
 		PostEffects		m_effects;
 		int				m_curEffectID;
 

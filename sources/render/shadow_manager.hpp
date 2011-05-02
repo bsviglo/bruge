@@ -35,6 +35,7 @@ namespace render
 	private:
 		uint			m_shadowMapRes;
 		Ptr<IBuffer>	m_fsQuadVB;
+		IBuffer*		m_pVB;
 		Ptr<Material>	m_shadowResolveMaterial;
 		Ptr<Material>	m_shadowBlurMaterial;
 		SamplerStateID  m_shadowMapSml;

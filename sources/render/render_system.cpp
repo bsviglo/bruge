@@ -180,6 +180,10 @@ namespace render
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
+			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 	
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -320,7 +324,8 @@ namespace render
 			rDesc.multisampleEnable = 0;
 
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
-			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+			pass.m_stateR_doubleSided = pass.m_stateR;
+			pass.m_stateR_wireframe = pass.m_stateR; 
 
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -359,6 +364,10 @@ namespace render
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
+			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -477,7 +486,8 @@ namespace render
 		{
 		case PASS_Z_ONLY:
 			{
-				m_device->clear(CLEAR_DEPTH, Color(), 1.0f, 0);
+				m_device->backToMainFrameBuffer();
+				m_device->clear(CLEAR_DEPTH | CLEAR_STENCIL, Color(), 1.0f, 0);
 				m_device->clearColorRT(pass.m_rt.get(), Color(1,1,1,1));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
@@ -639,17 +649,22 @@ namespace render
 				m_device->setRasterizerState(
 					fx.m_rsProps->m_doubleSided ? pass.m_stateR_doubleSided : pass.m_stateR
 					);
+
+				m_device->setRasterizerState(
+					fx.m_rsProps->m_wireframe ? pass.m_stateR_wireframe : pass.m_stateR
+					);
 			}
 
-			if (fx.m_bumped)
-			{
-				IBuffer* buffers[2] = { ro.m_mainVB, ro.m_tangentVB };
-				m_device->setVertexBuffers(0, buffers, 2);
-			}
-			else
-			{
-				m_device->setVertexBuffer(0, ro.m_mainVB);
-			}
+			//if (fx.m_bumped)
+			//{
+			//	IBuffer* buffers[2] = { ro.m_mainVB, ro.m_tangentVB };
+			//	m_device->setVertexBuffers(0, buffers, 2);
+			//}
+			//else
+			//{
+			//	m_device->setVertexBuffer(0, ro.m_mainVB);
+			//}
+			m_device->setVertexBuffers(0, ro.m_VBs, ro.m_VBCount);
 
 			if (ro.m_IB)
 			{

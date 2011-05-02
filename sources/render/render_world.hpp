@@ -22,6 +22,7 @@ namespace render
 	class MeshManager;
 	class ShadowManager;
 	class PostProcessing;
+	class TerrainSystem;
 
 
 	//-- ToDo: document.
@@ -42,6 +43,7 @@ namespace render
 		DecalManager&	decalManager()   { return *m_decalManager.get(); }
 		LightsManager&	lightsManager()  { return *m_lightsManager.get(); }
 		MeshManager&	meshManager()	 { return *m_meshManager.get(); }
+		TerrainSystem&	terrainSystem()	 { return *m_terrainSystem.get(); }
 		PostProcessing& postProcessing() { return *m_postProcessing.get(); }
 	
 	private:
@@ -53,6 +55,7 @@ namespace render
 		typedef std::unique_ptr<ShadowManager>  ShadowManagerPtr;
 		typedef std::unique_ptr<PostProcessing> PostProcessingPtr;
 		typedef std::unique_ptr<SkyBox>			SkyBoxPtr;
+		typedef std::unique_ptr<TerrainSystem>  TerrainSystemPtr;
 		
 		Ptr<Camera>		  m_camera;
 		DebugDrawerPtr	  m_debugDrawer;
@@ -62,7 +65,8 @@ namespace render
 		MeshManagerPtr	  m_meshManager;
 		ShadowManagerPtr  m_shadowManager;
 		PostProcessingPtr m_postProcessing;
-		SkyBoxPtr		  m_skyBox;	
+		SkyBoxPtr		  m_skyBox;
+		TerrainSystemPtr  m_terrainSystem;
 	};
 
 } //-- render

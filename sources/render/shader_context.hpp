@@ -24,9 +24,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	struct RenderStateProperties
 	{
-		RenderStateProperties() : m_doubleSided(false) { }
+		RenderStateProperties() : m_doubleSided(false), m_wireframe(false) { }
 
 		bool m_doubleSided;
+		bool m_wireframe;
 	};
 
 

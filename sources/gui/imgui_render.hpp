@@ -60,7 +60,8 @@ namespace render
 		//-- render section.
 		bool			    m_scissor;
 		Ptr<Font>			m_font;
-		Ptr<IBuffer>		m_vb;
+		Ptr<IBuffer>		m_VB;
+		IBuffer*			m_pVB;
 		Ptr<Material>		m_material;
 		RenderOps			m_geomROPs;
 

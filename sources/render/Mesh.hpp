@@ -49,9 +49,9 @@ namespace render
 
 			//-- gpu hardware buffers. 
 			EPrimitiveTopology	  primTopolpgy;
-			Ptr<IBuffer>		  mainVB;
-			Ptr<IBuffer>		  tangentVB;
 			Ptr<IBuffer>		  IB;
+			Ptr<IBuffer>		  VBs[2];
+			mutable IBuffer*	  pVBs[2];
 			Ptr<PipelineMaterial> pMaterial;
 			Ptr<Material>		  sMaterial;
 
@@ -174,9 +174,9 @@ namespace render
 
 			//-- gpu hardware buffers.
 			EPrimitiveTopology	  primTopolpgy;
-			Ptr<IBuffer>		  mainVB;
-			Ptr<IBuffer>		  tangentVB;
 			Ptr<IBuffer>		  IB;
+			Ptr<IBuffer>		  VBs[2];
+			mutable IBuffer*	  pVBs[2];
 			Ptr<IBuffer>		  weightsTB;
 			Ptr<PipelineMaterial> material;
 

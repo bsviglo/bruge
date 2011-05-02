@@ -95,15 +95,17 @@ namespace render
 
 			if (!(m_fsQuad = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
+
+			m_pVB = m_fsQuad.get();
 		}
 
 		//-- create rops for drawing.
 		{
 			RenderOp op;
-			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_fsQuad;
 			op.m_indicesCount = 4;
-
+			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+			op.m_VBs		  = &m_pVB;
+			op.m_VBCount	  = 1;
 			m_rops.push_back(op);
 		}
 
