@@ -21,6 +21,7 @@ namespace
 	bool g_enableCulling = true;
 	bool g_showVisibilityBoxes = false;
 	bool g_drawWireframe = false;
+	bool g_enableLODSystem = true;
 
 
 	//-- Code to work with normal maps was based on code from Mark J. Kilgard article
@@ -93,20 +94,18 @@ namespace
 		}
 	}
 
-	//-- Create index buffer with desired size (xVerts, yVerts) and desired LOD (xStep, yStep).
-	//-- xVerts and yVerts present number of vertices per width and height for current LOD.
-	//-- xStep and yStep present how many vertices we will skip in this LOD between two grid nodes.
-	//-- stride is number of nodes per row terrain's sector at the 0 LOD.
-	//----------------------------------------------------------------------------------------------
-	Ptr<IBuffer> createSingleStripGrid(
-		uint16 xVerts, uint16 yVerts, uint16 xStep, uint16 yStep, uint16 stride)
-	{
-		uint totalStrips		  = yVerts - 1;
-		uint totalIndexesPerStrip = xVerts * 2;
 
-		//-- the total number of indices is equal to the number of strips times the indices used
-		//-- per strip plus one degenerate triangle between each strip.
-		uint totalIndexes = (totalIndexesPerStrip * totalStrips) + (totalStrips * 2) - 2;
+	//-- The same as createSingleStripGrid but creates triangles list.
+	//----------------------------------------------------------------------------------------------
+	Ptr<IBuffer> createSingleListGrid(
+		uint16 xVerts, uint16 yVerts, uint16 xStep, uint16 yStep, uint16 stride, uint8 bridges)
+	{
+		//-- the total number of indices is equal to the grid nodes count i.e. (xVerts - 1) * (yVerts - 1)
+		//-- multiplied by 6, because each node consists of the two triangles, each triangle has 3
+		//-- vertices.
+		uint16 xTris = xVerts - 1;
+		uint16 yTris = yVerts - 1;
+		uint16 totalIndexes = xTris * yTris * 6;
 
 		std::vector<uint16> indices(totalIndexes);
 
@@ -114,9 +113,181 @@ namespace
 		uint16  startVert = 0;
 		uint16  lineStep  = yStep * stride;
 
-		for (uint j = 0; j < totalStrips; ++j)
+		for (uint16 i = 0; i < xTris; ++i)
 		{
-			uint32 k = 0;
+			uint16 vert = startVert;
+
+			for (uint16 j = 0; j < yTris; ++j)
+			{
+				*(index++) = vert;
+				*(index++) = vert + lineStep;
+				*(index++) = vert + xStep;
+
+				*(index++) = vert + xStep;
+				*(index++) = vert + lineStep;
+				*(index++) = vert + lineStep + xStep;
+
+				vert += xStep;
+			}
+			startVert += lineStep;
+		}
+
+		//-- Helpers class to simplify LOD trimer.
+		//-- Represent grid of nodes. Each node consists of two triangles. Each triangle of 3 indices.
+		//------------------------------------------------------------------------------------------
+		struct TrianglesGrid
+		{
+			struct Node
+			{
+				struct Tri
+				{
+					vec3us m_index;
+				};
+
+				Tri	m_tries[2];
+			};
+
+			TrianglesGrid(uint16* indices, uint16 width, uint16 height)
+				:	m_nodes(reinterpret_cast<Node*>(indices)), m_width(width), m_height(height)
+			{
+
+			}
+
+			Node&		operator() (uint16 i, uint16 j)		  { return m_nodes[i * m_width + j]; }
+			const Node& operator() (uint16 i, uint16 j) const { return m_nodes[i * m_width + j]; }
+
+			uint16 m_width;
+			uint16 m_height;
+			Node*  m_nodes; //-- array of grid nodes.
+		};
+		TrianglesGrid triGrid(&indices[0], yTris, xTris);
+
+		//-- trim LOD-es.
+		//--
+		//-- Triangle indices order.
+		//-- 0x means triangle 0, index 0. i.e. m_tries[0].m_index.x
+		//--
+		//-- 0x		 0z (1x)
+		//--  ----------
+		//--  |		  /|
+		//--  |	    /  |	
+		//--  |   /	   |
+		//--  | /	   |
+		//--  ----------
+		//-- 0y (1y)	 1z
+		//------------------------------------------------------------------------------------------
+		{
+			//--trim top corner
+			if (bridges & TerrainSystem::LOD_BRIDGE_TOP)
+			{
+				for (uint16 j = 0; j < triGrid.m_width - 1; j += 2)
+				{
+					TrianglesGrid::Node& node0 = triGrid(0, j);
+					TrianglesGrid::Node& node1 = triGrid(0, j + 1);
+
+					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- revert order triangle.
+					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- the big...
+					node0.m_tries[1].m_index.x = node1.m_tries[0].m_index.z; //-- triangle.
+					node1.m_tries[0].m_index.x = node1.m_tries[0].m_index.z; //-- degenerate
+				}
+			}
+			if (bridges & TerrainSystem::LOD_BRIDGE_BOTTOM)
+			{
+				for (uint16 j = 1; j < triGrid.m_width; j += 2)
+				{
+					TrianglesGrid::Node& node0 = triGrid(triGrid.m_height - 1, j);
+					TrianglesGrid::Node& node1 = triGrid(triGrid.m_height - 1, j - 1);
+
+					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- revert order triangle.
+					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- the big...
+					node0.m_tries[0].m_index.y = node1.m_tries[1].m_index.y; //-- triangle.
+					node1.m_tries[1].m_index.y = node1.m_tries[1].m_index.z; //-- degenerate
+				}
+			}
+			if (bridges & TerrainSystem::LOD_BRIDGE_LEFT)
+			{
+				uint16 offset = 0;
+				if (bridges & TerrainSystem::LOD_BRIDGE_TOP)
+				{
+					TrianglesGrid::Node& node0 = triGrid(0, 0);
+					TrianglesGrid::Node& node1 = triGrid(1, 0);
+
+					node0.m_tries[0].m_index.y = node1.m_tries[0].m_index.y; //-- the big triangle.
+					node1.m_tries[0].m_index.y = node1.m_tries[0].m_index.x; //-- degenerate.
+
+					offset = 2;
+				}
+
+				for (uint16 i = offset; i < triGrid.m_height - 1; i += 2)
+				{
+					TrianglesGrid::Node& node0 = triGrid(i, 0);
+					TrianglesGrid::Node& node1 = triGrid(i + 1, 0);
+
+					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- revert order triangle.
+					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- the big...
+					node0.m_tries[1].m_index.y = node1.m_tries[0].m_index.y; //-- triangle.
+					node1.m_tries[0].m_index.x = node1.m_tries[0].m_index.y; //-- degenerate
+				}
+			}
+			if (bridges & TerrainSystem::LOD_BRIDGE_RIGHT)
+			{
+				uint16 offset = 0;
+				if (bridges & TerrainSystem::LOD_BRIDGE_BOTTOM)
+				{
+					TrianglesGrid::Node& node0 = triGrid(triGrid.m_height - 1, triGrid.m_width - 1);
+					TrianglesGrid::Node& node1 = triGrid(triGrid.m_height - 2, triGrid.m_width - 1);
+
+					node0.m_tries[1].m_index.x = node1.m_tries[1].m_index.x; //-- the big triangle.
+					node1.m_tries[1].m_index.x = node1.m_tries[1].m_index.z; //-- degenerate.
+
+					offset = 1;
+				}
+
+				for (uint16 i = 1; i < triGrid.m_height - offset; i += 2)
+				{
+					TrianglesGrid::Node& node0 = triGrid(i, triGrid.m_width - 1);
+					TrianglesGrid::Node& node1 = triGrid(i - 1, triGrid.m_width - 1);
+
+					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- revert order triangle.
+					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- the big...
+					node0.m_tries[0].m_index.z = node1.m_tries[1].m_index.x; //-- triangle.
+					node1.m_tries[1].m_index.x = node1.m_tries[1].m_index.z; //-- degenerate
+				}
+			}
+		}
+
+		// finally, use the indices we created above to fill index buffer.
+		return rd()->createBuffer(
+			IBuffer::TYPE_INDEX,  &indices[0],  indices.size(), sizeof(uint16)
+			);
+	}
+
+	//-- Create index buffer with desired size (xVerts, yVerts) and desired LOD (xStep, yStep).
+	//-- xVerts and yVerts present number of vertices per width and height for current LOD.
+	//-- xStep and yStep present how many vertices we will skip in this LOD between two grid nodes.
+	//-- stride is number of nodes per row terrain's sector at the 0 LOD.
+	//-- Warning: trimmer currenly not implemented.
+	//-- ToDo: implement LOD trimmer.
+	//----------------------------------------------------------------------------------------------
+	Ptr<IBuffer> createSingleStripGrid(
+		uint16 xVerts, uint16 yVerts, uint16 xStep, uint16 yStep, uint16 stride, uint8 /*bridges*/)
+	{
+		uint16 totalStrips		  = yVerts - 1;
+		uint16 totalIndexesPerStrip = xVerts * 2;
+
+		//-- the total number of indices is equal to the number of strips times the indices used
+		//-- per strip plus one degenerate triangle between each strip.
+		uint16 totalIndexes = (totalIndexesPerStrip * totalStrips) + (totalStrips * 2) - 2;
+
+		std::vector<uint16> indices(totalIndexes);
+
+		uint16* index	  = &indices[0];
+		uint16  startVert = 0;
+		uint16  lineStep  = yStep * stride;
+
+		for (uint16 j = 0; j < totalStrips; ++j)
+		{
+			uint16 k = 0;
 			uint16 vert = startVert;
 
 			//-- create a strip for this row
@@ -135,6 +306,8 @@ namespace
 				*(index++) = startVert;
 			}
 		}
+
+		//-- ToDo: implement trimmer.
 
 		// finally, use the indices we created above to fill index buffer.
 		return rd()->createBuffer(
@@ -182,7 +355,8 @@ namespace render
 			m_sectorVerts(0),
 			m_unitsPerCell(1.0f),
 			m_heightUnits(1.0f),
-			m_tableSize(0)
+			m_tableSize(0),
+			m_primTopology(PRIM_TOPOLOGY_TRIANGLE_STRIP)
 	{
 
 	}
@@ -199,6 +373,7 @@ namespace render
 		REGISTER_CONSOLE_VALUE("r_terrain_show_visibility_boxes",	bool, g_showVisibilityBoxes);
 		REGISTER_CONSOLE_VALUE("r_terrain_enable_culling",			bool, g_enableCulling);
 		REGISTER_CONSOLE_VALUE("r_terrain_draw_wireframe",			bool, g_drawWireframe);
+		REGISTER_CONSOLE_VALUE("r_terrain_enable_LODs",				bool, g_enableLODSystem);
 		return true;
 	}
 
@@ -206,12 +381,24 @@ namespace render
 	bool TerrainSystem::temporal_hardcoded_load()
 	{
 		//-- set parameters.
-		m_tableSize	   = 1025;
-		m_sectorSize   = 64;
-		m_sectorsCount = (m_tableSize / m_sectorSize);
-		m_sectorVerts  = m_sectorSize + 1;
-		m_unitsPerCell = 1.0f;
-		m_heightUnits  = 75.0f;
+		//-- ToDo: move it to the terrain cfg file.
+		{
+			m_tableSize	   = 1025;
+			m_sectorSize   = 64;
+			m_sectorsCount = (m_tableSize / m_sectorSize);
+			m_sectorVerts  = m_sectorSize + 1;
+			m_unitsPerCell = 1.0f;
+			m_heightUnits  = 75.0f;
+
+			//-- calculate radius for sector.
+			float halfSize = m_sectorSize * m_unitsPerCell * 0.5f;
+			m_sectorRadius = sqrtf(2.0f * halfSize * halfSize);
+		
+			for (uint i = 0; i < CHUNK_LODS_COUNT; ++i)
+			{
+				m_LODDistances[i] = halfSize * 2.0f * (i + 1);
+			}
+		}
 
 		//-- load terrain material.
 		{
@@ -239,16 +426,16 @@ namespace render
 				return false;
 		}
 
-		//-- allocate terrain sectors.
-		if (!allocateSectors())
-			return false;
-
 		//-- build shared VB.
 		if (!buildSharedVB())
 			return false;
 
 		//-- build indices buffer.
 		if (!buildIBs())
+			return false;
+
+		//-- allocate terrain sectors.
+		if (!allocateSectors())
 			return false;
 
 		m_loaded = true;
@@ -266,8 +453,10 @@ namespace render
 	*/
 
 	//----------------------------------------------------------------------------------------------
-	uint TerrainSystem::gatherROPs(RenderSystem::EPassType pass, RenderOps& rops, const mat4f& viewPort)
+	uint TerrainSystem::gatherROPs(
+		RenderSystem::EPassType pass, RenderOps& rops, const mat4f& viewPort, const vec3f& camPos)
 	{
+		//-- ToDo:
 		if (!m_loaded)
 		{
 			return 0;
@@ -278,6 +467,7 @@ namespace render
 
 		const RenderFx* fx = m_material->renderFx(rs().shaderPass(pass), false);
 
+		//-- resolve visibility.
 		for (auto iter = m_sectors.begin(); iter != m_sectors.end(); ++iter)
 		{
 			//-- 1. cull frustum against AABB.
@@ -290,37 +480,94 @@ namespace render
 				DebugDrawer::instance().drawAABB(iter->m_aabb, Color(0,0,1,0));
 			}
 
-			//-- ToDo:
-			//-- set vertex buffers.
-			iter->m_VBs[0] = m_sharedVB.get();
-			iter->m_VBs[1] = m_uniqueVBs[iter->m_index].get();
+			//-- select LOD
+			if (g_enableLODSystem)
+			{
+				float dist	= camPos.flatDist(iter->m_aabb.getCenter());
+				iter->m_LOD = CHUNK_LODS_COUNT - 1;
 
-			//-- ToDo:
+				for (uint i = 0; i < CHUNK_LODS_COUNT; ++i)
+				{
+					if (dist < m_LODDistances[i])
+					{
+						iter->m_LOD = i;
+						break;
+					}
+				}
+			}
+			else
+			{
+				iter->m_LOD = 0;
+			}
+
+			m_visibleSectors.push_back(&*iter);
+		}
+
+		//-- prepare ROPs.
+		for (auto iter = m_visibleSectors.begin(); iter != m_visibleSectors.end(); ++iter)
+		{
+			TerrainSector& ts = *(*iter);
+
+			uint8 mask = 0;
+			if (g_enableLODSystem)
+			{
+				mask = generateBridgeMask(ts.m_chunkPos, ts.m_LOD);
+			}
+
 			//-- add ROPs.
 			{
 				RenderOp rop;
 
-				rop.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-				rop.m_IB		   = m_IBLODs[0].get();
+				rop.m_primTopolpgy = m_primTopology;
+				rop.m_IB		   = m_IBLODs[ts.m_LOD][mask].get();
 				rop.m_indicesCount = rop.m_IB->getElemCount();
-				rop.m_VBs		   = iter->m_VBs;
+				rop.m_VBs		   = ts.m_VBs;
 				rop.m_VBCount	   = 2;
 				rop.m_material	   = fx;
-				rop.m_userData	   = &iter->m_props;
+				rop.m_userData	   = &ts.m_props;
 
 				rops.push_back(rop);
 			}
 		}
 
+		//-- clear visible sectors.
+		m_visibleSectors.clear();
+
 		return rops.size();
+	}
+
+	//-- Generate bridge mask by comparing our LOD value with all four neighbours.
+	//----------------------------------------------------------------------------------------------
+	uint8 TerrainSystem::generateBridgeMask(const vec2us& chunkPos, uint8 LOD)
+	{
+		uint8 bridgeMask = 0;
+		int8 offsets[][3] = 
+		{
+			{-1, +0, LOD_BRIDGE_LEFT   },
+			{+1, +0, LOD_BRIDGE_RIGHT  },
+			{+0, -1, LOD_BRIDGE_TOP    },
+			{+0, +1, LOD_BRIDGE_BOTTOM }
+		};
+
+		for (uint i = 0; i < 4; ++i)
+		{
+			uint8 mask    = offsets[i][2];
+			int16 x       = clamp(0, chunkPos.y + offsets[i][1], m_sectorsCount - 1);
+			int16 y       = clamp(0, chunkPos.x + offsets[i][0], m_sectorsCount - 1);
+			uint8 nextLOD = m_sectors[y * m_sectorsCount + x].m_LOD;
+
+			if (nextLOD - LOD == 1)
+			{
+				bridgeMask |= mask;
+			}
+		}
+		
+		return bridgeMask;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	bool TerrainSystem::buildHeightAndNormalTables(const ROData& rawData)
 	{
-		//-- heights map need to be power of two.
-		//assert(rawData.length() % 2 == 0);
-
 		uint size = rawData.length() / 2;
 
 		std::vector<float> normalizedHeightTable(size);
@@ -452,6 +699,7 @@ namespace render
 		tSector.m_index    = index;
 		tSector.m_worldPos = worldXZPos;
 		tSector.m_aabb	   = aabb;
+		tSector.m_chunkPos = vec2us(mapPos.y / m_sectorSize, mapPos.x / m_sectorSize);
 
 		//-- read in the height and normal for each vertex
 		for (uint16 x = 0; x < m_sectorVerts; ++x)
@@ -470,17 +718,23 @@ namespace render
 			}
 		}
 		
+		//-- create mask texture offset.
 		tSector.m_props.m_texOffset = vec4f(
 			mapPos.y / m_sectorSize,
 			mapPos.x / m_sectorSize,
 			1.0f / m_sectorsCount,
 			1.0f / m_sectorsCount
 			);
+		//-- create terrain XZ offset in world space.
 		tSector.m_props.m_posOffset = vec4f(worldXZPos.x, worldXZPos.y, 0, 0);
 
 		m_uniqueVBs[index] = rd()->createBuffer(
 			IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(VertexYN)
 			);
+
+		//-- set vertex buffers.
+		tSector.m_VBs[0] = m_sharedVB.get();
+		tSector.m_VBs[1] = m_uniqueVBs[index].get();
 
 		//-- add a new sector to the sectors list.
 		m_sectors[index] = tSector;
@@ -491,10 +745,28 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool TerrainSystem::buildIBs()
 	{
-		m_IBLODs[0] = createSingleStripGrid(m_sectorVerts, m_sectorVerts, 1, 1, m_sectorVerts);
+		const uint8 vertexSteps[] = { 1, 2, 4, 8, 16 };
 
-		if (!m_IBLODs[0].isValid())
-			return false;
+		for (uint i = 0; i < CHUNK_LODS_COUNT; ++i)
+		{
+			uint8 step  = vertexSteps[i];
+			uint8 verts = (step == 1) ? m_sectorVerts / step : (m_sectorVerts / step) + 1;
+
+			for (uint j = 0; j < CHUNK_LODS_BRIDGES; ++j)
+			{
+
+//-- primitive topology. Currently TRIANGLE_STRIP topology not fully implemented.
+#if 0
+				m_primTopology = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+				m_IBLODs[i][j] = createSingleStripGrid(verts, verts, step, step, m_sectorVerts, j);
+#else
+				m_primTopology = PRIM_TOPOLOGY_TRIANGLE_LIST;
+				m_IBLODs[i][j] = createSingleListGrid(verts, verts, step, step, m_sectorVerts, j);
+#endif
+				if (!m_IBLODs[i][j].isValid())
+					return false;
+			}
+		}
 
 		return true;
 	}

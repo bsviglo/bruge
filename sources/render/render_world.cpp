@@ -100,7 +100,8 @@ namespace render
 				{
 					SCOPED_TIME_MEASURER_EX("terrain")
 					m_terrainSystem->gatherROPs(
-						RenderSystem::PASS_Z_ONLY, ops, m_camera->renderCam().m_viewProj
+						RenderSystem::PASS_Z_ONLY, ops, m_camera->renderCam().m_viewProj,
+						m_camera->renderCam().m_invView.applyToOrigin()
 						);
 				}
 			}
@@ -172,7 +173,8 @@ namespace render
 				{
 					SCOPED_TIME_MEASURER_EX("terrain")
 						m_terrainSystem->gatherROPs(
-						RenderSystem::PASS_MAIN_COLOR, ops, m_camera->renderCam().m_viewProj
+						RenderSystem::PASS_MAIN_COLOR, ops, m_camera->renderCam().m_viewProj,
+						m_camera->renderCam().m_invView.applyToOrigin()
 						);
 				}
 			}

@@ -294,6 +294,7 @@ namespace render
 	{
 		// ToDo:
 		DXShader::resetToDefaults();
+		m_dxDevice->ClearState();
 	}
 
 	//------------------------------------------
