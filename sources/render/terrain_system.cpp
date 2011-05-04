@@ -5,6 +5,10 @@
 #include "loader/ResourcesManager.h"
 #include "console/Console.h"
 
+//-- ToDo: reconsider.
+#include "engine/Engine.h"
+#include "physic_world.hpp"
+
 
 using namespace brUGE;
 using namespace brUGE::render;
@@ -120,11 +124,11 @@ namespace
 			for (uint16 j = 0; j < yTris; ++j)
 			{
 				*(index++) = vert;
-				*(index++) = vert + lineStep;
 				*(index++) = vert + xStep;
+				*(index++) = vert + lineStep;
 
-				*(index++) = vert + xStep;
 				*(index++) = vert + lineStep;
+				*(index++) = vert + xStep;
 				*(index++) = vert + lineStep + xStep;
 
 				vert += xStep;
@@ -167,14 +171,14 @@ namespace
 		//-- Triangle indices order.
 		//-- 0x means triangle 0, index 0. i.e. m_tries[0].m_index.x
 		//--
-		//-- 0x		 0z (1x)
+		//-- 0x		 0y (1y)
 		//--  ----------
 		//--  |		  /|
 		//--  |	    /  |	
 		//--  |   /	   |
 		//--  | /	   |
 		//--  ----------
-		//-- 0y (1y)	 1z
+		//-- 0z (1x)	 1z
 		//------------------------------------------------------------------------------------------
 		{
 			//--trim top corner
@@ -185,9 +189,9 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(0, j);
 					TrianglesGrid::Node& node1 = triGrid(0, j + 1);
 
-					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- revert order triangle.
-					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- the big...
-					node0.m_tries[1].m_index.x = node1.m_tries[0].m_index.z; //-- triangle.
+					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- revert order triangle.
+					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- the big...
+					node0.m_tries[1].m_index.y = node1.m_tries[0].m_index.y; //-- triangle.
 					node1.m_tries[0].m_index.x = node1.m_tries[0].m_index.z; //-- degenerate
 				}
 			}
@@ -198,9 +202,9 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(triGrid.m_height - 1, j);
 					TrianglesGrid::Node& node1 = triGrid(triGrid.m_height - 1, j - 1);
 
-					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- revert order triangle.
-					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- the big...
-					node0.m_tries[0].m_index.y = node1.m_tries[1].m_index.y; //-- triangle.
+					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- revert order triangle.
+					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- the big...
+					node0.m_tries[0].m_index.z = node1.m_tries[1].m_index.x; //-- triangle.
 					node1.m_tries[1].m_index.y = node1.m_tries[1].m_index.z; //-- degenerate
 				}
 			}
@@ -212,7 +216,7 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(0, 0);
 					TrianglesGrid::Node& node1 = triGrid(1, 0);
 
-					node0.m_tries[0].m_index.y = node1.m_tries[0].m_index.y; //-- the big triangle.
+					node0.m_tries[0].m_index.z = node1.m_tries[0].m_index.z; //-- the big triangle.
 					node1.m_tries[0].m_index.y = node1.m_tries[0].m_index.x; //-- degenerate.
 
 					offset = 2;
@@ -223,9 +227,9 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(i, 0);
 					TrianglesGrid::Node& node1 = triGrid(i + 1, 0);
 
-					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- revert order triangle.
-					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- the big...
-					node0.m_tries[1].m_index.y = node1.m_tries[0].m_index.y; //-- triangle.
+					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- revert order triangle.
+					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- the big...
+					node0.m_tries[1].m_index.x = node1.m_tries[0].m_index.z; //-- triangle.
 					node1.m_tries[0].m_index.x = node1.m_tries[0].m_index.y; //-- degenerate
 				}
 			}
@@ -237,7 +241,7 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(triGrid.m_height - 1, triGrid.m_width - 1);
 					TrianglesGrid::Node& node1 = triGrid(triGrid.m_height - 2, triGrid.m_width - 1);
 
-					node0.m_tries[1].m_index.x = node1.m_tries[1].m_index.x; //-- the big triangle.
+					node0.m_tries[1].m_index.y = node1.m_tries[1].m_index.y; //-- the big triangle.
 					node1.m_tries[1].m_index.x = node1.m_tries[1].m_index.z; //-- degenerate.
 
 					offset = 1;
@@ -248,9 +252,9 @@ namespace
 					TrianglesGrid::Node& node0 = triGrid(i, triGrid.m_width - 1);
 					TrianglesGrid::Node& node1 = triGrid(i - 1, triGrid.m_width - 1);
 
-					node0.m_tries[1].m_index.x = node0.m_tries[0].m_index.x; //-- revert order triangle.
-					node0.m_tries[0].m_index.y = node0.m_tries[1].m_index.z; //-- the big...
-					node0.m_tries[0].m_index.z = node1.m_tries[1].m_index.x; //-- triangle.
+					node0.m_tries[1].m_index.y = node0.m_tries[0].m_index.x; //-- revert order triangle.
+					node0.m_tries[0].m_index.z = node0.m_tries[1].m_index.z; //-- the big...
+					node0.m_tries[0].m_index.y = node1.m_tries[1].m_index.y; //-- triangle.
 					node1.m_tries[1].m_index.x = node1.m_tries[1].m_index.z; //-- degenerate
 				}
 			}
@@ -364,7 +368,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	TerrainSystem::~TerrainSystem()
 	{
-
+		Engine::instance().physicWorld().delTerrain();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -437,6 +441,17 @@ namespace render
 		//-- allocate terrain sectors.
 		if (!allocateSectors())
 			return false;
+
+		//-- ToDo: reconsider much more generalized form of terrain<->physics comunication.
+		bool success = Engine::instance().physicWorld().addTerrain(
+			m_tableSize, m_unitsPerCell, &m_heightTable[0], 1.0f,
+			m_aabb.m_min.y, m_aabb.m_max.y
+			);
+
+		if (!success)
+		{
+			return false;
+		}
 
 		m_loaded = true;
 
@@ -552,9 +567,9 @@ namespace render
 		for (uint i = 0; i < 4; ++i)
 		{
 			uint8 mask    = offsets[i][2];
-			int16 x       = clamp(0, chunkPos.y + offsets[i][1], m_sectorsCount - 1);
-			int16 y       = clamp(0, chunkPos.x + offsets[i][0], m_sectorsCount - 1);
-			uint8 nextLOD = m_sectors[y * m_sectorsCount + x].m_LOD;
+			int16 x       = clamp(0, chunkPos.x + offsets[i][0], m_sectorsCount - 1);
+			int16 z       = clamp(0, chunkPos.y + offsets[i][1], m_sectorsCount - 1);
+			uint8 nextLOD = m_sectors[z * m_sectorsCount + x].m_LOD;
 
 			if (nextLOD - LOD == 1)
 			{
@@ -623,14 +638,14 @@ namespace render
 		uint16 index = 0;
 
 		//-- create the sector objects themselves.
-		for (uint16 y = 0; y < m_sectorsCount; ++y)
+		for (uint16 z = 0; z < m_sectorsCount; ++z)
 		{
 			for (uint16 x = 0; x < m_sectorsCount; ++x)
 			{
 				//-- world position of the sector on the XZ plane.
 				vec2f sectorWorldPos(
 					farLeftWorldCorner.x + (x * sectorUnitsSize),
-					farLeftWorldCorner.y + (y * sectorUnitsSize)
+					farLeftWorldCorner.y + (z * sectorUnitsSize)
 					);
 
 				//-- world space AABB of the sector, but without y dimension. It will be calculated
@@ -643,12 +658,18 @@ namespace render
 				//-- height map space position of the sector.
 				vec2us sectorMapPos(
 					farLeftMapCorner.x + x * m_sectorSize,
-					farLeftMapCorner.y + y * m_sectorSize
+					farLeftMapCorner.y + z * m_sectorSize
 					);
 
 				if (!buildSector(sectorWorldPos, sectorMapPos, sectorAABB, index++))
 					return false;
 			}
+		}
+
+		//-- calculate the whole terrain AABB.
+		for (auto iter = m_sectors.cbegin(); iter != m_sectors.cend(); ++iter)
+		{
+			m_aabb.combine(iter->m_aabb);
 		}
 
 		return true;
@@ -664,18 +685,18 @@ namespace render
 
 		//-- fill the vertex stream with x,y positions and uv-coordinates. All other data
 		//-- (height and surface normals) are stored in the vertex buffers of each terrain section.
-		for (uint x = 0; x < m_sectorVerts; ++x)
+		for (uint z = 0; z < m_sectorVerts; ++z)
 		{
-			vert.set(x * m_unitsPerCell, 0.0f);
+			vert.set(0.0f, z * m_unitsPerCell);
 
-			for (uint z = 0; z < m_sectorVerts; ++z)
+			for (uint x = 0; x < m_sectorVerts; ++x)
 			{
-				VertexXZUV& oVert = vertices[(x * m_sectorVerts) + z];
+				VertexXZUV& oVert = vertices[(z * m_sectorVerts) + x];
 
 				oVert.m_xz = vert;
-				oVert.m_uv = vec2f(z * oneDivSector, x * oneDivSector);
+				oVert.m_uv = vec2f(x * oneDivSector, z * oneDivSector);
 
-				vert.y += m_unitsPerCell;
+				vert.x += m_unitsPerCell;
 			}
 		}
 
@@ -699,14 +720,14 @@ namespace render
 		tSector.m_index    = index;
 		tSector.m_worldPos = worldXZPos;
 		tSector.m_aabb	   = aabb;
-		tSector.m_chunkPos = vec2us(mapPos.y / m_sectorSize, mapPos.x / m_sectorSize);
+		tSector.m_chunkPos = vec2us(mapPos.x / m_sectorSize, mapPos.y / m_sectorSize);
 
 		//-- read in the height and normal for each vertex
-		for (uint16 x = 0; x < m_sectorVerts; ++x)
+		for (uint16 z = 0; z < m_sectorVerts; ++z)
 		{
-			for (uint16 z = 0; z < m_sectorVerts; ++z)
+			for (uint16 x = 0; x < m_sectorVerts; ++x)
 			{
-				VertexYN& oVert = vertices[(x * m_sectorVerts) + z];
+				VertexYN& oVert = vertices[(z * m_sectorVerts) + x];
 
 				//-- create vertex with desired height and normal.
 				oVert.m_y	   = readHeight(mapPos.x + x, mapPos.y + z);
@@ -720,8 +741,8 @@ namespace render
 		
 		//-- create mask texture offset.
 		tSector.m_props.m_texOffset = vec4f(
-			mapPos.y / m_sectorSize,
 			mapPos.x / m_sectorSize,
+			mapPos.y / m_sectorSize,
 			1.0f / m_sectorsCount,
 			1.0f / m_sectorsCount
 			);
@@ -772,21 +793,21 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	float TerrainSystem::readHeight(uint16 mapX, uint16 mapY)
+	float TerrainSystem::readHeight(uint16 mapX, uint16 mapZ)
 	{
 		if (mapX >= m_tableSize) mapX = m_tableSize - 1;
-		if (mapY >= m_tableSize) mapY = m_tableSize - 1;
+		if (mapZ >= m_tableSize) mapZ = m_tableSize - 1;
 
-		return m_heightTable[(mapX * m_tableSize) + mapY];
+		return m_heightTable[(mapZ * m_tableSize) + mapX];
 	}
 
 	//----------------------------------------------------------------------------------------------
-	vec3f TerrainSystem::readNormal(uint16 mapX, uint16 mapY)
+	vec3f TerrainSystem::readNormal(uint16 mapX, uint16 mapZ)
 	{
 		if (mapX >= m_tableSize) mapX = m_tableSize - 1;
-		if (mapY >= m_tableSize) mapY = m_tableSize - 1;
+		if (mapZ >= m_tableSize) mapZ = m_tableSize - 1;
 
-		return m_normalTable[(mapX * m_tableSize) + mapY];
+		return m_normalTable[(mapZ * m_tableSize) + mapX];
 	}
 
 } //-- render

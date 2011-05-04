@@ -104,6 +104,7 @@ namespace render
 		float					   m_heightUnits;   //-- units for height value.
 		float					   m_LODDistances[CHUNK_LODS_COUNT];
 		float					   m_sectorRadius;  //-- radius of the circumsphere around sector.
+		AABB					   m_aabb;			//-- the whole terrain AABB.
 		
 		//-- rendering data.
 		EPrimitiveTopology			m_primTopology;
