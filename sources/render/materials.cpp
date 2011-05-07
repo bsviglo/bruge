@@ -362,19 +362,22 @@ namespace render
 
 			//-- 4.2. gather properties for instanced shader if it's available.
 			mPass.m_instanced = (sPass.m_instanced != CONST_INVALID_HANDLE);
-			if (mPass.m_instanced && !gatherPropsForShader(mPass.m_instancedProps, out->m_propsMap, *sc.shader(sPass.m_instanced)))
+			if (mPass.m_instanced)
 			{
-				return nullptr;
-			}
-			else
-			{
-				mPass.m_instancedFx.m_shader	 = sPass.m_instanced;
-				mPass.m_instancedFx.m_vertexDlcr = sPass.m_vertexDclr;
-				mPass.m_instancedFx.m_skinned    = sPass.m_skinned;
-				mPass.m_instancedFx.m_bumped	 = sPass.m_bumped;
-				mPass.m_instancedFx.m_props	     = (mPass.m_instancedProps.size() > 0) ? &mPass.m_instancedProps[0] : nullptr;
-				mPass.m_instancedFx.m_propsCount = mPass.m_instancedProps.size();
-				mPass.m_instancedFx.m_rsProps	 = &out->m_rsProps;
+				if (!gatherPropsForShader(mPass.m_instancedProps, out->m_propsMap, *sc.shader(sPass.m_instanced)))
+				{
+					return nullptr;
+				}
+				else
+				{
+					mPass.m_instancedFx.m_shader	 = sPass.m_instanced;
+					mPass.m_instancedFx.m_vertexDlcr = sPass.m_vertexDclr;
+					mPass.m_instancedFx.m_skinned    = sPass.m_skinned;
+					mPass.m_instancedFx.m_bumped	 = sPass.m_bumped;
+					mPass.m_instancedFx.m_props	     = (mPass.m_instancedProps.size() > 0) ? &mPass.m_instancedProps[0] : nullptr;
+					mPass.m_instancedFx.m_propsCount = mPass.m_instancedProps.size();
+					mPass.m_instancedFx.m_rsProps	 = &out->m_rsProps;
+				}
 			}
 		}
 		return out;
@@ -728,6 +731,61 @@ namespace render
 	{
 		const Pass& rPass = m_passes[pass];
 		return instanced ? &rPass.m_instancedFx : &rPass.m_normalFx;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void PipelineMaterial::addProperty(const char* name, IProperty* prop)
+	{
+		auto iter = m_propsMap.find(name);
+		if (iter == m_propsMap.end())
+		{
+			//-- add to named map.
+			m_propsMap[name] = prop;
+
+			for (uint i = 0; i < ShaderContext::PASS_COUNT; ++i)
+			{
+				PipelineMaterial::Pass&			mPass = m_passes[i];
+				Materials::PipelineShader::Pass	sPass = m_shaders->m_passes[i];
+				
+				//-- normal shader.
+				Handle handle = prop->handle(name, *rs().shaderContext().shader(sPass.m_normal));
+				if (handle != CONST_INVALID_HANDLE)
+				{
+					//-- add to properties pair list.
+					mPass.m_normalProps.push_back(PropertyPair(handle, prop));
+
+					//-- update properties of renderFx.
+					mPass.m_normalFx.m_props	  = (mPass.m_normalProps.size() > 0) ? &mPass.m_normalProps[0] : nullptr;
+					mPass.m_normalFx.m_propsCount = mPass.m_normalProps.size();
+				}
+
+				//-- instanced shader.
+				if (mPass.m_instanced)
+				{
+					Handle handle = prop->handle(name, *rs().shaderContext().shader(sPass.m_instanced));
+					if (handle != CONST_INVALID_HANDLE)
+					{
+						//-- add to properties pair list.
+						mPass.m_instancedProps.push_back(PropertyPair(handle, prop));
+
+						//-- update properties of renderFx.
+						mPass.m_instancedFx.m_props	     = (mPass.m_instancedProps.size() > 0) ? &mPass.m_instancedProps[0] : nullptr;
+						mPass.m_instancedFx.m_propsCount = mPass.m_instancedProps.size();
+					}
+				}
+			}
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	IProperty* PipelineMaterial::getProperty(const char* name)
+	{
+		auto iter = m_propsMap.find(name);
+		if (iter != m_propsMap.end())
+		{
+			return iter->second;
+		}
+		return nullptr;
 	}
 
 } //-- render

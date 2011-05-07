@@ -22,7 +22,7 @@ vs_out main(vs_in i)
 {
 	vs_out o;
 
-	i.pos.y -= 0.1f;
+	i.pos.y -= 0.0f;
 	
 	o.pos = mul(float4(i.pos, 1), g_envTransform).xyww;
 	o.tc  = i.tc;

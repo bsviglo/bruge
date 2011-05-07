@@ -134,6 +134,7 @@ namespace render
 		Ptr<IBuffer>	m_spotLightsTB;
 		Ptr<Mesh>		m_unitCube;
 		Ptr<IBuffer>	m_fsQuadVB;
+		IBuffer*		m_pVB;
 		Ptr<Material>	m_dirLightMaterial;
 		Ptr<Material>	m_spotLightMaterial;
 		Ptr<Material>	m_pointLightMaterial;

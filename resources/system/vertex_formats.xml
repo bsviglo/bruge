@@ -36,4 +36,12 @@
     <attr semantic="TEXCOORD2" stream="0" type="uint"  size="1"/>
   </format>
 
+  <format name="terrain">
+    <attr semantic="TEXCOORD0" stream="0" type="float"  size="2"/>
+    <attr semantic="TEXCOORD1" stream="0" type="float"  size="2"/>
+    
+    <attr semantic="POSITION"  stream="1" type="float" size="1"/>
+    <attr semantic="NORMAL"    stream="1" type="float" size="3"/>
+  </format>
+
 </formatslib>

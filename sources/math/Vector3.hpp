@@ -36,6 +36,7 @@ namespace math
 		inline Vector3<T>		cross			(const Vector3<T>& rt) const;
 		inline float			dot				(const Vector3<T>& rt) const;
 		inline float			length			() const;
+		inline float			flatDist		(const Vector3<T>& rt) const;
 		inline Vector3<T>		scale			(T scale) const;
 		inline void				normalize		();
 		inline Vector3<T>		getNormalized	() const 						{ Vector3<T> v=*this; v.normalize(); return v; }
@@ -89,7 +90,15 @@ namespace math
 	template <class T>
 	inline float Vector3<T>::length() const
 	{
-		return sqrt(x*x + y*y + z*z);
+		return sqrtf(x*x + y*y + z*z);
+	}
+
+	template <class T>
+	inline float Vector3<T>::flatDist(const Vector3<T>& rt) const
+	{
+		T deltaX = this->x - rt.x;
+		T deltaZ = this->z - rt.z;
+		return sqrtf(deltaX*deltaX + deltaZ*deltaZ);
 	}
 
 	template <class T>

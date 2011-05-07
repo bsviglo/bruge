@@ -120,7 +120,12 @@ namespace render
 		PipelineMaterial();
 		~PipelineMaterial();
 
-		const RenderFx* renderFx(ShaderContext::EPassType pass, bool instanced = false);
+		void			addProperty	(const char* name, IProperty* prop);
+		IProperty*		getProperty (const char* name);
+		const RenderFx* renderFx    (ShaderContext::EPassType pass, bool instanced = false);
+
+		//-- ToDo:
+		RenderStateProperties& rsProps() { return m_rsProps; }
 
 	private:
 		struct Pass

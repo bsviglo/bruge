@@ -231,7 +231,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	ShadowManager::ShadowManager()
 		:	m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4), m_uiEnabled(false),
-			m_autoSplitSheme(true), m_bias(1.0f), m_slopeScaleBias(4.0f)
+			m_autoSplitSheme(true), m_bias(1.0f), m_slopeScaleBias(4.0f), m_pVB(nullptr)
 	{
 		REGISTER_CONSOLE_VALUE("r_shadow_adjust_volume",		bool,  g_adjustShadowVolume);
 		REGISTER_CONSOLE_VALUE("r_shadow_use_culling_mat",		bool,  g_useCullingMatrix);
@@ -283,6 +283,8 @@ namespace render
 
 			if (!(m_fsQuadVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
+
+			m_pVB = m_fsQuadVB.get();
 		}
 
 		//-- load material.
@@ -321,9 +323,10 @@ namespace render
 		//-- create rops for drawing.
 		{
 			RenderOp op;
-			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_fsQuadVB;
 			op.m_indicesCount = 4;
+			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+			op.m_VBs		  = &m_pVB;
+			op.m_VBCount	  = 1;
 			op.m_material	  = m_shadowResolveMaterial->renderFx();
 
 			m_receiveROPs.push_back(op);

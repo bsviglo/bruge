@@ -14,6 +14,7 @@
 #include "shadow_manager.hpp"
 #include "post_processing.hpp"
 #include "SkyBox.hpp"
+#include "terrain_system.hpp"
 
 using namespace brUGE;
 using namespace brUGE::utils;
@@ -33,7 +34,8 @@ namespace render
 			m_meshManager(new MeshManager),
 			m_shadowManager(new ShadowManager),
 			m_postProcessing(new PostProcessing),
-			m_skyBox(new SkyBox)
+			m_skyBox(new SkyBox),
+			m_terrainSystem(new TerrainSystem)
 	{
 
 	}
@@ -54,6 +56,7 @@ namespace render
 		success &= m_lightsManager->init();
 		success &= m_meshManager->init();
 		success &= m_skyBox->init();
+		success &= m_terrainSystem->init();
 		
 		//-- ToDo: for now shadow manager initialization depends of post-processing framework. Fix this.
 		success &= m_postProcessing->init();
@@ -88,9 +91,19 @@ namespace render
 			RenderOps ops;
 			{
 				SCOPED_TIME_MEASURER_EX("resolve visibility")
-				m_meshManager->gatherROPs(
-				RenderSystem::PASS_Z_ONLY, false, ops, m_camera->renderCam().m_viewProj
-				);
+				{
+					SCOPED_TIME_MEASURER_EX("meshes")
+					m_meshManager->gatherROPs(
+						RenderSystem::PASS_Z_ONLY, false, ops, m_camera->renderCam().m_viewProj
+						);
+				}
+				{
+					SCOPED_TIME_MEASURER_EX("terrain")
+					m_terrainSystem->gatherROPs(
+						RenderSystem::PASS_Z_ONLY, ops, m_camera->renderCam().m_viewProj,
+						m_camera->renderCam().m_invView.applyToOrigin()
+						);
+				}
 			}
 			
 			rs().beginPass(RenderSystem::PASS_Z_ONLY);
@@ -151,9 +164,19 @@ namespace render
 			RenderOps ops;
 			{
 				SCOPED_TIME_MEASURER_EX("resolve visibility")
-					m_meshManager->gatherROPs(
-					RenderSystem::PASS_MAIN_COLOR, false, ops, m_camera->renderCam().m_viewProj
-					);
+				{
+					SCOPED_TIME_MEASURER_EX("meshes")
+						m_meshManager->gatherROPs(
+						RenderSystem::PASS_MAIN_COLOR, false, ops, m_camera->renderCam().m_viewProj
+						);
+				}
+				{
+					SCOPED_TIME_MEASURER_EX("terrain")
+						m_terrainSystem->gatherROPs(
+						RenderSystem::PASS_MAIN_COLOR, ops, m_camera->renderCam().m_viewProj,
+						m_camera->renderCam().m_invView.applyToOrigin()
+						);
+				}
 			}
 
 			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);

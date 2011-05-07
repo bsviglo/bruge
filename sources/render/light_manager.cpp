@@ -37,7 +37,7 @@ namespace brUGE
 namespace render
 {
 	//----------------------------------------------------------------------------------------------
-	LightsManager::LightsManager()
+	LightsManager::LightsManager() : m_pVB(nullptr)
 	{
 
 	}
@@ -73,6 +73,8 @@ namespace render
 
 			if (!(m_fsQuadVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
+
+			m_pVB = m_fsQuadVB.get();
 		}
 
 		//-- load unit cube.
@@ -128,9 +130,10 @@ namespace render
 		//-- create rops for drawing.
 		{
 			RenderOp op;
-			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_fsQuadVB;
 			op.m_indicesCount = 4;
+			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+			op.m_VBs		  = &m_pVB;
+			op.m_VBCount	  = 1;
 			op.m_instanceTB	  = m_dirLightsTB.get();
 			op.m_material	  = m_dirLightMaterial->renderFx();
 			op.m_instanceSize = sizeof(GPUDirLight);

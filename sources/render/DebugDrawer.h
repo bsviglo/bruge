@@ -72,6 +72,7 @@ namespace render
 
 		std::vector<VertDesc>		m_vertices;
 		Ptr<IBuffer>				m_VB;
+		IBuffer*					m_pVB;
 		Ptr<Material>				m_wireMaterial;
 		RenderOps					m_wireROPs;
 

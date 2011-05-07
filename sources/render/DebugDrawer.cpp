@@ -40,6 +40,8 @@ namespace render
 		{
 			m_VB = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 2048, sizeof(VertDesc),
 				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE);
+
+			m_pVB = m_VB.get();
 		}
 
 		//-- load wire material.
@@ -54,7 +56,8 @@ namespace render
 			{
 				RenderOp op;
 				op.m_primTopolpgy = PRIM_TOPOLOGY_LINE_LIST;
-				op.m_mainVB		  = &*m_VB;
+				op.m_VBs		  = &m_pVB;
+				op.m_VBCount	  = 1;
 				op.m_indicesCount = 0;
 				op.m_material	  = m_wireMaterial->renderFx();
 
@@ -447,11 +450,14 @@ namespace render
 				"The new size is = %d kb", m_VB->getSize() / 1024);
 		}
 
-		void* vb = m_VB->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
+		if (void* vb = m_VB->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
+		{
 			memcpy(vb, &m_vertices[0], sizeof(VertDesc) * m_vertices.size());
-		m_VB->unmap();
+			m_VB->unmap();
+		}
 
-		m_wireROPs[0].m_mainVB = m_VB.get();
+		m_pVB = m_VB.get();
+		m_wireROPs[0].m_VBs = &m_pVB;
 	}
 
 	//---------------------------------------------------------------------------------------------

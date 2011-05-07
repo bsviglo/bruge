@@ -62,6 +62,9 @@
     <Filter Include="render\framework\sky">
       <UniqueIdentifier>{2d814f5d-051e-425c-b964-ba38c8012b33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\terrain">
+      <UniqueIdentifier>{6d17bc84-18a3-4341-a0b9-f899b49ce1d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -183,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\mesh_collector.cpp">
       <Filter>render\framework\meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\terrain_system.cpp">
+      <Filter>render\framework\terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -326,6 +332,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\mesh_collector.hpp">
       <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\terrain_system.hpp">
+      <Filter>render\framework\terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

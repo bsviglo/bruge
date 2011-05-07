@@ -1,0 +1,17 @@
+<material use="terrain">
+  <properties>
+    <property name="maskMap" type="texture" value="textures/terrain/terrain_mask.dds"/>
+    <property name="layerMap1" type="texture" value="textures/terrain/sand.dds">
+      <sampler filter="ANISO" wrapping="WRAP"/>
+    </property>
+    <property name="layerMap2" type="texture" value="textures/terrain/grass.dds">
+      <sampler filter="ANISO" wrapping="WRAP"/>
+    </property>
+    <property name="layerMap3" type="texture" value="textures/terrain/rock.dds">
+      <sampler filter="ANISO" wrapping="WRAP"/>
+    </property>
+    <property name="layerMap4" type="texture" value="textures/terrain/under_water.dds">
+      <sampler filter="ANISO" wrapping="WRAP"/>
+    </property>
+  </properties>
+</material>

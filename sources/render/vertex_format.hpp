@@ -64,6 +64,22 @@ namespace render
 		vec3f m_binormal;
 	};
 
+	//-- xz-position, and texture coordinates. Used for terrain.
+	//----------------------------------------------------------------------------------------------
+	struct VertexXZUV
+	{
+		vec2f m_xz;
+		vec2f m_uv;
+	};
+
+	//-- y-position and normal. Used for terrain.
+	//----------------------------------------------------------------------------------------------
+	struct VertexYN
+	{
+		float m_y;
+		vec3f m_normal;
+	};
+
 #pragma pack(pop)
 
 } //-- render

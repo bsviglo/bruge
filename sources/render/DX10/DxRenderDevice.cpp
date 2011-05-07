@@ -294,6 +294,7 @@ namespace render
 	{
 		// ToDo:
 		DXShader::resetToDefaults();
+		m_dxDevice->ClearState();
 	}
 
 	//------------------------------------------
@@ -332,7 +333,7 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::doClear(uint clearFlags, const Color& color, float depth, uint8 stencil)
 	{
-		if (m_mainColorRT && clearFlags & CLEAR_COLOR)
+		if (m_mainColorRT && (clearFlags & CLEAR_COLOR))
 		{
 			m_dxDevice->ClearRenderTargetView(toDxTex(m_mainColorRT)->getRTView(), color.toPtr());
 		}

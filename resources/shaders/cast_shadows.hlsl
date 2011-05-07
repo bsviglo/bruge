@@ -4,7 +4,10 @@
 struct vs_out
 {
 	float4 pos : SV_POSITION;
+
+#ifdef PIN_ALPHA_TEST
 	float2 tc  : TEXCOORD0;
+#endif
 };
 
 #ifdef _VERTEX_SHADER_
@@ -40,7 +43,10 @@ vs_out main(vs_in i)
 	o.pos = mul(float4(i.pos, 1), g_MVPMat);
 #endif
 
+#ifdef PIN_ALPHA_TEST
 	o.tc  = i.tc;
+#endif
+
 	return o;
 };
 

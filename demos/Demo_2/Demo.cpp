@@ -7,6 +7,7 @@
 #include "render/animation_engine.hpp"
 #include "render/physic_world.hpp"
 #include "render/post_processing.hpp"
+#include "render/terrain_system.hpp"
 #include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
@@ -59,8 +60,8 @@ bool Demo::init()
 	{
 		Projection proj;
 		proj.fov	  = 60.0f;
-		proj.nearDist = 0.25f;
-		proj.farDist  = 200.0f;
+		proj.nearDist = 0.5f;
+		proj.farDist  = 500.0f;
 
 		m_camera = new FreeCamera(proj);
 	}
@@ -81,7 +82,7 @@ bool Demo::init()
 	engine.renderWorld().setCamera(m_camera);
 	
 	//-- plane.
-	gameWorld.addGameObj("resources/models/plane.xml", &mat);
+	//gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
 	for (uint i = 0; i < 5; ++i)
@@ -110,7 +111,7 @@ bool Demo::init()
 		}
 	}
 
-	for (uint i = 0; i < 100; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
 		mat.setIdentity();
 		mat.setRotateY(random() * 6.24f);
@@ -119,7 +120,7 @@ bool Demo::init()
 		gameWorld.addGameObj("resources/models/palm.xml", &mat);
 	}
 
-	for (uint i = 0; i < 100; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
 		mat.setIdentity();
 		mat.setRotateY(random() * 6.24f);
@@ -128,7 +129,7 @@ bool Demo::init()
 		gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
 	}
 
-	for (uint i = 0; i < 100; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
 		mat.setIdentity();
 		mat.setRotateY(random() * 6.24f);
@@ -137,7 +138,7 @@ bool Demo::init()
 		gameWorld.addGameObj("resources/models/pole.xml", &mat);
 	}
 
-	for (uint i = 0; i < 100; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
 		mat.setIdentity();
 		mat.setRotateY(random() * 6.24f);
@@ -156,6 +157,9 @@ bool Demo::init()
 
 	//-- loop idle animation.
 	animEngine.playAnim(player->animCtrl(), "idle", true);
+
+	//-- load terrain.
+	engine.renderWorld().terrainSystem().temporal_hardcoded_load();
 
 	/*
 	const char* anims[] = 

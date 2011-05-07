@@ -205,7 +205,7 @@ namespace brUGE
 namespace render
 {
 	//----------------------------------------------------------------------------------------------
-	imguiRender::imguiRender() : m_scissor(false)
+	imguiRender::imguiRender() : m_scissor(false), m_pVB(nullptr)
 	{
 
 	}
@@ -353,8 +353,10 @@ namespace render
 
 		//-- create geometry vertex buffer.
 		{
-			m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 16348, sizeof(GuiVertex),
+			m_VB = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, 16348, sizeof(GuiVertex),
 				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE);
+
+			m_pVB = m_VB.get();
 		}
 
 		//-- load material.
@@ -369,8 +371,9 @@ namespace render
 			{
 				RenderOp op;
 				op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
-				op.m_mainVB		  = &*m_vb;
 				op.m_indicesCount = 0;
+				op.m_VBs		  = &m_pVB;
+				op.m_VBCount	  = 1;
 				op.m_material	  = m_material->renderFx();
 
 				m_geomROPs.push_back(op);
@@ -410,10 +413,10 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void imguiRender::_swapBuffers()
 	{
-		if (void* vb = m_vb->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
+		if (void* vb = m_VB->map<void>(IBuffer::ACCESS_WRITE_DISCARD))
 		{
 			memcpy(vb, &m_vertices[0], sizeof(GuiVertex) * m_vertices.size());
-			m_vb->unmap();
+			m_VB->unmap();
 		}
 
 		m_geomROPs[0].m_indicesCount = m_vertices.size();

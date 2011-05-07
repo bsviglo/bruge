@@ -6,6 +6,7 @@
 #include "utils/string_utils.h"
 #include "vertex_declarations.hpp"
 
+
 using namespace brUGE;
 using namespace brUGE::render;
 using namespace brUGE::math;
@@ -277,7 +278,7 @@ namespace
 		SamplerStateID m_samplerID;
 		ShaderContext& m_sc;
 	};
-	
+
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -322,7 +323,7 @@ namespace render
 		m_autoProperties["t_auto_lightsMask"]		= new LightsMaskAutoProperty(*this);
 		m_autoProperties["t_auto_shadowsMask"]		= new ShadowsMaskAutoProperty(*this);
 
-		//-- init shader uniform buffers.
+		//-- init shared uniform buffers.
 		m_perframeCB = rd()->createBuffer(
 			IBuffer::TYPE_UNIFORM, nullptr, 1, sizeof(PerFrameConstants),
 			IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
@@ -420,7 +421,7 @@ namespace render
 			Properties props;
 			{
 				//-- ToDo: reconsider.
-				//-- retrive per-frame properties.
+				//-- retrieve per-frame properties.
 				Handle handle = shader->getHandleUniformBlock("cb_auto_PerFrame");
 				if (handle != CONST_INVALID_HANDLE)
 				{

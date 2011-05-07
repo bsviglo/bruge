@@ -12,7 +12,19 @@
     </pass>
   </material>
 
-  <pipeline_shader name="ambient">
+  <material name="terrain">
+    <pass type="Z_PRE_PASS" vertex="terrain" bumped="false" skinned="false">
+      <shader type="NORMAL" src="terrain_z_pre_pass"/>
+    </pass>
+    <pass type="MAIN_COLOR" vertex="terrain" bumped="false" skinned="false">
+      <shader type="NORMAL" src="terrain_color"/>
+    </pass>
+    <pass type="SHADOW_CAST" vertex="terrain" bumped="false" skinned="false">
+      <shader type="NORMAL" src="terrain_shadow_cast"/>
+    </pass>
+  </material>
+
+  <material name="ambient">
     <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="z_pre_pass"/>
     </pass>
@@ -22,7 +34,7 @@
     <pass type="SHADOW_CAST" vertex="xyzuvn" bumped="false" skinned="false">
       <shader type="NORMAL" src="cast_shadows"/>
     </pass>
-	</pipeline_shader>
+	</material>
 
   <material name="diffuse">
     <pass type="Z_PRE_PASS" vertex="xyzuvn" bumped="false" skinned="false">
