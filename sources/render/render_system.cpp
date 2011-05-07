@@ -5,7 +5,7 @@
 #include "IRenderDevice.h"
 #include "render_dll_Interface.h"
 #include "materials.hpp"
-#include "shader_context.hpp"
+#include "materials.hpp"
 
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
@@ -23,17 +23,18 @@ using namespace brUGE::math;
 namespace
 {
 	//-- 
-	ShaderContext::EShaderRenderPassType g_render2shaderPass[] = 
+	ShaderContext::EPassType g_render2shaderPass[] = 
 	{
-		ShaderContext::SHADER_RENDER_PASS_Z_ONLY,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_SHADOW_CAST,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_MAIN_COLOR,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED,
-		ShaderContext::SHADER_RENDER_PASS_UNDEFINED
+		ShaderContext::PASS_Z_ONLY,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_SHADOW_CAST,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_MAIN_COLOR,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_UNDEFINED,
+		ShaderContext::PASS_UNDEFINED
 	};
 
 	//-- 
@@ -70,7 +71,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	RenderSystem::RenderSystem()
 		:	m_renderAPI(RENDER_API_DX10),
-			m_shaderContext(new ShaderContext)
+			m_shaderContext(new ShaderContext),
+			m_materials(new Materials)
 
 	{
 		//-- register console functions.
@@ -120,16 +122,11 @@ namespace render
 			return false;
 		}
 
-		if (!m_materials.init())
+		if (!m_materials->init())
 		{
 			return false;
 		}
 
-		if (!m_postProcessing.init())
-		{
-			return false;
-		}
-		
 		//-- register watchers.
 		REGISTER_RO_WATCHER("primitives count", uint, m_device->m_primitivesCount);
 		REGISTER_RO_WATCHER("draw calls count", uint, m_device->m_drawCallsCount);
@@ -143,9 +140,10 @@ namespace render
 		if (m_dynamicLib.isLoaded())
 		{
 			_finiPasses();
-			m_postProcessing.fini();
-			m_materials.fini();
+
+			m_materials.reset();
 			m_shaderContext.reset();
+
 			m_device->resetToDefaults();
 			m_device->shutDown();
 
@@ -182,6 +180,10 @@ namespace render
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
+			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 	
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -322,7 +324,8 @@ namespace render
 			rDesc.multisampleEnable = 0;
 
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
-			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+			pass.m_stateR_doubleSided = pass.m_stateR;
+			pass.m_stateR_wireframe = pass.m_stateR; 
 
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -361,6 +364,29 @@ namespace render
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
+
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
+			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- PASS_SKY
+		{
+			PassDesc& pass = m_passes[PASS_SKY];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = false;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
 			pass.m_stateB = m_device->createBlendState(bDesc);
@@ -460,7 +486,8 @@ namespace render
 		{
 		case PASS_Z_ONLY:
 			{
-				m_device->clear(CLEAR_DEPTH, Color(), 1.0f, 0);
+				m_device->backToMainFrameBuffer();
+				m_device->clear(CLEAR_DEPTH | CLEAR_STENCIL, Color(), 1.0f, 0);
 				m_device->clearColorRT(pass.m_rt.get(), Color(1,1,1,1));
 				m_device->setRenderTarget(pass.m_rt.get(), rd()->getMainDepthRT());
 
@@ -526,6 +553,17 @@ namespace render
 				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
 				break;
 			}
+		case PASS_SKY:
+			{
+				m_device->backToMainFrameBuffer();
+
+				m_device->setRasterizerState(pass.m_stateR);
+				m_device->setDepthStencilState(pass.m_stateDS, 0);
+				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
+
+				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
+				break;
+			}
 		case PASS_POST_PROCESSING:
 			{
 				break;
@@ -554,7 +592,7 @@ namespace render
 			}
 		default:
 			{
-				assert(0 && "invalid pass type.");
+				assert(!"invalid pass type.");
 				return false;
 			}
 		};
@@ -591,41 +629,42 @@ namespace render
 	void RenderSystem::addImmediateROPs(const RenderOps& ops)
 	{
 		RenderOps rOps = ops;
-		_doDraw(rOps, true);
+		_doDraw(rOps);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderSystem::_doDraw(RenderOps& ops, bool immediate)
+	void RenderSystem::_doDraw(RenderOps& ops)
 	{
 		for (uint i = 0; i < ops.size(); ++i)
 		{
-			RenderOp&					ro = ops[i];
-			const RenderFx&				fx = *ro.m_material;
-			const Materials::MatShader& sm = *fx.m_shader;
+			RenderOp&		ro   = ops[i];
+			const RenderFx&	fx   = *ro.m_material;
+			PassDesc&		pass = m_passes[m_pass];	
 
-			m_device->setVertexLayout(sm.m_shader[g_render2shaderPass[m_pass]].second);
+			m_device->setVertexLayout(fx.m_vertexDlcr);
 
-			if (!immediate)
+			//-- ToDo: reconsider.
+			if (fx.m_rsProps)
 			{
-				if (fx.m_sysProps.m_doubleSided)
-				{
-					rd()->setRasterizerState(m_passes[m_pass].m_stateR_doubleSided);
-				}
-				else
-				{
-					rd()->setRasterizerState(m_passes[m_pass].m_stateR);
-				}
+				m_device->setRasterizerState(
+					fx.m_rsProps->m_doubleSided ? pass.m_stateR_doubleSided : pass.m_stateR
+					);
+
+				m_device->setRasterizerState(
+					fx.m_rsProps->m_wireframe ? pass.m_stateR_wireframe : pass.m_stateR
+					);
 			}
 
-			if (sm.m_isBumpMaped)
-			{
-				IBuffer* buffers[2] = { ro.m_mainVB, ro.m_tangentVB };
-				m_device->setVertexBuffers(0, buffers, 2);
-			}
-			else
-			{
-				m_device->setVertexBuffer(0, ro.m_mainVB);
-			}
+			//if (fx.m_bumped)
+			//{
+			//	IBuffer* buffers[2] = { ro.m_mainVB, ro.m_tangentVB };
+			//	m_device->setVertexBuffers(0, buffers, 2);
+			//}
+			//else
+			//{
+			//	m_device->setVertexBuffer(0, ro.m_mainVB);
+			//}
+			m_device->setVertexBuffers(0, ro.m_VBs, ro.m_VBCount);
 
 			if (ro.m_IB)
 			{
@@ -633,7 +672,7 @@ namespace render
 			}
 
 			//-- apply shader for current pass.
-			m_shaderContext->applyFor(&ro, g_render2shaderPass[m_pass]);
+			m_shaderContext->applyFor(&ro);
 
 			if (ro.m_instanceCount != 0)
 			{
@@ -664,6 +703,12 @@ namespace render
 				}
 			}
 		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	ShaderContext::EPassType RenderSystem::shaderPass(EPassType type) const
+	{
+		return g_render2shaderPass[type];
 	}
 
 	// console functions.

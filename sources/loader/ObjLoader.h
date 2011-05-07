@@ -19,7 +19,7 @@ namespace brUGE
 	class ObjLoader
 	{
 	public:
-		Ptr<render::Mesh> load(const utils::ROData& data);
+		Ptr<render::Mesh> load(const utils::ROData& data, bool simpleMaterial);
 	};
 
 } // end brUGE

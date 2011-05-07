@@ -1,24 +1,40 @@
 <materials>
 	<material use="bump_alpha_test">
 		<properties>
-			<property name="diffuseMap" type="texture" value="textures/palm/PalmLeaves.dds"/>
-      <property name="bumpMap" type="texture" value="textures/palm/PalmLeaves_Normal.dds"/>
-      <property name="alphaRef" type="float" value="128"/>
-      <property name="doubleSided" type="float" value="1"/>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmLeaves.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmLeaves_Normal.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
+      <property name="g_alphaRef" type="byte" value="128"/>
 		</properties>
+    <render_states>
+      <state name="doubleSided" value="true"/>
+    </render_states>
 	</material>
 	<material use="bump">
 		<properties>
-			<property name="diffuseMap" type="texture" value="textures/palm/PalmBark.dds"/>
-      <property name="bumpMap" type="texture" value="textures/palm/PalmBark_Normal.dds"/>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmBark.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmBark_Normal.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
 		</properties>
 	</material>
 	<material use="bump_alpha_test">
 		<properties>
-			<property name="diffuseMap" type="texture" value="textures/palm/PalmFrond.dds"/>
-      <property name="bumpMap" type="texture" value="textures/palm/PalmFrond_Normal.dds"/>
-      <property name="alphaRef" type="float" value="128"/>
-      <property name="doubleSided" type="float" value="1"/>
-		</properties>
+			<property name="diffuseMap" type="texture" value="textures/palm/PalmFrond.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
+      <property name="bumpMap" type="texture" value="textures/palm/PalmFrond_Normal.dds">
+        <sampler filter="ANISO" wrapping="WRAP"/>
+      </property>
+      <property name="g_alphaRef" type="byte" value="128"/>
+ 		</properties>
+    <render_states>
+      <state name="doubleSided" value="true"/>
+    </render_states>
 	</material>
 </materials>

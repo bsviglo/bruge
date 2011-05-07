@@ -1,5 +1,6 @@
 #include "common.hlsl"
 
+//--------------------------------------------------------------------------------------------------
 struct vs_out
 {
 	float4 pos		: SV_POSITION;	
@@ -9,6 +10,7 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
+//--------------------------------------------------------------------------------------------------
 struct vs_in
 {                                           
 	float4 pos		: POSITION;
@@ -16,6 +18,7 @@ struct vs_in
 	float4 color	: COLOR0;
 };
 
+//--------------------------------------------------------------------------------------------------
 vs_out main(vs_in i)
 {
     vs_out o;
@@ -29,12 +32,13 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
-sampler 		 fontSampl;
-Texture2D<float> fontTex;
+//--------------------------------------------------------------------------------------------------
+texture2D(float, font);
 
+//--------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {	
-    return float4(i.color.xyz, i.color.w * fontTex.Sample(fontSampl, i.texCoord));
+    return float4(i.color.xyz, i.color.w * sample2D(font, i.texCoord));
 }
 
 #endif

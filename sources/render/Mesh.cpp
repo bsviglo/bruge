@@ -19,6 +19,9 @@ using namespace brUGE::utils;
 namespace
 {
 
+	//-- ToDo: reconsider.
+	uint g_instancingCounter = 0;
+
 	//----------------------------------------------------------------------------------------------
 	void buildTangentBasic(
 		const vec3f& pos1, const vec3f& pos2, const vec3f& pos3,
@@ -138,7 +141,7 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	Mesh::Mesh()
+	Mesh::Mesh() : m_instacingID(g_instancingCounter++)
 	{
 
 	}
@@ -194,24 +197,27 @@ namespace render
 			indicesCount = oIndices.size();
 			primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
 
-			mainVB	  = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oVertices[0], vertices.size(), sizeof(Vertex));
-			tangentVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oTangents[0], vertices.size(), sizeof(Tangent));
-			IB		  = rd()->createBuffer(IBuffer::TYPE_INDEX,  &oIndices[0],  oIndices.size(), sizeof(uint16));
+			VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oVertices[0], vertices.size(), sizeof(Vertex));
+			VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oTangents[0], vertices.size(), sizeof(Tangent));
+			IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &oIndices[0],  oIndices.size(), sizeof(uint16));
 		}
 		else
 		{
-			mainVB	  = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
-			tangentVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
-			IB		  = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	   faces.size() * 3, sizeof(uint16));
+			VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
+			VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
+			IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	faces.size() * 3, sizeof(uint16));
 
 			primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
 			indicesCount = faces.size() * 3;
 		}
 
-		if (!mainVB || !tangentVB || !IB)
+		if (!VBs[0] || !VBs[1] || !IB)
 		{
 			return false;
 		}
+
+		pVBs[0] = VBs[0].get();
+		pVBs[1] = VBs[1].get();
 
 		return true;
 	}
@@ -229,10 +235,8 @@ namespace render
 			vec3f pos2 = vertices[b].pos;
 			vec3f pos3 = vertices[c].pos;
 
-			vec3f normal(0.0f, 0.0f, 0.0f);
-
 			//calculate normal vector and normalize it
-			normal = (pos2 - pos1).cross(pos3 - pos1);
+			vec3f normal = (pos2 - pos1).cross(pos3 - pos1);
 			normal.normalize();
 
 			//calculate average value of normal vector
@@ -288,7 +292,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	uint Mesh::gatherRenderOps(RenderOps& ops) const
+	uint Mesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 
@@ -296,12 +300,20 @@ namespace render
 		{
 			const Mesh::SubMesh& sm = *m_submeshes[i];
 
+			if (sm.pMaterial)
+			{
+				op.m_material = sm.pMaterial->renderFx(rs().shaderPass(pass), instanced);
+			}
+			else
+			{
+				op.m_material = sm.sMaterial->renderFx();
+			}
+
 			op.m_primTopolpgy	= PRIM_TOPOLOGY_TRIANGLE_LIST;
-			op.m_IB				= &*sm.IB;
-			op.m_mainVB			= &*sm.mainVB;
-			op.m_tangentVB		= &*sm.tangentVB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material->renderFx();
+			op.m_IB				= &*sm.IB;
+			op.m_VBs			= sm.pVBs;
+			op.m_VBCount		= (op.m_material->m_bumped) ? 2 : 1;
 
 			ops.push_back(op);
 		}
@@ -358,7 +370,7 @@ namespace render
 */
 	
 	//----------------------------------------------------------------------------------------------
-	uint SkinnedMesh::gatherRenderOps(RenderOps& ops) const
+	uint SkinnedMesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 
@@ -366,13 +378,13 @@ namespace render
 		{
 			const SkinnedMesh::SubMesh& sm = *m_submeshes[i];
 
+			op.m_material		= sm.material->renderFx(rs().shaderPass(pass), instanced);
 			op.m_primTopolpgy	= PRIM_TOPOLOGY_TRIANGLE_LIST;
-			op.m_IB				= &*sm.IB;
-			op.m_mainVB			= &*sm.mainVB;
-			op.m_tangentVB		= &*sm.tangentVB;
-			op.m_weightsTB		= &*sm.weightsTB;
 			op.m_indicesCount	= sm.indicesCount;
-			op.m_material		= sm.material->renderFx();
+			op.m_IB				= &*sm.IB;
+			op.m_VBs			= sm.pVBs;
+			op.m_VBCount		= op.m_material->m_bumped ? 2 : 1;
+			op.m_weightsTB		= &*sm.weightsTB;
 
 			ops.push_back(op);
 		}
@@ -412,9 +424,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool SkinnedMesh::SubMesh::buildBuffers()
 	{
-		mainVB	  = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
-		tangentVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
-		IB		  = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	   faces.size() * 3, sizeof(uint16));
+		VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
+		VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
+		IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	faces.size() * 3, sizeof(uint16));
 
 		//-- Note: Be careful with texture buffer, because it has to be 16 bytes aligned.
 		{
@@ -433,10 +445,13 @@ namespace render
 		primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
 		indicesCount = faces.size() * 3;
 
-		if (!mainVB || !tangentVB || !IB || !weightsTB)
+		if (!VBs[0] || !VBs[1] || !IB || !weightsTB)
 		{
 			return false;
 		}
+
+		pVBs[0] = VBs[0].get();
+		pVBs[1] = VBs[1].get();
 
 		return true;
 	}

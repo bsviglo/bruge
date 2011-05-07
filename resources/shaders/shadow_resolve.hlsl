@@ -49,7 +49,7 @@ vs_out main(in vs_in i)
 
 //--------------------------------------------------------------------------------------------------
 texture2D(float4, t_auto_depthMap);
-texture2D(float, g_shadowMap);
+texture2D(float,  g_shadowMap);
 texture2D(float4, g_noiseMap);
 
 static uint PCF_NUM_SAMPLES = 16;

@@ -9,15 +9,22 @@ struct vs_out
 
 #ifdef _VERTEX_SHADER_
 
+#ifdef PIN_INSTANCED
+	//-- instancing auto variable.
+	tbuffer tb_auto_Instancing
+	{
+		float4x4 g_instances[128];
+	};
+#endif
+
 //--------------------------------------------------------------------------------------------------
 struct vs_in
 {
 	float3 pos		: POSITION;
 	float2 tc		: TEXCOORD0;
 	float3 normal	: NORMAL;
-#ifdef PIN_BUMP_MAP
-	float3 tangent	: TANGENT;
-	float3 binormal : BINORMAL;
+#ifdef PIN_INSTANCED
+	uint   instID	: SV_InstanceID;
 #endif
 };
 
@@ -25,8 +32,16 @@ struct vs_in
 vs_out main(vs_in i)
 {
 	vs_out o;
-	
-	o.pos = mul(float4(i.pos, 1), g_MVPMat);
+
+#ifdef PIN_INSTANCED
+	float4x4 worldMat = g_instances[i.instID];
+#else
+	float4x4 worldMat = g_worldMat;
+#endif
+
+	float4 wPos = mul(float4(i.pos, 1), worldMat);
+	o.pos		= mul(wPos, g_viewProjMat); 
+
 	o.tc  = i.tc;
 
 	return o;
@@ -38,7 +53,7 @@ vs_out main(vs_in i)
 #ifdef _FRAGMENT_SHADER_
 
 //--------------------------------------------------------------------------------------------------
-texture2D(float4, t_auto_diffuseMap);
+texture2D(float4, diffuseMap);
 texture2D(float4, t_auto_decalsMask);
 texture2D(float4, t_auto_lightsMask);
 texture2D(float4, t_auto_shadowsMask);
@@ -47,7 +62,7 @@ texture2D(float4, t_auto_shadowsMask);
 float4 main(vs_out i) : SV_TARGET
 {
 	float2 ssc		   = i.pos.xy * g_screenRes.zw;
-	float4 srcColor    = sample2D(t_auto_diffuseMap,  i.tc);
+	float4 srcColor    = sample2D(diffuseMap,  i.tc);
 	float4 decalColor  = sample2D(t_auto_decalsMask,  ssc);
 	float4 lightsMask  = sample2D(t_auto_lightsMask,  ssc);
 	float4 shadowsMask = sample2D(t_auto_shadowsMask, ssc);

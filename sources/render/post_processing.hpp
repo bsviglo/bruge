@@ -23,7 +23,6 @@ namespace render
 		~PostProcessing();
 
 		bool init();
-		bool fini();
 
 		void update(float dt);
 		void draw();
@@ -150,6 +149,7 @@ namespace render
 		RenderTargetMap	m_rts;
 		RenderOps		m_rops;
 		Ptr<IBuffer>	m_fsQuad;
+		IBuffer*		m_pVB;
 		PostEffects		m_effects;
 		int				m_curEffectID;
 

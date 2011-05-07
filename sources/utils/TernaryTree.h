@@ -29,12 +29,12 @@ namespace utils
 
 		// returns true or false if not found.
 		//------------------------------------------
-		bool search(const CHAR* s, VALUE*& value)
+		bool search(const CHAR* s, VALUE& value) const
 		{   
 			NodeIndex nId = 0; // root index;
 			while (nId >= 0 && nId < numNodes()) 
 			{
-				Node& node = m_nodes[nId];
+				const Node& node = m_nodes[nId];
 				if (*s < node.splitchar)
 				{
 					nId = node.lokid;
@@ -47,7 +47,7 @@ namespace utils
 				{
 					if (*s++ == 0)
 					{
-						value = &node.val;
+						value = node.val;
 						return true;
 					}
 					nId = node.eqkid;

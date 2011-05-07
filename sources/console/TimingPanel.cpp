@@ -1,8 +1,8 @@
 #include "TimingPanel.h"
 #include "Console.h"
-#include "render/Color.h"
 #include "utils/string_utils.h"
 #include "loader/ResourcesManager.h"
+#include "gui/imgui.h"
 
 using namespace brUGE::render;
 using namespace brUGE::utils;
@@ -11,36 +11,20 @@ using namespace brUGE::utils;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-	const float g_updateInterval	= 0.1f;
-	const uint  g_tabSize		    = 2;
-	const uint  g_timeOffset		= 35;
-	const float g_vertOffsetPercent = 0.05f;
-
-	//-- global to this module constants.
-	const Color g_headerColor(1.0f, 1.0f, 0.0f);
-	const Color g_curColor	 (1.0f, 1.0f, 1.0f);
-	const Color g_rowColor	 (1.0f, 1.0f, 0.0f);
+	const float g_updateInterval = 0.2f;
 
 	//---------------------------------------------------------------------------------------------
-	inline const char* formatStr(
-		std::string& out, uint level, const char* name, float timeInPercent, uint64 time
-		)
+	inline void formatStr(std::string& out, float timeInPercent, uint64 time)
 	{
 		uint64 ms = time / 1000;
 
-		std::string offset1(level * g_tabSize, ' ');
-		std::string offset2(g_timeOffset - (level * g_tabSize + strlen(name)), ' ');
-		std::string offset3((timeInPercent < 100) ? ((timeInPercent < 10) ? 2 : 1) : 0, ' ');
-		std::string offset4(((ms < 100) ? ((ms < 10) ? 2 : 1) : 0), '0');
+		std::string offset1((timeInPercent < 100) ? ((timeInPercent < 10) ? 2 : 1) : 0, ' ');
+		std::string offset2(((ms < 100) ? ((ms < 10) ? 2 : 1) : 0), '0');
 
-		out = makeStr("%s%s%s %s%.2f%% %s%.3f us \n",
-			offset1.c_str(), name, offset2.c_str(), offset3.c_str(),
-			timeInPercent, offset4.c_str(), time * 0.001f
+		out = makeStr("%s%.2f%% %s%.3f us",
+			offset1.c_str(), timeInPercent, offset2.c_str(), time * 0.001f
 			);		
-
-		return out.c_str();
 	}
-
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -54,7 +38,8 @@ namespace brUGE
 	//---------------------------------------------------------------------------------------------
 	TimingPanel::TimingPanel()
 		:	m_isVisible(false), m_updateTime(0.0f), m_needForceUpdate(true), m_totalFrameTime(1.0f),
-			m_measuresPerUpdate(1), m_root(-1), m_curNode(-1), m_rootMeasurer(1) //-- ToDo:
+			m_measuresPerUpdate(1), m_root(-1), m_curNode(-1), m_rootMeasurer(1), //-- ToDo:
+			m_scroll(0)
 	{
 		//-- insert this node as the first node in list to eliminate unnecessary run-time checking.
 		_insertNode(MeasureNode("parent of root", -1));
@@ -72,12 +57,6 @@ namespace brUGE
 	//---------------------------------------------------------------------------------------------
 	bool TimingPanel::init()
 	{
-		m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
-		if (!m_font.isValid())
-			return false;
-
-		m_font->getDesc(m_fontDesc);
-
 		return true;
 	}
 	
@@ -96,23 +75,22 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void TimingPanel::draw(float /*dt*/)
+	void TimingPanel::visualize()
 	{
 		if (!m_isVisible) return;
 
-		m_offset = vec2f(0.0f, m_fontDesc.height + 1);
-		m_font->beginDraw();
+		uint height = rs().screenRes().height;
 
-			m_font->draw2D(m_offset, g_headerColor, "Real-time timing console.");
-			m_offset.y += 2.0f * (m_fontDesc.height * (1.0f + g_vertOffsetPercent));
-
-			m_font->draw2D(m_offset, g_headerColor, "Stats: %.3f us (%.2f fps).",
-				m_totalFrameTime * 0.001f, 1000000.0f / m_totalFrameTime
+		imguiBeginScrollArea("Real-time timing console", 10, height*0.4, 400, height*0.6-10, &m_scroll);
+		{
+			imguiLabel(
+				makeStr("Stats: %.3f us (%.2f fps).",
+				m_totalFrameTime * 0.001f, 1000000.0f / m_totalFrameTime).c_str()
 				);
 
-			_recursiveDraw(m_root);
-
-		m_font->endDraw();
+			_recursiveVisualize(m_root);
+		}
+		imguiEndScrollArea();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -145,22 +123,27 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void TimingPanel::_recursiveDraw(TimingPanel::MeasureNodeID nodeID)
+	void TimingPanel::_recursiveVisualize(TimingPanel::MeasureNodeID nodeID)
 	{
-		const MeasureNode& node = _getNode(nodeID);
+		MeasureNode& node = _getNode(nodeID);
 
-		m_offset.y += m_fontDesc.height * (1.0f + g_vertOffsetPercent);
-		m_font->draw2D(m_offset, g_rowColor, node.visual.common);
-
-		if (node.visual.showChilds && !node.childs.empty())
+		if (node.childs.empty())
 		{
-			for (uint i = 0; i < node.childs.size(); ++i)
+			imguiKeyValue(node.name.c_str(), node.visual.common.c_str());
+		}
+		else
+		{
+			imguiCollapse(node.name.c_str(), node.visual.common.c_str(), &node.visual.showChilds);
+			if (node.visual.showChilds)
 			{
-				_recursiveDraw(node.childs[i]);
+				imguiIndent();
+				for (uint i = 0; i < node.childs.size(); ++i)
+				{
+					_recursiveVisualize(node.childs[i]);
+				}
+				imguiKeyValue("<remainder>", node.visual.remainder.c_str());
+				imguiUnindent();
 			}
-
-			m_offset.y += m_fontDesc.height * (1.0f + g_vertOffsetPercent);
-			m_font->draw2D(m_offset, g_rowColor, node.visual.remainder);
 		}
 	}
 
@@ -171,10 +154,7 @@ namespace brUGE
 		const uint64 time		   = node.time / m_measuresPerUpdate;
 		const uint64 remainderTime = node.remainderTime / m_measuresPerUpdate;
 
-		formatStr(
-			node.visual.common, level, node.name.c_str(),
-			(time / m_totalFrameTime) * 100.0f, time
-			);
+		formatStr(node.visual.common, (time / m_totalFrameTime) * 100.0f, time);
 
 		if (!node.childs.empty())
 		{
@@ -184,8 +164,7 @@ namespace brUGE
 			}
 
 			formatStr(
-				node.visual.remainder, level + 1, "<remainder>",
-				(remainderTime / m_totalFrameTime) * 100.0f, remainderTime
+				node.visual.remainder, (remainderTime / m_totalFrameTime) * 100.0f, remainderTime
 				);
 		}
 

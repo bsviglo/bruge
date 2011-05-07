@@ -7,6 +7,7 @@
 //-- ToDo: reconsider.
 #pragma warning(push, 3)
 #include "bullet/btBulletDynamicsCommon.h"
+#include "bullet/btBulletCollisionCommon.h"
 #pragma warning(pop)
 
 #include <vector>
@@ -157,6 +158,10 @@ namespace physic
 		PhysObj*	addPhysicDef(const char* desc, Transform* transform, Handle owner);
 		bool		delPhysicDef(PhysObj* physObj);
 
+		//-- add terrain mesh to the physics world.
+		bool		addTerrain(uint gridSize, float unitsPerCell, float* heights, float heightScale, float minHeight, float maxHeight);
+		bool		delTerrain();
+
 		bool		collide(const vec3f& origin, const vec3f& dir) const;
 		bool		collide(vec3f& out, const vec3f& origin, const vec3f& dir) const;
 		bool		collide(mat4f& localMat, Node*& node, const vec3f& origin, const vec3f& dir) const;
@@ -175,6 +180,14 @@ namespace physic
 		PhysDebugDrawer										m_debugDrawer;
 
 		std::map<std::string, PhysObjDesc*>					m_physObjDescs;
+
+		//-- terrain mesh.
+		struct TerrainPhysics
+		{
+			btHeightfieldTerrainShape*	m_shape;
+			btRigidBody*				m_rigidBody;
+		};
+		TerrainPhysics										m_terrain;
 	};
 
 } //-- physic

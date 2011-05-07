@@ -56,6 +56,9 @@ namespace render
 	//------------------------------------------
 	void Font::print2D(const vec2f& pos, const Color& color, const std::string& text)
 	{
+		if (text.empty())
+			return;
+
 		_fillBuffer(pos, color, text);
 		_draw(text.length());
 	}
@@ -63,6 +66,9 @@ namespace render
 	//------------------------------------------
 	void Font::print2D(const vec2f& pos, const Color& color, const char* text, ...)
 	{
+		if (!text || strlen(text) == 0)
+			return;
+
 		va_list args;
 		char buffer[2048]; // 2 kbytes.
 		va_start(args, text);
@@ -85,13 +91,15 @@ namespace render
 		rd()->setVertexBuffer(0, m_vb.get());
 		rd()->setShader(m_shader.get());
 
-		m_shader->setSampler("fontSampl", m_stateS);
-		m_shader->setTexture("fontTex", m_texture.get());
+		m_shader->setTexture("font", m_texture.get(), m_stateS);
 	}
 	
 	//------------------------------------------
 	void Font::draw2D(const vec2f& pos, const Color& color, const char* text, ...)
 	{
+		if (!text || strlen(text) == 0)
+			return;
+
 		va_list args;
 		char buffer[2048]; //-- 2 kbytes.
 		va_start(args, text);
@@ -112,6 +120,9 @@ namespace render
 	//------------------------------------------
 	void Font::draw2D(const vec2f& pos, const Color& color, const std::string& text)
 	{
+		if (text.empty())
+			return;
+
 		_fillBuffer(pos, color, text);
 		render::rd()->draw(PRIM_TOPOLOGY_TRIANGLE_STRIP, 0, text.length() * 4);
 	}
@@ -320,9 +331,9 @@ namespace render
 
 			VertexDesc desc[] = 
 			{
-				{0, TYPE_POSITION, FORMAT_FLOAT, 3},
-				{0, TYPE_TEXCOORD, FORMAT_FLOAT, 2},
-				{0, TYPE_COLOR,	   FORMAT_FLOAT, 4}
+				{0, SEMANTIC_POSITION, TYPE_FLOAT, 3},
+				{0, SEMANTIC_TEXCOORD, TYPE_FLOAT, 2},
+				{0, SEMANTIC_COLOR,	   TYPE_FLOAT, 4}
 			};
 			m_vl = render::rd()->createVertexLayout(desc, 3, *m_shader.get());
 		}
@@ -438,8 +449,7 @@ namespace render
 
 		rd()->setShader(m_shader.get());
 		{
-			m_shader->setSampler("fontSampl", m_stateS);
-			m_shader->setTexture("fontTex", m_texture.get());
+			m_shader->setTexture("font", m_texture.get(), m_stateS);
 		}
 
 		rd()->draw(PRIM_TOPOLOGY_TRIANGLE_STRIP, 0, count * 4);

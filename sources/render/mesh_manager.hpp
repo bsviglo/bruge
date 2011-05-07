@@ -7,11 +7,12 @@
 
 namespace brUGE
 {
-
 	struct Transform;
 
 namespace render
 {
+
+	class MeshCollector;
 
 	//----------------------------------------------------------------------------------------------
 	struct MeshInstance
@@ -39,7 +40,7 @@ namespace render
 
 		bool				init();
 		void				update(float dt);
-		uint				gatherROPs(RenderOps& rops, const mat4f& viewPort, AABB* aabb = nullptr);
+		uint				gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& rops, const mat4f& viewPort, AABB* aabb = nullptr);
 
 		//-- models.
 		Handle				addMesh(const MeshInstance::Desc& desc, Transform* transform);
@@ -47,9 +48,11 @@ namespace render
 		MeshInstance&		getMesh(Handle handle);
 
 	private:
+		typedef std::unique_ptr<MeshCollector> MeshCollectorPtr;
 		typedef std::vector<MeshInstance*> MeshInstances;
 
-		MeshInstances m_meshInstances;
+		MeshInstances    m_meshInstances;
+		MeshCollectorPtr m_meshCollector;
 	};
 
 } //-- render

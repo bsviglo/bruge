@@ -6,6 +6,8 @@
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
 #include "render/physic_world.hpp"
+#include "render/post_processing.hpp"
+#include "render/terrain_system.hpp"
 #include "gui/imgui.h"
 
 //-- because inside this file used 'using' declaration, including this file as the last, must
@@ -27,9 +29,9 @@ namespace
 	}
 
 	//----------------------------------------------------------------------------------------------
-	uint random(uint maxValue)
+	int random(int maxValue)
 	{
-		return uint((rand() / float(RAND_MAX + 1)) * maxValue);
+		return int((rand() / float(RAND_MAX + 1)) * maxValue);
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -58,8 +60,8 @@ bool Demo::init()
 	{
 		Projection proj;
 		proj.fov	  = 60.0f;
-		proj.nearDist = 0.25f;
-		proj.farDist  = 200.0f;
+		proj.nearDist = 0.5f;
+		proj.farDist  = 500.0f;
 
 		m_camera = new FreeCamera(proj);
 	}
@@ -80,7 +82,7 @@ bool Demo::init()
 	engine.renderWorld().setCamera(m_camera);
 	
 	//-- plane.
-	gameWorld.addGameObj("resources/models/plane.xml", &mat);
+	//gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 	//-- test
 	for (uint i = 0; i < 5; ++i)
@@ -109,27 +111,39 @@ bool Demo::init()
 		}
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(0.0f, 0.0f, 20.0f);
-	for (uint i = 0; i < 6; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
-		mat.postTranslation(-5, 0, 1);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/palm.xml", &mat);
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(0.0f, 0.0f, -20.0f);
 	for (uint i = 0; i < 5; ++i)
 	{
-		mat.postTranslation(-5, 0, 0);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
+		gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
+	}
+
+	for (uint i = 0; i < 5; ++i)
+	{
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/pole.xml", &mat);
 	}
 
-	mat.setIdentity();
-	mat.postTranslation(10.0f, 0.0f, 0.0f);
-	for (uint i = 0; i < 15; ++i)
+	for (uint i = 0; i < 5; ++i)
 	{
-		mat.postTranslation(-1, 0, 3);
+		mat.setIdentity();
+		mat.setRotateY(random() * 6.24f);
+		mat.postTranslation(-random(100), 0.0f, -random(100));
+		mat.postTranslation(random(100), 0, random(100));
 		gameWorld.addGameObj("resources/models/woodGate.xml", &mat);
 	}
 
@@ -143,6 +157,9 @@ bool Demo::init()
 
 	//-- loop idle animation.
 	animEngine.playAnim(player->animCtrl(), "idle", true);
+
+	//-- load terrain.
+	engine.renderWorld().terrainSystem().temporal_hardcoded_load();
 
 	/*
 	const char* anims[] = 
@@ -167,7 +184,7 @@ bool Demo::init()
 	}
 	*/
 
-	rs().postProcessing()->enable("ssaa.pp");
+	engine.renderWorld().postProcessing().enable("ssaa.pp");
 
 	return true;
 }

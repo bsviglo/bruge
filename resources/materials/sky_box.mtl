@@ -1,0 +1,37 @@
+<materials>
+  <material shader="sky_box" vertex="xyzuvn">
+    <properties>
+      <property name="skyMap" type="texture" value="textures/sky/sky_box_12.dds">
+        <sampler filter="ANISO" wrapping="CLAMP"/>
+      </property>
+    </properties>
+  </material>
+  <material shader="sky_box" vertex="xyzuvn">
+    <properties>
+      <property name="skyMap" type="texture" value="textures/sky/sky_box_12.dds">
+        <sampler filter="ANISO" wrapping="CLAMP"/>
+      </property>
+    </properties>
+  </material>
+  <material shader="sky_box" vertex="xyzuvn">
+    <properties>
+      <property name="skyMap" type="texture" value="textures/sky/sky_box_34.dds">
+        <sampler filter="ANISO" wrapping="CLAMP"/>
+      </property>
+    </properties>
+  </material>
+  <material shader="sky_box" vertex="xyzuvn">
+    <properties>
+      <property name="skyMap" type="texture" value="textures/sky/sky_box_34.dds">
+        <sampler filter="ANISO" wrapping="CLAMP"/>
+      </property>
+    </properties>
+  </material>
+  <material shader="sky_box" vertex="xyzuvn">
+    <properties>
+      <property name="skyMap" type="texture" value="textures/sky/sky_box_5.dds">
+        <sampler filter="ANISO" wrapping="CLAMP"/>
+      </property>
+    </properties>
+  </material>
+</materials>

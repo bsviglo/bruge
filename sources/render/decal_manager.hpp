@@ -13,6 +13,7 @@ namespace brUGE
 namespace render
 {
 	class Mesh;
+	class Material;
 
 	//----------------------------------------------------------------------------------------------
 	class DecalManager : public NonCopyable

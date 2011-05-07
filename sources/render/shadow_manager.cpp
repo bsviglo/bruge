@@ -10,6 +10,10 @@
 #include "console/Console.h"
 #include "gui/imgui.h"
 
+//-- ToDo:
+#include "Engine/Engine.h"
+#include "render/render_world.hpp"
+
 using namespace brUGE::os;
 using namespace brUGE::math;
 using namespace brUGE::render;
@@ -19,13 +23,14 @@ using namespace brUGE::render;
 namespace
 {
 	//-- watchers.
+	bool  g_enableShadows = true;
 	float g_width = 0;
 	float g_height = 0;
 	float g_nearZ = 0;
 	float g_farZ  = 0;
 	vec3f g_lightPos;
 	vec3f g_lightDir;
-	bool  g_adjustShadowVolume = true;
+	bool  g_adjustShadowVolume = false;
 	bool  g_useCullingMatrix = true;
 	bool  g_fitLightToTexels = true;
 	bool  g_blurShadows = true;
@@ -226,12 +231,13 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	ShadowManager::ShadowManager()
 		:	m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4), m_uiEnabled(false),
-			m_autoSplitSheme(true), m_bias(1.0f), m_slopeScaleBias(4.0f)
+			m_autoSplitSheme(true), m_bias(1.0f), m_slopeScaleBias(4.0f), m_pVB(nullptr)
 	{
 		REGISTER_CONSOLE_VALUE("r_shadow_adjust_volume",		bool,  g_adjustShadowVolume);
 		REGISTER_CONSOLE_VALUE("r_shadow_use_culling_mat",		bool,  g_useCullingMatrix);
 		REGISTER_CONSOLE_VALUE("r_shadow_fit_light_to_texels",	bool,  g_fitLightToTexels);
 		REGISTER_CONSOLE_VALUE("r_shadow_enable_blur",			bool,  g_blurShadows);
+		REGISTER_CONSOLE_VALUE("r_shadow_enable",				bool,  g_enableShadows);
 		REGISTER_CONSOLE_MEMBER_VALUE("r_shadow_enable_ui",		bool, m_uiEnabled, ShadowManager);
 
 		REGISTER_RO_WATCHER("shadow light far distances",  vec4f, g_farDistances);
@@ -277,13 +283,15 @@ namespace render
 
 			if (!(m_fsQuadVB = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
+
+			m_pVB = m_fsQuadVB.get();
 		}
 
 		//-- load material.
 		{
 			std::vector<Ptr<Material>> mtllib;
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/shadows.mtl");
-			if (!file || !rs().materials()->createMaterials(mtllib, *file))
+			if (!file || !rs().materials().createMaterials(mtllib, *file))
 			{
 				return false;
 			}
@@ -315,9 +323,10 @@ namespace render
 		//-- create rops for drawing.
 		{
 			RenderOp op;
-			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_fsQuadVB;
 			op.m_indicesCount = 4;
+			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+			op.m_VBs		  = &m_pVB;
+			op.m_VBCount	  = 1;
 			op.m_material	  = m_shadowResolveMaterial->renderFx();
 
 			m_receiveROPs.push_back(op);
@@ -328,7 +337,8 @@ namespace render
 
 		//-- create blur map.
 		{
-			m_blurMap = rs().postProcessing()->find("BBCopy");
+			//-- ToDo: reconsider. see comment in the materials.cpp
+			m_blurMap = Engine::instance().renderWorld().postProcessing().find("BBCopy");
 			if (!m_blurMap)
 				return false;
 
@@ -393,6 +403,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void ShadowManager::castShadows(const RenderCamera& cam, LightsManager& lightManager, MeshManager& meshManager)
 	{
+		if (!g_enableShadows) return;
+
 		//-- ToDo: gather all light casted shadows.
 		const DirectionLight& dirLight = lightManager.getDirLight(0);
 
@@ -455,6 +467,7 @@ namespace render
 			{
 				AABB aabb;
 				meshManager.gatherROPs(
+					RenderSystem::PASS_SHADOW_CAST, false,
 					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj, &aabb
 					);
 
@@ -487,6 +500,7 @@ namespace render
 			else
 			{
 				meshManager.gatherROPs(
+					RenderSystem::PASS_SHADOW_CAST, false,
 					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj
 					);
 			}
@@ -503,6 +517,7 @@ namespace render
 				rd()->setRenderTarget(nullptr, m_shadowMaps.get());
 				rd()->setViewPort(curViewPort.x, curViewPort.y, curViewPort.z, curViewPort.w);
 				rs().setCamera(&curCam);
+				rs().shaderContext().updatePerFrameViewConstants();
 				rs().addROPs(m_castROPs);
 				rs().endPass();
 			}
@@ -512,8 +527,14 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void ShadowManager::receiveShadows(const RenderCamera* rCam)
 	{
-		Handle shaderID = m_receiveROPs[0].m_material->m_shader->m_shader[0].first;
-		IShader* shader = rs().shaderContext()->shader(shaderID);
+		if (!g_enableShadows)
+		{
+			rd()->clearColorRT(rs().shadowsMask(), Color(0,0,0,0));
+			return;
+		}
+
+		Handle shaderID = m_receiveROPs[0].m_material->m_shader;
+		IShader* shader = rs().shaderContext().shader(shaderID);
 		{
 			ShadowConstants constants;
 			constants.m_shadowMapRes	  = vec2f(m_shadowMapRes, m_shadowMapRes);
@@ -525,25 +546,23 @@ namespace render
 			}
 
 			shader->setUniformBlock("g_shadowConstants", &constants, sizeof(ShadowConstants));
-			shader->setTexture("g_shadowMap_tex", m_shadowMaps.get());
-			shader->setSampler("g_shadowMap_sml", m_shadowMapSml);
-			shader->setTexture("g_noiseMap_tex", m_noiseMap.get());
-			shader->setSampler("g_noiseMap_sml", m_noiseMapSml);
+			shader->setTexture("g_shadowMap", m_shadowMaps.get(), m_shadowMapSml);
+			shader->setTexture("g_noiseMap", m_noiseMap.get(), m_noiseMapSml);
 		}
 
 		rs().beginPass(RenderSystem::PASS_SHADOW_RECEIVE);
 		rs().setCamera(rCam);
+		rs().shaderContext().updatePerFrameViewConstants();
 		rs().addImmediateROPs(m_receiveROPs);
 		rs().endPass();
 
 		//-- do optional blur pass.
 		if (g_blurShadows)
 		{
-			Handle shaderID = m_blurROPs[0].m_material->m_shader->m_shader[0].first;
-			IShader* shader = rs().shaderContext()->shader(shaderID);
+			Handle shaderID = m_blurROPs[0].m_material->m_shader;
+			IShader* shader = rs().shaderContext().shader(shaderID);
 			{
-				shader->setTexture("g_srcMap_tex", m_blurMap.get());
-				shader->setSampler("g_srcMap_sml", m_blurMapSml);
+				shader->setTexture("g_srcMap", m_blurMap.get(), m_blurMapSml);
 			}
 
 			rd()->copyTexture(rs().shadowsMask(), m_blurMap.get());
@@ -570,6 +589,7 @@ namespace render
 		
 		imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
 		{
+			imguiCheck("enable shadows",	   &g_enableShadows);
 			imguiCheck("adjust shadow volume", &g_adjustShadowVolume);
 			imguiCheck("use culling matrix",   &g_useCullingMatrix);
 			imguiCheck("fit light to texels",  &g_fitLightToTexels);

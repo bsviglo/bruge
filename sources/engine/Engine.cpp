@@ -138,6 +138,8 @@ namespace brUGE
 						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
 						);
 
+					m_timingPanel->visualize();
+
 					m_gameWorld->beginUpdate(dt);
 
 					//-- update animation.
@@ -178,6 +180,7 @@ namespace brUGE
 				}
 				
 				//-- wait next frame.
+				/*
 				{
 					SCOPED_TIME_MEASURER_EX("CPU idle")
 					uint curDelta = static_cast<uint>(dt * 1000);
@@ -188,6 +191,7 @@ namespace brUGE
 					}
 					//WaitForSingleObject(m_hEvent, INFINITE);
 				}
+				*/
 			}
 			m_timingPanel->stop();
 			//}
@@ -407,7 +411,7 @@ namespace brUGE
 	{
 		m_imguiInput.mx		= mae.absX;
 		m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
-		m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 10);
+		m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 5);
 
 		m_demo->handleMouseMove(mae);
 	}
@@ -451,12 +455,6 @@ namespace brUGE
 		m_demo->render(dt);
 		m_console->draw();
 		m_watchersPanel->draw(dt);
-		
-		//-- timing panel.
-		{
-			SCOPED_TIME_MEASURER_EX("timingPanel draw")
-			m_timingPanel->draw(dt);
-		}
 	}
 	
 	//------------------------------------------

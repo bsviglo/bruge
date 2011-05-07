@@ -130,6 +130,7 @@ vs_out main(vs_in i)
 
 #ifdef _FRAGMENT_SHADER_
 
+//--------------------------------------------------------------------------------------------------
 texture2D(float4, t_auto_depthMap);
 texture2D(float4, diffuse);
 

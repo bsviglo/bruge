@@ -93,7 +93,7 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Mesh> ResourcesManager::loadMesh(const char* name)
+	Ptr<Mesh> ResourcesManager::loadMesh(const char* name, bool simpleMaterial)
 	{
 		Ptr<Mesh> result = m_meshesCache.find(name);
 		if (!result.isValid())
@@ -109,7 +109,7 @@ namespace brUGE
 
 			if (ext == "obj")
 			{
-				result = m_objMeshLoader.load(*data);
+				result = m_objMeshLoader.load(*data, simpleMaterial);
 			}
 			else if (ext == "lwo")
 			{

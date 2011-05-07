@@ -21,7 +21,7 @@ namespace
 
 	// load and compile shader program.
 	//------------------------------------------
-	HRESULT _loadAndCompileShader(
+	HRESULT loadAndCompileShader(
 		DXShader::EShaderType type, const char* src, ID3D10Include* shaderInclude,
 		const ShaderMacro* macros, uint mSize, ID3D10Blob** byteCode)
 	{
@@ -104,21 +104,6 @@ namespace
 
 		return hr;
 	}
-
-	//------------------------------------------
-	inline int codeIndex(int shaderType, int resIndex)
-	{
-		int result = shaderType;
-		result |= resIndex << 8;
-		return result;
-	}
-
-	//------------------------------------------
-	inline void decodeIndex(int codedIndex, int& shaderType, int& resIndex)
-	{
-		shaderType = codedIndex & 0x000000FF;
-		resIndex = codedIndex >> 8;
-	}
 }
 //--------------------------------------------------------------------------------------------------
 // end unnamed namespace.
@@ -128,142 +113,153 @@ namespace brUGE
 namespace render
 {	
 	
-	//------------------------------------------
-	DXShader::DXShader(IRenderDevice& rd) : IShader(rd)
+	//----------------------------------------------------------------------------------------------
+	DXShader::DXShader(DXRenderDevice& rd) : m_device(rd)
 	{
-
+		//-- ToDo: correct document.
+		//-- To eliminate some additional checking every resource container has first element as
+		//-- an temporal value and the real data located right after this first element.
+		for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
+		{
+			m_dxResources[i].push_back(nullptr);
+			m_dxSamplers[i].push_back(nullptr);
+			m_dxUBuffers[i].push_back(nullptr);
+		}
 	}
 	
-	//------------------------------------------
+	//----------------------------------------------------------------------------------------------
 	DXShader::~DXShader()
 	{
-		for (uint i = 0; i < m_ubuffers.size(); ++i)
-			delete [] m_ubuffers[i].data.data;
+
 	}
 	
-	//------------------------------------------
-	void IShader::addResSearch(const char* name, EShaderType sType, FastSearchEx& search, Index index)
+	//----------------------------------------------------------------------------------------------
+	void DXShader::addSampler(const char* name, EShaderType sType, uint index)
 	{
-		IndexEx* searchIndex = NULL;
-		if (!search.search(name, searchIndex))
+		++index;
+
+		std::string searchName(name);
+		std::string::size_type pos = searchName.find_last_of("_sml");
+		searchName.erase(pos - 3, 4);
+
+		Handle handle = CONST_INVALID_HANDLE;
+		if (m_search_textures.search(searchName.c_str(), handle))
 		{
-			IndexEx tmpIndex;
-			tmpIndex.indices[sType] = index;
-			search.insert(name, tmpIndex);
+			m_textures[handle].m_smlIndex[sType] = index;
 		}
 		else
 		{
-			searchIndex->indices[sType] = index;
+			Texture texture;
+			texture.m_smlIndex[sType] = index;
+
+			m_search_textures.insert(searchName.c_str(), m_textures.size());
+			m_textures.push_back(texture);
 		}
 	}
 
-	//------------------------------------------
-	void IShader::addSampler(const char* name, EShaderType sType, Index auxData)
+	//----------------------------------------------------------------------------------------------
+	void DXShader::addTexture(const char* name, EShaderType sType, uint index)
 	{
-		Sampler sampler;
-		sampler.data  = INVALID_ID;
-		sampler.index = auxData;
-		m_samplers.push_back(sampler);
-		
-		addResSearch(name, sType, m_search_samplers, m_samplers.size() - 1);
-	}
+		++index;
 
-	//------------------------------------------
-	void IShader::addTexture(const char* name, EShaderType sType, Index auxData)
-	{
-		Texture texture;
-		texture.data  = NULL;
-		texture.index = auxData;
-		m_textures.push_back(texture);
-		
-		addResSearch(name, sType, m_search_textures, m_textures.size() - 1);
-	}
+		std::string searchName(name);
+		std::string::size_type pos = searchName.find_last_of("_tex");
+		searchName.erase(pos - 3, 4);
 
-	//------------------------------------------
-	void IShader::addUBuffer(const char* name, EShaderType sType, uint size, Index auxData)
-	{
-		//-- 1. Fill the common stuff in the description structure.
-		UniformBlockDesc ublockDesc;
-		ublockDesc.size    = size;	
-		
-		//-- make dirty because some members of this constant buffer may be setted by default 
-		//-- directly in the shader and we retrive they values.
-		ublockDesc.isDirty = false;
-		
-		//-- 2. Do search of the Ubuffer with the same name.
-		IndexEx* searchIndex = NULL;
-		if (!m_search_ubuffers.search(name, searchIndex))
+		Handle handle = CONST_INVALID_HANDLE;
+		if (m_search_textures.search(searchName.c_str(), handle))
 		{
-			//-- 2.1. add new data and buffer.
-			ublockDesc.data	  = new byte[size];
-			ublockDesc.buffer = m_rDevice.createBuffer(IBuffer::TYPE_UNIFORM, NULL, 1, size,
-				IBuffer::USAGE_DEFAULT, IBuffer::CPU_ACCESS_NONE);
+			m_textures[handle].m_texIndex[sType] = index;
 		}
 		else
 		{
-			//-- 2.2. Find first valid buffer object.
-			Ptr<IBuffer> tmpBuffer;
-			for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
-			{
-				Index id = searchIndex->indices[i]; 
-				if (id != INVALID_ID && m_ubuffers[id].data.data != NULL)
-				{
-					tmpBuffer = m_ubuffers[id].data.buffer;
-					break;
-				}
-			}
-			
-			//-- 2.3. add existing buffer and make the data unused.
-			ublockDesc.data	  = NULL;
-			ublockDesc.buffer = tmpBuffer;
+			Texture texture;
+			texture.m_texIndex[sType] = index;
+
+			m_search_textures.insert(searchName.c_str(), m_textures.size());
+			m_textures.push_back(texture);
 		}
+	}
+
+	//-- return buffer index.
+	//----------------------------------------------------------------------------------------------
+	uint DXShader::addUBuffer(const char* name, EShaderType sType, uint size, uint index)
+	{
+		//-- 1. make offset in the index.
+		++index;
+
+		//-- 2. Do search for the buffers with the same name...
+		Handle handle = CONST_INVALID_HANDLE;
+		if (m_search_ubuffers.search(name, handle))
+		{
+			m_ubuffers[handle].m_index[sType] = index;
+			m_dxUBuffers[sType][index] = m_ubuffers[handle].m_buffer->getBuffer();
+			return handle;
+		}
+		//-- else create a new one and add it to the search map...
 		
-		//-- 3. add buffer.
-		UniformBlock ublock;
-		ublock.index = auxData;
-		ublock.data  = ublockDesc;
-		m_ubuffers.push_back(ublock);
+		//-- 3. fill the common stuff in the description structure.
+		UBuffer ubuffer;
+		ubuffer.m_isDirty = false;
+		ubuffer.m_size	  = size;
+		ubuffer.m_data.resize(size);
 
-		//-- 4. add buffer to the fast search structure if it is already not there.
-		addResSearch(name, sType, m_search_ubuffers, m_ubuffers.size() - 1);
+		//-- 4. set index for the current shader type.
+		ubuffer.m_index[sType] = index;
+
+		//-- 5. create a new uniform buffer.
+		{
+			Ptr<IBuffer> buffer = m_device.createBuffer(IBuffer::TYPE_UNIFORM, NULL, 1, size,
+				//IBuffer::USAGE_DEFAULT, IBuffer::CPU_ACCESS_NONE
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+				);
+
+			ubuffer.m_buffer = buffer.downCast<DXBuffer>();
+		}
+
+		//-- 6. set currently created buffer as shader resource.
+		m_dxUBuffers[sType][index] = ubuffer.m_buffer->getBuffer();
+
+		//-- 7. and finally add it into the list and search map.
+		m_search_ubuffers.insert(name, m_ubuffers.size());
+		m_ubuffers.push_back(ubuffer);
+
+		return m_ubuffers.size() - 1;
 	}
 
 	//------------------------------------------
-	void IShader::addTBuffer(const char* name, EShaderType sType, Index auxData)
+	void DXShader::addTBuffer(const char* name, EShaderType sType, uint index)
 	{
-		TexBuffer tbuffer;
-		tbuffer.data  = NULL;
-		tbuffer.index = auxData;
-		m_tbuffers.push_back(tbuffer);
+		++index;
 
-		addResSearch(name, sType, m_search_tbuffers, m_tbuffers.size() - 1);
+		Handle handle = CONST_INVALID_HANDLE;
+		if (m_search_tbuffers.search(name, handle))
+		{
+			m_tbuffers[handle].m_index[sType] = index;
+		}
+		else
+		{
+			TBuffer tbuffer;
+			tbuffer.m_index.m_shaders[sType] = index;
+
+			m_search_tbuffers.insert(name, m_tbuffers.size());
+			m_tbuffers.push_back(tbuffer);
+		}
 	}
 
 	//------------------------------------------
-	void IShader::addConstant(
-		const char* name, EShaderType /*sType*/, Index ublockIndex,
-		uint offset, uint size, void* defaultVal)
+	void DXShader::addConstant(const char* name, uint ublock, uint offset, uint size)
 	{
-		//-- ToDo: reconsider. 
-
-		Index* searchIndex = NULL;
-		if (!m_search_constants.search(name, searchIndex))
+		Handle handle = CONST_INVALID_HANDLE;
+		if (!m_search_constants.search(name, handle))
 		{
 			Constant c;
-			c.ublockIndex = ublockIndex;
-			c.offset = offset;
-			c.size = size;
-			m_constants.push_back(c);
-			
-			//-- ToDo: Why it doesn't work!!!!?????????
-			//-- set default value.
-			if (defaultVal)
-			{
-				UniformBlockDesc& ublock = m_ubuffers[ublockIndex].data;
-				memcpy(ublock.data + offset, defaultVal, size);
-			}
+			c.m_ublock = ublock;
+			c.m_offset = offset;
+			c.m_size   = size;
 
-			m_search_constants.insert(name, m_constants.size() - 1);
+			m_search_constants.insert(name, m_constants.size());
+			m_constants.push_back(c);
 		}
 	}
 
@@ -271,14 +267,14 @@ namespace render
 	bool DXShader::init(const char* vs, const char* gs,	const char* fs,
 		const ShaderMacro *macros, uint mCount)
 	{
-		ID3D10Include* si = static_cast<DXRenderDevice*>(&m_rDevice)->shaderInclude();
+		ID3D10Include* si = m_device.shaderInclude();
 		ComPtr<ID3D10Blob> byteCode;
 		HRESULT hr = FALSE;
 
 		//-- vs
 		if (vs)
 		{
-			hr = _loadAndCompileShader(VS, vs, si, macros, mCount, &m_inputSignature);
+			hr = loadAndCompileShader(VS, vs, si, macros, mCount, &m_inputSignature);
 			if (FAILED(hr))	return false;
 
 			hr = dxDevice()->CreateVertexShader(m_inputSignature->GetBufferPointer(), m_inputSignature->GetBufferSize(), &m_vs);
@@ -288,7 +284,7 @@ namespace render
 				return false;
 			}
 
-			hr = _reflectShader(m_inputSignature.get(), VS);
+			hr = reflectShader(m_inputSignature.get(), VS);
 			if (FAILED(hr))
 			{
 				ERROR_MSG("Failed to reflect vertex shader program.\nDesc: " + dxDevice().getErrorDesc());
@@ -299,7 +295,7 @@ namespace render
 		//-- gs
 		if (gs)
 		{
-			hr = _loadAndCompileShader(GS, gs, si, macros, mCount, &byteCode);
+			hr = loadAndCompileShader(GS, gs, si, macros, mCount, &byteCode);
 			if (FAILED(hr)) return false;
 
 			hr = dxDevice()->CreateGeometryShader(byteCode->GetBufferPointer(), byteCode->GetBufferSize(), &m_gs);
@@ -309,7 +305,7 @@ namespace render
 				return false;
 			}
 
-			hr = _reflectShader(byteCode.get(), GS);
+			hr = reflectShader(byteCode.get(), GS);
 			if (FAILED(hr))
 			{
 				ERROR_MSG("Failed to reflect geometry shader program.\nDesc: " + dxDevice().getErrorDesc());
@@ -320,7 +316,7 @@ namespace render
 		//-- ps
 		if (fs)
 		{
-			hr = _loadAndCompileShader(PS, fs, si, macros, mCount, &byteCode);
+			hr = loadAndCompileShader(PS, fs, si, macros, mCount, &byteCode);
 			if (FAILED(hr))	return false;
 
 			hr = dxDevice()->CreatePixelShader(byteCode->GetBufferPointer(), byteCode->GetBufferSize(), &m_ps);
@@ -330,7 +326,7 @@ namespace render
 				return false;
 			}
 
-			hr = _reflectShader(byteCode.get(), PS) ;
+			hr = reflectShader(byteCode.get(), PS) ;
 			if (FAILED(hr))
 			{
 				ERROR_MSG("Failed to reflect fragment shader program.\nDesc: " + dxDevice().getErrorDesc());
@@ -339,55 +335,107 @@ namespace render
 		}
 		return true;
 	}
-	
-	//------------------------------------------
-	bool DXShader::doChangeUniformBuffer(Index index, IBuffer* newBuffer)
+
+	//----------------------------------------------------------------------------------------------
+	Handle DXShader::getHandle(const FastSearch& database, const char* name) const
 	{
-		int st, ri;
-		decodeIndex(index, st, ri);
-		m_dxUBuffers[st][ri] = static_cast<DXBuffer*>(newBuffer)->getBuffer();
+		Handle handle = CONST_INVALID_HANDLE;
+		database.search(name, handle);
+		return handle;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool DXShader::setConstantAsRawData(Handle handle, const void* data, uint size)
+	{
+		if (handle == CONST_INVALID_HANDLE || data == nullptr || size == 0)
+			return false;
+
+		Constant& c  = m_constants[handle];
+		UBuffer&  ub = m_ubuffers[c.m_ublock];
+
+		memcpy(&ub.m_data[0] + c.m_offset, data, size);
+		ub.m_isDirty = true;
+
 		return true;
 	}
-	
-	//------------------------------------------
-	void DXShader::_updateRes()
+
+	//----------------------------------------------------------------------------------------------
+	bool DXShader::doSetTexture(Handle handle, ITexture* texture, SamplerStateID state)
 	{
-		DXRenderDevice* rd = static_cast<DXRenderDevice*>(&m_rDevice);
-		int st, ri;
+		if (handle == CONST_INVALID_HANDLE || texture == nullptr || state == CONST_INVALID_HANDLE)
+			return false;
 
-		for (uint i = 0; i < m_samplers.size(); ++i)
+		Texture& t = m_textures[handle];
+		
+		for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
 		{
-			const Sampler& s = m_samplers[i];
-			decodeIndex(s.index, st, ri);
-			m_dxSamplers[st][ri] = rd->getSamplerState(s.data);
+			m_dxResources[i][t.m_texIndex[i]] = static_cast<DXTexture*>(texture)->getSRView();
+			m_dxSamplers [i][t.m_smlIndex[i]] = m_device.getSamplerState(state);
 		}
+		return true;
+	}
 
-		for (uint i = 0; i < m_textures.size(); ++i)
+	//----------------------------------------------------------------------------------------------
+	bool DXShader::doSetTextureBuffer(Handle handle, IBuffer* buffer)
+	{
+		if (handle == CONST_INVALID_HANDLE || buffer == nullptr)
+			return false;
+
+		TBuffer& t = m_tbuffers[handle];
+		
+		for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
 		{
-			const Texture& t = m_textures[i];
-			decodeIndex(t.index, st, ri);
-			m_dxResources[st][ri] = static_cast<DXTexture*>(t.data)->getSRView();
+			m_dxResources[i][t.m_index[i]] = static_cast<DXBuffer*>(buffer)->getSRView();
 		}
+		return true;
+	}
 
-		for (uint i = 0; i < m_tbuffers.size(); ++i)
+	//----------------------------------------------------------------------------------------------
+	bool DXShader::doSetUniformBlock(Handle handle, const void* data, uint size)
+	{
+		if (handle == CONST_INVALID_HANDLE || data == nullptr || size == 0)
+			return false;
+
+		UBuffer& ub = m_ubuffers[handle];
+
+		memcpy(&ub.m_data[0], data, size);
+		ub.m_isDirty = true;
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool DXShader::doChangeUniformBuffer(Handle handle, const Ptr<IBuffer>& newBuffer)
+	{
+		if (handle == CONST_INVALID_HANDLE || !newBuffer.isValid())
+			return false;
+
+		UBuffer& ub  = m_ubuffers[handle];
+		ub.m_buffer  = newBuffer.downCast<DXBuffer>();
+		ub.m_isDirty = false;
+
+		for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
 		{
-			const TexBuffer& tb = m_tbuffers[i];
-			decodeIndex(tb.index, st, ri);
-			m_dxResources[st][ri] = static_cast<DXBuffer*>(tb.data)->getSRView();
+			m_dxUBuffers[i][ub.m_index[i]] = ub.m_buffer->getBuffer();
 		}
+		return true;
+	}
 
-		for (uint i = 0; i < m_ubuffers.size(); ++i)
+	//----------------------------------------------------------------------------------------------
+	void DXShader::updateRes()
+	{
+		for (auto i = m_ubuffers.begin(); i != m_ubuffers.end(); ++i)
 		{
-			UniformBlock&	  ub	 = m_ubuffers[i];
-			UniformBlockDesc& ubDesc = ub.data;
-			decodeIndex(ub.index, st, ri);
-			m_dxUBuffers[st][ri] = static_cast<DXBuffer*>(ubDesc.buffer.get())->getBuffer();
-
-			//-- we check ubDesc.data because if it is NULL it's means that used the shared cbuffer.
-			if (ubDesc.isDirty && ubDesc.data != NULL)
+			if (i->m_isDirty)
 			{
-				dxDevice()->UpdateSubresource(m_dxUBuffers[st][ri], 0, NULL, ubDesc.data, 0, 0);
-				ubDesc.isDirty = false;
+				void* data = i->m_buffer->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
+				if (data)
+				{
+					memcpy(data, &i->m_data[0], i->m_size);
+					i->m_buffer->unmap();
+				}
+				//dxDevice()->UpdateSubresource(i->m_buffer->getBuffer(), 0, NULL, &i->m_data[0], 0, 0);
+				i->m_isDirty = false;
 			}
 		}
 	}
@@ -398,7 +446,7 @@ namespace render
 		ID3D10Device* d = dxDevice().get();
 		
 		//-- make resources up-to-date.
-		_updateRes();
+		updateRes();
 		
 		d->VSSetShader(m_vs.get());
 		d->GSSetShader(m_gs.get());
@@ -406,23 +454,23 @@ namespace render
 
 		if (m_vs)
 		{
-			if (m_dxResources[VS].size() > 0) d->VSSetShaderResources(0, m_dxResources[VS].size(), &m_dxResources[VS][0]);
-			if (m_dxSamplers [VS].size() > 0) d->VSSetSamplers       (0, m_dxSamplers [VS].size(), &m_dxSamplers [VS][0]);
-			if (m_dxUBuffers [VS].size() > 0) d->VSSetConstantBuffers(0, m_dxUBuffers [VS].size(), &m_dxUBuffers [VS][0]);
+			if (m_dxResources[VS].size() > 1) d->VSSetShaderResources(0, m_dxResources[VS].size() - 1, &m_dxResources[VS][1]);
+			if (m_dxSamplers [VS].size() > 1) d->VSSetSamplers       (0, m_dxSamplers [VS].size() - 1, &m_dxSamplers [VS][1]);
+			if (m_dxUBuffers [VS].size() > 1) d->VSSetConstantBuffers(0, m_dxUBuffers [VS].size() - 1, &m_dxUBuffers [VS][1]);
 		}
 
 		if (m_gs)
 		{
-			if (m_dxResources[GS].size() > 0) d->GSSetShaderResources(0, m_dxResources[GS].size(), &m_dxResources[GS][0]);
-			if (m_dxSamplers [GS].size() > 0) d->GSSetSamplers		 (0, m_dxSamplers [GS].size(), &m_dxSamplers [GS][0]);
-			if (m_dxUBuffers [GS].size() > 0) d->GSSetConstantBuffers(0, m_dxUBuffers [GS].size(), &m_dxUBuffers [GS][0]);
+			if (m_dxResources[GS].size() > 1) d->GSSetShaderResources(0, m_dxResources[GS].size() - 1, &m_dxResources[GS][1]);
+			if (m_dxSamplers [GS].size() > 1) d->GSSetSamplers		 (0, m_dxSamplers [GS].size() - 1, &m_dxSamplers [GS][1]);
+			if (m_dxUBuffers [GS].size() > 1) d->GSSetConstantBuffers(0, m_dxUBuffers [GS].size() - 1, &m_dxUBuffers [GS][1]);
 		}
 
 		if (m_ps)
 		{
-			if (m_dxResources[PS].size() > 0) d->PSSetShaderResources(0, m_dxResources[PS].size(), &m_dxResources[PS][0]);
-			if (m_dxSamplers [PS].size() > 0) d->PSSetSamplers		 (0, m_dxSamplers [PS].size(), &m_dxSamplers [PS][0]);
-			if (m_dxUBuffers [PS].size() > 0) d->PSSetConstantBuffers(0, m_dxUBuffers [PS].size(), &m_dxUBuffers [PS][0]);
+			if (m_dxResources[PS].size() > 1) d->PSSetShaderResources(0, m_dxResources[PS].size() - 1, &m_dxResources[PS][1]);
+			if (m_dxSamplers [PS].size() > 1) d->PSSetSamplers		 (0, m_dxSamplers [PS].size() - 1, &m_dxSamplers [PS][1]);
+			if (m_dxUBuffers [PS].size() > 1) d->PSSetConstantBuffers(0, m_dxUBuffers [PS].size() - 1, &m_dxUBuffers [PS][1]);
 		}
 	}
 
@@ -462,7 +510,7 @@ namespace render
 	}
 	
 	//------------------------------------------
-	HRESULT DXShader::_reflectShader(ID3D10Blob* byteCode, EShaderType shaderType)
+	HRESULT DXShader::reflectShader(ID3D10Blob* byteCode, EShaderType shaderType)
 	{
 		//-- 1. try to reflect shader.
 		ComPtr<ID3D10ShaderReflection> reflect;
@@ -480,37 +528,31 @@ namespace render
 		D3D10_SHADER_VARIABLE_DESC	 vDesc;
 		
 		//-- 3. collect only all the c-buffers, t-buffers will be collected later.
-		m_dxUBuffers[shaderType].resize(shaderDesc.ConstantBuffers);
+		m_dxUBuffers[shaderType].resize(shaderDesc.ConstantBuffers + 1);
 		for (uint index = 0, i = 0; i < shaderDesc.ConstantBuffers; ++i)
 		{
-			//-- 3.1. check buffer type, if it's not c-buffer then skip it, we prepare it below.
+			//-- 3.1. check buffer type, if it's not c-buffer then skip it, we prepare it later.
 			reflect->GetConstantBufferByIndex(i)->GetDesc(&cbDesc);
 			if (cbDesc.Type == D3D10_CT_CBUFFER)
 			{
-				//-- 3.2. increase the buffer size at 1.
-				m_dxUBuffers[shaderType].push_back(NULL);
-
-				//-- 3.3. create the new uniform buffer descriptor at the interface side.
-				addUBuffer(cbDesc.Name, shaderType, cbDesc.Size, codeIndex(shaderType, index));
+				//-- 3.2. create the new uniform buffer descriptor at the interface side.
+				uint ublock = addUBuffer(cbDesc.Name, shaderType, cbDesc.Size, index);
 				
-				//-- 3.4. convert it to the DX format.
-				uint ubufferIndex = m_ubuffers.size() - 1;
-				m_dxUBuffers[shaderType][index] =
-					static_cast<DXBuffer*>(m_ubuffers[ubufferIndex].data.buffer.get())->getBuffer();
-				
-				//-- 3.5. reflect all the variables in the current constant buffer.
+				//-- 3.3. reflect all the variables in the current constant buffer.
 				for (uint j = 0; j < cbDesc.Variables; ++j)
 				{
 					reflect->GetConstantBufferByIndex(i)->GetVariableByIndex(j)->GetDesc(&vDesc);
-					addConstant(vDesc.Name, shaderType, ubufferIndex,
-						vDesc.StartOffset, vDesc.Size, vDesc.DefaultValue
-						);
+					addConstant(vDesc.Name, ublock,	vDesc.StartOffset, vDesc.Size);
 				}
 				
-				//-- go to next.
+				//-- 3.4. go to next.
 				++index;
 			}
 		}
+
+		//-- make initial offset.
+		m_dxResources[shaderType].resize(1);
+		m_dxSamplers [shaderType].resize(1);
 		
 		//-- 4. collect all shader's resources.
 		for (uint i = 0; i < shaderDesc.BoundResources; ++i)
@@ -520,19 +562,19 @@ namespace render
 			{
 			case D3D10_SIT_TBUFFER:
 				{
-					addTBuffer(resDesc.Name, shaderType, codeIndex(shaderType, resDesc.BindPoint));
+					addTBuffer(resDesc.Name, shaderType, resDesc.BindPoint);
 					m_dxResources[shaderType].push_back(NULL);
 				}
 				break;
 			case D3D10_SIT_TEXTURE:
 				{
-					addTexture(resDesc.Name, shaderType, codeIndex(shaderType, resDesc.BindPoint));
+					addTexture(resDesc.Name, shaderType, resDesc.BindPoint);
 					m_dxResources[shaderType].push_back(NULL);
 				}
 				break;
 			case D3D10_SIT_SAMPLER:
 				{
-					addSampler(resDesc.Name, shaderType, codeIndex(shaderType, resDesc.BindPoint));
+					addSampler(resDesc.Name, shaderType, resDesc.BindPoint);
 					m_dxSamplers[shaderType].push_back(NULL);
 				}
 				break;

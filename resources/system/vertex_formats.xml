@@ -1,0 +1,47 @@
+<formatslib>
+  
+  <format name="xyzc">
+    <attr semantic="POSITION" stream="0" type="float" size="3"/>
+    <attr semantic="TEXCOORD" stream="0" type="float" size="4"/>
+  </format>
+
+  <format name="xyzn">
+    <attr semantic="POSITION" stream="0" type="float" size="3"/>
+    <attr semantic="NORMAL"   stream="0" type="float" size="3"/>
+  </format>
+
+  <format name="xyzuv">
+    <attr semantic="POSITION" stream="0" type="float" size="3"/>
+    <attr semantic="TEXCOORD" stream="0" type="float" size="2"/>
+  </format>
+
+  <format name="xyzuvn">
+    <attr semantic="POSITION" stream="0" type="float" size="3"/>
+    <attr semantic="TEXCOORD" stream="0" type="float" size="2"/>
+    <attr semantic="NORMAL"   stream="0" type="float" size="3"/>
+  </format>
+
+  <format name="xyzuvntb">
+    <attr semantic="POSITION" stream="0" type="float" size="3"/>
+    <attr semantic="TEXCOORD" stream="0" type="float" size="2"/>
+    <attr semantic="NORMAL"   stream="0" type="float" size="3"/>
+    <attr semantic="TANGENT"  stream="1" type="float" size="3"/>
+    <attr semantic="BINORMAL" stream="1" type="float" size="3"/>
+  </format>
+
+  <format name="nuv2ui">
+    <attr semantic="NORMAL"    stream="0" type="float" size="3"/>
+    <attr semantic="TEXCOORD0" stream="0" type="float" size="2"/>
+    <attr semantic="TEXCOORD1" stream="0" type="uint"  size="1"/>
+    <attr semantic="TEXCOORD2" stream="0" type="uint"  size="1"/>
+  </format>
+
+  <format name="terrain">
+    <attr semantic="TEXCOORD0" stream="0" type="float"  size="2"/>
+    <attr semantic="TEXCOORD1" stream="0" type="float"  size="2"/>
+    
+    <attr semantic="POSITION"  stream="1" type="float" size="1"/>
+    <attr semantic="NORMAL"    stream="1" type="float" size="3"/>
+  </format>
+
+</formatslib>

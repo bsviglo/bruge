@@ -204,6 +204,58 @@ namespace physic
 	}
 
 	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::addTerrain(
+		uint gridSize, float unitsPerCell, float* heights,
+		float heightScale, float minHeight, float maxHeight)
+	{
+		//-- create heightfield shape.
+		m_terrain.m_shape = new btHeightfieldTerrainShape(
+			gridSize, gridSize, heights, heightScale, minHeight, maxHeight,	1, PHY_FLOAT, false
+			);
+
+		assert(m_terrain.m_shape && "null terrain heightfield shape.");
+
+		//-- scale the shape.
+		btVector3 localScaling(unitsPerCell, 1, unitsPerCell);
+		m_terrain.m_shape->setLocalScaling(localScaling);
+
+		//-- set origin to middle of heightfield.
+		btTransform tr;
+		tr.setIdentity();
+
+		float middleY = (maxHeight - minHeight) * 0.5f;
+		float offsetY = maxHeight - middleY;
+
+		btMatrix3x3 mat3x3;
+		mat3x3.setEulerZYX(0, degToRad(180), 0);
+		tr.setBasis(mat3x3);
+		tr.setOrigin(btVector3(0, offsetY, 0));
+
+		m_terrain.m_rigidBody = new btRigidBody(
+			0, 0, m_terrain.m_shape, btVector3(0,0,0)
+			);	
+
+		m_terrain.m_rigidBody->setWorldTransform(tr);
+		m_terrain.m_rigidBody->setContactProcessingThreshold(0.0f);
+		m_dynamicsWorld->addRigidBody(m_terrain.m_rigidBody);
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::delTerrain()
+	{
+		//-- remove terrain from physics world.
+		m_dynamicsWorld->removeRigidBody(m_terrain.m_rigidBody);
+
+		//-- delete.
+		delete m_terrain.m_rigidBody;
+		delete m_terrain.m_shape;
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
 	bool PhysicWorld::collide(const vec3f& origin, const vec3f& dir) const
 	{
 		btVector3 start = bruge2bullet(origin);
@@ -244,6 +296,11 @@ namespace physic
 
 		if (cb.hasHit())
 		{
+			//-- ToDo: terrain is not suit for this current collision system
+			//--	   We need some reworking here. Reconsider.
+			if (!cb.m_collisionObject->getUserPointer())
+				return false;
+
 			auto body  = static_cast<PhysObjDesc::RigidBody*>(cb.m_collisionObject->getUserPointer());
 			auto world = cb.m_collisionObject->getWorldTransform();
 

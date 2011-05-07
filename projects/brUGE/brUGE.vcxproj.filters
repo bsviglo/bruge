@@ -59,6 +59,12 @@
     <Filter Include="render\framework\meshes">
       <UniqueIdentifier>{f67e80ad-a707-45f6-83c6-41674961c8a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\framework\sky">
+      <UniqueIdentifier>{2d814f5d-051e-425c-b964-ba38c8012b33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\framework\terrain">
+      <UniqueIdentifier>{6d17bc84-18a3-4341-a0b9-f899b49ce1d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -101,9 +107,6 @@
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
-      <Filter>render\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\IShader.cpp">
       <Filter>render\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\game_world.cpp">
@@ -174,6 +177,18 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp">
       <Filter>render\framework\shadows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\vertex_declarations.cpp">
+      <Filter>render\framework\materials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\SkyBox.cpp">
+      <Filter>render\framework\sky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\mesh_collector.cpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\terrain_system.cpp">
+      <Filter>render\framework\terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +306,6 @@
     <ClInclude Include="..\..\sources\render\light_manager.hpp">
       <Filter>render\framework\lights</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\vertex_format.hpp">
-      <Filter>render\framework</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\shadow_manager.hpp">
       <Filter>render\framework\shadows</Filter>
     </ClInclude>
@@ -308,6 +320,21 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Frustum.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\vertex_format.hpp">
+      <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\vertex_declarations.hpp">
+      <Filter>render\framework\materials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\SkyBox.hpp">
+      <Filter>render\framework\sky</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\mesh_collector.hpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\terrain_system.hpp">
+      <Filter>render\framework\terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

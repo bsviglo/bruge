@@ -41,7 +41,7 @@ namespace brUGE
 		Ptr<render::Font>			loadFont   		(const char* name, uint size, const vec2ui& glyphsRange);
 		Ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
 		Ptr<render::ITexture>		loadTexture		(const char* name);
-		Ptr<render::Mesh>			loadMesh   		(const char* name);
+		Ptr<render::Mesh>			loadMesh   		(const char* name, bool simpleMaterial = false);
 		Ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
 		//Ptr<render::Animation>		loadAnimation	(const char* name);
 		//Ptr<Sound>				loadSound  (const char* name);

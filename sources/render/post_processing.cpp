@@ -55,7 +55,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	PostProcessing::~PostProcessing()
 	{
-
+		for (auto i = m_effects.begin(); i != m_effects.end(); ++i)
+			delete *i;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -94,32 +95,19 @@ namespace render
 
 			if (!(m_fsQuad = rd()->createBuffer(IBuffer::TYPE_VERTEX, vertices, 4, sizeof(VertexXYZUV))))
 				return false;
+
+			m_pVB = m_fsQuad.get();
 		}
 
 		//-- create rops for drawing.
 		{
 			RenderOp op;
-			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-			op.m_mainVB		  = &*m_fsQuad;
 			op.m_indicesCount = 4;
-
+			op.m_primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
+			op.m_VBs		  = &m_pVB;
+			op.m_VBCount	  = 1;
 			m_rops.push_back(op);
 		}
-
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PostProcessing::fini()
-	{
-		m_fsQuad.reset();
-		m_rts.clear();
-
-		for (auto i = m_effects.begin(); i != m_effects.end(); ++i)
-			delete *i;
-
-		m_effects.clear();
-		m_ui.reset();
 
 		return true;
 	}
@@ -318,7 +306,7 @@ namespace render
 		//-- 3. read material.
 		if (auto sec = section.child("material"))
 		{
-			if (auto mat = rs().materials()->createMaterial(sec, &passUI->m_desc))
+			if (auto mat = rs().materials().createMaterial(sec, &passUI->m_desc))
 			{
 				out.m_material = mat;
 			}

@@ -23,20 +23,24 @@ static float G_EPS = 0.0001f;
 //-- global auto variables.
 cbuffer cb_auto_Global
 {
-	float4 g_screenRes;
-	float4 g_farNearPlane;
+	float4 g_time;
 };
 
 //-- per frame auto variables.
 cbuffer cb_auto_PerFrame
 {
+	float4   g_screenRes;
+	float4   g_farNearPlane;
 	float4   g_cameraPos;
 	float4x4 g_viewMat;
 	float4x4 g_invViewMat;
+	float4x4 g_projMat;
+	float4x4 g_invProjMat;
 	float4x4 g_viewProjMat;
 	float4x4 g_invViewProjMat;
 	float4x4 g_lastViewProjMat;
 	float4x4 g_invLastViewProjMat;
+	float4x4 g_envTransform;
 };
 
 //-- per instance auto variables.
@@ -46,6 +50,7 @@ cbuffer cb_auto_PerInstance
 	float4x4 g_MVPMat;
 	float4x4 g_MVMat;
 	float    g_alphaRef;
+	float	 g_padding[3];
 };
 
 #ifdef _VERTEX_SHADER_
