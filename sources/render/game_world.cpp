@@ -41,10 +41,35 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
+	bool GameWorld::handleMouseClick(const MouseEvent& me)
+	{
+		if (m_playerObj)
+			return m_playerObj->handleMouseClick(me);
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool GameWorld::handleMouseMove(const MouseAxisEvent& mae)
+	{
+		if (m_playerObj)
+			return m_playerObj->handleMouseMove(mae);
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool GameWorld::handleKeyboardEvent(const KeyboardEvent& ke)
+	{
+		if (m_playerObj)
+			return m_playerObj->handleKeyboardEvent(ke);
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
 	bool GameWorld::loadMap(const char* /*mapName*/)
 	{
-		assert(0);
-
 		return false;
 	}
 
@@ -57,9 +82,34 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
+	bool GameWorld::addPlayer(IPlayerObj* player, const char* desc, const mat4f* orient)
+	{
+		m_playerObj.reset(player);
+
+		RODataPtr data = os::FileSystem::instance().readFile(desc);
+		if (!data)
+			return false;
+
+		if (!m_playerObj->load(*data.get(), m_objs.size(), orient))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
 	Handle GameWorld::addGameObj(const char* desc, const mat4f* orient/* = NULL*/)
 	{
 		std::unique_ptr<IGameObj> obj(new IGameObj());
+
+		return addGameObj(obj.release(), desc, orient);
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Handle GameWorld::addGameObj(IGameObj* inObj, const char* desc, const mat4f* orient)
+	{
+		std::unique_ptr<IGameObj> obj(inObj);
 
 		RODataPtr data = os::FileSystem::instance().readFile(desc);
 		if (!data)
@@ -90,9 +140,15 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void GameWorld::beginUpdate(float /*dt*/)
+	void GameWorld::beginUpdate(float dt)
 	{
-		
+		if (m_playerObj)
+			m_playerObj->beginUpdate(dt);
+
+		for (uint i = 0; i < m_objs.size(); ++i)
+		{
+			m_objs[i]->beginUpdate(dt);
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------

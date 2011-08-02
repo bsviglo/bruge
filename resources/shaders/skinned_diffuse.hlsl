@@ -56,8 +56,8 @@ vs_out main(vs_in input)
 		worldPos += weight.pos.w * boneTransf(weight.joint.x, weight.pos.xyz); 
     }
     
-	o.pos = mul(float4(worldPos, 1.0f), g_viewProjMat);
-	o.tc  = input.tc;
+	o.pos    = mul(float4(worldPos, 1.0f), g_viewProjMat);
+	o.tc     = input.tc;
 
     return o;
 }
@@ -68,17 +68,31 @@ vs_out main(vs_in input)
 
 texture2D(float4, diffuseMap);
 texture2D(float4, t_auto_decalsMask);
+texture2D(float4, t_auto_lightsMask);
+texture2D(float4, t_auto_shadowsMask);
 
 //-------------------------------------------------------------------------------------------------
 float4 main(vs_out i) : SV_TARGET
 {
-	float2 ssc		  = i.pos.xy * g_screenRes.zw;
-	float4 srcColor   = sample2D(diffuseMap, i.tc.xy);
-	float4 decalColor = sample2D(t_auto_decalsMask, ssc);
+	float2 ssc		   = i.pos.xy * g_screenRes.zw;
+	float4 srcColor    = sample2D(diffuseMap,  i.tc);
+	float4 decalColor  = sample2D(t_auto_decalsMask,  ssc);
+	float4 lightsMask  = sample2D(t_auto_lightsMask,  ssc);
+	float4 shadowsMask = sample2D(t_auto_shadowsMask, ssc);
+		
+	//-- calculate decals factor.
+	float3 colorRGB = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);
+
+	//-- calculate lighting factor.
+	float3 chrom = lightsMask.rgb / (G_EPS + luminance(lightsMask.rgb));
+	float3 spec  = chrom * lightsMask.a;
+
+	colorRGB = lightsMask.rgb * colorRGB + 0.1f * spec;
+
+	//-- calculate shadows factor.
+	colorRGB *= max(0.25f, 1.0f - shadowsMask.x);
 	
-	float3 outRGB     = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);
-	
-	return float4(outRGB, srcColor.w);
+	return float4(colorRGB, 1.0f);
 }
 
 #endif

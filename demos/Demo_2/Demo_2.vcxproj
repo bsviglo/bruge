@@ -166,10 +166,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Demo.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="win_main.cpp" />
+    <ClCompile Include="Zombie.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Demo.h" />
+    <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Zombie.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\projects\brUGE\brUGE.vcxproj">

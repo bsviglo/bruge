@@ -65,6 +65,9 @@
     <Filter Include="render\framework\terrain">
       <UniqueIdentifier>{6d17bc84-18a3-4341-a0b9-f899b49ce1d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\camera">
+      <UniqueIdentifier>{7abdabc2-d05c-46f7-932b-4be6172caf32}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\Console.cpp">
@@ -102,9 +105,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\os\WinApp.cpp">
       <Filter>os</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\FreeCamera.cpp">
-      <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
       <Filter>render\core</Filter>
@@ -190,6 +190,12 @@
     <ClCompile Include="..\..\sources\render\terrain_system.cpp">
       <Filter>render\framework\terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\render\FreeCamera.cpp">
+      <Filter>render\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\CursorCamera.cpp">
+      <Filter>render\camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Console.h">
@@ -224,9 +230,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\os\WinApp.h">
       <Filter>os</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\FreeCamera.h">
-      <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Color.h">
       <Filter>render\core</Filter>
@@ -335,6 +338,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\terrain_system.hpp">
       <Filter>render\framework\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\FreeCamera.h">
+      <Filter>render\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\CursorCamera.hpp">
+      <Filter>render\camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

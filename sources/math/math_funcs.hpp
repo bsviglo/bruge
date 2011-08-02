@@ -3,6 +3,14 @@
 #include "math_types.hpp"
 #include "Vector4.hpp"
 
+//-- ToDo: reconsider and delete.
+#ifdef max
+#	undef max
+#endif
+#ifdef min
+#	undef min
+#endif
+
 namespace brUGE
 {
 namespace math

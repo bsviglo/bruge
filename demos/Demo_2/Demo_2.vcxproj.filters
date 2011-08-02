@@ -4,6 +4,9 @@
     <Filter Include="source">
       <UniqueIdentifier>{887b8f63-8f90-4eb1-a8ac-e6c120566c30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\game">
+      <UniqueIdentifier>{62748767-0914-4117-baa5-964f6ba47711}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Demo.cpp">
@@ -12,10 +15,22 @@
     <ClCompile Include="win_main.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>source\game</Filter>
+    </ClCompile>
+    <ClCompile Include="Zombie.cpp">
+      <Filter>source\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Demo.h">
       <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>source\game</Filter>
+    </ClInclude>
+    <ClInclude Include="Zombie.hpp">
+      <Filter>source\game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

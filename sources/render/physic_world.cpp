@@ -245,6 +245,9 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	bool PhysicWorld::delTerrain()
 	{
+		if (!m_terrain.m_shape || !m_terrain.m_rigidBody)
+			return true;
+
 		//-- remove terrain from physics world.
 		m_dynamicsWorld->removeRigidBody(m_terrain.m_rigidBody);
 
@@ -268,13 +271,13 @@ namespace physic
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(vec3f& out, const vec3f& origin, const vec3f& dir) const
+	bool PhysicWorld::collide(vec3f& out, const vec3f& start, const vec3f& end) const
 	{
-		btVector3 start = bruge2bullet(origin);
-		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+		btVector3 btStart = bruge2bullet(start);
+		btVector3 btEnd   = bruge2bullet(end);
 
-		btCollisionWorld::ClosestRayResultCallback cb(start, end);
-		m_dynamicsWorld->rayTest(start, end, cb);
+		btCollisionWorld::ClosestRayResultCallback cb(btStart, btEnd);
+		m_dynamicsWorld->rayTest(btStart, btEnd, cb);
 
 		if (cb.hasHit())
 		{
@@ -286,13 +289,21 @@ namespace physic
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(mat4f& localMat, Node*& node, const vec3f& origin, const vec3f& dir) const
+	bool PhysicWorld::collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const
 	{
-		btVector3 start = bruge2bullet(origin);
-		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+		Handle objID = CONST_INVALID_HANDLE;
+		return collide(localMat, node, objID, start, end);
+	}
 
-		btCollisionWorld::ClosestRayResultCallback cb(start, end);
-		m_dynamicsWorld->rayTest(start, end, cb);
+	//----------------------------------------------------------------------------------------------
+	bool PhysicWorld::collide(
+		mat4f& localMat, Node*& node, Handle& objID, const vec3f& start, const vec3f& end) const
+	{
+		btVector3 btStart = bruge2bullet(start);
+		btVector3 btEnd   = bruge2bullet(end);
+
+		btCollisionWorld::ClosestRayResultCallback cb(btStart, btEnd);
+		m_dynamicsWorld->rayTest(btStart, btEnd, cb);
 
 		if (cb.hasHit())
 		{
@@ -322,7 +333,8 @@ namespace physic
 			localMat.setLookAt(localPoint, localNormal, up);
 			localMat.invert();
 
-			node = body->m_node;
+			node  = body->m_node;
+			objID = body->m_owner->m_objectID;
 
 			return true;
 		}
@@ -594,6 +606,7 @@ namespace physic
 	//----------------------------------------------------------------------------------------------
 	void PhysObj::addImpulse(const vec3f& dir, const vec3f& relPos)
 	{
+		m_bodies[0]->m_body->activate(true);
 		m_bodies[0]->m_body->applyImpulse(
 			bruge2bullet(dir), bruge2bullet(relPos)
 			);

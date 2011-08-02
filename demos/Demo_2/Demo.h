@@ -2,7 +2,6 @@
 
 #include "prerequisites.hpp"
 #include "engine/IDemo.h"
-#include "render/FreeCamera.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
@@ -33,8 +32,6 @@ private:
 	void gui();
 
 private:
-	Ptr<FreeCamera>	m_camera;
-
 	std::vector<std::pair<mat4f, Node*>> m_collisionDescs;
 	std::vector<mat4f>					 m_collisions;
 

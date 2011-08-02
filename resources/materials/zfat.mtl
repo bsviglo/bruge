@@ -1,0 +1,6 @@
+<material use="bump_skinned">
+    <properties>
+        <property name="diffuseMap" type="texture" value="textures/zfat/fatty_d.dds"/>
+	<property name="bumpMap" type="texture" value="textures/zfat/fatty_local.dds"/>
+    </properties>
+</material>

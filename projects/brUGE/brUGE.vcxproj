@@ -202,6 +202,7 @@
     <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
     <ClCompile Include="..\..\sources\os\win_message_func.cpp" />
     <ClCompile Include="..\..\sources\os\WinApp.cpp" />
+    <ClCompile Include="..\..\sources\render\CursorCamera.cpp" />
     <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp" />
@@ -325,6 +326,7 @@
     <ClInclude Include="..\..\sources\Exception.h" />
     <ClInclude Include="..\..\sources\prerequisites.hpp" />
     <ClInclude Include="..\..\sources\render\terrain_system.hpp" />
+    <ClInclude Include="..\..\sources\render\CursorCamera.hpp" />
     <ClInclude Include="..\..\sources\render\vertex_format.hpp" />
     <ClInclude Include="..\..\sources\render\vertex_declarations.hpp" />
     <ClInclude Include="..\..\sources\win32Res\resource.h" />

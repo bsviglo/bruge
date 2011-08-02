@@ -403,6 +403,7 @@ namespace brUGE
 		else if (me.button == MB_RIGHT_BUTTON && me.isDown) m_imguiInput.button = IMGUI_MBUT_RIGHT;
 		else												m_imguiInput.button = 0;
 
+		m_gameWorld->handleMouseClick(me);
 		m_demo->handleMouseClick(me);
 	}
 
@@ -413,6 +414,7 @@ namespace brUGE
 		m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
 		m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 5);
 
+		m_gameWorld->handleMouseMove(mae);
 		m_demo->handleMouseMove(mae);
 	}
 
@@ -438,6 +440,7 @@ namespace brUGE
 		if (m_console->visible() && m_console->handleKey(ke.keyCode, ke.state, ke.text))
 			return;
 
+		m_gameWorld->handleKeyboardEvent(ke);
 		m_demo->handleKeyboardEvent(ke);
 	}
 

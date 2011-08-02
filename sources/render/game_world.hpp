@@ -4,6 +4,7 @@
 #include "utils/Data.hpp"
 #include "math/AABB.hpp"
 #include "math/Matrix4x4.hpp"
+#include "control/input_listener.h"
 #include <vector>
 
 namespace brUGE
@@ -46,6 +47,17 @@ namespace brUGE
 	};
 
 
+	//-- Simple event system implementation.
+	//-- ToDo: Rework it.
+	//----------------------------------------------------------------------------------------------
+	struct GameEvent
+	{
+		const char* m_name;
+		void*		m_data;
+		uint		m_size;
+	};
+
+
 	//-- The minimal point of the engines game objects subsystem.
 	//----------------------------------------------------------------------------------------------
 	class IGameObj : public NonCopyable
@@ -58,15 +70,19 @@ namespace brUGE
 		virtual bool load(const utils::ROData& inData, Handle objID, const mat4f* orient = NULL);
 		virtual bool save(utils::WOData& outData);
 
+		virtual void receiveEvent(const GameEvent& /*event*/) { }
+
 		virtual void beginUpdate(float /*dt*/) { }
 		virtual void preAnimUpdate() { }
 		virtual void postAnimUpdate() { }
 		virtual void endUpdate() { }
 
 		//-- ToDo: remove.
-		Handle animCtrl() { return m_animCtrl; }
+		Handle				animCtrl() { return m_animCtrl; }
+		physic::PhysObj*	physObj()  { return m_physObj; }
+		const mat4f&		worldPos() { return m_transform.m_worldMat; }
 
-	private:
+	protected:
 		Handle				m_self;
 		Handle				m_meshInst;
 		Handle				m_animCtrl;
@@ -78,6 +94,21 @@ namespace brUGE
 	};
 
 
+	//-- Player is a game object and game actor at the same time. It has additional properties and 
+	//-- abilities. For example it can intercept mouse and keyboard messages and does something.
+	//----------------------------------------------------------------------------------------------
+	class IPlayerObj : public IGameObj
+	{
+	public:
+		IPlayerObj() { }
+		virtual ~IPlayerObj() { }
+
+		virtual bool handleMouseClick	(const MouseEvent& me) = 0;
+		virtual bool handleMouseMove	(const MouseAxisEvent& mae) = 0;
+		virtual bool handleKeyboardEvent(const KeyboardEvent& ke) = 0;
+	};
+
+
 	//-- Represents the all game world. It manages game specific logic of all the game objects.
 	//----------------------------------------------------------------------------------------------
 	class GameWorld : public NonCopyable
@@ -86,26 +117,36 @@ namespace brUGE
 		GameWorld();
 		~GameWorld();
 
-		bool		init();
+		bool			init();
+
+		bool			handleMouseClick(const MouseEvent& me);
+		bool			handleMouseMove(const MouseAxisEvent& mae);
+		bool			handleKeyboardEvent(const KeyboardEvent& ke);
 
 		//-- load and save map.
-		bool		loadMap(const char* mapName);
-		bool		saveMap(const char* mapName);
+		bool			loadMap(const char* mapName);
+		bool			saveMap(const char* mapName);
+		
+		//-- player game object.
+		bool			addPlayer(IPlayerObj* player, const char* desc, const mat4f* orient);
+		IPlayerObj*		getPlayer() { return m_playerObj.get(); }
 
 		//-- add/delete some game objects to/from game world.
-		Handle		addGameObj(const char* desc, const mat4f* orient = NULL);
-		bool		delGameObj(Handle handle);
-		IGameObj*	getGameObj(Handle handle) { return m_objs[handle]; }
+		Handle			addGameObj(IGameObj* obj, const char* desc, const mat4f* orient = NULL);
+		Handle			addGameObj(const char* desc, const mat4f* orient = NULL);
+		bool			delGameObj(Handle handle);
+		IGameObj*		getGameObj(Handle handle) { return m_objs[handle]; }
 
 		//-- update functions bucket.
-		void		beginUpdate(float /*dt*/);
-		void		preAnimUpdate();
-		void		postAnimUpdate();
-		void		endUpdate();
+		void			beginUpdate(float /*dt*/);
+		void			preAnimUpdate();
+		void			postAnimUpdate();
+		void			endUpdate();
 
 	private:
 		typedef std::vector<IGameObj*> GameObjs;
 		GameObjs m_objs;
+		std::unique_ptr<IPlayerObj> m_playerObj;
 	};
 
 } //-- brUGE

@@ -19,7 +19,7 @@ namespace brUGE
 namespace render
 {
 	//---------------------------------------------------------------------------------------------
-	DebugDrawer::DebugDrawer() : m_isEnabled(false)
+	DebugDrawer::DebugDrawer() : m_isEnabled(true)
 	{
 
 	}

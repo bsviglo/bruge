@@ -92,6 +92,10 @@ namespace render
 						data->m_localPositions, aabb, 24, layer.m_isLooped, true
 						);
 
+					//-- update local and world bounds.
+					mesh->m_transform->m_localBounds = aabb;
+					mesh->m_transform->m_worldBounds = aabb.getTranformed(mesh->m_transform->m_worldMat);
+
 					//-- ToDo: blend skeleton.
 				}
 
@@ -165,6 +169,7 @@ namespace render
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
+		delete m_animCtrls[id];
 		m_animCtrls[id] = nullptr;
 
 		return true;
@@ -193,7 +198,8 @@ namespace render
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
-		m_animCtrls[id] = nullptr;
+		if (m_animCtrls[id])
+			m_animCtrls[id]->m_animLayers.clear();
 	}
 
 	//----------------------------------------------------------------------------------------------

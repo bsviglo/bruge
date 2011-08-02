@@ -163,8 +163,9 @@ namespace physic
 		bool		delTerrain();
 
 		bool		collide(const vec3f& origin, const vec3f& dir) const;
-		bool		collide(vec3f& out, const vec3f& origin, const vec3f& dir) const;
-		bool		collide(mat4f& localMat, Node*& node, const vec3f& origin, const vec3f& dir) const;
+		bool		collide(vec3f& out, const vec3f& start, const vec3f& end) const;
+		bool		collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const;
+		bool		collide(mat4f& localMat, Node*& node, Handle& objID, const vec3f& start, const vec3f& end) const;
 
 	private:
 		//-- console functions.
@@ -184,6 +185,8 @@ namespace physic
 		//-- terrain mesh.
 		struct TerrainPhysics
 		{
+			TerrainPhysics() : m_shape(nullptr), m_rigidBody(nullptr) { }
+
 			btHeightfieldTerrainShape*	m_shape;
 			btRigidBody*				m_rigidBody;
 		};
