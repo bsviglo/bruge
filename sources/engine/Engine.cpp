@@ -138,20 +138,28 @@ namespace brUGE
 						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
 						);
 
-					m_timingPanel->visualize();
-
 					m_gameWorld->beginUpdate(dt);
 
-					//-- update animation.
+					//-- do pre-animation.
 					{
-						SCOPED_TIME_MEASURER_EX("animation")
-						m_animEngine->animate(dt);
+						SCOPED_TIME_MEASURER_EX("pre-animation")
+						m_animEngine->preAnimate(dt);
 					}
 					
+					{
+						SCOPED_TIME_MEASURER_EX("animation")
+						m_animEngine->animate();
+					}
+
 					//-- simulate physics.
 					{
 						SCOPED_TIME_MEASURER_EX("physic")
 						m_physicWorld->simulateDynamics(dt);
+					}
+
+					{
+						SCOPED_TIME_MEASURER_EX("post-animation")
+						m_animEngine->postAnimate();
 					}
 
 					m_renderWorld->update(dt);
@@ -162,10 +170,6 @@ namespace brUGE
 					//m_collisionWorld.update(dt);
 
 					m_gameWorld->endUpdate();
-
-					//-- finish updating imgui input.
-					imguiEndFrame();
-					m_imguiInput.scroll = 0;
 				}
 				
 				//-- do draw.
@@ -176,8 +180,13 @@ namespace brUGE
 					m_renderWorld->draw();
 					//-- ToDo: some old stuff.
 					drawFrame(dt);
+
 					m_renderSys.endFrame();
 				}
+
+				//-- finish updating imgui input.
+				imguiEndFrame();
+				m_imguiInput.scroll = 0;
 				
 				//-- wait next frame.
 				/*
@@ -457,7 +466,6 @@ namespace brUGE
 	{
 		m_demo->render(dt);
 		m_console->draw();
-		m_watchersPanel->draw(dt);
 	}
 	
 	//------------------------------------------

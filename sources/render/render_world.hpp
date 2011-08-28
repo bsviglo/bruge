@@ -14,7 +14,7 @@ namespace brUGE
 
 namespace render
 {
-	class SkyBox;
+	//class SkyBox;
 	class DebugDrawer;
 	class imguiRender;
 	class DecalManager;
@@ -54,7 +54,7 @@ namespace render
 		typedef std::unique_ptr<MeshManager>    MeshManagerPtr;
 		typedef std::unique_ptr<ShadowManager>  ShadowManagerPtr;
 		typedef std::unique_ptr<PostProcessing> PostProcessingPtr;
-		typedef std::unique_ptr<SkyBox>			SkyBoxPtr;
+		//typedef std::unique_ptr<SkyBox>			SkyBoxPtr;
 		typedef std::unique_ptr<TerrainSystem>  TerrainSystemPtr;
 		
 		Ptr<Camera>		  m_camera;
@@ -65,7 +65,7 @@ namespace render
 		MeshManagerPtr	  m_meshManager;
 		ShadowManagerPtr  m_shadowManager;
 		PostProcessingPtr m_postProcessing;
-		SkyBoxPtr		  m_skyBox;
+		//SkyBoxPtr		  m_skyBox;
 		TerrainSystemPtr  m_terrainSystem;
 	};
 

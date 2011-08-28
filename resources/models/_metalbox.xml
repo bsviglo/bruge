@@ -1,0 +1,7 @@
+<game_object>
+
+  <render file="models\metalbox\metalbox.mesh"/>
+  <physics file="models\metalbox\metalbox.phys"/>
+  <audio/>
+
+</game_object>

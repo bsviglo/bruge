@@ -63,12 +63,12 @@ float4 main(vs_out i) : SV_TARGET
 	DirLight light = g_lights[i.instID];
 	
 	float4 c = light.m_color;
-	float3 l = light.m_dir.xyz;
+	float3 l = -light.m_dir.xyz;
     float3 v = normalize(-i.vDir);
     float3 h = normalize(l + v);
-	float3 n = float3(nz.xy, sqrt(1.0f - nz.x * nz.x - nz.y * nz.y));
+	float3 n = nz.xyz;
 	
-    float diff = max(0.1f, dot(l, n));
+    float diff = max(0.25f, dot(l, n));
     float lum  = luminance(c.rgb);
     float spec = lum * pow(max(0.0f, dot(h, n)), 20.0f);
 	

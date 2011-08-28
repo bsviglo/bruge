@@ -63,8 +63,8 @@ namespace brUGE
 	class IGameObj : public NonCopyable
 	{
 	public:
-		IGameObj() { }
-		virtual ~IGameObj() { }
+		IGameObj();
+		virtual ~IGameObj();
 
 		//-- serialization functions.
 		virtual bool load(const utils::ROData& inData, Handle objID, const mat4f* orient = NULL);

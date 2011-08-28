@@ -29,7 +29,7 @@ namespace render
 	{
 		RenderOp()
 			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_VBs(nullptr), m_VBCount(0), m_IB(nullptr),
-				m_weightsTB(nullptr), m_matrixPaletteCount(0), m_matrixPalette(nullptr), m_indicesCount(0),
+				m_matrixPaletteCount(0), m_matrixPalette(nullptr), m_indicesCount(0),
 				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr),
 				m_instanceData(nullptr), m_instanceSize(0), m_userData(nullptr)
 		{ }
@@ -42,7 +42,6 @@ namespace render
 		IBuffer**			m_VBs;
 		uint8				m_VBCount;
 		//-- addition data in case if mesh is animated.
-		IBuffer*			m_weightsTB;
 		const mat4f*		m_matrixPalette;
 		uint16				m_matrixPaletteCount;
 		//-- material of given sub-mesh.

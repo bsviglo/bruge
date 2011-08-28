@@ -170,6 +170,36 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
+	IGameObj::IGameObj()
+		:	m_self(CONST_INVALID_HANDLE), m_animCtrl(CONST_INVALID_HANDLE),
+			m_meshInst(CONST_INVALID_HANDLE), m_physObj(nullptr)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	IGameObj::~IGameObj()
+	{
+		if (m_meshInst != CONST_INVALID_HANDLE)
+		{
+			Engine::instance().renderWorld().meshManager().delMesh(m_meshInst);
+			m_meshInst = CONST_INVALID_HANDLE;
+		}
+
+		if (m_animCtrl != CONST_INVALID_HANDLE)
+		{
+			Engine::instance().animationEngine().delAnimDef(m_animCtrl);
+			m_animCtrl = CONST_INVALID_HANDLE;
+		}
+
+		if (m_physObj)
+		{
+			Engine::instance().physicWorld().delPhysicDef(m_physObj);
+			m_physObj = nullptr;
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
 	bool IGameObj::load(const ROData& data, Handle objID, const mat4f* orient/* = NULL*/)
 	{
 		pugi::xml_document	   doc;
@@ -231,7 +261,6 @@ namespace brUGE
 			if (meshInst.m_skinnedMesh)
 			{
 				AnimationData::Desc desc;
-				desc.m_idleAnim  = nullptr;
 				desc.m_meshInst  = &meshInst;
 				desc.m_transform = &m_transform;
 

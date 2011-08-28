@@ -124,12 +124,9 @@ namespace brUGE
 		void visible(bool flag) { m_isVisible = flag; }
 
 		void update(float dt);
-		void draw(float dt);
+		void visualize();
 
 		void registerWatcher(const std::string& name, EWatcherAccess access, IWatcher* watcher);
-
-	private:
-		void _setupRender();
 
 	private:
 
@@ -142,10 +139,8 @@ namespace brUGE
 
 		std::vector<WatcherDesc> m_roWatchers;
 		std::vector<WatcherDesc> m_rwWatchers;
-
-		Ptr<render::Font>		 m_font;
-		render::Font::Desc		 m_fontDesc;
 		bool					 m_isVisible;
+		int						 m_scroll;
 	};
 
 } // brUGE

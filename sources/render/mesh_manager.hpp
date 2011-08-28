@@ -24,10 +24,10 @@ namespace render
 			const char* fileName;
 		};
 
-		Ptr<Mesh>		    m_mesh;
-		Ptr<SkinnedMesh>    m_skinnedMesh;
-		Joint::WorldPalette m_worldPalette;
-		Transform*			m_transform;
+		Ptr<Mesh>		 m_mesh;
+		Ptr<SkinnedMesh> m_skinnedMesh;
+		MatrixPalette	 m_worldPalette;
+		Transform*		 m_transform;
 	};
 
 

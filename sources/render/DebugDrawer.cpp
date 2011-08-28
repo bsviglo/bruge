@@ -77,9 +77,9 @@ namespace render
 		{
 			ResourcesManager& rm = ResourcesManager::instance();
 						
-			m_meshes[MT_BOX]	  = rm.loadMesh("system/meshes/box.obj");
-			m_meshes[MT_CYLINDER] = rm.loadMesh("system/meshes/cylinder.obj");
-			m_meshes[MT_SPHERE]   = rm.loadMesh("system/meshes/sphere.obj");
+			m_meshes[MT_BOX]	  = rm.loadMesh("system/meshes/box.mesh");
+			m_meshes[MT_CYLINDER] = rm.loadMesh("system/meshes/cylinder.mesh");
+			m_meshes[MT_SPHERE]   = rm.loadMesh("system/meshes/sphere.mesh");
 
 			//-- check result.
 			for (uint i = 0; i < MT_COUNT; ++i)
@@ -494,6 +494,7 @@ namespace render
 		}
 		
 		//-- 2. do wire geometry drawing.
+		if (!m_vertices.empty())
 		{
 			//-- load vertices into GPU's VB.
 			_swapBuffers();

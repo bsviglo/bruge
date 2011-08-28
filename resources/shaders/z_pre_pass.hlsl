@@ -96,7 +96,7 @@ float4 main(vs_out i) : SV_TARGET
 	float3 norm = normalize(i.normal);
 #endif
 
-	return float4(norm.x, norm.y, 0.0f, dist);
+	return float4(norm, dist);
 };
 	
 #endif

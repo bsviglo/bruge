@@ -88,7 +88,20 @@ bool Demo::init()
 		mat.setIdentity();
 
 		//-- add plane.
-		gameWorld.addGameObj("resources/models/plane.xml", &mat);
+		gameWorld.addGameObj("resources/models/_plane.xml", &mat);
+
+		for (uint i = 0; i < 5; ++i)
+		{
+			for (uint j = 0; j < 5; ++j)
+			{
+				for (uint k = 0; k < 5; ++k)
+				{
+					mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
+					mat.postTranslation(-5, 50, -5);
+					gameWorld.addGameObj("resources/models/_barrel.xml", &mat);
+				}
+			}
+		}
 
 		//-- test
 		for (uint i = 0; i < 5; ++i)
@@ -99,24 +112,12 @@ bool Demo::init()
 				{
 					mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 					mat.postTranslation(-15, 25, -15);
-					gameWorld.addGameObj("resources/models/metalbox1.xml", &mat);
+					gameWorld.addGameObj("resources/models/_metalbox.xml", &mat);
 				}
 			}
 		}
 
-		for (uint i = 0; i < 5; ++i)
-		{
-			for (uint j = 0; j < 5; ++j)
-			{
-				for (uint k = 0; k < 5; ++k)
-				{
-					mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
-					mat.postTranslation(-5, 50, -5);
-					gameWorld.addGameObj("resources/models/exp_barrel.xml", &mat);
-				}
-			}
-		}
-
+/*
 		for (uint i = 0; i < 0; ++i)
 		{
 			mat.setIdentity();
@@ -126,7 +127,7 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/palm.xml", &mat);
 		}
 
-		for (uint i = 0; i < 45; ++i)
+		for (uint i = 0; i < 85; ++i)
 		{
 			mat.setIdentity();
 			mat.setRotateY(random() * 6.24f);
@@ -135,7 +136,7 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
 		}
 
-		for (uint i = 0; i < 15; ++i)
+		for (uint i = 0; i < 55; ++i)
 		{
 			mat.setIdentity();
 			mat.setRotateY(random() * 6.24f);
@@ -144,7 +145,7 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/pole.xml", &mat);
 		}
 
-		for (uint i = 0; i < 25; ++i)
+		for (uint i = 0; i < 55; ++i)
 		{
 			mat.setIdentity();
 			mat.setRotateY(random() * 6.24f);
@@ -152,6 +153,7 @@ bool Demo::init()
 			mat.postTranslation(random(100), 0, random(100));
 			gameWorld.addGameObj("resources/models/woodGate.xml", &mat);
 		}
+*/
 
 		for (uint i = 0; i < 65; ++i)
 		{

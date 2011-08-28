@@ -65,6 +65,9 @@
     <None Include="decals.hlsl" />
     <None Include="diffuse.hlsl" />
     <None Include="empty.hlsl" />
+    <None Include="skinned2_cast_shadows.hlsl" />
+    <None Include="skinned2_diffuse.hlsl" />
+    <None Include="skinned2_z_pre_pass.hlsl" />
     <None Include="skinned_diffuse.hlsl" />
     <None Include="dir_lights_resolve.hlsl" />
     <None Include="dlaa.hlsl" />

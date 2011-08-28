@@ -1,18 +1,18 @@
 #include "render/Mesh.hpp"
 
+#include "render/mesh_formats.hpp"
 #include "render/render_system.hpp"
 #include "render/IBuffer.h"
 #include "loader/ResourcesManager.h"
+#include "os/FileSystem.h"
 
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
 
-//-- http://developer.nvidia.com/object/nvtristrip_library.html
-#include "nvTriStrip/NvTriStrip.h"
-
 using namespace brUGE::render;
 using namespace brUGE::math;
 using namespace brUGE::utils;
+using namespace brUGE::os;
 
 // start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
@@ -21,114 +21,6 @@ namespace
 
 	//-- ToDo: reconsider.
 	uint g_instancingCounter = 0;
-
-	//----------------------------------------------------------------------------------------------
-	void buildTangentBasic(
-		const vec3f& pos1, const vec3f& pos2, const vec3f& pos3,
-		const vec2f& tex1, const vec2f& tex2, const vec2f& tex3,
-		vec3f& tangent,	vec3f& binormal
-		)
-	{
-		vec3f e1 = pos2 - pos1;
-		vec3f e2 = pos3 - pos1;
-
-		vec2f et1 = tex2 - tex1;
-		vec2f et2 = tex3 - tex1;
-
-		tangent.setZero();
-		binormal.setZero();
-
-		float r = et1.y * et2.x - et1.x * et2.y;
-
-		if(r != 0.0f)
-		{
-			float d = 1.0f / r;
-			tangent  = (e2.scale(et1.y) - e1.scale(et2.y)).scale(d);
-			binormal = (e2.scale(et1.x) - e1.scale(et2.x)).scale(d);
-			tangent.normalize();
-			binormal.normalize();
-		}
-	}
-
-	// http://www.gamedev.ru/code/forum/?id=34454
-	//----------------------------------------------------------------------------------------------
-	bool optimizeForStrips(
-		std::vector<Mesh::Vertex>& outVertices,
-		std::vector<Mesh::Tangent>& outTangents,
-		std::vector<uint16>& indices,
-		const std::vector<Mesh::Vertex>& vertices,
-		const std::vector<Mesh::Tangent>& tangents,
-		const std::vector<Mesh::Face>& faces
-		)
-	{
-		//::SetStitchStrips(false);
-
-		::PrimitiveGroup *prim_groups;
-		::PrimitiveGroup *remapped_groups;
-		uint16	prim_groups_cnt;
-		uint	indices_cnt;
-
-		bool result = ::GenerateStrips(
-			faces[0].index.data,
-			static_cast<uint>(faces.size() * 3),
-			&prim_groups,
-			&prim_groups_cnt
-			);
-
-		if (!result || prim_groups_cnt != 1 || prim_groups->type != PT_STRIP)
-		{
-			ERROR_MSG("NvTriStrip - !GenerateStrips(PT_STRIP) failed");
-			delete[] prim_groups;
-			return false;
-		}
-
-		indices_cnt = prim_groups->numIndices;
-
-		::RemapIndices(prim_groups, 1, static_cast<uint16>(vertices.size()), &remapped_groups);
-
-		if (indices_cnt != remapped_groups->numIndices)
-		{
-			ERROR_MSG("NvTriStrip - !RemapIndices() failed");
-			delete[] remapped_groups;
-			delete[] prim_groups;
-			return false;
-		}
-
-		//--  Validation for corrected NvTriStrip: Incorrect NvTriStrip will probably fail here.
-		for (uint i = 0; i < indices_cnt; i++)
-		{
-			if (prim_groups->indices[i] == 0xffff && remapped_groups->indices[i] != 0xffff)
-			{
-				ERROR_MSG("NvTriStrip - !RemapIndices() failed");
-				delete[] remapped_groups;
-				delete[] prim_groups;
-				return false;
-			}
-		}
-
-		indices.resize(indices_cnt);
-		memcpy(&indices.front(), remapped_groups->indices, indices_cnt * sizeof(uint16));
-
-		outVertices.resize(vertices.size());
-		outTangents.resize(vertices.size());
-
-		for (uint i = 0; i < indices_cnt; ++i)
-		{
-			uint16 new_index = remapped_groups->indices[i];
-			uint16 old_index = prim_groups->indices[i];
-
-			if (old_index == 0xffff)
-				continue;
-
-			outVertices[new_index] = vertices[old_index];
-			outTangents[new_index] = tangents[old_index];
-		}
-
-		delete[] remapped_groups;
-		delete[] prim_groups;
-
-		return true;
-	}
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -149,148 +41,125 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	Mesh::~Mesh()
 	{
-		for (auto iter = m_submeshes.cbegin(); iter != m_submeshes.cend(); ++iter)
-		{
-			delete *iter;
-		}
+
 	}
-	
+
 	//----------------------------------------------------------------------------------------------
-	bool Mesh::build()
+	bool Mesh::load(const ROData& iData, const std::string& name)
 	{
-		for (uint i = 0; i < m_submeshes.size(); ++i)
+		//-- check header.
 		{
-			SubMesh* submesh = m_submeshes[i];
-
-			//-- resize tangents vector.
-			submesh->tangents.resize(submesh->vertices.size());
-
-			submesh->buildTangents();
-			submesh->buildNormals();
-	
-			//-- compute AABB.
-			const std::vector<Vertex>& vts = submesh->vertices;
-			for (uint i = 0; i < vts.size(); ++i)
+			StaticMeshFormat::Header iHeader;
+			iData.read(iHeader);
+			if (std::string(iHeader.m_format) != "static_mesh")
 			{
-				m_aabb.include(vts[i].pos);
+				ERROR_MSG("Failed to load mesh. Most likely it's not a *.mesh format.");
+				return false;
+			}
+		}
+
+		//-- load common info.
+		StaticMeshFormat::Info iInfo;
+		iData.read(iInfo);
+
+		//-- load mesh bounds.
+		m_aabb = AABB(
+			vec3f(iInfo.m_aabb[0], iInfo.m_aabb[1], iInfo.m_aabb[2]),
+			vec3f(iInfo.m_aabb[3], iInfo.m_aabb[4], iInfo.m_aabb[5])
+			);
+
+		//-- allocate sub-meshes info.
+		std::vector<SubMesh::Desc> descs(iInfo.m_numSubMeshes);
+
+		//-- iterate over the whole set of sub-meshes.
+		for (uint i = 0; i < iInfo.m_numSubMeshes; ++i)
+		{
+			StaticMeshFormat::SubInfo iSubInfo;
+			iData.read(iSubInfo);
+
+			SubMesh::Desc& oDesc = descs[i];
+
+			oDesc.m_streams.resize(iSubInfo.m_numVertexStreams);
+			strcpy_s(oDesc.m_name, iSubInfo.m_name);
+			oDesc.m_numVertices = iSubInfo.m_numVertices;
+
+			//-- read each individual vertex stream.
+			for (uint j = 0; j < iSubInfo.m_numVertexStreams; ++j)
+			{
+				StaticMeshFormat::VertexStream iStream;
+				iData.read(iStream);
+
+				SubMesh::Desc::Stream& oStream = oDesc.m_streams[j];
+				
+				//-- read data for vertex buffer.
+				oStream.m_elemSize = iStream.m_elemSize;
+				oStream.m_vertices.resize(iStream.m_elemSize * iSubInfo.m_numVertices);
+				iData.readBytes(&oStream.m_vertices[0], iStream.m_elemSize * iSubInfo.m_numVertices);
 			}
 
-			if (!submesh->buildBuffers(false))
+			//-- read data for index buffer.
+			oDesc.m_indices.resize(iSubInfo.m_numIndices);
+			iData.readBytes(&oDesc.m_indices[0], sizeof(uint16) * iSubInfo.m_numIndices);
+		}
+
+		//-- Now all needed data has been read and we just allocate GPU resources.
+		bool success = true;
+
+		m_submeshes.resize(descs.size());
+		for (uint i = 0; i < descs.size(); ++i)
+		{
+			const SubMesh::Desc& desc = descs[i];
+			SubMesh&			 sm   = m_submeshes[i];
+
+			//-- create index buffer.
+			sm.m_numIndices = desc.m_indices.size();
+			sm.m_IB	= rd()->createBuffer(IBuffer::TYPE_INDEX,  &desc.m_indices[0], desc.m_indices.size(), sizeof(uint16));
+			success &= sm.m_IB;
+
+			//-- iterate over the whole set of streams and create of all them appropriate vertex buffers.
+			sm.m_VBs.resize(desc.m_streams.size());
+			sm.m_pVBs.resize(desc.m_streams.size());
+			for (uint j = 0; j < desc.m_streams.size(); ++j)
+			{
+				const SubMesh::Desc::Stream& stream = desc.m_streams[j];
+
+				sm.m_VBs[j] = rd()->createBuffer(
+					IBuffer::TYPE_VERTEX, &stream.m_vertices[0], desc.m_numVertices, stream.m_elemSize
+					);
+				sm.m_pVBs[j] = sm.m_VBs[j].get();
+				success &= sm.m_VBs[j];
+			}
+		}
+
+		//-- now retrieve material for each sub-mesh.
+		{
+			//-- load materials lib for this model.
+			//-- Note: materials lib may contain more then one material one for each model
+			//--	   submesh. Appropriate material selected by sequential number of the mesh.
+			std::string material = name + ".material";
+			std::vector<Ptr<PipelineMaterial>> mtllib;
+			RODataPtr mData = FileSystem::instance().readFile("resources/" + material);
+			if (!mData.get() || !rs().materials().createPipelineMaterials(mtllib, *mData.get()))
+			{
+				ERROR_MSG("Can't load materials library %s for model.", material.c_str());
 				return false;
-		}
-		
-		return true;
-	}
+			}
 
-	//----------------------------------------------------------------------------------------------
-	bool Mesh::SubMesh::buildBuffers(bool useNVTriStipOptimization/* = false*/)
-	{
-		if (useNVTriStipOptimization)
-		{
-			std::vector<Vertex>  oVertices;
-			std::vector<Tangent> oTangents;
-			std::vector<uint16>  oIndices;
-
-			if (!optimizeForStrips(oVertices, oTangents, oIndices, vertices, tangents, faces))
+			if (mtllib.size() < descs.size())
+			{
+				ERROR_MSG("Not all sub-meshes of mesh %s has its own material.", name.c_str());
 				return false;
+			}
 
-			indicesCount = oIndices.size();
-			primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_STRIP;
-
-			VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oVertices[0], vertices.size(), sizeof(Vertex));
-			VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &oTangents[0], vertices.size(), sizeof(Tangent));
-			IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &oIndices[0],  oIndices.size(), sizeof(uint16));
-		}
-		else
-		{
-			VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
-			VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
-			IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	faces.size() * 3, sizeof(uint16));
-
-			primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
-			indicesCount = faces.size() * 3;
+			for (uint i = 0; i < descs.size(); ++i)
+			{
+				m_submeshes[i].m_pMaterial = mtllib[i];
+			}
 		}
 
-		if (!VBs[0] || !VBs[1] || !IB)
-		{
-			return false;
-		}
-
-		pVBs[0] = VBs[0].get();
-		pVBs[1] = VBs[1].get();
-
-		return true;
+		return success;
 	}
-
-	//------------------------------------------
-	void Mesh::SubMesh::buildNormals()
-	{
-		for (uint i = 0; i < faces.size(); ++i)
-		{
-			uint16 a = faces[i].index[0];
-			uint16 b = faces[i].index[1];
-			uint16 c = faces[i].index[2];
-
-			vec3f pos1 = vertices[a].pos;
-			vec3f pos2 = vertices[b].pos;
-			vec3f pos3 = vertices[c].pos;
-
-			//calculate normal vector and normalize it
-			vec3f normal = (pos2 - pos1).cross(pos3 - pos1);
-			normal.normalize();
-
-			//calculate average value of normal vector
-			vertices[a].normal += normal;
-			vertices[b].normal += normal;
-			vertices[c].normal += normal;
-		}
-
-		//normalize vertex components
-		for(uint i = 0; i < vertices.size(); ++i)
-			vertices[i].normal.normalize();
-	}
-
-
-	//----------------------------------------------------------------------------------------------
-	void Mesh::SubMesh::buildTangents()
-	{
-		for (uint i = 0; i < faces.size(); ++i)
-		{
-			uint16 a = faces[i].index[0];
-			uint16 b = faces[i].index[1];
-			uint16 c = faces[i].index[2];
-
-			vec3f pos1 = vertices[a].pos;
-			vec3f pos2 = vertices[b].pos;
-			vec3f pos3 = vertices[c].pos;
-
-			vec2f tex1 = vertices[a].texCoord;
-			vec2f tex2 = vertices[b].texCoord;
-			vec2f tex3 = vertices[c].texCoord;
-
-			vec3f tangent, binormal;
-
-			buildTangentBasic(pos1, pos2, pos3, tex1, tex2, tex3, tangent, binormal);
-
-			//calculate average value of binormal vector
-			tangents[a].binormal += binormal;
-			tangents[b].binormal += binormal;
-			tangents[c].binormal += binormal;
-
-			//calculate average value of tangent vector
-			tangents[a].tangent += tangent;
-			tangents[b].tangent += tangent;
-			tangents[c].tangent += tangent;
-		}
-
-		//normalize vertex components
-		for (uint i = 0; i < vertices.size(); ++i)
-		{
-			tangents[i].binormal.normalize();
-			tangents[i].tangent.normalize();
-		}
-	}
-
+	
 	//----------------------------------------------------------------------------------------------
 	uint Mesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
 	{
@@ -298,21 +167,21 @@ namespace render
 
 		for (uint i = 0; i < m_submeshes.size(); ++i)
 		{
-			const Mesh::SubMesh& sm = *m_submeshes[i];
+			const SubMesh& sm = m_submeshes[i];
 
-			if (sm.pMaterial)
+			if (sm.m_pMaterial)
 			{
-				op.m_material = sm.pMaterial->renderFx(rs().shaderPass(pass), instanced);
+				op.m_material = sm.m_pMaterial->renderFx(rs().shaderPass(pass), instanced);
 			}
 			else
 			{
-				op.m_material = sm.sMaterial->renderFx();
+				op.m_material = sm.m_sMaterial->renderFx();
 			}
 
 			op.m_primTopolpgy	= PRIM_TOPOLOGY_TRIANGLE_LIST;
-			op.m_indicesCount	= sm.indicesCount;
-			op.m_IB				= &*sm.IB;
-			op.m_VBs			= sm.pVBs;
+			op.m_indicesCount	= sm.m_numIndices;
+			op.m_IB				= sm.m_IB.get();
+			op.m_VBs			= &sm.m_pVBs[0];
 			op.m_VBCount		= (op.m_material->m_bumped) ? 2 : 1;
 
 			ops.push_back(op);
@@ -330,44 +199,153 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	SkinnedMesh::~SkinnedMesh()
 	{
-		for (auto iter = m_submeshes.cbegin(); iter != m_submeshes.cend(); ++iter)
-		{
-			delete *iter;
-		}
+
 	}
-	
 
 	//----------------------------------------------------------------------------------------------
-/*
-	void SkinnedMesh::computeSkeleton(Joint::Transforms& skeleton, bool / *isLocal* /) const
+	bool SkinnedMesh::load(const utils::ROData& iData, const std::string& name)
 	{
-		for (uint i = 0; i < m_joints.size(); ++i)
+		//-- check header.
 		{
-			Joint::Transform& transf = skeleton[i];
-			int				  idx    = m_joints[i].m_parentIdx;
-
-			if (idx != -1)
+			SkinnedMeshFormat::Header iHeader;
+			iData.read(iHeader);
+			if (std::string(iHeader.m_format) != "skinned_mesh")
 			{
-				const Joint::Transform& parentTransf = skeleton[idx];
-
-				transf.pos    = parentTransf.pos + parentTransf.orient.rotate(transf.pos);
-				transf.orient = parentTransf.orient * transf.orient;
+				ERROR_MSG("Failed to load mesh. Most likely it's not a *.skinnedmesh format.");
+				return false;
 			}
 		}
-	}
-*/
-	
 
-	//----------------------------------------------------------------------------------------------
-/*
-	void SkinnedMesh::setOriginSkeleton(Joint::Transforms& skeleton, bool / *isLocal* /) const
-	{
-		for (uint i = 0; i < m_joints.size(); ++i)
+		//-- load skeleton info.
+		SkinnedMeshFormat::Skeleton::Info skelInfo;
 		{
-			skeleton[i] = m_joints[i].m_transform;
+			iData.read(skelInfo);
+
+			//-- read skeleton.
+			m_skeleton.resize(skelInfo.m_numJoints);
+			for (uint i = 0; i < skelInfo.m_numJoints; ++i)
+			{
+				SkinnedMeshFormat::Skeleton::Joint iJoint;
+
+				iData.read(iJoint);
+
+				strcpy_s(m_skeleton[i].m_name, iJoint.m_name);
+				m_skeleton[i].m_parent = iJoint.m_parent;
+			}
 		}
+
+		//-- read invert bind pose.
+		m_invBindPose.resize(skelInfo.m_numJoints);
+		for (uint i = 0; i < skelInfo.m_numJoints; ++i)
+		{
+			SkinnedMeshFormat::InvBindPose iInvBindPose;
+
+			iData.read(iInvBindPose);
+
+			m_invBindPose[i].set(iInvBindPose.m_matrix);
+		}
+
+		//-- load common info.
+		SkinnedMeshFormat::Info iInfo;
+		iData.read(iInfo);
+
+		//-- load mesh bounds.
+		m_aabb = AABB(
+			vec3f(iInfo.m_aabb[0], iInfo.m_aabb[1], iInfo.m_aabb[2]),
+			vec3f(iInfo.m_aabb[3], iInfo.m_aabb[4], iInfo.m_aabb[5])
+			);
+
+		//-- allocate sub-meshes info.
+		std::vector<SubMesh::Desc> descs(iInfo.m_numSubMeshes);
+
+		//-- iterate over the whole set of sub-meshes.
+		for (uint i = 0; i < iInfo.m_numSubMeshes; ++i)
+		{
+			SkinnedMeshFormat::SubInfo iSubInfo;
+			iData.read(iSubInfo);
+
+			SubMesh::Desc& oDesc = descs[i];
+
+			oDesc.m_streams.resize(iSubInfo.m_numVertexStreams);
+			strcpy_s(oDesc.m_name, iSubInfo.m_name);
+			oDesc.m_numVertices = iSubInfo.m_numVertices;
+
+			//-- read each individual vertex stream.
+			for (uint j = 0; j < iSubInfo.m_numVertexStreams; ++j)
+			{
+				SkinnedMeshFormat::VertexStream iStream;
+				iData.read(iStream);
+
+				SubMesh::Desc::Stream& oStream = oDesc.m_streams[j];
+
+				//-- read data for vertex buffer.
+				oStream.m_elemSize = iStream.m_elemSize;
+				oStream.m_vertices.resize(iStream.m_elemSize * iSubInfo.m_numVertices);
+				iData.readBytes(&oStream.m_vertices[0], iStream.m_elemSize * iSubInfo.m_numVertices);
+			}
+
+			//-- read data for index buffer.
+			oDesc.m_indices.resize(iSubInfo.m_numIndices);
+			iData.readBytes(&oDesc.m_indices[0], sizeof(uint16) * iSubInfo.m_numIndices);
+		}
+
+		//-- Now all needed data has been read and we just allocate GPU resources.
+		bool success = true;
+
+		m_submeshes.resize(descs.size());
+		for (uint i = 0; i < descs.size(); ++i)
+		{
+			const SubMesh::Desc& desc = descs[i];
+			SubMesh&			 sm   = m_submeshes[i];
+
+			//-- create index buffer.
+			sm.m_numIndices = desc.m_indices.size();
+			sm.m_IB	= rd()->createBuffer(IBuffer::TYPE_INDEX,  &desc.m_indices[0], desc.m_indices.size(), sizeof(uint16));
+			success &= sm.m_IB;
+
+			//-- iterate over the whole set of streams and create of all them appropriate vertex buffers.
+			sm.m_VBs.resize(desc.m_streams.size());
+			sm.m_pVBs.resize(desc.m_streams.size());
+			for (uint j = 0; j < desc.m_streams.size(); ++j)
+			{
+				const SubMesh::Desc::Stream& stream = desc.m_streams[j];
+
+				sm.m_VBs[j] = rd()->createBuffer(
+					IBuffer::TYPE_VERTEX, &stream.m_vertices[0], desc.m_numVertices, stream.m_elemSize
+					);
+				sm.m_pVBs[j] = sm.m_VBs[j].get();
+				success &= sm.m_VBs[j];
+			}
+		}
+
+		//-- now retrieve material for each sub-mesh.
+		{
+			//-- load materials lib for this model.
+			//-- Note: materials lib may contain more then one material one for each model
+			//--	   submesh. Appropriate material selected by sequential number of the mesh.
+			std::string material = name + ".material";
+			std::vector<Ptr<PipelineMaterial>> mtllib;
+			RODataPtr mData = FileSystem::instance().readFile("resources/" + material);
+			if (!mData.get() || !rs().materials().createPipelineMaterials(mtllib, *mData.get()))
+			{
+				ERROR_MSG("Can't load materials library %s for model.", material.c_str());
+				return false;
+			}
+
+			if (mtllib.size() < descs.size())
+			{
+				ERROR_MSG("Not all sub-meshes of mesh %s has its own material.", name.c_str());
+				return false;
+			}
+
+			for (uint i = 0; i < descs.size(); ++i)
+			{
+				m_submeshes[i].m_pMaterial = mtllib[i];
+			}
+		}
+
+		return success;
 	}
-*/
 	
 	//----------------------------------------------------------------------------------------------
 	uint SkinnedMesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
@@ -376,15 +354,22 @@ namespace render
 
 		for (uint i = 0; i < m_submeshes.size(); ++i)
 		{
-			const SkinnedMesh::SubMesh& sm = *m_submeshes[i];
+			const SubMesh& sm = m_submeshes[i];
 
-			op.m_material		= sm.material->renderFx(rs().shaderPass(pass), instanced);
+			if (sm.m_pMaterial)
+			{
+				op.m_material = sm.m_pMaterial->renderFx(rs().shaderPass(pass), instanced);
+			}
+			else
+			{
+				op.m_material = sm.m_sMaterial->renderFx();
+			}
+
 			op.m_primTopolpgy	= PRIM_TOPOLOGY_TRIANGLE_LIST;
-			op.m_indicesCount	= sm.indicesCount;
-			op.m_IB				= &*sm.IB;
-			op.m_VBs			= sm.pVBs;
-			op.m_VBCount		= op.m_material->m_bumped ? 2 : 1;
-			op.m_weightsTB		= &*sm.weightsTB;
+			op.m_indicesCount	= sm.m_numIndices;
+			op.m_IB				= sm.m_IB.get();
+			op.m_VBs			= &sm.m_pVBs[0];
+			op.m_VBCount		= (op.m_material->m_bumped) ? 2 : 1;
 
 			ops.push_back(op);
 		}
@@ -392,189 +377,5 @@ namespace render
 		return m_submeshes.size();
 	}
 
-	//----------------------------------------------------------------------------------------------
-	bool SkinnedMesh::build()
-	{
-		Positions positions;
-
-		for (uint i = 0; i < m_submeshes.size(); ++i)
-		{
-			SubMesh*  submesh = m_submeshes[i];
-			
-			//-- resize tangents vector.
-			submesh->tangents.resize(submesh->vertices.size());
-			
-			submesh->buildPositions(positions, m_joints);
-			submesh->buildTangents(positions);
-			submesh->buildNormals(positions);
-	
-			//-- compute AABB.
-			for (uint i = 0; i < positions.size(); ++i)
-			{
-				m_originAABB.include(positions[i]);
-			}
-
-			if (!submesh->buildBuffers())
-				return false;
-		}
-		
-		return true;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool SkinnedMesh::SubMesh::buildBuffers()
-	{
-		VBs[0] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(Vertex));
-		VBs[1] = rd()->createBuffer(IBuffer::TYPE_VERTEX, &tangents[0], vertices.size(),  sizeof(Tangent));
-		IB	   = rd()->createBuffer(IBuffer::TYPE_INDEX,  &faces[0],	faces.size() * 3, sizeof(uint16));
-
-		//-- Note: Be careful with texture buffer, because it has to be 16 bytes aligned.
-		{
-			std::vector<GPUWeight> tmp(weights.size());
-			for (uint i = 0; i < weights.size(); ++i)
-			{
-				tmp[i].joint.x = weights[i].joint;
-				tmp[i].weight  = vec4f(weights[i].pos, weights[i].weight);
-			}
-
-			weightsTB = rd()->createBuffer(IBuffer::TYPE_TEXTURE, &tmp[0],
-				weights.size() * 2, sizeof(vec4f)
-				);
-		}
-
-		primTopolpgy = PRIM_TOPOLOGY_TRIANGLE_LIST;
-		indicesCount = faces.size() * 3;
-
-		if (!VBs[0] || !VBs[1] || !IB || !weightsTB)
-		{
-			return false;
-		}
-
-		pVBs[0] = VBs[0].get();
-		pVBs[1] = VBs[1].get();
-
-		return true;
-	}
-	
-	//----------------------------------------------------------------------------------------------
-	void SkinnedMesh::SubMesh::buildPositions(Positions& positions, const Joints& joints)
-	{
-		positions.resize(vertices.size());
-
-		for (uint i = 0; i < vertices.size(); ++i)
-		{
-			const Vertex& v   = vertices[i];
-			vec3f&		  pos = positions[i];
-
-			for (uint k = 0; k < v.weightCount; ++k)
-			{
-				const Weight& weight = weights[v.weightIdx + k];
-				const Joint&  joint  = joints [weight.joint];
-
-				//-- transform weight.pos by bone with weight
-				pos += joint.transform(weight.pos).scale(weight.weight);
-			}
-		}
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void SkinnedMesh::SubMesh::buildNormals(const Positions& positions)
-	{
-		for (uint i = 0; i < faces.size(); ++i)
-		{
-			uint16 a = faces[i].index[0];
-			uint16 b = faces[i].index[1];
-			uint16 c = faces[i].index[2];
-
-			vec3f pos1 = positions[a];
-			vec3f pos2 = positions[b];
-			vec3f pos3 = positions[c];
-
-			vec3f normal(0.0f, 0.0f, 0.0f);
-
-			//calculate normal vector and normalize it
-			normal = (pos2 - pos1).cross(pos3 - pos1);
-			normal.normalize();
-
-			//calculate average value of normal vector
-			vertices[a].normal += normal;
-			vertices[b].normal += normal;
-			vertices[c].normal += normal;
-		}
-
-		//normalize vertex components
-		for(uint i = 0; i < vertices.size(); ++i)
-			vertices[i].normal.normalize();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void SkinnedMesh::SubMesh::buildTangents(const Positions& positions)
-	{
-		for (uint i = 0; i < faces.size(); ++i)
-		{
-			uint16 a = faces[i].index[0];
-			uint16 b = faces[i].index[1];
-			uint16 c = faces[i].index[2];
-
-			vec3f pos1 = positions[a];
-			vec3f pos2 = positions[b];
-			vec3f pos3 = positions[c];
-
-			vec2f tex1 = vertices[a].texCoord;
-			vec2f tex2 = vertices[b].texCoord;
-			vec2f tex3 = vertices[c].texCoord;
-
-			vec3f tangent, binormal;
-
-			buildTangentBasic(pos1, pos2, pos3, tex1, tex2, tex3, tangent, binormal);
-
-			//calculate average value of binormal vector
-			tangents[a].binormal += binormal;
-			tangents[b].binormal += binormal;
-			tangents[c].binormal += binormal;
-
-			//calculate average value of tangent vector
-			tangents[a].tangent += tangent;
-			tangents[b].tangent += tangent;
-			tangents[c].tangent += tangent;
-		}
-
-		//normalize vertex components
-		for (uint i = 0; i < vertices.size(); ++i)
-		{
-			tangents[i].binormal.normalize();
-			tangents[i].tangent.normalize();
-		}
-	}
-
-
-	//-- auxiliary function helps us to create BSP from mesh.
-	//----------------------------------------------------------------------------------------------
-	Ptr<BSPTree> createBSPFromMesh(const Ptr<Mesh>& /*mesh*/)
-	{
-		return NULL;
-
-		/*
-		Ptr<BSPTree> result = new BSPTree();
-
-		//-- calculate collision data.
-		for (auto iter = mesh->begin(); iter != mesh->end(); ++iter)
-		{
-			Mesh::SubMesh& submesh = *(*iter);
-
-			for (uint i = 0; i < submesh.faces.size(); ++i)
-			{
-				const vec3us&					 idx  = submesh.faces[i].index;
-				const std::vector<Mesh::Vertex>& vrts = submesh.vertices;
-
-				result->addTriangle(vrts[idx.x].pos, vrts[idx.y].pos, vrts[idx.z].pos);
-			}
-		}
-		result->build();
-
-		return result;
-		*/
-	}
-	
 } // render
 } // brUGE

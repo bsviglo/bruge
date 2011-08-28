@@ -5,6 +5,8 @@
 #include "os/FileSystem.h"
 #include "utils/string_utils.h"
 #include "vertex_declarations.hpp"
+#include "utils/Timer.h"
+#include "console/Console.h"
 
 
 using namespace brUGE;
@@ -69,35 +71,13 @@ namespace
 
 
 	//----------------------------------------------------------------------------------------------
-	class WeightsProperty : public IProperty
-	{
-	public:
-		WeightsProperty(ShaderContext& sc) : m_sc(sc) { }
-		virtual ~WeightsProperty() { }
-
-		virtual bool operator () (Handle handle, IShader& shader) const
-		{
-			return shader.setTextureBuffer(handle, m_sc.renderOp().m_weightsTB);
-		}
-
-		virtual Handle handle(const char* name, const IShader& shader) const
-		{
-			return shader.getHandleTextureBuffer(name);
-		}
-
-	private:
-		ShaderContext& m_sc;
-	};
-
-
-	//----------------------------------------------------------------------------------------------
 	class MatrixPaletteProperty : public IProperty
 	{
 	public:
 		MatrixPaletteProperty(ShaderContext& sc) : m_sc(sc)
 		{
 			m_matrixPaletteTB = rd()->createBuffer(IBuffer::TYPE_TEXTURE, 0,
-				256 * 4, sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+				128 * 4, sizeof(vec4f), IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 				);
 		}
 		virtual ~MatrixPaletteProperty() { }
@@ -315,7 +295,6 @@ namespace render
 
 		//-- register auto-constants.
 		m_autoProperties["cb_auto_PerInstance"]		= new PerInstanceProperty(*this);
-		m_autoProperties["tb_auto_Weights"]			= new WeightsProperty(*this);
 		m_autoProperties["tb_auto_MatrixPalette"]	= new MatrixPaletteProperty(*this);
 		m_autoProperties["tb_auto_Instancing"]		= new InstancingProperty(*this);
 		m_autoProperties["t_auto_depthMap"]			= new DepthMapAutoProperty(*this);
@@ -412,9 +391,17 @@ namespace render
 			}
 		}
 
+		uint64 startTime = Timer::instance().timeInUS();
+
 		Ptr<IShader> shader = rd()->createShader(
 			src.c_str(), macroses.empty() ? nullptr : &macroses[0], macroses.size()
 			);
+
+		uint64 endTime  = Timer::instance().timeInUS();
+		uint64 diffTime = endTime - startTime;
+		WARNING_MSG("Shader '%s' has been compiled in %d ms", name, diffTime / 1000);
+		ConWarning("Shader '%s' has been compiled in %d ms", name, diffTime / 1000);
+
 		if (shader)	
 		{
 			//-- find auto properties.

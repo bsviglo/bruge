@@ -28,7 +28,7 @@ struct Instance
 //-- instancing auto variable.
 tbuffer tb_auto_Instancing
 {
-	Instance g_instances[512];
+	Instance g_instances[128];
 };
 
 //-------------------------------------------------------------------------------------------------

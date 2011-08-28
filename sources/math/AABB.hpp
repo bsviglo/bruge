@@ -139,7 +139,7 @@ namespace math
 
 		inline void transform(const mat4f& transform)
 		{
-			assert(!this->isEmpty());
+			assert(!isEmpty());
 
 			//-- need to remember to save the size that we'll use to scale the unit axes.
 			vec3f size = m_max - m_min;

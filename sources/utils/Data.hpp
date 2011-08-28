@@ -57,7 +57,7 @@ namespace utils
 		}
 
 		//-----------------------------------------------------------------------------------------
-		inline uint readBytes(byte* ptr, uint len) const
+		inline uint readBytes(void* ptr, uint len) const
 		{
 			assert(ptr != 0 && len != 0);
 
@@ -170,11 +170,11 @@ namespace utils
 
 		//-- write data range to the buffer.
 		//-----------------------------------------------------------------------------------------
-		uint writeBytes(const byte* ptr, uint len)
+		uint writeBytes(const void* ptr, uint len)
 		{
 			assert(ptr != 0 && len != 0);
 
-			m_bytes.insert(m_bytes.begin() + m_pos, ptr, ptr + len);
+			m_bytes.insert(m_bytes.begin() + m_pos, (byte*)ptr, (byte*)ptr + len);
 			m_pos += len;
 
 			return len;
@@ -250,7 +250,7 @@ namespace utils
 		}
 
 		//-----------------------------------------------------------------------------------------
-		uint writeBytes(const byte* ptr, uint len)
+		uint writeBytes(const void* ptr, uint len)
 		{
 			assert(ptr != 0 && len != 0);
 

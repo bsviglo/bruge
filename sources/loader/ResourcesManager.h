@@ -7,7 +7,6 @@
 #include "render/Mesh.hpp"
 #include "render/Font.h"
 #include "TextureLoader.h"
-#include "ObjLoader.h"
 
 #include <string>
 #include <map>
@@ -45,10 +44,6 @@ namespace brUGE
 		Ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
 		//Ptr<render::Animation>		loadAnimation	(const char* name);
 		//Ptr<Sound>				loadSound  (const char* name);
-
-		Ptr<utils::BSPTree>			loadBSP	   		(const char* name);
-		Ptr<utils::BSPTree>			loadBSP	   		(const Ptr<render::Mesh>& mesh);
-		bool						saveBSP	   		(const char* name, const Ptr<utils::BSPTree>& bsp);
 
 		bool makeSharedShaderConstants(const char* name, const Ptr<render::IBuffer>& newBuffer);
 
@@ -107,7 +102,6 @@ namespace brUGE
 		};
 
 		TextureLoader 						m_texLoader;
-		ObjLoader     						m_objMeshLoader;
 		//SRManager	  						m_soundLoader;
 
 		Cache<render::ITexture> 			m_texturesCache;
@@ -116,7 +110,6 @@ namespace brUGE
 		Cache<render::SkinnedMesh>			m_skinnedMeshesCache;
 		Cache<render::Font>					m_fontsCache;
 		//Cache<render::Animation>			m_animationsCashe;
-		Cache<utils::BSPTree>				m_bspsCache;
 		//Cache<Sound>						m_soundesCache;
 		
 		std::string							m_resPath;

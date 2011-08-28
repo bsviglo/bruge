@@ -88,6 +88,7 @@ namespace math
 		inline Vector3<T>			applyToVector			(const Vector3<T>& vec) const;
 
 		inline const Vector4<T>&	getRow					(uint i) const								{ assert(i < 4); return *reinterpret_cast<const Vector4<T>* >(&data[i * 4]); }
+		inline const Vector3<T>&	getRowAsVec3			(uint i) const								{ assert(i < 4); return *reinterpret_cast<const Vector3<T>* >(&data[i * 4]); }
 		inline const Vector3<T>&	applyToUnitAxis			(uint axis) const							{ assert(axis < 3); return *reinterpret_cast<const Vector3<T>* >(&data[axis * 4]); }
 		inline const Vector3<T>&	applyToOrigin			() const									{ return *reinterpret_cast<const Vector3<T>* >(&data[4 * 3]); }
 

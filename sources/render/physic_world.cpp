@@ -175,6 +175,7 @@ namespace physic
 
 			PhysObj* obj = nullptr;
 			m_physObjDescs[desc]->create(obj, transform, owner);
+
 			return obj;
 		}
 	}
@@ -539,6 +540,7 @@ namespace physic
 	
 		//-- 5. return result.
 		obj = physObj.release();
+		m_physObjs.push_back(obj);
 		return true;
 	}
 

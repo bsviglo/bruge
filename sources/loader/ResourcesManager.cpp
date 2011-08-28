@@ -93,37 +93,27 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Mesh> ResourcesManager::loadMesh(const char* name, bool simpleMaterial)
+	Ptr<Mesh> ResourcesManager::loadMesh(const char* name, bool /*simpleMaterial*/)
 	{
-		Ptr<Mesh> result = m_meshesCache.find(name);
+		std::string meshName = FileSystem::getFileWithoutExt(name);
+
+		Ptr<Mesh> result = m_meshesCache.find(meshName.c_str());
 		if (!result.isValid())
 		{
-			RODataPtr data = FileSystem::instance().readFile(m_resPath + std::string(name));
+			RODataPtr data = FileSystem::instance().readFile(m_resPath + name);
 			if (!data.get())
 			{
 				return NULL;
 			}
-			
-			//-- extract file extension name.
-			std::string ext = getFileExt(name);
-
-			if (ext == "obj")
+		
+			result = new Mesh();
+			if (result->load(*data, meshName))
 			{
-				result = m_objMeshLoader.load(*data, simpleMaterial);
-			}
-			else if (ext == "lwo")
-			{
-				//-- ToDo:
+				m_meshesCache.add(meshName.c_str(), result);
 			}
 			else
 			{
-				ERROR_MSG("Can't load mesh '%s', because the file format was not recognized.", name);
-				return NULL;
-			}
-			
-			if (result)
-			{
-				m_meshesCache.add(name, result);
+				result.reset();
 			}
 		}
 		return result;
@@ -132,26 +122,21 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	Ptr<SkinnedMesh> ResourcesManager::loadSkinnedMesh(const char* name)
 	{
-		Ptr<SkinnedMesh> result = m_skinnedMeshesCache.find(name);
+		std::string meshName = FileSystem::getFileWithoutExt(name);
+
+		Ptr<SkinnedMesh> result = m_skinnedMeshesCache.find(meshName.c_str());
 		if (!result.isValid())
 		{
-			RODataPtr data = FileSystem::instance().readFile(m_resPath + std::string(name));
+			RODataPtr data = FileSystem::instance().readFile(m_resPath + name);
 			if (!data.get())
 			{
 				return NULL;
 			}
 
-			//-- extract file extension name.
-			if (getFileExt(name) != "md5mesh")
-			{
-				ERROR_MSG("Can't load mesh '%s', because the file format was not recognized.", name);
-				return NULL;
-			}
-
 			result = new SkinnedMesh();
-			if (!result->load(*data))
+			if (!result->load(*data, meshName))
 			{
-				m_skinnedMeshesCache.add(name, result);
+				m_skinnedMeshesCache.add(meshName.c_str(), result);
 			}
 		}
 		return result;
@@ -255,61 +240,6 @@ namespace brUGE
 			}
 		}
 		return result;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	Ptr<BSPTree> ResourcesManager::loadBSP(const char* name)
-	{
-		Ptr<BSPTree> result = m_bspsCache.find(name);
-		if (!result.isValid())
-		{
-			FileSystem& fs = FileSystem::instance();
-
-			RODataPtr data = fs.readFile(m_resPath + std::string(name) + ".bsp");
-			if (!data.get())
-			{
-				return NULL;
-			}
-			
-			result = new BSPTree();
-			if (result->load(*data))
-			{
-				m_bspsCache.add(name, result);
-			}
-			else
-			{
-				result.reset();
-			}
-		}
-		return result;
-		
-	}
-
-	//----------------------------------------------------------------------------------------------
-	Ptr<BSPTree> ResourcesManager::loadBSP(const Ptr<Mesh>& mesh)
-	{
-		return createBSPFromMesh(mesh);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool ResourcesManager::saveBSP(const char* name, const Ptr<utils::BSPTree>& bsp)
-	{
-		WOData woData(1000);
-		if (bsp->save(woData))
-		{
-			//BSPTree newTree;
-			//newTree.load(data);
-			
-			//-- make read only data section with no memory control.
-			ROData roData(woData.bytes(), woData.length(), false);
-
-			FileSystem& fs = FileSystem::instance();
-			if (fs.writeFile(m_resPath + std::string(name) + ".bsp", roData))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------

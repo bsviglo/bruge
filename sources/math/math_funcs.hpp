@@ -1,6 +1,9 @@
 #pragma once
 
 #include "math_types.hpp"
+#include "Quaternion.hpp"
+#include "Matrix4x4.hpp"
+#include "Vector3.hpp"
 #include "Vector4.hpp"
 
 //-- ToDo: reconsider and delete.
@@ -80,6 +83,52 @@ namespace math
 		if (tmax < tlast)  tlast  = tmax;
 
 		return true;
+	}
+
+	//-- decomposes matrix into quaternion as rotation matrix, scale vector and translation.
+	//----------------------------------------------------------------------------------------------
+	inline void decomposeMatrix(quat& oQuat, vec3f& oScale, vec3f& oTranslate, const mat4f& iMat)
+	{
+		const vec3f& row0 = iMat.getRowAsVec3(0);
+		const vec3f& row1 = iMat.getRowAsVec3(1);
+		const vec3f& row2 = iMat.getRowAsVec3(2);
+		const vec3f& row3 = iMat.getRowAsVec3(3);
+
+		oScale.x = row0.length();
+		oScale.y = row1.length();
+		oScale.z = row2.length();
+
+		oTranslate = row3;
+
+		mat4f m = iMat;
+		/*
+		m.preScale(1.0f / oScale.x, 1.0f / oScale.y, 1.0f / oScale.z);
+
+		vec3f in = row0.cross(row1);
+		if (in.dot(row2) < 0)
+		{
+			row2.scale(-1.0f);
+			oScale.z *= -1;
+		}
+		*/
+		m.transpose();
+		oQuat.set(m);
+	}
+
+	//-- combine matrix from quaternion and translation.
+	//----------------------------------------------------------------------------------------------
+	inline mat4f combineMatrix(const quat& q, const vec3f& t)
+	{
+		mat4f o;
+
+		//-- rotation.
+		o = q.toMat4();
+		o.transpose();
+
+		//-- translation.
+		o.m30 = t.x; o.m31 = t.y; o.m32 = t.z;
+
+		return o;
 	}
 
 } //-- math

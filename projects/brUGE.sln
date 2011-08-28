@@ -17,6 +17,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_2", "..\demos\Demo_2\D
 		{5E4A476A-5FFE-41E9-B6C4-100616FA7A10} = {5E4A476A-5FFE-41E9-B6C4-100616FA7A10}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "..\demos\Editor\Editor.vcxproj", "{6B0092D9-99CE-4E31-80D4-42601E055D8C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5E4A476A-5FFE-41E9-B6C4-100616FA7A10} = {5E4A476A-5FFE-41E9-B6C4-100616FA7A10}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -59,11 +64,18 @@ Global
 		{08084B68-B108-42ED-ADA8-8EB2A485C22F}.release_LTCG|Win32.Build.0 = release_LTCG|Win32
 		{08084B68-B108-42ED-ADA8-8EB2A485C22F}.Release|Win32.ActiveCfg = Release|Win32
 		{08084B68-B108-42ED-ADA8-8EB2A485C22F}.Release|Win32.Build.0 = Release|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.Debug|Win32.Build.0 = Debug|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.release_LTCG|Win32.ActiveCfg = Release|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.release_LTCG|Win32.Build.0 = Release|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.Release|Win32.ActiveCfg = Release|Win32
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{08084B68-B108-42ED-ADA8-8EB2A485C22F} = {00BC9A4F-C76C-4BBB-B4E9-88F3E2FFADB2}
+		{6B0092D9-99CE-4E31-80D4-42601E055D8C} = {00BC9A4F-C76C-4BBB-B4E9-88F3E2FFADB2}
 	EndGlobalSection
 EndGlobal

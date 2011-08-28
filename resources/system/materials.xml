@@ -82,26 +82,26 @@
   </material>
 
   <material name="diffuse_skinned">
-    <pass type="Z_PRE_PASS"   vertex="nuv2ui" bumped="false" skinned="false">
-      <shader type="NORMAL" src="skinned_z_pre_pass" />
+    <pass type="Z_PRE_PASS"   vertex="xyznuvi3w3" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned2_z_pre_pass" />
     </pass>
-    <pass type="MAIN_COLOR"   vertex="nuv2ui" bumped="false" skinned="false">
-      <shader type="NORMAL" src="skinned_diffuse"/>
+    <pass type="MAIN_COLOR"   vertex="xyznuvi3w3" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned2_diffuse"/>
     </pass>
-    <pass type="SHADOW_CAST"  vertex="nuv2ui" bumped="false" skinned="false">
-      <shader type="NORMAL" src="skinned_cast_shadows"/>
+    <pass type="SHADOW_CAST"  vertex="xyznuvi3w3" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned2_cast_shadows"/>
     </pass>
   </material>
   
     <material name="bump_skinned">
-    <pass type="Z_PRE_PASS"   vertex="nuv2uitb" bumped="true" skinned="false">
-      <shader type="NORMAL" src="skinned_z_pre_pass" pins="PIN_BUMP_MAP"/>
+    <pass type="Z_PRE_PASS"   vertex="xyznuvi3w3tb" bumped="true" skinned="false">
+      <shader type="NORMAL" src="skinned2_z_pre_pass" pins="PIN_BUMP_MAP"/>
     </pass>
-    <pass type="MAIN_COLOR"   vertex="nuv2ui" bumped="false" skinned="false">
-      <shader type="NORMAL" src="skinned_diffuse"/>
+    <pass type="MAIN_COLOR"   vertex="xyznuvi3w3" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned2_diffuse"/>
     </pass>
-    <pass type="SHADOW_CAST"  vertex="nuv2ui" bumped="false" skinned="false">
-      <shader type="NORMAL" src="skinned_cast_shadows"/>
+    <pass type="SHADOW_CAST"  vertex="xyznuvi3w3" bumped="false" skinned="false">
+      <shader type="NORMAL" src="skinned2_cast_shadows"/>
     </pass>
   </material>
   

@@ -1,0 +1,5 @@
+<material use="diffuse">
+    <properties>
+	    <property name="diffuseMap" type="texture" value="models/barrel/barrel_diffuse.dds"/>
+    </properties>
+</material>

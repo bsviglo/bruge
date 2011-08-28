@@ -25,7 +25,7 @@ struct Instance
 //-- instancing auto variable.
 tbuffer tb_auto_Instancing
 {
-	Instance g_instances[1024];
+	Instance g_instances[128];
 };
 
 #ifdef _VERTEX_SHADER_

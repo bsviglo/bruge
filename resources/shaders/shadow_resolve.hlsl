@@ -141,13 +141,13 @@ float4 main(vs_out i) : SV_TARGET
 	float  shadowD  = pixelLightSpace.z;
 
 	//-- lets compare our calculated depth with the depth saved in the shadow map.
-#if 0
+#if 1
 	float isInShadow = (shadowD > sample2D(g_shadowMap, shadowTC).x);
 #endif
 
 	//-- calculate PCF filter width based on the distance to the camera and distance in light space
 	//-- between stored in shadow map depth and current pixel depth.
-#if 1
+#if 0
 	float filterFadeSpeed = 1.5f;
 	float filterWidth = 1.0f * abs(g_farNearPlane.y - filterFadeSpeed * zDist) / g_farNearPlane.y;
 

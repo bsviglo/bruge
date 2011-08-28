@@ -345,6 +345,9 @@
     <ClInclude Include="..\..\sources\render\CursorCamera.hpp">
       <Filter>render\camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sources\render\mesh_formats.hpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\sources\win32Res\brUGE_icon.ico">

@@ -33,7 +33,7 @@ namespace
 	bool  g_adjustShadowVolume = false;
 	bool  g_useCullingMatrix = true;
 	bool  g_fitLightToTexels = true;
-	bool  g_blurShadows = true;
+	bool  g_blurShadows = false;
 	uint  g_ROPs = 0;
 	vec4f g_farDistances;
 	vec4f g_nearDistances;

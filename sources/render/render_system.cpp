@@ -174,14 +174,14 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
 
-			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
 			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 	
@@ -196,7 +196,7 @@ namespace render
 				desc.sample.count	= m_videoMode.multiSampling.m_count;
 				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
 				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
-				desc.format			= ITexture::FORMAT_RGBA16F;
+				desc.format			= ITexture::FORMAT_RGBA32F;
 				desc.texType		= ITexture::TYPE_2D;
 
 				pass.m_rt = m_device->createTexture(desc, NULL, 0);
@@ -276,7 +276,7 @@ namespace render
 				desc.sample.count	= m_videoMode.multiSampling.m_count;
 				desc.sample.quality	= m_videoMode.multiSampling.m_quality;
 				desc.bindFalgs		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
-				desc.format			= ITexture::FORMAT_RGBA16F;
+				desc.format			= ITexture::FORMAT_RGBA8;
 				desc.texType		= ITexture::TYPE_2D;
 
 				pass.m_rt = m_device->createTexture(desc, NULL, 0);
@@ -296,7 +296,7 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
 			rDesc.multisampleEnable = 0;
 			rDesc.depthBiasFactor	= 1.0f;
 			rDesc.depthBiasUnits	= 4.0f;
@@ -358,14 +358,14 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
 
-			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
 			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 

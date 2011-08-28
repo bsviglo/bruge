@@ -17,6 +17,7 @@ namespace math
 	{
 	public:
 		inline Quaternion()												{ set(0, 0, 0, 1); }
+		inline explicit Quaternion(const float* const data)				{ assert(data); set(data[0], data[1], data[2], data[3]); }
 		inline explicit Quaternion(const vec4f& q)						{ set(q.x, q.y, q.z, q.w); }
 		inline explicit Quaternion(const mat4f& mat4)					{ set(mat4); }
 		inline Quaternion(float angle, const vec3f& axis)				{ set(angle, axis); }

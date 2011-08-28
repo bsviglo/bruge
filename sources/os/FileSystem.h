@@ -38,7 +38,12 @@ namespace os
 		static std::string getFileExt(const std::string& name);
 		static std::string getFileWithoutExt(const std::string& name);
 	
-		static bool getFilesInDir    (const std::string& dir, std::vector<std::string>& files);
+		static bool getFilesInDir(
+			const std::string& dir,
+			std::vector<std::string>& oFiles,
+			const char* extFilter = nullptr,
+			bool removeExt = false
+			);
 		static bool checkFileFullPath(const std::string& file);
 		static bool checkDirFullPath (const std::string& dir);
 

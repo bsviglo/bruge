@@ -1,0 +1,26 @@
+<materials>
+	<material use="bump_alpha_test">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/palm/PalmFrond.dds">
+				<sampler filter="ANISO" wrapping="WRAP"/>
+			</property>
+			<property name="bumpMap" type="texture" value="models/palm/PalmFrond_Normal.dds">
+				<sampler filter="ANISO" wrapping="WRAP"/>
+			</property>
+			<property name="g_alphaRef" type="byte" value="128"/>
+ 		</properties>
+		<render_states>
+			<state name="doubleSided" value="true"/>
+		</render_states>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/palm/PalmBark.dds">
+				<sampler filter="ANISO" wrapping="WRAP"/>
+			</property>
+			<property name="bumpMap" type="texture" value="models/palm/PalmBark_Normal.dds">
+				<sampler filter="ANISO" wrapping="WRAP"/>
+			</property>
+		</properties>
+	</material>
+</materials>

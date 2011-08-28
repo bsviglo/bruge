@@ -11,6 +11,43 @@
 
 #include "utils/string_utils.h"
 
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+using namespace brUGE::utils;
+
+//-- start unnamed namespace.
+//--------------------------------------------------------------------------------------------------
+namespace
+{
+	//--------------------------------------------------------------------------------------------------
+	size_t fileSize(const string& file) 
+	{ 
+		ifstream fs; 
+		fs.open(file, ios::binary); 
+
+		assert(fs); 
+		assert(fs.is_open()); 
+
+		fs.seekg(0, ios::beg); 
+		const ios::pos_type start_pos = fs.tellg(); 
+
+		fs.seekg(0, ios::end); 
+		const ios::pos_type end_pos = fs.tellg(); 
+
+		const size_t ret_filesize (static_cast<size_t>(end_pos - start_pos)); 
+
+		fs.close(); 
+		assert(!fs.is_open()); 
+
+		return ret_filesize; 
+	}
+
+}
+//--------------------------------------------------------------------------------------------------
+//-- end unnamed namespace.
+
 namespace brUGE
 {
 
@@ -104,16 +141,17 @@ namespace os
 	//------------------------------------------
 	/*static*/ std::string FileSystem::getFileExt(const std::string& name)
 	{
-		std::string tmp = "";
-		utils::StrTokenizer tokenizer(name, ".");
-		for (int i = 0; i < tokenizer.numTokens(); ++i)
-			tokenizer.nextToken(tmp);
+		size_t pos = name.rfind('.', name.length());
+		if (pos != std::string::npos)
+		{
+			return name.substr(pos + 1, name.length());
+		}
 
-		return tmp;
+		return "";
 	}
 	
 	//------------------------------------------
-	/*static*/ std::string getFileWithoutExt(const std::string& name)
+	/*static*/ std::string FileSystem::getFileWithoutExt(const std::string& name)
 	{
 		size_t pos = name.rfind('.', name.length());
 		if (pos != std::string::npos)
@@ -135,7 +173,8 @@ namespace os
 	}
 	
 	//------------------------------------------
-	bool FileSystem::getFilesInDir(const std::string& dir, std::vector<std::string>& files)
+	bool FileSystem::getFilesInDir(
+		const std::string& dir, std::vector<std::string>& oFiles, const char* extFilter, bool removeExt)
 	{
 		WIN32_FIND_DATA findFileData;
 		HANDLE			hFind = INVALID_HANDLE_VALUE;
@@ -152,20 +191,25 @@ namespace os
 		}
 		else
 		{
-			files.push_back(findFileData.cFileName);
+			//-- skip first two elements because they contain trash(garbage)
+			//-- i.e. '.','..', and then there are normal data.
+			FindNextFile(hFind, &findFileData);
 
-			while(FindNextFile(hFind, &findFileData) != 0)
-				files.push_back(findFileData.cFileName);
+			while (FindNextFile(hFind, &findFileData) != 0)
+			{
+				if (!extFilter || getFileExt(findFileData.cFileName) == extFilter)
+				{
+					std::string oFile = findFileData.cFileName;
+
+					oFiles.push_back(removeExt ? getFileWithoutExt(oFile) : oFile);
+				}
+			}
 
 			DWORD dwError = GetLastError();
 			FindClose(hFind);
 			if(dwError != ERROR_NO_MORE_FILES)
 				return false;
-			
-			// delete first two elements because they contain trash(garbage)
-			// i.e. '.','..', and then there are normal data.
-			files.erase(files.begin());
-			files.erase(files.begin());
+
 			return true;
 		}
 	}
@@ -175,7 +219,46 @@ namespace os
 	{
 		dirList.push_back(dir);
 	}
-	
+
+/*
+	//------------------------------------------
+	RODataPtr FileSystem::readFile(const std::string& fileName) const
+	{
+		RODataPtr   out;
+		std::string fullName;
+
+		if (!getFileFullPath(fileName, fullName))
+		{
+			ERROR_MSG("File '%s'.", fileName.c_str());
+			return out;
+		}
+
+		ifstream iFile;
+		iFile.open(fullName, ios_base::in | ios_base::binary);
+		if (iFile.is_open())
+		{
+			//-- read file in memory based on the file size.
+			uint32 size = fileSize(fullName);
+			byte* bytes = new byte[size];
+
+			iFile.read((char*)bytes, size);
+			if (iFile.gcount() != size)
+			{
+				delete [] bytes;
+				return out;
+			}
+
+			//-- adjust holder size and make it owner of the earlier allocated memory. 
+			out = new ROData(bytes, size);
+
+			//-- close file.
+			iFile.close();
+		}
+
+		return out;
+	}
+	*/
+
 	//------------------------------------------
 	RODataPtr FileSystem::readFile(const std::string& fileName) const
 	{

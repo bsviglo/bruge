@@ -23,7 +23,7 @@ namespace render
 	{
 		//-- load sky box mesh
 		{
-			m_skybox = ResourcesManager::instance().loadMesh("models/sky_box.obj", true);
+			m_skybox = ResourcesManager::instance().loadMesh("models/sky_box", true);
 
 			if (!m_skybox.isValid())
 			{

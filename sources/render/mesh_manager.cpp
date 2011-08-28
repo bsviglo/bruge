@@ -17,23 +17,6 @@ namespace
 	bool g_enableCulling = true;
 	bool g_showVisibilityBoxes = false;
 	bool g_enableInstancing = true;
-
-	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
-	//----------------------------------------------------------------------------------------------
-	inline mat4f quatToMat4x4(const quat& q, const vec3f& pos)
-	{
-		mat4f out;
-
-		//-- 1. rotation part.
-		out = q.toMat4();
-		out.transpose();
-
-		//-- 2. translation part.
-		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
-
-		return out;
-	}
-
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
@@ -83,6 +66,9 @@ namespace render
 
 		for (uint i = 0; i < m_meshInstances.size(); ++i)
 		{
+			if (!m_meshInstances[i])
+				continue;
+
 			const MeshInstance& inst = *m_meshInstances[i];
 
 			//-- 1. cull frustum against AABB.
@@ -141,7 +127,7 @@ namespace render
 		std::unique_ptr<MeshInstance> mInst(new MeshInstance);
 
 		//-- 1. load skinned mesh.
-		if (getFileExt(desc.fileName) == "md5mesh")
+		if (getFileExt(desc.fileName) == "skinnedmesh")
 		{
 			Ptr<SkinnedMesh> mesh = rm.loadSkinnedMesh(desc.fileName);
 			if (!mesh)
@@ -184,8 +170,8 @@ namespace render
 				mat4f&		 nodeMat = mInst->m_worldPalette[i];
 
 				//-- set default initial value.
-				nodeMat = quatToMat4x4(joint.m_transform.orient, joint.m_transform.pos);
-				transform->m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
+				nodeMat.setIdentity();
+				transform->m_nodes.push_back(new Node(joint.m_name, nodeMat));
 			}
 		}
 

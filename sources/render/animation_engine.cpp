@@ -5,7 +5,9 @@
 #include "game_world.hpp"
 #include "render_world.hpp"
 #include "mesh_manager.hpp"
+#include "mesh_formats.hpp"
 #include "DebugDrawer.h"
+#include <algorithm>
 
 using namespace brUGE::os;
 using namespace brUGE::utils;
@@ -15,22 +17,6 @@ using namespace brUGE::math;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-
-	//-- converts one transformation presentation (quat, vec3f) to another mat4f.
-	//----------------------------------------------------------------------------------------------
-	inline mat4f quatToMat4x4(const quat& q, const vec3f& pos)
-	{
-		mat4f out;
-		
-		//-- 1. rotation part.
-		out = q.toMat4();
-		out.transpose();
-
-		//-- 2. translation part.
-		out.m30 = pos.x; out.m31 = pos.y; out.m32 = pos.z;
-
-		return out;
-	}
 
 	//----------------------------------------------------------------------------------------------
 	bool g_drawSkeletons = false;
@@ -70,67 +56,65 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::animate(float dt)
+	void AnimationEngine::preAnimate(float dt)
 	{
-		for (uint i = 0; i < m_animCtrls.size(); ++i)
+		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
 		{
-			AnimationData* data = m_animCtrls[i];
-			if (data)
+			AnimationData& data		 = *m_activeAnimCtrls[i];
+			Transform&	   transform = *data.m_meshInst->m_transform;
+
+			//-- tick animation.
+			m_animBlender.tick(dt, data.m_animLayers);
+
+			//-- calculate local bound.
+			m_animBlender.blendBounds(data.m_animLayers, transform.m_localBounds);
+
+			//-- calculate world bound.
+			transform.m_worldBounds = transform.m_localBounds.getTranformed(transform.m_worldMat);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void AnimationEngine::animate()
+	{
+		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
+		{
+			if (!m_activeAnimCtrls[i]->m_wantsWorldPalette)
+				continue;
+
+			AnimationData&  data	 = *m_activeAnimCtrls[i];
+			const mat4f&    world    = data.m_transform->m_worldMat;
+			const Skeleton& skeleton = data.m_meshInst->m_skinnedMesh->skeleton();
+			MatrixPalette&	palette  = data.m_meshInst->m_worldPalette;
+
+			//-- calculate local matrix palette.
+			m_animBlender.blendPalette(data.m_animLayers, skeleton, palette);
+
+			//-- calculate world space palette.
+			for (uint j = 0; j < palette.size(); ++j)
 			{
-				MeshInstance* mesh = data->m_meshInst;
-				for (uint j = 0; j < data->m_animLayers.size(); ++j)
+				palette[j].postMultiply(world);
+			}
+
+			//-- draw skeleton.
+			if (g_drawNodes || g_drawSkeletons)
+			{
+				for (uint k = 0; k < skeleton.size(); ++k)
 				{
-					AABB aabb;
-					AnimationData::AnimLayer& layer = data->m_animLayers[j];
+					const vec3f& startPos = palette[k].applyToOrigin();
 
-					//-- increment timing.
-					layer.m_time += dt;
-
-					//-- extract local transformations of the node.
-					layer.m_anim->tick(
-						layer.m_time, mesh->m_skinnedMesh->skeleton(),
-						data->m_localPositions, aabb, 24, layer.m_isLooped, true
-						);
-
-					//-- update local and world bounds.
-					mesh->m_transform->m_localBounds = aabb;
-					mesh->m_transform->m_worldBounds = aabb.getTranformed(mesh->m_transform->m_worldMat);
-
-					//-- ToDo: blend skeleton.
-				}
-
-				//-- translate it to the world space. Needed for physics.
-				Nodes& nodes = mesh->m_transform->m_nodes;
-				for (uint i = 0; i < nodes.size() - 1; ++i)
-				{
-					Joint::Transform& transf = data->m_localPositions[i];
-					Node&			  node   = *nodes[i + 1];
-					
-					mat4f worldTransf = quatToMat4x4(transf.orient, transf.pos);
-					worldTransf.postMultiply(mesh->m_transform->m_worldMat);
-
-					node.matrix(worldTransf);
-				}
-
-				//-- ToDo: draw skeleton.
-				if (g_drawNodes || g_drawSkeletons)
-				{
-					//const mat4f&  worldMat = mesh->m_transform->m_worldMat;
-					const Joints& joints = mesh->m_skinnedMesh->skeleton();
-					for (uint i = 0; i < joints.size(); ++i)
+					if (g_drawNodes)
 					{
-						const vec3f& startPos = nodes[i + 1]->matrix().applyToOrigin();
-						if (g_drawNodes)
-							DebugDrawer::instance().drawText2D(joints[i].m_name.c_str(), startPos, Color(1,1,0,1));
+						DebugDrawer::instance().drawText2D(skeleton[k].m_name, startPos, Color(1,1,0,1));
+					}
 
-						if (joints[i].m_parentIdx != -1)
+					if (g_drawSkeletons)
+					{
+						if (skeleton[k].m_parent != -1)
 						{
-							//const vec3f& startPos = worldMat.applyToPoint(data->m_localPositions[i].pos);
-							//const vec3f& endPos   = worldMat.applyToPoint(data->m_localPositions[joints[i].m_parentIdx].pos);
-						
-							const vec3f& endPos = nodes[joints[i].m_parentIdx + 1]->matrix().applyToOrigin();
-							if (g_drawSkeletons)
-								DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
+							const vec3f& endPos = palette[skeleton[k].m_parent].applyToOrigin();
+
+							DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
 						}
 					}
 				}
@@ -141,22 +125,36 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::postAnimate()
 	{
+		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
+		{
+			if (!m_activeAnimCtrls[i]->m_wantsWorldPalette)
+				continue;
 
+			AnimationData&		 data	     = *m_activeAnimCtrls[i];
+			const MatrixPalette& invBindPose = data.m_meshInst->m_skinnedMesh->invBindPose();
+			MatrixPalette&		 palette     = data.m_meshInst->m_worldPalette;
+
+			//-- calculate world space palette.
+			for (uint j = 0; j < palette.size(); ++j)
+			{
+				palette[j].preMultiply(invBindPose[j]);
+			}
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
 	Handle AnimationEngine::addAnimDef(AnimationData::Desc& desc)
 	{
 		std::unique_ptr<AnimationData> animData(new AnimationData(desc));
-		if (desc.m_idleAnim)
+		
+		//-- try to find free slot.
+		for (uint i = 0; i < m_animCtrls.size(); ++i)
 		{
-			AnimationData::AnimLayer layer;
-			layer.m_anim	 = getAnim(desc.m_idleAnim);
-			layer.m_blend	 = 1.0f;
-			layer.m_time	 = 0.0f;
-			layer.m_isLooped = true;
-			
-			animData->m_animLayers.push_back(layer);
+			if (!m_animCtrls[i])
+			{
+				m_animCtrls[i] = animData.release();
+				return i;
+			}
 		}
 
 		m_animCtrls.push_back(animData.release());
@@ -168,6 +166,8 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
+		delFromActive(m_animCtrls[id]);
+
 		//-- reset to empty.
 		delete m_animCtrls[id];
 		m_animCtrls[id] = nullptr;
@@ -176,20 +176,21 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::playAnim(Handle id, const char* name, bool isLooped, uint /*rate*/)
+	void AnimationEngine::playAnim(Handle id, const char* name, bool looped)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		
 		AnimationData* data = m_animCtrls[id];
 		assert(data);
 		
-		AnimationData::AnimLayer layer;
-		layer.m_anim	 = getAnim(name);
-		layer.m_blend	 = 1.0f;
-		layer.m_time	 = 0.0f;
-		layer.m_isLooped = isLooped;
+		AnimLayer layer;
+		layer.m_anim   = getAnim(name);
+		layer.m_blend  = 1.0f;
+		layer.m_looped = looped;
 
 		data->m_animLayers.push_back(layer);
+
+		addToActive(data);
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -198,14 +199,16 @@ namespace render
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
-		if (m_animCtrls[id])
-			m_animCtrls[id]->m_animLayers.clear();
+		AnimationData* data = m_animCtrls[id];
+		if (data)
+		{
+			data->m_animLayers.clear();
+			delFromActive(data);
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::blendAnim(
-		Handle id, float /*srcBlend*/, float /*dstBlend*/, const char* /*name*/,
-		bool /*isLooped*/, uint /*rate*/)
+	void AnimationEngine::blendAnim(Handle id, float /*srcBlend*/, float /*dstBlend*/, const char* /*name*/)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		id;
@@ -223,7 +226,7 @@ namespace render
 		}
 		else
 		{
-			RODataPtr data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".md5anim");
+			RODataPtr data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".animation");
 			if (!data.get())
 			{
 				return NULL;
@@ -243,8 +246,29 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Animation::Animation()
-		:	m_animComponents(0), m_jointCount(0), m_frameCount(0)
+	void AnimationEngine::addToActive(AnimationData* data)
+	{
+		//-- add to active list.
+		auto item = std::find(m_activeAnimCtrls.begin(), m_activeAnimCtrls.end(), data);
+		if (item == m_activeAnimCtrls.end())
+		{
+			m_activeAnimCtrls.push_back(data);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void AnimationEngine::delFromActive(AnimationData* data)
+	{
+		//-- remove from active list.
+		auto item = std::find(m_activeAnimCtrls.begin(), m_activeAnimCtrls.end(), data);
+		if (item != m_activeAnimCtrls.end())
+		{
+			m_activeAnimCtrls.erase(item);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Animation::Animation()	:	m_numJoints(0), m_numFrames(0)
 	{
 
 	}
@@ -256,126 +280,222 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::setupFrame(Joint::Transform& transf, uint frame, uint joint)
+	bool Animation::load(const utils::ROData& iData)
 	{
-		//-- set base transformation.
-		transf = m_baseFrame[joint];
-
-		FrameData&	data  = m_frames[frame];
-		int			flags = m_hierarchy[joint].flags;
-		int			pos   = m_hierarchy[joint].startIdx;
-
-		//-- update transformation specific for current frame.
-		if (flags & 1 )	transf.pos.x	= data[pos++] * 0.1f;
-		if (flags & 2 )	transf.pos.y	= data[pos++] * 0.1f;
-		if (flags & 4 ) transf.pos.z	= data[pos++] * 0.1f;
-		if (flags & 8 ) transf.orient.x = data[pos++];
-		if (flags & 16) transf.orient.y = data[pos++];
-		if (flags & 32) transf.orient.z = data[pos++];
-
-		renormalize(transf.orient);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void Animation::updateJoints(Joint::Transforms& skeleton, uint _1st, uint _2nd, float blend)
-	{
-		Joint::Transform first, second;
-
-		for (uint i = 0; i < m_jointCount; ++i)
+		//-- check header.
 		{
-			//-- find joint transformation at the fist and the second frames.
-			setupFrame(first,  _1st, i);
-			setupFrame(second, _2nd, i);
-
-			//-- blend results using blend factor.
-			skeleton[i].orient = slerp(first.orient, second.orient, blend);
-			skeleton[i].pos    = lerp (first.pos, second.pos, blend);
+			SkinnedMeshAnimationFormat::Header iHeader;
+			iData.read(iHeader);
+			if (std::string(iHeader.m_format) != "animation")
+			{
+				ERROR_MSG("Failed to load mesh. Most likely it's not a *.animation format.");
+				return false;
+			}
 		}
-	}
 
-	//----------------------------------------------------------------------------------------------
-	void Animation::updateBounds(AABB& bound, uint _1st, uint _2nd, float blend)
-	{
-		//-- smoothly change one AABB to another.
-		bound.m_min = lerp(m_bounds[_1st].m_min, m_bounds[_2nd].m_min, blend);
-		bound.m_max = lerp(m_bounds[_1st].m_max, m_bounds[_2nd].m_max, blend);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void Animation::tick(
-		float time, const Joints& skeleton, Joint::Transforms& oSkeleton, AABB& oBound,
-		uint frameRate, bool isLooped, bool isLocal)
-	{
-		//-- calculate total time for the desired frame rate and frame count.
-		float totalTime = (m_frameCount - 1) / static_cast<float>(frameRate);
-		
-		//-- adjust animation time in case the looped animation.
-		if (isLooped)
+		//-- load skeleton info.
+		SkinnedMeshAnimationFormat::Skeleton::Info skelInfo;
 		{
-			while (time > totalTime)
-				time -= totalTime;
+			iData.read(skelInfo);
+
+			//-- read skeleton.
+			//m_skeleton.resize(skelInfo.m_numJoints);
+			for (uint i = 0; i < skelInfo.m_numJoints; ++i)
+			{
+				SkinnedMeshAnimationFormat::Skeleton::Joint iJoint;
+
+				iData.read(iJoint);
+
+				//strcpy_s(m_skeleton[i].m_name, iJoint.m_name);
+				//m_skeleton[i].m_parent = iJoint.m_parent;
+			}
+		}
+
+		//-- load info.
+		SkinnedMeshAnimationFormat::Info info;
+		iData.read(info);
+
+		m_numFrames = info.m_numFrames;
+		m_frameRate = info.m_frameRate;
+		m_numJoints = skelInfo.m_numJoints;
+		m_tempPalette.resize(m_numJoints);
+
+		//-- read bounds.
+		m_bounds.resize(m_numFrames);
+		for (uint i = 0; i < m_numFrames; ++i)
+		{
+			SkinnedMeshAnimationFormat::Bound bound;
+			iData.read(bound);
+
+			m_bounds[i] = AABB(
+				vec3f(bound.m_aabb[0], bound.m_aabb[1], bound.m_aabb[2]),
+				vec3f(bound.m_aabb[3], bound.m_aabb[4], bound.m_aabb[5])
+				);
+		}
+
+		//-- load joints transformations.
+		m_frames.resize(m_numFrames);
+		for (uint i = 0; i < m_numFrames; ++i)
+		{
+			m_frames[i].resize(m_numJoints);
+			for (uint j = 0; j < m_numJoints; ++j)
+			{
+				SkinnedMeshAnimationFormat::Joint joint;
+				iData.read(joint);
+
+				m_frames[i][j].m_orient = quat(joint.m_quat);
+				m_frames[i][j].m_pos    = vec3f(joint.m_pos);
+			}
+		}
+
+		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::tick(float dt, Time& oTime, bool looped)
+	{
+		//-- increment timing.
+		oTime.m_time += dt;
+
+		//-- calculate total time for desired frame rate and frame count.
+		float totalTime = (m_numFrames - 1) / static_cast<float>(m_frameRate);
+
+		//-- adjust animation time in case the looped animation.
+		if (looped)
+		{
+			while (oTime.m_time > totalTime)
+				oTime.m_time -= totalTime;
 		}
 		else
 		{
-			time = math::min(time, totalTime);
+			oTime.m_time = math::clamp(0.0f, oTime.m_time, totalTime);
 		}
 
 		//-- calculate blend frame parameters.
-		float _blendFrame  = frameRate * time;
-		uint  _1st   	   = floorf(_blendFrame);
-		uint  _2nd   	   = ceilf(_blendFrame);
-		float _blendFactor = _blendFrame - _1st;
+		float blendFrame  = m_frameRate * oTime.m_time;
+
+		//-- update blending parameters.
+		oTime.m_1st   = floorf(blendFrame);
+		oTime.m_2nd   = ceilf(blendFrame);
+		oTime.m_blend = blendFrame - oTime.m_1st;
 
 		//--ConPrint("Animation: time = %f; frame1 = %d; frame2 = %d; blend = %f",
-		//--	time, _1st, _2nd, _blendFactor
+		//--	oTime.m_time, oTime.m_1st, oTime.m_2nd, oTime.m_blend
 		//--	);
-
-		//-- calculate blended results.
-		updateJoints(oSkeleton, _1st, _2nd, _blendFactor);		
-		updateBounds(oBound   , _1st, _2nd, _blendFactor);
-
-		//-- reconstruct absolute transformation of the skeleton nodes.
-		buildAbsoluteTransforms(oSkeleton, skeleton, isLocal);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::buildAbsoluteTransforms(
-		Joint::Transforms& oTransforms, const Joints& skeleton, bool isLocal)
+	void Animation::updateJoints(TransformPalette& palette, uint _1st, uint _2nd, float blend)
+	{
+		for (uint i = 0; i < m_numJoints; ++i)
+		{
+			//-- find joint transformation at the fist and the second frames.
+			const Joint::Transform& first  = m_frames[_1st][i];
+			const Joint::Transform& second = m_frames[_2nd][i];
+
+			//-- blend results using blend factor.
+			palette[i].m_orient = slerp(first.m_orient, second.m_orient, blend);
+			palette[i].m_pos    = lerp (first.m_pos, second.m_pos, blend);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	const AABB& Animation::updateBounds(const Time& time)
+	{
+		//-- smoothly change one AABB to another.
+		m_tempBound.m_min = lerp(m_bounds[time.m_1st].m_min, m_bounds[time.m_2nd].m_min, time.m_blend);
+		m_tempBound.m_max = lerp(m_bounds[time.m_1st].m_max, m_bounds[time.m_2nd].m_max, time.m_blend);
+
+		return m_tempBound;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	const TransformPalette& Animation::updatePalette(const Time& time, const Skeleton& skeleton)
+	{
+		//-- calculate blended results.
+		updateJoints(m_tempPalette, time.m_1st, time.m_2nd, time.m_blend);
+
+		//-- reconstruct absolute transformation of the skeleton nodes.
+		buildAbsoluteTransforms(m_tempPalette, skeleton);
+
+		return m_tempPalette;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void Animation::buildAbsoluteTransforms(TransformPalette& palette, const Skeleton& skeleton)
 	{
 		//-- set position of the root node to zero if isLocal flag specified.
-		if (isLocal)
-		{
-			oTransforms[0].pos.setZero();
-		}
+		palette[0].m_pos.setZero();
 		
 		//-- iterate over the all nodes and apply parent's transformation for every node.
 		for (uint i = 1; i < skeleton.size(); ++i)
 		{
-			int						idx			 = skeleton[i].m_parentIdx;
-			Joint::Transform&		transf		 = oTransforms[i];
-			const Joint::Transform& parentTransf = oTransforms[idx];
+			int						idx			 = skeleton[i].m_parent;
+			Joint::Transform&		transf		 = palette[i];
+			const Joint::Transform& parentTransf = palette[idx];
 
-			transf.pos    = parentTransf.pos + parentTransf.orient.rotate(transf.pos);
-			transf.orient = parentTransf.orient * transf.orient;
+			transf.m_pos    = parentTransf.m_pos + parentTransf.m_orient.rotate(transf.m_pos);
+			transf.m_orient = parentTransf.m_orient * transf.m_orient;
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::goToFrame(uint frame, Joint::Transforms& skeleton, AABB& bound)
+	AnimationBlender::AnimationBlender()
 	{
-		for (uint i = 0; i < m_jointCount; ++i)
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	AnimationBlender::~AnimationBlender()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void AnimationBlender::tick(float dt, AnimLayers& layers)
+	{
+		for (auto layer = layers.begin(); layer != layers.end(); ++layer)
 		{
-			setupFrame(skeleton[i], frame, i);
+			layer->m_anim->tick(dt, layer->m_time, layer->m_looped);
 		}
-
-		bound = m_bounds[frame];
 	}
 
 	//----------------------------------------------------------------------------------------------
-	AnimationData::AnimationData(AnimationData::Desc& desc)
-		: m_transform(desc.m_transform), m_meshInst(desc.m_meshInst)
+	void AnimationBlender::blendBounds(AnimLayers& layers, AABB& bound)
 	{
-		m_localPositions.resize(m_meshInst->m_skinnedMesh->skeleton().size());
+		//-- if we doesn't have any layer.
+		if (layers.empty())
+			return;
+
+		if (layers.size() == 1)
+		{
+			bound = layers[0].m_anim->updateBounds(layers[0].m_time);
+			return;
+		}
+
+		//-- ToDo: implement blending
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void AnimationBlender::blendPalette(AnimLayers& layers, const Skeleton& skeleton, MatrixPalette& palette)
+	{
+		//-- if we doesn't have any layer.
+		if (layers.empty())
+			return;
+
+		if (layers.size() == 1)
+		{
+			const TransformPalette& tp = layers[0].m_anim->updatePalette(layers[0].m_time, skeleton);
+
+			//-- transform (quat, pos) -> mat4f.
+			for (uint i = 0; i < palette.size(); ++i)
+			{
+				palette[i] = combineMatrix(tp[i].m_orient, tp[i].m_pos);
+			}
+			return;
+		}
+
+		//-- ToDo: implement blending
 	}
 
 } //-- render

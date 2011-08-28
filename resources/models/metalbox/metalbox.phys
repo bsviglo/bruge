@@ -1,0 +1,18 @@
+<phys>
+  <rigidBodies>
+    <rigidBody name="root" node="root" mass="5" offset="vec3f(0,0.25,0)" kinematic="0">
+      <shape type="box">
+        <params size="vec3f(1.0,0.5,0.5)" />
+      </shape>      
+    </rigidBody>
+  </rigidBodies>
+
+  <!--
+  <constraints>
+    <constraint name="simple" type="p2p" objA="root" objB="root">
+      <params strength="0.67" />
+    </constraint>
+  </constraints>
+  -->
+
+</phys>

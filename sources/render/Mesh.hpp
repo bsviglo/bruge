@@ -20,53 +20,37 @@ namespace render
 	class Mesh : public utils::RefCount
 	{
 	public:
-		struct Vertex
-		{
-			vec3f pos;
-			vec2f texCoord;
-			vec3f normal;
-		};
-
-		struct Tangent
-		{
-			vec3f tangent;
-			vec3f binormal;
-		};	
-
-		struct Face
-		{
-			vec3us index;
-		};
-
+		//------------------------------------------------------------------------------------------
 		struct SubMesh
 		{
-			SubMesh() : indicesCount(0), primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST) { }
+			struct Desc
+			{
+				struct Stream
+				{
+					uint8				m_elemSize;
+					std::vector<byte>	m_vertices;
+				};
 
-			uint16				  indicesCount;
-			std::vector<Face>	  faces;
-			std::vector<Vertex>	  vertices;
-			std::vector<Tangent>  tangents;
+				char					m_name[20];
+				uint16					m_numVertices;
+				std::vector<uint16>		m_indices;
+				std::vector<Stream>		m_streams;
+			};
 
-			//-- gpu hardware buffers. 
-			EPrimitiveTopology	  primTopolpgy;
-			Ptr<IBuffer>		  IB;
-			Ptr<IBuffer>		  VBs[2];
-			mutable IBuffer*	  pVBs[2];
-			Ptr<PipelineMaterial> pMaterial;
-			Ptr<Material>		  sMaterial;
-
-			bool buildBuffers(bool useNVTriStipOptimization = false);
-			void buildTangents();
-			void buildNormals();	
+			uint16							m_numIndices;
+			Ptr<IBuffer>					m_IB;
+			std::vector<Ptr<IBuffer>>		m_VBs;
+			mutable std::vector<IBuffer*>	m_pVBs;
+			Ptr<PipelineMaterial>			m_pMaterial;
+			Ptr<Material>					m_sMaterial;
 		};
-		typedef std::vector<SubMesh*> SubMeshes; 
+		typedef std::vector<SubMesh> SubMeshes; 
 
 	public:
 		Mesh();
 		~Mesh();
 
-		void		attach(SubMesh* submesh) { m_submeshes.push_back(submesh); }
-		bool		build();
+		bool		load(const utils::ROData& data, const std::string& name);
 		int			instancingID() const { return m_instacingID; }
 		const AABB& bounds() const { return m_aabb; }
 		uint		gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
@@ -76,135 +60,75 @@ namespace render
 		AABB	  m_aabb;
 		int		  m_instacingID;
 	};
-	
-	//-- auxiliary function helps us to create BSP from mesh.
-	Ptr<utils::BSPTree> createBSPFromMesh(const Ptr<Mesh>& mesh);
-	
-	
-	//
+
+
+	//--
 	//----------------------------------------------------------------------------------------------
 	struct Joint
 	{
 	public:
-		typedef std::vector<mat4f> WorldPalette;
-
 		struct Transform
 		{
-			vec3f pos;
-			quat  orient;
-		};
-		typedef std::vector<Transform> Transforms;
-
-		//-- Needed to achieve 16 byte aligned structure, because GPU can work only with 16 byte
-		//-- aligned structures.
-		struct GPUTransform
-		{
-			vec4f pos;
-			quat  orient;
+			quat  m_orient;
+			vec3f m_pos;
 		};
 
 	public:
-		std::string m_name;
-		int			m_parentIdx;
-		Transform	m_transform;
-
-	public:
-		inline vec3f transform(const vec3f& point) const
-		{
-			return m_transform.orient.rotate(point) + m_transform.pos;
-		}
-
-		inline vec3f invTransform(const vec3f& point) const
-		{
-			return m_transform.orient.getConjugated().rotate(point - m_transform.pos);
-		}
+		char m_name[20];
+		int	 m_parent;
 	};
-	typedef std::vector<Joint> Joints; 
+	typedef std::vector<Joint>				Skeleton;
+	typedef std::vector<Joint::Transform>	TransformPalette;
+	typedef std::vector<mat4f>				MatrixPalette;
+	typedef std::vector<mat4f>				InvBindPose;
 
 
+	//--
 	//----------------------------------------------------------------------------------------------
 	class SkinnedMesh : public utils::RefCount
 	{
 	public:
-		struct Vertex
-		{
-			vec3f normal;
-			vec2f texCoord;
-			uint  weightIdx;
-			uint  weightCount;
-		};
-
-		struct Tangent
-		{
-			vec3f tangent;
-			vec3f binormal;
-		};	
-
-		struct Face
-		{
-			vec3us index;
-		};
-
-		struct Weight
-		{
-			uint  joint;
-			float weight;
-			vec3f pos;
-		};
-
-		//-- Needed to achieve 16 byte aligned structure, because GPU can work only with 16 byte
-		//-- aligned structures.
-		struct GPUWeight
-		{
-			vec4f joint;  //-- .x - joint index, .yzw - padding
-			vec4f weight; //-- .xyz - position, .w - weight. 
-		};
-
-		typedef std::vector<vec3f> Positions;
-
+		//------------------------------------------------------------------------------------------
 		struct SubMesh
 		{
-			SubMesh() : indicesCount(0), primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST) { }
-		
-			uint16				  indicesCount;
-			std::vector<Face>	  faces;
-			std::vector<Vertex>	  vertices;
-			std::vector<Tangent>  tangents;
-			std::vector<Weight>	  weights;
+			struct Desc
+			{
+				struct Stream
+				{
+					uint8				m_elemSize;
+					std::vector<byte>	m_vertices;
+				};
 
-			//-- gpu hardware buffers.
-			EPrimitiveTopology	  primTopolpgy;
-			Ptr<IBuffer>		  IB;
-			Ptr<IBuffer>		  VBs[2];
-			mutable IBuffer*	  pVBs[2];
-			Ptr<IBuffer>		  weightsTB;
-			Ptr<PipelineMaterial> material;
+				char					m_name[20];
+				uint16					m_numVertices;
+				std::vector<uint16>		m_indices;
+				std::vector<Stream>		m_streams;
+			};
 
-			bool buildBuffers  ();
-			void buildTangents (const Positions& positions);
-			void buildNormals  (const Positions& positions);	
-			void buildPositions(Positions& positions, const Joints& joints);
+			uint16							m_numIndices;
+			Ptr<IBuffer>					m_IB;
+			std::vector<Ptr<IBuffer>>		m_VBs;
+			mutable std::vector<IBuffer*>	m_pVBs;
+			Ptr<PipelineMaterial>			m_pMaterial;
+			Ptr<Material>					m_sMaterial;
 		};
-		typedef std::vector<SubMesh*> SubMeshes; 
+		typedef std::vector<SubMesh> SubMeshes; 
 
 	public:
 		SkinnedMesh();
 		~SkinnedMesh();
 
-		bool		  load(const utils::ROData& data);
-		bool		  build();
-		const AABB&   bounds() const	 { return m_originAABB; }
-		const Joints& skeleton() const   { return m_joints; }
-		uint		  gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
+		bool				 load(const utils::ROData& data, const std::string& name);
+		const AABB&			 bounds() const			{ return m_aabb; }
+		const Skeleton&		 skeleton() const		{ return m_skeleton; }
+		const MatrixPalette& invBindPose() const	{ return m_invBindPose; }
+		uint				 gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
-		bool loadJoints (const utils::ROData& data);
-		bool loadSubMesh(const utils::ROData& data);
-
-	private:
-		SubMeshes	 m_submeshes;	
-		Joints		 m_joints;
-		AABB		 m_originAABB;
+		SubMeshes	  m_submeshes;	
+		Skeleton	  m_skeleton;
+		MatrixPalette m_invBindPose;
+		AABB		  m_aabb;
 	};
 
 } // render

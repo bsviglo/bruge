@@ -6,6 +6,7 @@
 #include "gui/imgui_render.hpp"
 #include "console/Console.h"
 #include "console/TimingPanel.h"
+#include "console/WatchersPanel.h"
 #include "DebugDrawer.h"
 #include "gui/imgui_render.hpp"
 #include "decal_manager.hpp"
@@ -13,7 +14,6 @@
 #include "mesh_manager.hpp"
 #include "shadow_manager.hpp"
 #include "post_processing.hpp"
-#include "SkyBox.hpp"
 #include "terrain_system.hpp"
 
 using namespace brUGE;
@@ -34,7 +34,6 @@ namespace render
 			m_meshManager(new MeshManager),
 			m_shadowManager(new ShadowManager),
 			m_postProcessing(new PostProcessing),
-			m_skyBox(new SkyBox),
 			m_terrainSystem(new TerrainSystem)
 	{
 
@@ -55,7 +54,6 @@ namespace render
 		success &= m_imguiRender->init();
 		success &= m_lightsManager->init();
 		success &= m_meshManager->init();
-		success &= m_skyBox->init();
 		success &= m_terrainSystem->init();
 		
 		//-- ToDo: for now shadow manager initialization depends of post-processing framework. Fix this.
@@ -186,19 +184,6 @@ namespace render
 			rs().endPass();
 		}
 
-		//-- 7. sky
-		{
-			SCOPED_TIME_MEASURER_EX("sky")
-			
-			RenderOps ops;
-			m_skyBox->gatherROPs(ops);
-			rs().beginPass(RenderSystem::PASS_SKY);
-			rs().setCamera(&m_camera->renderCam());
-			rs().shaderContext().updatePerFrameViewConstants();
-			rs().addROPs(ops);
-			rs().endPass();
-		}
-
 		//-- 8. draw post-processing.
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
@@ -223,6 +208,9 @@ namespace render
 		//-- 10. draw imgui.
 		{
 			SCOPED_TIME_MEASURER_EX("imgui")
+
+			TimingPanel::instance().visualize();
+			WatchersPanel::instance().visualize();
 
 			m_imguiRender->draw();
 		}

@@ -64,6 +64,30 @@ namespace render
 		vec3f m_binormal;
 	};
 
+	//-- position, normal, texture coordinates, 3 indices and 3 weights.
+	//----------------------------------------------------------------------------------------------
+	struct VertexXYZNUVI3W3
+	{
+		vec3f  m_pos;
+		vec3f  m_normal;
+		vec2f  m_tc;
+		vec3ui m_joints;
+		vec3f  m_weights;
+	};
+
+	//-- position, normal, texture coordinates, 3 indices, 3 weights, tangent and binormal.
+	//----------------------------------------------------------------------------------------------
+	struct VertexXYZNUVI3W3TB
+	{
+		vec3f  m_pos;
+		vec3f  m_normal;
+		vec2f  m_tc;
+		vec3ui m_joints;
+		vec3f  m_weights;
+		vec3f  m_tangent;
+		vec3f  m_binormal;
+	};
+
 	//-- xz-position, and texture coordinates. Used for terrain.
 	//----------------------------------------------------------------------------------------------
 	struct VertexXZUV

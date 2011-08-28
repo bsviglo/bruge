@@ -1,8 +1,9 @@
 #include "WatchersPanel.h"
 #include "console/TimingPanel.h"
 #include "render/Color.h"
-#include "loader/ResourcesManager.h"
+#include "render/render_system.hpp"
 #include "utils/string_utils.h"
+#include "gui/imgui.h"
 
 using namespace brUGE::render;
 using namespace brUGE::utils;
@@ -26,7 +27,7 @@ namespace brUGE
 	DEFINE_SINGLETON(WatchersPanel)
 
 	//---------------------------------------------------------------------------------------------
-	WatchersPanel::WatchersPanel() : m_isVisible(false)
+	WatchersPanel::WatchersPanel() : m_isVisible(false), m_scroll(0)
 	{
 		
 	}
@@ -51,12 +52,6 @@ namespace brUGE
 	//---------------------------------------------------------------------------------------------
 	bool WatchersPanel::init()
 	{
-		m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
-		if (!m_font.isValid())
-			return false;
-
-		m_font->getDesc(m_fontDesc);
-		
 		return true;
 	}
 
@@ -69,37 +64,33 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void WatchersPanel::draw(float /*dt*/)
+	void WatchersPanel::visualize()
 	{
 		SCOPED_TIME_MEASURER_EX("WatchersPanel draw")
 
 		if (!m_isVisible) return;
 
-		uint  total  = 0;
-		vec2f curPos(0.0f, m_fontDesc.height + 1);
-		vec2f offset(0.0f, m_fontDesc.height + m_fontDesc.height * 0.2f);
-		std::string line;
+		uint height = rs().screenRes().height;
 
-		m_font->beginDraw();
-
-		m_font->draw2D(curPos, g_headerColor, "Real-time watchers console.");
-		curPos += offset;
-	
-		for (uint i = 0; i < m_roWatchers.size(); ++i, ++total, curPos += offset)
+		imguiBeginScrollArea("Real-time watchers console", 10, height*0.4, 450, height*0.6-10, &m_scroll);
 		{
-			const WatcherDesc& desc = m_roWatchers[i];
-			line = makeStr(" %2d. %s = %s", total, desc.m_name.c_str(), desc.m_watcher->get().c_str());
-			m_font->draw2D(curPos, g_roColor, line);
-		}
+			std::string line;
 
-		for (uint i = 0; i < m_rwWatchers.size(); ++i, ++total, curPos += offset)
-		{
-			const WatcherDesc& desc = m_rwWatchers[i];
-			line = makeStr(" %d %s = %s", total, desc.m_name.c_str(), desc.m_watcher->get().c_str());
-			m_font->draw2D(curPos, g_rwColor, line);
-		}
+			for (uint i = 0; i < m_roWatchers.size(); ++i)
+			{
+				const WatcherDesc& desc = m_roWatchers[i];
+				line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
+				imguiLabel(line.c_str());
+			}
 
-		m_font->endDraw();
+			for (uint i = 0; i < m_rwWatchers.size(); ++i)
+			{
+				const WatcherDesc& desc = m_rwWatchers[i];
+				line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
+				imguiLabel(line.c_str());
+			}
+		}
+		imguiEndScrollArea();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -119,12 +110,6 @@ namespace brUGE
 		{
 			m_rwWatchers.push_back(desc);
 		}
-	}
-
-	//---------------------------------------------------------------------------------------------
-	void WatchersPanel::_setupRender()
-	{
-		// ToDo:
 	}
 
 } // brUGE

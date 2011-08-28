@@ -79,7 +79,7 @@ namespace render
 
 		//-- load unit cube.
 		{
-			m_unitCube = ResourcesManager::instance().loadMesh("system/meshes/box.obj");
+			m_unitCube = ResourcesManager::instance().loadMesh("system/meshes/box.mesh");
 
 			if (!m_unitCube.isValid())
 			{
