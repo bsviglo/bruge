@@ -22,6 +22,9 @@
 #include "LinearMath/btIDebugDraw.h"
 #include "BulletDynamics/ConstraintSolver/btContactConstraint.h"
 
+#define ROLLING_INFLUENCE_FIX
+
+
 btRigidBody& btActionInterface::getFixedBody()
 {
 	static btRigidBody s_fixed(0, 0,0);
@@ -293,8 +296,9 @@ void btRaycastVehicle::updateVehicle( btScalar step )
 	int i=0;
 	for (i=0;i<m_wheelInfo.size();i++)
 	{
-		btScalar depth; 
-		depth = rayCast( m_wheelInfo[i]);
+		//btScalar depth; 
+		//depth = 
+		rayCast( m_wheelInfo[i]);
 	}
 
 	updateSuspension(step);
@@ -694,7 +698,12 @@ void	btRaycastVehicle::updateFriction(btScalar	timeStep)
 					
 					btVector3 sideImp = m_axle[wheel] * m_sideImpulse[wheel];
 
+#if defined ROLLING_INFLUENCE_FIX // fix. It only worked if car's up was along Y - VT.
+					btVector3 vChassisWorldUp = getRigidBody()->getCenterOfMassTransform().getBasis().getColumn(m_indexUpAxis);
+					rel_pos -= vChassisWorldUp * (vChassisWorldUp.dot(rel_pos) * (1.f-wheelInfo.m_rollInfluence));
+#else
 					rel_pos[m_indexUpAxis] *= wheelInfo.m_rollInfluence;
+#endif
 					m_chassisBody->applyImpulse(sideImp,rel_pos);
 
 					//apply friction impulse on the ground
@@ -748,14 +757,14 @@ void* btDefaultVehicleRaycaster::castRay(const btVector3& from,const btVector3& 
 	if (rayCallback.hasHit())
 	{
 		
-		btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+		const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
         if (body && body->hasContactResponse())
 		{
 			result.m_hitPointInWorld = rayCallback.m_hitPointWorld;
 			result.m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
 			result.m_hitNormalInWorld.normalize();
 			result.m_distFraction = rayCallback.m_closestHitFraction;
-			return body;
+			return (void*)body;
 		}
 	}
 	return 0;

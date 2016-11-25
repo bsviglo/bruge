@@ -5,6 +5,7 @@
 #include "vertex_format.hpp"
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace brUGE
 {

@@ -40,10 +40,14 @@ namespace render
 
 		bool					load			(const utils::ROData& data);
 		void					tick			(float dt, Time& oTime, bool looped);
+		void					goTo			(uint frame, Time& oTime);
 
 		//-- update bounds and matrix palette.
 		const AABB&				updateBounds	(const Time& time);
 		const TransformPalette&	updatePalette	(const Time& time, const Skeleton& skeleton);
+
+		uint					numJoints		() const { return m_numJoints; }
+		uint					numFrames		() const { return m_numFrames; }
 
 	private:
 		void updateJoints(TransformPalette& palette, uint _1st, uint _2nd, float blend);
@@ -68,9 +72,10 @@ namespace render
 	//------------------------------------------------------------------------------------------
 	struct AnimLayer
 	{
-		AnimLayer() : m_looped(false), m_blend(0.0f) { }
+		AnimLayer() : m_looped(false), m_paused(false), m_blend(0.0f) { }
 
 		bool			m_looped;
+		bool			m_paused;
 		float			m_blend;
 		Animation::Time	m_time;
 		Ptr<Animation>	m_anim;
@@ -147,11 +152,15 @@ namespace render
 		
 		//-- some animation controlling functions.
 		void			playAnim	(Handle id, const char* name, bool looped = false);
+		void			pauseAnim	(Handle id, int layer = -1);
+		void			continueAnim(Handle id, int layer = -1);
+		void			goToAnim	(Handle id, uint frame, int layer = -1);
 		void			stopAnim	(Handle id);
 		void			blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name);
 
+		Ptr<Animation>	getAnim		(const char* name);
+
 	private:
-		Ptr<Animation> getAnim		(const char* name);
 		void		   addToActive	(AnimationData* data);
 		void		   delFromActive(AnimationData* data);
 

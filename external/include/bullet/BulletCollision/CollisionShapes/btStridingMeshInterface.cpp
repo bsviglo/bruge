@@ -88,6 +88,21 @@ void	btStridingMeshInterface::InternalProcessAllTriangles(btInternalTriangleInde
 					 }
 					 break;
 				 }
+			case PHY_UCHAR:
+				 {
+					 for (gfxindex=0;gfxindex<numtriangles;gfxindex++)
+					 {
+						 unsigned char* tri_indices= (unsigned char*)(indexbase+gfxindex*indexstride);
+						 graphicsbase = (float*)(vertexbase+tri_indices[0]*stride);
+						 triangle[0].setValue(graphicsbase[0]*meshScaling.getX(),graphicsbase[1]*meshScaling.getY(),graphicsbase[2]*meshScaling.getZ());
+						 graphicsbase = (float*)(vertexbase+tri_indices[1]*stride);
+						 triangle[1].setValue(graphicsbase[0]*meshScaling.getX(),graphicsbase[1]*meshScaling.getY(),	graphicsbase[2]*meshScaling.getZ());
+						 graphicsbase = (float*)(vertexbase+tri_indices[2]*stride);
+						 triangle[2].setValue(graphicsbase[0]*meshScaling.getX(),graphicsbase[1]*meshScaling.getY(),	graphicsbase[2]*meshScaling.getZ());
+						 callback->internalProcessTriangleIndex(triangle,part,gfxindex);
+					 }
+					 break;
+				 }
 			 default:
 				 btAssert((gfxindextype == PHY_INTEGER) || (gfxindextype == PHY_SHORT));
 			 }
@@ -120,6 +135,21 @@ void	btStridingMeshInterface::InternalProcessAllTriangles(btInternalTriangleInde
 						for (gfxindex=0;gfxindex<numtriangles;gfxindex++)
 						{
 							unsigned short int* tri_indices= (unsigned short int*)(indexbase+gfxindex*indexstride);
+							graphicsbase = (double*)(vertexbase+tri_indices[0]*stride);
+							triangle[0].setValue((btScalar)graphicsbase[0]*meshScaling.getX(),(btScalar)graphicsbase[1]*meshScaling.getY(),(btScalar)graphicsbase[2]*meshScaling.getZ());
+							graphicsbase = (double*)(vertexbase+tri_indices[1]*stride);
+							triangle[1].setValue((btScalar)graphicsbase[0]*meshScaling.getX(),(btScalar)graphicsbase[1]*meshScaling.getY(),  (btScalar)graphicsbase[2]*meshScaling.getZ());
+							graphicsbase = (double*)(vertexbase+tri_indices[2]*stride);
+							triangle[2].setValue((btScalar)graphicsbase[0]*meshScaling.getX(),(btScalar)graphicsbase[1]*meshScaling.getY(),  (btScalar)graphicsbase[2]*meshScaling.getZ());
+							callback->internalProcessTriangleIndex(triangle,part,gfxindex);
+						}
+						break;
+					}
+				case PHY_UCHAR:
+					{
+						for (gfxindex=0;gfxindex<numtriangles;gfxindex++)
+						{
+							unsigned char* tri_indices= (unsigned char*)(indexbase+gfxindex*indexstride);
 							graphicsbase = (double*)(vertexbase+tri_indices[0]*stride);
 							triangle[0].setValue((btScalar)graphicsbase[0]*meshScaling.getX(),(btScalar)graphicsbase[1]*meshScaling.getY(),(btScalar)graphicsbase[2]*meshScaling.getZ());
 							graphicsbase = (double*)(vertexbase+tri_indices[1]*stride);
@@ -212,7 +242,7 @@ const char*	btStridingMeshInterface::serialize(void* dataBuffer, btSerializer* s
 		int gfxindex;
 	//	btVector3 triangle[3];
 
-		btVector3 meshScaling = getScaling();
+	//	btVector3 meshScaling = getScaling();
 
 		///if the number of parts is big, the performance might drop due to the innerloop switch on indextype
 		for (part=0;part<graphicssubparts ;part++,memPtr++)
@@ -223,8 +253,10 @@ const char*	btStridingMeshInterface::serialize(void* dataBuffer, btSerializer* s
 			memPtr->m_indices16 = 0;
 			memPtr->m_indices32 = 0;
 			memPtr->m_3indices16 = 0;
+			memPtr->m_3indices8 = 0;
 			memPtr->m_vertices3f = 0;
 			memPtr->m_vertices3d = 0;
+
 
 			switch (gfxindextype)
 			{
@@ -263,6 +295,24 @@ const char*	btStridingMeshInterface::serialize(void* dataBuffer, btSerializer* s
 							tmpIndices[gfxindex].m_values[2] = tri_indices[2];
 						}
 						serializer->finalizeChunk(chunk,"btShortIntIndexTripletData",BT_ARRAY_CODE,(void*)chunk->m_oldPtr);
+					}
+					break;
+				}
+				case PHY_UCHAR:
+				{
+					if (numtriangles)
+					{
+						btChunk* chunk = serializer->allocate(sizeof(btCharIndexTripletData),numtriangles);
+						btCharIndexTripletData* tmpIndices = (btCharIndexTripletData*)chunk->m_oldPtr;
+						memPtr->m_3indices8 = (btCharIndexTripletData*) serializer->getUniquePointer(tmpIndices);
+						for (gfxindex=0;gfxindex<numtriangles;gfxindex++)
+						{
+							unsigned char* tri_indices= (unsigned char*)(indexbase+gfxindex*indexstride);
+							tmpIndices[gfxindex].m_values[0] = tri_indices[0];
+							tmpIndices[gfxindex].m_values[1] = tri_indices[1];
+							tmpIndices[gfxindex].m_values[2] = tri_indices[2];
+						}
+						serializer->finalizeChunk(chunk,"btCharIndexTripletData",BT_ARRAY_CODE,(void*)chunk->m_oldPtr);
 					}
 					break;
 				}

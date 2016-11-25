@@ -245,16 +245,18 @@ void	btBvhTriangleMeshShape::processAllTriangles(btTriangleCallback* callback,co
 		btStridingMeshInterface*	m_meshInterface;
 		btTriangleCallback*		m_callback;
 		btVector3				m_triangle[3];
-
+		int m_numOverlap;
 
 		MyNodeOverlapCallback(btTriangleCallback* callback,btStridingMeshInterface* meshInterface)
 			:m_meshInterface(meshInterface),
-			m_callback(callback)
+			m_callback(callback),
+			m_numOverlap(0)
 		{
 		}
 				
 		virtual void processNode(int nodeSubPart, int nodeTriangleIndex)
 		{
+			m_numOverlap++;
 			const unsigned char *vertexbase;
 			int numverts;
 			PHY_ScalarType type;
@@ -277,13 +279,13 @@ void	btBvhTriangleMeshShape::processAllTriangles(btTriangleCallback* callback,co
 				nodeSubPart);
 
 			unsigned int* gfxbase = (unsigned int*)(indexbase+nodeTriangleIndex*indexstride);
-			btAssert(indicestype==PHY_INTEGER||indicestype==PHY_SHORT);
+			btAssert(indicestype==PHY_INTEGER||indicestype==PHY_SHORT||indicestype==PHY_UCHAR);
 	
 			const btVector3& meshScaling = m_meshInterface->getScaling();
 			for (int j=2;j>=0;j--)
 			{
 				
-				int graphicsindex = indicestype==PHY_SHORT?((unsigned short*)gfxbase)[j]:gfxbase[j];
+				int graphicsindex = indicestype==PHY_SHORT?((unsigned short*)gfxbase)[j]:indicestype==PHY_INTEGER?gfxbase[j]:((unsigned char*)gfxbase)[j];
 
 
 #ifdef DEBUG_TRIANGLE_MESH
@@ -321,8 +323,7 @@ void	btBvhTriangleMeshShape::processAllTriangles(btTriangleCallback* callback,co
 	MyNodeOverlapCallback	myNodeCallback(callback,m_meshInterface);
 
 	m_bvh->reportAabbOverlappingNodex(&myNodeCallback,aabbMin,aabbMax);
-
-
+	
 #endif//DISABLE_BVH
 
 

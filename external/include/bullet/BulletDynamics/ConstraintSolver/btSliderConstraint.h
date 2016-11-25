@@ -22,10 +22,18 @@ TODO:
  - add conversion for ODE constraint solver
 */
 
-#ifndef SLIDER_CONSTRAINT_H
-#define SLIDER_CONSTRAINT_H
+#ifndef BT_SLIDER_CONSTRAINT_H
+#define BT_SLIDER_CONSTRAINT_H
 
+#include "LinearMath/btScalar.h"//for BT_USE_DOUBLE_PRECISION
 
+#ifdef BT_USE_DOUBLE_PRECISION
+#define btSliderConstraintData2		btSliderConstraintDoubleData
+#define btSliderConstraintDataName  "btSliderConstraintDoubleData"
+#else
+#define btSliderConstraintData2		btSliderConstraintData 
+#define btSliderConstraintDataName	"btSliderConstraintData"
+#endif //BT_USE_DOUBLE_PRECISION
 
 #include "LinearMath/btVector3.h"
 #include "btJacobianEntry.h"
@@ -60,7 +68,7 @@ enum btSliderFlags
 };
 
 
-class btSliderConstraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class) btSliderConstraint : public btTypedConstraint
 {
 protected:
 	///for backwards compatibility during the transition to 'getInfo/getInfo2'
@@ -155,6 +163,8 @@ protected:
 	//------------------------    
 	void initParams();
 public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	
 	// constructors
     btSliderConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB ,bool useLinearReferenceFrameA);
     btSliderConstraint(btRigidBody& rbB, const btTransform& frameInB, bool useLinearReferenceFrameA);
@@ -236,7 +246,10 @@ public:
 	btScalar getTargetAngMotorVelocity() { return m_targetAngMotorVelocity; }
 	void setMaxAngMotorForce(btScalar maxAngMotorForce) { m_maxAngMotorForce = maxAngMotorForce; }
 	btScalar getMaxAngMotorForce() { return m_maxAngMotorForce; }
-	btScalar getLinearPos() { return m_linPos; }
+
+	btScalar getLinearPos() const { return m_linPos; }
+	btScalar getAngularPos() const { return m_angPos; }
+	
 	
 
 	// access for ODE solver
@@ -255,11 +268,25 @@ public:
 	bool getUseFrameOffset() { return m_useOffsetForConstraintFrame; }
 	void setUseFrameOffset(bool frameOffsetOnOff) { m_useOffsetForConstraintFrame = frameOffsetOnOff; }
 
+	void setFrames(const btTransform& frameA, const btTransform& frameB) 
+	{ 
+		m_frameInA=frameA; 
+		m_frameInB=frameB;
+		calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());
+		buildJacobian();
+	} 
+
+
 	///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
 	///If no axis is provided, it uses the default axis for this constraint.
 	virtual	void	setParam(int num, btScalar value, int axis = -1);
 	///return the local value of parameter
 	virtual	btScalar getParam(int num, int axis = -1) const;
+	
+	virtual	int getFlags() const
+    	{
+		return m_flags;
+	}
 
 	virtual	int	calculateSerializeBufferSize() const;
 
@@ -269,7 +296,10 @@ public:
 
 };
 
+
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+
+
 struct btSliderConstraintData
 {
 	btTypedConstraintData	m_typeConstraintData;
@@ -288,34 +318,51 @@ struct btSliderConstraintData
 };
 
 
+struct btSliderConstraintDoubleData
+{
+	btTypedConstraintDoubleData	m_typeConstraintData;
+	btTransformDoubleData m_rbAFrame; // constraint axii. Assumes z is hinge axis.
+	btTransformDoubleData m_rbBFrame;
+	
+	double	m_linearUpperLimit;
+	double	m_linearLowerLimit;
+
+	double	m_angularUpperLimit;
+	double	m_angularLowerLimit;
+
+	int	m_useLinearReferenceFrameA;
+	int m_useOffsetForConstraintFrame;
+
+};
+
 SIMD_FORCE_INLINE		int	btSliderConstraint::calculateSerializeBufferSize() const
 {
-	return sizeof(btSliderConstraintData);
+	return sizeof(btSliderConstraintData2);
 }
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
 SIMD_FORCE_INLINE	const char*	btSliderConstraint::serialize(void* dataBuffer, btSerializer* serializer) const
 {
 
-	btSliderConstraintData* sliderData = (btSliderConstraintData*) dataBuffer;
+	btSliderConstraintData2* sliderData = (btSliderConstraintData2*) dataBuffer;
 	btTypedConstraint::serialize(&sliderData->m_typeConstraintData,serializer);
 
-	m_frameInA.serializeFloat(sliderData->m_rbAFrame);
-	m_frameInB.serializeFloat(sliderData->m_rbBFrame);
+	m_frameInA.serialize(sliderData->m_rbAFrame);
+	m_frameInB.serialize(sliderData->m_rbBFrame);
 
-	sliderData->m_linearUpperLimit = float(m_upperLinLimit);
-	sliderData->m_linearLowerLimit = float(m_lowerLinLimit);
+	sliderData->m_linearUpperLimit = m_upperLinLimit;
+	sliderData->m_linearLowerLimit = m_lowerLinLimit;
 
-	sliderData->m_angularUpperLimit = float(m_upperAngLimit);
-	sliderData->m_angularLowerLimit = float(m_lowerAngLimit);
+	sliderData->m_angularUpperLimit = m_upperAngLimit;
+	sliderData->m_angularLowerLimit = m_lowerAngLimit;
 
 	sliderData->m_useLinearReferenceFrameA = m_useLinearReferenceFrameA;
 	sliderData->m_useOffsetForConstraintFrame = m_useOffsetForConstraintFrame;
 
-	return "btSliderConstraintData";
+	return btSliderConstraintDataName;
 }
 
 
 
-#endif //SLIDER_CONSTRAINT_H
+#endif //BT_SLIDER_CONSTRAINT_H
 

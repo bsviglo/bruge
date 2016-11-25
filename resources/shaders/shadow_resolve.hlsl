@@ -81,6 +81,7 @@ float PCF_filter(float2 shadowUV, float zReceiver, float filterRadiusUV)
     float  sum	  = 0.0f; 
 	float2 adjust = g_invShadowMapRes.xy * filterRadiusUV * float2(0.25f, 1.0f);
 
+	[unroll]
     for (int i = 0; i < PCF_NUM_SAMPLES; ++i) 
     { 
 		sum += (zReceiver > sample2D(g_shadowMap, shadowUV + poissonDisk[i] * adjust).x);
@@ -141,22 +142,22 @@ float4 main(vs_out i) : SV_TARGET
 	float  shadowD  = pixelLightSpace.z;
 
 	//-- lets compare our calculated depth with the depth saved in the shadow map.
-#if 1
+#if 0
 	float isInShadow = (shadowD > sample2D(g_shadowMap, shadowTC).x);
 #endif
 
 	//-- calculate PCF filter width based on the distance to the camera and distance in light space
 	//-- between stored in shadow map depth and current pixel depth.
-#if 0
+#if 1
 	float filterFadeSpeed = 1.5f;
-	float filterWidth = 1.0f * abs(g_farNearPlane.y - filterFadeSpeed * zDist) / g_farNearPlane.y;
+	float filterWidth = 3.0f * abs(g_farNearPlane.y - filterFadeSpeed * zDist) / g_farNearPlane.y;
 
 	float isInShadow = PCF_filter(shadowTC, shadowD, filterWidth);
 #endif
 
 	//-- custom filter with helps of noise texture.
 #if 0
-	float isInShadow = customFilter(shadowTC, i.tc, shadowD, 1.5f);
+	float isInShadow = customFilter(shadowTC, i.tc, shadowD, 2.0f);
 #endif
 
 	return float4(isInShadow, 0, 0, 0);

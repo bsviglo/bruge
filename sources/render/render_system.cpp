@@ -174,14 +174,14 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
 
-			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
 			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
 			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 	
@@ -296,10 +296,10 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
 			rDesc.multisampleEnable = 0;
-			rDesc.depthBiasFactor	= 1.0f;
-			rDesc.depthBiasUnits	= 4.0f;
+			rDesc.depthBiasFactor	= 1.5f;
+			rDesc.depthBiasUnits	= 5.0f;
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
@@ -358,14 +358,14 @@ namespace render
 			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
 
 			RasterizerStateDesc rDesc;
-			rDesc.cullMode			= RasterizerStateDesc::CULL_NOTHING;
+			rDesc.cullMode			= RasterizerStateDesc::CULL_BACK;
 			rDesc.multisampleEnable = (m_videoMode.multiSampling.m_count > 1);
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
 			pass.m_stateR_doubleSided = m_device->createRasterizedState(rDesc);
 
-			rDesc.cullMode = RasterizerStateDesc::CULL_NOTHING;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
 			rDesc.fillMode = RasterizerStateDesc::FILL_WIREFRAME;
 			pass.m_stateR_wireframe = m_device->createRasterizedState(rDesc);
 
@@ -422,6 +422,51 @@ namespace render
 
 			RasterizerStateDesc rDesc;
 			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- 9. PASS_DEBUG_TRANSPARENT
+		{
+			PassDesc& pass = m_passes[PASS_DEBUG_TRANSPARENT];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = true;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_LESS_EQUAL;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+
+			pass.m_stateR = m_device->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			bDesc.blendEnable[0] = true;
+			bDesc.srcBlend		 = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.destBlend	 	 = BlendStateDesc::BLEND_FACTOR_ONE;
+			bDesc.blendOp		 = BlendStateDesc::BLEND_OP_ADD;
+			bDesc.srcBlendAlpha  = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlendAlpha = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendAlphaOp   = BlendStateDesc::BLEND_OP_ADD;
+			pass.m_stateB = m_device->createBlendState(bDesc);
+		}
+
+		//-- 9. PASS_DEBUG_OVERRIDE
+		{
+			PassDesc& pass = m_passes[PASS_DEBUG_OVERRIDE];
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthWriteMask = true;
+			dsDesc.depthEnable	  = true;
+			dsDesc.depthFunc	  = DepthStencilStateDesc::COMPARE_FUNC_ALWAYS;
+			pass.m_stateDS = m_device->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.cullMode = RasterizerStateDesc::CULL_BACK;
+
 			pass.m_stateR = m_device->createRasterizedState(rDesc);
 
 			BlendStateDesc bDesc;
@@ -569,17 +614,9 @@ namespace render
 				break;
 			}
 		case PASS_DEBUG_WIRE:
-			{
-				m_device->backToMainFrameBuffer();
-
-				m_device->setRasterizerState(pass.m_stateR);
-				m_device->setDepthStencilState(pass.m_stateDS, 0);
-				m_device->setBlendState(pass.m_stateB, NULL, 0xffffffff);
-
-				m_device->setViewPort(0, 0, m_screenRes.width, m_screenRes.height);
-				break;
-			}
 		case PASS_DEBUG_SOLID:
+		case PASS_DEBUG_TRANSPARENT:
+		case PASS_DEBUG_OVERRIDE:
 			{
 				m_device->backToMainFrameBuffer();
 

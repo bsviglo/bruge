@@ -4,6 +4,7 @@
 #include "render_common.h"
 #include "materials.hpp"
 #include "vertex_format.hpp"
+#include <memory>
 
 namespace brUGE
 {

@@ -51,7 +51,7 @@ bool Zombie::load(const ROData& inData, Handle objID, const mat4f* orient)
 	//-- loop idle animation.
 	if (success)
 	{
-		Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/idle1", true);
+		Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/idle", true);
 		m_state = STATE_IDLE;
 	}
 
@@ -82,14 +82,14 @@ void Zombie::receiveEvent(const GameEvent& event)
 		{
 			//-- play death animation.
 			Engine::instance().animationEngine().stopAnim(m_animCtrl);
-			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/idle1", true);
+			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/idle", true);
 			m_state = STATE_DEAD;
 		}
 		else
 		{
 			//-- play hit pain.
 			Engine::instance().animationEngine().stopAnim(m_animCtrl);
-			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/bellypain", true);
+			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/pain", true);
 			m_hitTimeout = 0.5f;
 
 			m_state = STATE_COOLDOWN;
@@ -167,7 +167,7 @@ void Zombie::beginUpdate(float dt)
 				if (m_state != STATE_ATTACK)
 				{
 					Engine::instance().animationEngine().stopAnim(m_animCtrl);
-					Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/attack2", true);
+					Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/attack", true);
 					m_state = STATE_ATTACK;
 				}
 

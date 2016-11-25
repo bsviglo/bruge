@@ -50,10 +50,13 @@ vs_out main(vs_in i)
 	float3 worldBinormal = float3(0,0,0);
 #endif
 
+	[unroll]
 	for (uint j = 0; j < 3; ++j)
 	{
 		float4x4 bone   = g_bones[i.joints[j]];
 		float    weight = i.weights[j];
+
+		if (weight == 0.0f) continue;
 
 		worldPos	  += mul(float4(i.pos, 1.0f), bone).xyz * weight;
 		worldNormal   += mul(i.normal, (float3x3)bone) * weight;
@@ -103,7 +106,7 @@ float4 main(vs_out i) : SV_TARGET
 
 #ifdef PIN_BUMP_MAP
 	float3 nn   = (2.0f * sample2D(bumpMap, i.tc).xyz - float3(1,1,1));
-	float3 norm = normalize(nn.x * i.tangent + nn.y * i.binormal + nn.z * i.normal);
+	float3 norm = normalize(nn.x * normalize(i.tangent) + nn.y * normalize(i.binormal) + nn.z * normalize(i.normal));
 #else
 	float3 norm = normalize(i.normal);
 #endif

@@ -6,10 +6,10 @@
 #endif
 
 #ifdef _DEBUG
-	#pragma comment(lib, "nvtristrip_d")
+#pragma comment(lib, "nvtristrip_d")
 #else
-	#pragma comment(lib, "nvtristrip")
-#endif // _DEBUG
+#pragma comment(lib, "nvtristrip")
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Public interface for stripifier

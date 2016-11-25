@@ -17,7 +17,19 @@ namespace brUGE
 #pragma warning(disable : 4312) //-- 'operation' : conversion from 'type1' to 'type2' of greater size
 #pragma warning(disable : 4201) //-- nonstandard extension used : nameless struct/union 
 #pragma warning(disable : 4996) //-- 'function': was declared deprecated
-#pragma warning(disable : 4800) //-- forcing value to bool 'true' or 'false' (performance warning)
+#pragma warning(disable : 4800) //-- forcing value to bool 'true' or 'false' (performance warning)s
+
+//-- ToDo: reconsider it
+//-- https://connect.microsoft.com/VisualStudio/feedback/details/1355600/c4458-c4459-declaration-hides-other-declaration-are-overeager-to-the-point-of-being-completely-useless
+#pragma warning(disable : 4456)
+#pragma warning(disable : 4457)
+#pragma warning(disable : 4458)
+#pragma warning(disable : 4459)
+
+//-- ToDo: reconsider it. Bullet library integration
+#pragma warning(disable : 4359) //-- warning C4359: 'btContactConstraint': Alignment specifier is less than actual alignment (128), and will be ignored.
+#pragma warning(disable : 4316) //-- warning C4316: 'btCollisionDispatcher': object allocated on the heap may not be aligned 16
+#pragma warning(disable : 4305) //-- warning C4305: 'argument': truncation from 'double' to 'const btScalar'
 
 typedef int					Handle;
 typedef unsigned char		uchar;

@@ -1,7 +1,5 @@
 <game_object>
-
-  <render file="models\zfat\zfat.md5mesh"/>
-    <physics file="physics\zfat.phys"/>
+  <render file="models\zfat\zfat.skinnedmesh"/>
+ <physics file="models\zfat\zfat.phys"/>
   <audio/>
-  
 </game_object>

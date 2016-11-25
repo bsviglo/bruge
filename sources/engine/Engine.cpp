@@ -230,7 +230,7 @@ namespace brUGE
 		//-- adjust client window size.
 		if (!videoMode.fullScreen)
 		{
-			RECT windowRect = {0, 0, videoMode.width, videoMode.height};
+			RECT windowRect = {0, 0, static_cast<LONG>(videoMode.width), static_cast<LONG>(videoMode.height)};
 
 			//-- find the total size of the window, including menu and some other window stuff,
 			//-- needed to have the client rect as width x height.

@@ -16,6 +16,9 @@ using namespace brUGE::utils;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
+	//-- convert units.
+	const float G_CONVERT_TO_METERS = 0.04f;
+
 	//----------------------------------------------------------------------------------------------
 	struct MeshInfo
 	{
@@ -236,6 +239,12 @@ namespace
 
 			oVertices[i->second] = vert;
 		}
+
+		//-- revert indexing order.
+		for (uint i = 0; i < oIndices.size(); i += 3)
+		{
+			std::swap(oIndices[i + 1], oIndices[i + 2]);
+		}
 	}
 
 	//-- returns bone ID based on the sid name.
@@ -417,7 +426,7 @@ namespace
 							stm >> v3.x; stm >> v3.y; stm >> v3.z;
 
 							//-- convert to meters.
-							v3 = v3.scale(0.1f);
+							v3 = v3.scale(G_CONVERT_TO_METERS);
 						}
 					}
 					else if (type.find("tangent") != std::string::npos)
@@ -774,14 +783,18 @@ namespace
 			oSkeleton[i].m_matrix		= skeletonSource[i].m_matrix;
 
 			//-- convert position component of matrices to meters.
-			oSkeleton[i].m_invBindPose.m30	*= 0.1f;
-			oSkeleton[i].m_invBindPose.m31	*= 0.1f;
-			oSkeleton[i].m_invBindPose.m32	*= 0.1f;
+			oSkeleton[i].m_invBindPose.m30	*= G_CONVERT_TO_METERS;
+			oSkeleton[i].m_invBindPose.m31	*= G_CONVERT_TO_METERS;
+			oSkeleton[i].m_invBindPose.m32	*= G_CONVERT_TO_METERS;
 
-			oSkeleton[i].m_matrix.m30		*= 0.1f;
-			oSkeleton[i].m_matrix.m31		*= 0.1f;
-			oSkeleton[i].m_matrix.m32		*= 0.1f;
+			oSkeleton[i].m_matrix.m30		*= G_CONVERT_TO_METERS;
+			oSkeleton[i].m_matrix.m31		*= G_CONVERT_TO_METERS;
+			oSkeleton[i].m_matrix.m32		*= G_CONVERT_TO_METERS;
 		}
+
+		//-- make OY as up axis and invert z direction to be left handed coordinate system.
+		oSkeleton[0].m_matrix.postRotateX(degToRad(-90.0f));
+		//oSkeleton[0].m_matrix.postScale(1,1,-1);
 
 		//-- compute absolute transformations set for the bind pose skeleton.
 		for (uint i = 1; i < oSkeleton.size(); ++i)
@@ -826,6 +839,10 @@ namespace
 		{
 			Animation::Transforms& transforms = oAnimation.m_jointTransforms[i];
 
+			//-- make OY as up axis and invert z direction to be left handed coordinate system.
+			animSource.m_jointMatrices[0][i].postRotateX(degToRad(-90.0f));
+			//animSource.m_jointMatrices[0][i].postScale(1,1,-1);
+
 			transforms.resize(oSkeleton.size());
 			for (uint j = 0; j < oSkeleton.size(); ++j)
 			{
@@ -833,9 +850,9 @@ namespace
 				mat4f&					m = animSource.m_jointMatrices[j][i];
 
 				//-- convert position component of matrices to meters.
-				m.m30 *= +0.1f;
-				m.m31 *= +0.1f;
-				m.m32 *= +0.1f;
+				m.m30 *= G_CONVERT_TO_METERS;
+				m.m31 *= G_CONVERT_TO_METERS;
+				m.m32 *= G_CONVERT_TO_METERS;
 
 				vec3f scale;
 				decomposeMatrix(t.m_quat, scale, t.m_pos, m);

@@ -32,10 +32,14 @@ vs_out main(vs_in i)
     vs_out o;
     
     float3 worldPos = float3(0,0,0);
+
+	[unroll]
     for (uint j = 0; j < 3; ++j)
     {
 		float4x4 bone   = g_bones[i.joints[j]];
 		float    weight = i.weights[j];
+
+		if (weight == 0.0f) continue;
 
 		worldPos += mul(float4(i.pos, 1.0f), bone).xyz * weight;
     }

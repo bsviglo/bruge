@@ -77,9 +77,10 @@ namespace render
 		{
 			ResourcesManager& rm = ResourcesManager::instance();
 						
-			m_meshes[MT_BOX]	  = rm.loadMesh("system/meshes/box.mesh");
-			m_meshes[MT_CYLINDER] = rm.loadMesh("system/meshes/cylinder.mesh");
-			m_meshes[MT_SPHERE]   = rm.loadMesh("system/meshes/sphere.mesh");
+			m_meshes[MT_BOX]	    = rm.loadMesh("system/meshes/box.mesh");
+			m_meshes[MT_CYLINDER]   = rm.loadMesh("system/meshes/cylinder.mesh");
+			m_meshes[MT_SPHERE]     = rm.loadMesh("system/meshes/sphere.mesh");
+			m_meshes[MT_HEMISPHERE] = rm.loadMesh("system/meshes/hemisphere.mesh");
 
 			//-- check result.
 			for (uint i = 0; i < MT_COUNT; ++i)
@@ -354,60 +355,71 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawBox(const vec3f& size, const mat4f& world, const Color& color)
+	void DebugDrawer::drawBox(const vec3f& size, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
 		instance.m_world.preScale(size);
 
-		m_meshCaches[MT_BOX].push_back(instance);
+		m_meshCaches[MT_BOX][drawType].push_back(instance);
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderY(float radius, float height, const mat4f& world, const Color& color)
+	void DebugDrawer::drawCylinderY(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
-		instance.m_world.preScale(vec3f(radius, height, radius));
+		instance.m_world.preScale(radius, height, radius);
 
-		m_meshCaches[MT_CYLINDER].push_back(instance);
+		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderX(float radius, float height, const mat4f& world, const Color& color)
+	void DebugDrawer::drawCylinderX(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
 		instance.m_world.postRotateZ(degToRad(90.0f));
-		instance.m_world.preScale(vec3f(radius, height, radius));
+		instance.m_world.preScale(radius, height, radius);
 
-		m_meshCaches[MT_CYLINDER].push_back(instance);
+		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderZ(float radius, float height, const mat4f& world, const Color& color)
+	void DebugDrawer::drawCylinderZ(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
 		instance.m_world.postRotateX(degToRad(90.0f));
-		instance.m_world.preScale(vec3f(radius, height, radius));
+		instance.m_world.preScale(radius, height, radius);
 
-		m_meshCaches[MT_CYLINDER].push_back(instance);
+		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawSphere(float radius, const mat4f& world, const Color& color)
+	void DebugDrawer::drawSphere(float radius, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
 		instance.m_world.preScale(radius, radius, radius);
 
-		m_meshCaches[MT_SPHERE].push_back(instance);
+		m_meshCaches[MT_SPHERE][drawType].push_back(instance);
+	}
+
+	//---------------------------------------------------------------------------------------------
+	void DebugDrawer::drawHemiSphereY(float radius, const mat4f& world, const Color& color, EDrawType drawType)
+	{
+		if (!m_isEnabled) return;
+
+		MeshInstance instance(world, color);
+		instance.m_world.preScale(radius, radius, radius);
+
+		m_meshCaches[MT_HEMISPHERE][drawType].push_back(instance);
 	}
 
 	/*
@@ -421,19 +433,38 @@ namespace render
 
 		m_meshCaches[MT_CYLINDER].push_back(instance);
 	}
+	*/
+
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCapsuleY(float radius, float height, const mat4f& world, const Color& color)
+	void DebugDrawer::drawCapsuleY(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
 	{
+		if (!m_isEnabled) return;
+		if (radius * 2.0f >= height) return;
 
+		//-- top sphere
+		mat4f topSphereMat = world;
+		topSphereMat.preTranslation(vec3f(0.0f, 0.5f * height - radius, 0.0f));
+		drawHemiSphereY(radius, topSphereMat, color, drawType);
+
+		//-- bottom sphere
+		mat4f bottomSphere = world;
+		bottomSphere.preTranslation(vec3f(0.0f, -0.5f * height + radius, 0.0f));
+		bottomSphere.preRotateX(degToRad(180.0f));
+		drawHemiSphereY(radius, bottomSphere, color, drawType);
+
+		//-- cylinder
+		drawCylinderY(radius, height - 2.0f * radius, world, color, drawType);
 	}
 
+/*
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::drawCapsuleZ(float radius, float height, const mat4f& world, const Color& color)
 	{
 
 	}
-	*/
+*/
+
 
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::_swapBuffers()
@@ -467,30 +498,48 @@ namespace render
 		
 		//-- 1. do solid geometry drawing.
 		{
-			//-- gather all render operations.
+			//-- gather all render operations for the whole set of render passes.
 			RenderOps rops;
-			for (uint i = 0; i < MT_COUNT; ++i)
+			for (uint pass = 0; pass < DT_COUNT; ++pass)
 			{
-				if (m_meshCaches[i].size())
+				//-- iterate over the hole set of mesh types.
+				for (uint type = 0; type < MT_COUNT; ++type)
 				{
-					//-- ToDo: reconsider.
-					m_meshes[i]->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
+					const MeshesCache& cache = m_meshCaches[type][pass];
 
-					rops.back().m_material		= m_solidMaterial->renderFx();
-					rops.back().m_instanceTB	= m_instancingTB.get();
-					rops.back().m_instanceSize  = sizeof(MeshInstance);
-					rops.back().m_instanceCount = m_meshCaches[i].size();
-					rops.back().m_instanceData  = &m_meshCaches[i].front();
+					//-- check cache capacity.
+					if (!cache.empty())
+					{
+						//-- ToDo: reconsider.
+						m_meshes[type]->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
+
+						rops.back().m_material		= m_solidMaterial->renderFx();
+						rops.back().m_instanceTB	= m_instancingTB.get();
+						rops.back().m_instanceSize  = sizeof(MeshInstance);
+						rops.back().m_instanceCount = cache.size();
+						rops.back().m_instanceData  = &cache.front();
+					}
 				}
-			}
 
-			rs().beginPass(RenderSystem::PASS_DEBUG_SOLID);
-			rs().addROPs(rops);
-			rs().endPass();
+				//-- retrieve desired render pass and draw it.
+				const RenderSystem::EPassType renderPasses[] = {
+					RenderSystem::PASS_DEBUG_SOLID,
+					RenderSystem::PASS_DEBUG_TRANSPARENT,
+					RenderSystem::PASS_DEBUG_OVERRIDE
+				};
+
+				rs().beginPass(renderPasses[pass]);
+				rs().addROPs(rops);
+				rs().endPass();
+
+				//-- prepare rops for the next pass.
+				rops.clear();
+			}
 
 			//-- clear caches.
 			for (uint i = 0; i < MT_COUNT; ++i)
-				m_meshCaches[i].clear();
+				for (uint j = 0; j < DT_COUNT; ++j)
+					m_meshCaches[i][j].clear();
 		}
 		
 		//-- 2. do wire geometry drawing.

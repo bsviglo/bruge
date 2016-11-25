@@ -3,6 +3,7 @@
 #include "prerequisites.hpp"
 #include "engine/IDemo.h"
 #include "render/CursorCamera.hpp"
+#include <memory>
 
 using namespace brUGE;
 using namespace brUGE::math;
@@ -58,6 +59,16 @@ private:
 	friend class UI;
 
 private:
+	//-- anim
+	bool				m_activeSkinModel;
+	bool				m_looped;
+	bool				m_stepped;
+	float				m_curFrame;
+	float				m_numFrames;
+	std::string			m_objName;
+	std::string			m_animName;
+	Handle				m_animCtrl;
+
 	bool				m_guiActive;
 	UIPtr				m_ui;
 	Handle				m_gameObj;

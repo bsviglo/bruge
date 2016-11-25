@@ -33,3 +33,5 @@
 *.sdf
 *.ipch
 *.manifest.res
+/demos/*/Debug
+/demos/*/Release

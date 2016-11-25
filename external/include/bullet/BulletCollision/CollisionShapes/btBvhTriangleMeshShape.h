@@ -13,15 +13,21 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef BVH_TRIANGLE_MESH_SHAPE_H
-#define BVH_TRIANGLE_MESH_SHAPE_H
+#ifndef BT_BVH_TRIANGLE_MESH_SHAPE_H
+#define BT_BVH_TRIANGLE_MESH_SHAPE_H
 
 #include "btTriangleMeshShape.h"
 #include "btOptimizedBvh.h"
 #include "LinearMath/btAlignedAllocator.h"
 #include "btTriangleInfoMap.h"
 
-///The btBvhTriangleMeshShape is a static-triangle mesh shape with several optimizations, such as bounding volume hierarchy and cache friendly traversal for PlayStation 3 Cell SPU. It is recommended to enable useQuantizedAabbCompression for better memory usage.
+///The btBvhTriangleMeshShape is a static-triangle mesh shape, it can only be used for fixed/non-moving objects.
+///If you required moving concave triangle meshes, it is recommended to perform convex decomposition
+///using HACD, see Bullet/Demos/ConvexDecompositionDemo. 
+///Alternatively, you can use btGimpactMeshShape for moving concave triangle meshes.
+///btBvhTriangleMeshShape has several optimizations, such as bounding volume hierarchy and 
+///cache friendly traversal for PlayStation 3 Cell SPU. 
+///It is recommended to enable useQuantizedAabbCompression for better memory usage.
 ///It takes a triangle mesh as input, for example a btTriangleMesh or btTriangleIndexVertexArray. The btBvhTriangleMeshShape class allows for triangle mesh deformations by a refit or partialRefit method.
 ///Instead of building the bounding volume hierarchy acceleration structure, it is also possible to serialize (save) and deserialize (load) the structure from disk.
 ///See Demos\ConcaveDemo\ConcavePhysicsDemo.cpp for an example.
@@ -33,13 +39,17 @@ ATTRIBUTE_ALIGNED16(class) btBvhTriangleMeshShape : public btTriangleMeshShape
 
 	bool m_useQuantizedAabbCompression;
 	bool m_ownsBvh;
+#ifdef __clang__
+	bool m_pad[11] __attribute__((unused));////need padding due to alignment
+#else
 	bool m_pad[11];////need padding due to alignment
+#endif
 
 public:
 
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btBvhTriangleMeshShape() : btTriangleMeshShape(0),m_bvh(0),m_triangleInfoMap(0),m_ownsBvh(false) {m_shapeType = TRIANGLE_MESH_SHAPE_PROXYTYPE;};
+	
 	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, bool buildBvh = true);
 
 	///optionally pass in a larger bvh aabb, used for quantization. This allows for deformations within this aabb
@@ -136,4 +146,4 @@ SIMD_FORCE_INLINE	int	btBvhTriangleMeshShape::calculateSerializeBufferSize() con
 
 
 
-#endif //BVH_TRIANGLE_MESH_SHAPE_H
+#endif //BT_BVH_TRIANGLE_MESH_SHAPE_H

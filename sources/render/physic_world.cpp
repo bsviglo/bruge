@@ -445,7 +445,7 @@ namespace physic
 					}
 					else
 					{
-						assert("type is not yet implemented.");
+						assert(!"type is not yet implemented.");
 					}
 
 					//-- calculate local inertia.

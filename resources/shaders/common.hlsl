@@ -16,6 +16,7 @@
 //-- Available pins.
 //#define PIN_ALPHA_TEST
 //#define PIN_BUMP_MAP
+//#defube PIN_INSTANCED
 
 //-- static variables.
 static float G_EPS = 0.0001f;

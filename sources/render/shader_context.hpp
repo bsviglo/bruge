@@ -24,8 +24,9 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	struct RenderStateProperties
 	{
-		RenderStateProperties() : m_doubleSided(false), m_wireframe(false) { }
+		RenderStateProperties() : m_doubleSided(false), m_wireframe(false), m_enableDepthTest(false) { }
 
+		bool m_enableDepthTest;
 		bool m_doubleSided;
 		bool m_wireframe;
 	};
@@ -123,7 +124,6 @@ namespace render
 		{
 			if (value.isValid())				m_texture = value;
 			if (state != CONST_INVALID_HANDLE)	m_stateS  = state;
-			
 		}
 
 	private:

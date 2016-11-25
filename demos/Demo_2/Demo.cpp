@@ -88,7 +88,7 @@ bool Demo::init()
 		mat.setIdentity();
 
 		//-- add plane.
-		gameWorld.addGameObj("resources/models/_plane.xml", &mat);
+		gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
 		for (uint i = 0; i < 5; ++i)
 		{
@@ -98,7 +98,7 @@ bool Demo::init()
 				{
 					mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
 					mat.postTranslation(-5, 50, -5);
-					gameWorld.addGameObj("resources/models/_barrel.xml", &mat);
+					gameWorld.addGameObj("resources/models/barrel.xml", &mat);
 				}
 			}
 		}
@@ -112,13 +112,12 @@ bool Demo::init()
 				{
 					mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 					mat.postTranslation(-15, 25, -15);
-					gameWorld.addGameObj("resources/models/_metalbox.xml", &mat);
+					gameWorld.addGameObj("resources/models/metalbox.xml", &mat);
 				}
 			}
 		}
 
-/*
-		for (uint i = 0; i < 0; ++i)
+		for (uint i = 0; i < 100; ++i)
 		{
 			mat.setIdentity();
 			mat.setRotateY(random() * 6.24f);
@@ -127,6 +126,7 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/palm.xml", &mat);
 		}
 
+/*
 		for (uint i = 0; i < 85; ++i)
 		{
 			mat.setIdentity();
@@ -155,7 +155,7 @@ bool Demo::init()
 		}
 */
 
-		for (uint i = 0; i < 65; ++i)
+		for (uint i = 0; i < 1250; ++i)
 		{
 			mat.setIdentity();
 			mat.setScale(0.4f, 0.4f, 0.4f);

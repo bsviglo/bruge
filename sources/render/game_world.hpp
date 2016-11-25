@@ -6,6 +6,7 @@
 #include "math/Matrix4x4.hpp"
 #include "control/input_listener.h"
 #include <vector>
+#include <memory>
 
 namespace brUGE
 {

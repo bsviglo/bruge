@@ -26,7 +26,8 @@ namespace
 //-- end unnamed namespace.
 
 //--------------------------------------------------------------------------------------------------
-Editor::Editor() : m_sunLight(CONST_INVALID_HANDLE), m_gameObj(CONST_INVALID_HANDLE), m_guiActive(true)
+Editor::Editor() : m_sunLight(CONST_INVALID_HANDLE), m_gameObj(CONST_INVALID_HANDLE), m_guiActive(true),
+	m_numFrames(0), m_looped(false), m_stepped(false), m_activeSkinModel(false), m_curFrame(0), m_animCtrl(CONST_INVALID_HANDLE)
 {
 
 }
@@ -61,20 +62,20 @@ bool Editor::init()
 	//-- add plane
 	{
 		mat4f mat;
-		mat.setIdentity();
+		mat.setScale(1.0f, 10.0f, 1.0f);
 
 		//-- add plane.
-		gameWorld.addGameObj("resources/models/_plane.xml", &mat);
+		gameWorld.addGameObj("resources/models/plane.xml", &mat);
 	}
 
 	//-- add test barrel
 	{
 		mat4f mat;
 		mat.setIdentity();
-		m_gameObj = gameWorld.addGameObj("resources/models/_barrel.xml", &mat);
+		m_gameObj = gameWorld.addGameObj("resources/models/barrel.xml", &mat);
 	}
 
-	m_xyz.set(0.0f, 0.0f, 5.0f);
+	m_xyz.set(degToRad(45.0f), 0.0f, 5.0f);
 
 	m_target.setRotateX(m_xyz.x);
 	m_target.postRotateY(m_xyz.y);
@@ -90,6 +91,7 @@ bool Editor::init()
 	m_camera = new CursorCamera(proj);
 	m_camera->source(&m_source);
 	m_camera->target(&m_target);
+	m_camera->update(true, 0.0f);
 
 	engine.renderWorld().setCamera(m_camera);
 
@@ -111,30 +113,36 @@ bool Editor::loadGameObj(const std::string& name)
 		Engine::instance().gameWorld().delGameObj(m_gameObj);
 	}
 
-	if (name == "_zfat")
-	{
-		transform.postRotateX(degToRad(-90.0f));
-	}
+	m_objName = name;
+	//transform.postRotateX(degToRad(-90.0f));
 
 	std::string objName = "resources/models/" + name + ".xml";
 	m_gameObj = Engine::instance().gameWorld().addGameObj(objName.c_str(), &transform);
 
-	if (name == "_zfat")
+	//-- update status.
+	m_animCtrl        = Engine::instance().gameWorld().getGameObj(m_gameObj)->animCtrl();
+	m_activeSkinModel = (m_animCtrl != CONST_INVALID_HANDLE);
+
+	if (m_animCtrl != CONST_INVALID_HANDLE)
 	{
 		loadAnimation("initial");
 	}
-
+	
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------
 bool Editor::loadAnimation(const std::string& name)
 {
-	bool looped = (name == "initial") ? false : true;
+	bool looped = (name == "initial") ? false : m_looped;
 
-	Handle animCtrl = Engine::instance().gameWorld().getGameObj(m_gameObj)->animCtrl();
-	Engine::instance().animationEngine().stopAnim(animCtrl);
-	Engine::instance().animationEngine().playAnim(animCtrl, std::string("zfat/" + name).c_str(), looped);
+	m_animName = m_objName+ "/" + name;
+
+	Engine::instance().animationEngine().stopAnim(m_animCtrl);
+	Engine::instance().animationEngine().playAnim(m_animCtrl, m_animName.c_str(), looped);
+
+	m_curFrame  = 0;
+	m_numFrames = Engine::instance().animationEngine().getAnim(m_animName.c_str())->numFrames();
 
 	return true;
 }
@@ -177,9 +185,47 @@ void Editor::update(float dt)
 }
 
 //--------------------------------------------------------------------------------------------------
-void Editor::render(float /*dt*/)
+void Editor::render(float dt)
 {
+	mat4f origin;
+	origin.setIdentity();
+	DebugDrawer::instance().drawCoordAxis(origin, 0.5f);
 
+	origin.setTranslation(0.0f, 0.5f, 2.0f);
+	DebugDrawer::instance().drawBox(vec3f(0.2f, 1.0f, 0.2f), origin, Color(1,0,0,1));
+
+	origin.setTranslation(0.0f, 1.0f, 2.5f);
+	DebugDrawer::instance().drawBox(vec3f(0.2f, 2.0f, 0.2f), origin, Color(0,1,0,1));
+
+	origin.setTranslation(0.5f, 0.5f, 2.0f);
+	DebugDrawer::instance().drawCylinderY(0.1f, 1.0f, origin, Color(1,0,0,1));
+
+	origin.setTranslation(0.5f, 1.0f, 2.5f);
+	DebugDrawer::instance().drawCylinderY(0.1f, 2.0f, origin, Color(0,1,0,1));
+
+	origin.setTranslation(1.5f, 0.5f, 2.0f);
+	DebugDrawer::instance().drawCapsuleY(0.1f, 1.0f, origin, Color(1,0,0,1));
+
+	static float angle = 0.0f;
+	angle += dt;
+	origin.setTranslation(1.5f, 1.0f, 2.5f);
+	origin.preRotateZ(angle);
+	DebugDrawer::instance().drawCapsuleY(0.1f, 2.0f, origin, Color(0,1,0,1));
+
+	origin.setTranslation(2.5f, 0.5f, 2.0f);
+	DebugDrawer::instance().drawCapsuleY(0.1f, 1.0f, origin, Color(1,0,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
+
+	origin.setTranslation(2.5f, 1.0f, 2.5f);
+	DebugDrawer::instance().drawCapsuleY(0.1f, 2.0f, origin, Color(0,1,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
+
+	DebugDrawer::instance().drawLine(vec3f(1.0f, 0.0f, 2.0f), vec3f(1.0f, 1.0f, 2.0f), Color(1,0,0,1));
+	DebugDrawer::instance().drawLine(vec3f(1.0f, 0.0f, 2.5f), vec3f(1.0f, 2.0f, 2.5f), Color(0,1,0,1));
+
+	origin.setTranslation(-2.5f, 0.5f, 2.0f);
+	DebugDrawer::instance().drawSphere(0.5f, origin, Color(1,0,0,1));
+
+	origin.setTranslation(-2.5f, 1.0f, 3.0f);
+	DebugDrawer::instance().drawSphere(1.0f, origin, Color(0,1,0,1));
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -206,8 +252,10 @@ bool Editor::handleMouseMove(const MouseAxisEvent& mae)
 
 	//-- clamp angles.
 	m_xyz.x = clamp(0.1f, m_xyz.x, (float)+PI * 0.5f);
-	m_xyz.y = clamp((float)-PI_2, m_xyz.y, (float)+PI_2);
 	m_xyz.z = clamp(1.0f, m_xyz.z, 100.0f);
+
+	if (m_xyz.y < -PI_2)	m_xyz.y -= -PI_2;
+	if (m_xyz.y > +PI_2)	m_xyz.y -= +PI_2;
 
 	return true;
 }
@@ -233,6 +281,8 @@ Editor::UI::~UI()
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::update()
 {
+	AnimationEngine& animEngine = Engine::instance().animationEngine();
+
 	uint width	= rs().screenRes().width;
 	uint height = rs().screenRes().height;
 
@@ -260,20 +310,40 @@ void Editor::UI::update()
 		imguiLabel("Animations:");
 		{
 			imguiIndent();
-			if (imguiButton("Load"))
+			if (imguiButton("Load", m_self.m_activeSkinModel))
 			{
 				m_animList.m_enabled = !m_animList.m_enabled;
 				if (m_animList.m_enabled)
 				{
 					m_animList.m_list.clear();
 					FileSystem::instance().getFilesInDir(
-						"..\\resources\\models\\zfat", m_animList.m_list, "animation", true
+						"..\\resources\\models\\" + m_self.m_objName, m_animList.m_list, "animation", true
 						);
 				}
 			}
+			if (imguiCheck("looped", &m_self.m_looped, m_self.m_activeSkinModel))
+			{
+				animEngine.stopAnim(m_self.m_animCtrl);
+				animEngine.playAnim(m_self.m_animCtrl, m_self.m_animName.c_str(), m_self.m_looped);
+			}
+
+			if (imguiCheck("stepped", &m_self.m_stepped, m_self.m_activeSkinModel))
+			{
+				if (m_self.m_stepped)
+					animEngine.pauseAnim(m_self.m_animCtrl);
+				else
+					animEngine.continueAnim(m_self.m_animCtrl);
+			}
+
+			if (imguiSlider("frames", &m_self.m_curFrame, 0.0f, m_self.m_numFrames, 1.0f, m_self.m_activeSkinModel && m_self.m_stepped))
+			{
+				animEngine.goToAnim(m_self.m_animCtrl, m_self.m_curFrame);
+			}
+
 			imguiUnindent();
 		}
 
+		imguiSeparatorLine();
 		imguiLabel("Sun:");
 		{
 			imguiIndent();

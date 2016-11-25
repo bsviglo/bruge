@@ -50,7 +50,7 @@ bool Player::load(const ROData& inData, Handle objID, const mat4f* orient /* = N
 	//-- loop idle animation.
 	if (success)
 	{
-		Engine::instance().animationEngine().playAnim(m_animCtrl, "idle", true);
+		Engine::instance().animationEngine().playAnim(m_animCtrl, "player/idle", true);
 		m_walking = false;
 	}
 
@@ -116,7 +116,7 @@ void Player::beginUpdate(float dt)
 		if (!m_walking)
 		{
 			Engine::instance().animationEngine().stopAnim(m_animCtrl);
-			Engine::instance().animationEngine().playAnim(m_animCtrl, "walk", true);
+			Engine::instance().animationEngine().playAnim(m_animCtrl, "player/walk", true);
 			m_walking = true;
 		}
 	}
@@ -125,7 +125,7 @@ void Player::beginUpdate(float dt)
 		if (m_walking)
 		{
 			Engine::instance().animationEngine().stopAnim(m_animCtrl);
-			Engine::instance().animationEngine().playAnim(m_animCtrl, "idle", true);
+			Engine::instance().animationEngine().playAnim(m_animCtrl, "player/idle", true);
 			m_walking = false;
 		}
 	}

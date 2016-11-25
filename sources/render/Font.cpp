@@ -268,12 +268,12 @@ namespace render
 
 			int y_bearnig = (maxBearingY >> 6) - (glyph->metrics.horiBearingY >> 6);
 
-			for(int j = 0; j < glyph->bitmap.rows; ++j)
+			for(uint j = 0; j < glyph->bitmap.rows; ++j)
 			{
 				row				= j + m + y_bearnig;
 				uchar* pDest	= &imageData[(row * texSideSize) + l];
 
-				for(int k = 0; k < glyph->bitmap.width; ++k)
+				for(uint k = 0; k < glyph->bitmap.width; ++k)
 					*pDest++= *glyphImageBuf++; 
 			}
 
@@ -308,10 +308,12 @@ namespace render
 		fontTexDesc.height		= texSideSize;
 		
 		// ToDo: Убрать явное определение размера формата текстуры.
-		std::vector<ITexture::Data> texDataDesc;
-		ITexture::Data data = {imageData, texSideSize * 1, 0};
-		texDataDesc.push_back(data);
-		m_texture = rd()->createTexture(fontTexDesc, &texDataDesc[0], texDataDesc.size());
+		{
+			std::vector<ITexture::Data> texDataDesc;
+			ITexture::Data data = { imageData, texSideSize * 1, 0 };
+			texDataDesc.push_back(data);
+			m_texture = rd()->createTexture(fontTexDesc, &texDataDesc[0], texDataDesc.size());
+		}
 
 		delete [] imageData;
 		FT_Done_Face(face);

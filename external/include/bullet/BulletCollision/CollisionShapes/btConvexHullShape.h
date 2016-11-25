@@ -13,8 +13,8 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef CONVEX_HULL_SHAPE_H
-#define CONVEX_HULL_SHAPE_H
+#ifndef BT_CONVEX_HULL_SHAPE_H
+#define BT_CONVEX_HULL_SHAPE_H
 
 #include "btPolyhedralConvexShape.h"
 #include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" // for the types
@@ -36,7 +36,7 @@ public:
 	///btConvexHullShape make an internal copy of the points.
 	btConvexHullShape(const btScalar* points=0,int numPoints=0, int stride=sizeof(btVector3));
 
-	void addPoint(const btVector3& point);
+	void addPoint(const btVector3& point, bool recalculateLocalAabb = true);
 
 	
 	btVector3* getUnscaledPoints()
@@ -55,9 +55,8 @@ public:
 		return getUnscaledPoints();
 	}
 
-	
-
-
+    void optimizeConvexHull();
+    
 	SIMD_FORCE_INLINE	btVector3 getScaledPoint(int i) const
 	{
 		return m_unscaledPoints[i] * m_localScaling;
@@ -72,6 +71,8 @@ public:
 	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
 	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
 	
+
+	virtual void project(const btTransform& trans, const btVector3& dir, btScalar& minProj, btScalar& maxProj, btVector3& witnesPtMin,btVector3& witnesPtMax) const;
 
 
 	//debugging
@@ -116,5 +117,5 @@ SIMD_FORCE_INLINE	int	btConvexHullShape::calculateSerializeBufferSize() const
 }
 
 
-#endif //CONVEX_HULL_SHAPE_H
+#endif //BT_CONVEX_HULL_SHAPE_H
 

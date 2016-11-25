@@ -21,6 +21,16 @@ namespace render
 	class DebugDrawer : public utils::Singleton<DebugDrawer>
 	{
 	public:
+		enum EDrawType
+		{
+			DRAW_SOLID	 	 = 0, //-- draw as solid object with depth test enabled.
+			DRAW_TRANSPARENT = 1, //-- draw as semitransparent object with depth test enabled.
+			DRAW_OVERRIDE	 = 2, //-- draw as solid object without depth testing.
+
+			DT_COUNT
+		};
+
+	public:
 		DebugDrawer();
 		~DebugDrawer();
 
@@ -40,14 +50,17 @@ namespace render
 		void drawOBB		(const OBB& obb, const Color& color);
 
 		//-- solid meshes.
-		void drawBox		(const vec3f& size, const mat4f& world, const Color& color);
-		void drawSphere		(float radius, const mat4f& world, const Color& color);
-		void drawCylinderX	(float radius, float height, const mat4f& world, const Color& color);
-		void drawCylinderY	(float radius, float height, const mat4f& world, const Color& color);
-		void drawCylinderZ	(float radius, float height, const mat4f& world, const Color& color);
-		void drawCapsuleX	(float radius, float height, const mat4f& world, const Color& color);
-		void drawCapsuleY	(float radius, float height, const mat4f& world, const Color& color);
-		void drawCapsuleZ	(float radius, float height, const mat4f& world, const Color& color);
+		void drawBox		(const vec3f& size, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawSphere		(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawHemiSphereX(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawHemiSphereY(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawHemiSphereZ(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCylinderX	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCylinderY	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCylinderZ	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCapsuleX	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCapsuleY	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCapsuleZ	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
 
 		//-- text drawing.
 		void drawText2D		(const char* text, const vec3f& pos, const Color& color);
@@ -86,11 +99,12 @@ namespace render
 		Ptr<Font>				m_font;
 		std::vector<TextData>	m_textDataVec;
 
-		//-- standard solid meshes like (sphere, box, cylinder, ...)
+		//-- standard solid meshes like (sphere, hemisphere, box, cylinder, ...)
 		enum MeshTypes
 		{
 			MT_BOX,
 			MT_SPHERE,
+			MT_HEMISPHERE,
 			MT_CYLINDER,
 			MT_COUNT
 		};
@@ -103,10 +117,12 @@ namespace render
 			mat4f m_world;
 			Color m_color;
 		};
-		std::vector<MeshInstance>	m_meshCaches[MT_COUNT];
-		Ptr<Mesh>					m_meshes[MT_COUNT];
-		Ptr<Material>				m_solidMaterial;
-		Ptr<IBuffer>				m_instancingTB;
+		typedef std::vector<MeshInstance> MeshesCache;
+
+		MeshesCache		m_meshCaches[MT_COUNT][DT_COUNT];
+		Ptr<Mesh>		m_meshes[MT_COUNT];
+		Ptr<Material>	m_solidMaterial;
+		Ptr<IBuffer>	m_instancingTB;
 	};
 
 } // render
