@@ -7,40 +7,40 @@
 namespace
 {
 	//-- see IBuffer::EUsage.
-	const D3D10_USAGE dxUsage[] = 
+	const D3D11_USAGE dxUsage[] = 
 	{
-		D3D10_USAGE_DEFAULT,
-		D3D10_USAGE_IMMUTABLE,
-		D3D10_USAGE_DYNAMIC,
-		D3D10_USAGE_STAGING
+		D3D11_USAGE_DEFAULT,
+		D3D11_USAGE_IMMUTABLE,
+		D3D11_USAGE_DYNAMIC,
+		D3D11_USAGE_STAGING
 	};
 	
 	//-- see IBuffer::EAccess.
-	const D3D10_MAP dxAccess[] = 
+	const D3D11_MAP dxAccess[] = 
 	{
-		D3D10_MAP_READ,
-		D3D10_MAP_WRITE,
-		D3D10_MAP_READ_WRITE,
-		D3D10_MAP_WRITE_DISCARD,
-		D3D10_MAP_WRITE_NO_OVERWRITE
+		D3D11_MAP_READ,
+		D3D11_MAP_WRITE,
+		D3D11_MAP_READ_WRITE,
+		D3D11_MAP_WRITE_DISCARD,
+		D3D11_MAP_WRITE_NO_OVERWRITE
 	};
 	
 	//-- see IBuffer::ECPUAccess.
 	const UINT dxCPUAccess[] = 
 	{
 		0,
-		D3D10_CPU_ACCESS_READ,
-		D3D10_CPU_ACCESS_WRITE,
-		D3D10_CPU_ACCESS_READ | D3D10_CPU_ACCESS_WRITE
+		D3D11_CPU_ACCESS_READ,
+		D3D11_CPU_ACCESS_WRITE,
+		D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE
 	};
 	
 	//-- see IBuffer::EType.
-	const D3D10_BIND_FLAG dxBindFlag[] = 
+	const D3D11_BIND_FLAG dxBindFlag[] = 
 	{
-		D3D10_BIND_VERTEX_BUFFER,
-		D3D10_BIND_INDEX_BUFFER,
-		D3D10_BIND_CONSTANT_BUFFER,
-		D3D10_BIND_SHADER_RESOURCE
+		D3D11_BIND_VERTEX_BUFFER,
+		D3D11_BIND_INDEX_BUFFER,
+		D3D11_BIND_CONSTANT_BUFFER,
+		D3D11_BIND_SHADER_RESOURCE
 	};
 	
 	//-- texture buffer element format.
@@ -64,7 +64,7 @@ namespace render
 
 	//------------------------------------------	
 	DXBuffer::DXBuffer(EType type, EUsage usage, ECPUAccess cpuAccess)
-		: IBuffer(type, usage, cpuAccess)
+		: IBuffer(type, usage, cpuAccess), m_bufferResource(nullptr)
 	{
 		
 	}
@@ -81,7 +81,7 @@ namespace render
 		m_elemSize  = elemSize;
 		m_elemCount = elemCount;
 
-		D3D10_BUFFER_DESC desc;
+		D3D11_BUFFER_DESC desc;
 		desc.ByteWidth		= elemSize * m_elemCount;
 		desc.BindFlags		= dxBindFlag[m_type];
 		desc.CPUAccessFlags	= dxCPUAccess[m_cpuAccess];
@@ -90,10 +90,10 @@ namespace render
 			
 		HRESULT hr = S_FALSE;
 		
-		// create structure D3D10_SUBRESOURCE_DATA only if we have initial data.
+		// create structure D3D11_SUBRESOURCE_DATA only if we have initial data.
 		if (data)
 		{
-			D3D10_SUBRESOURCE_DATA resData;
+			D3D11_SUBRESOURCE_DATA resData;
 			resData.pSysMem = data;
 			resData.SysMemPitch = 0;
 			resData.SysMemSlicePitch = 0;
@@ -111,14 +111,22 @@ namespace render
 			return false;
 		}
 
+		//-- set the base texture we'll use in the render system.
+		hr = m_buffer->QueryInterface(IID_ID3D11Resource, (void **)&m_bufferResource);
+		if (FAILED(hr) || dxDevice().hasError())
+		{
+			ERROR_MSG("Failed to create buffer object.\nDesc: " + dxDevice().getErrorDesc());
+			return false;
+		}
+
 		if (m_type == TYPE_TEXTURE)
 		{
 			assert((!(m_elemSize % 4) && m_elemSize > 0 && m_elemSize <= 16)
 				&& "m_elemSize must be aligned to 4 bytes.");
 
-			D3D10_SHADER_RESOURCE_VIEW_DESC desc;
+			D3D11_SHADER_RESOURCE_VIEW_DESC desc;
 			desc.Format = dxFormats[(m_elemSize / 4) - 1];
-			desc.ViewDimension = D3D10_SRV_DIMENSION_BUFFER;
+			desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 			desc.Buffer.ElementOffset = 0;
 			desc.Buffer.ElementWidth  = m_elemCount;
 
@@ -136,25 +144,26 @@ namespace render
 	//------------------------------------------
 	void* DXBuffer::doMap(EAccess access)
 	{
-		void* data = NULL;
+		D3D11_MAPPED_SUBRESOURCE data = { nullptr, 0 , 0 };
 
 #ifdef _DEBUG
-		HRESULT hr = 
+		HRESULT hr =
 #endif // _DEBUG
-			
-		m_buffer->Map(dxAccess[access], 0, &data);
+
+		dxDevice().immediateContext()->Map(m_bufferResource, 0, dxAccess[access], 0, &data);
 
 #ifdef _DEBUG
 		if (FAILED(hr)) ERROR_MSG("Failed mapping buffer %d.", this);
 #endif // _DEBUG
 
-		return data;
+		//-- ToDo: take into account data.RowPitch value
+		return data.pData;
 	}
 	
 	//------------------------------------------
 	void DXBuffer::doUnmap()
 	{
-		m_buffer->Unmap();
+		dxDevice().immediateContext()->Unmap(m_bufferResource, 0);
 	}	
 
 } // render

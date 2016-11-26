@@ -13,14 +13,14 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	class DXShaderIncludes : public ID3D10Include
+	class DXShaderIncludes : public ID3DInclude
 	{
 	public:
 		DXShaderIncludes(IShaderInclude* si) : m_pimpl(si) { }
 		~DXShaderIncludes() { }
 
 		STDMETHOD(Open)(
-			THIS_ D3D10_INCLUDE_TYPE /*IncludeType*/, LPCSTR pFileName,
+			THIS_ D3D_INCLUDE_TYPE /*IncludeType*/, LPCSTR pFileName,
 			LPCVOID /*pParentData*/, LPCVOID *ppData, UINT *pBytes)
 		{
 			return m_pimpl->open(pFileName, *ppData, *pBytes);
@@ -45,7 +45,7 @@ namespace render
 		bool			init(const char* vs, const char* gs, const char* fs, const ShaderMacro *macros, uint mCount);
 		void			bind();
 		static void		resetToDefaults();
-		ID3D10Blob*		getInputSignature() const { return m_inputSignature.get(); }
+		ID3DBlob*		getInputSignature() const { return m_inputSignature.get(); }
 
 	protected:
 		virtual Handle	doGetHandleBool			(const char* name) const		{ return getHandle(m_search_constants, name); }
@@ -79,7 +79,7 @@ namespace render
 	private:
 		typedef utils::TernaryTree<char, Handle> FastSearch;
 
-		HRESULT reflectShader(ID3D10Blob* byteCode, EShaderType shaderType);
+		HRESULT reflectShader(ID3DBlob* byteCode, EShaderType shaderType);
 		void	updateRes();
 		Handle  getHandle(const FastSearch& database, const char* name) const;
 		bool	setConstantAsRawData(Handle id, const void* data, uint size);
@@ -90,14 +90,14 @@ namespace render
 		void	addConstant(const char* name, uint ublock, uint offset, uint size);
 		
 		DXRenderDevice&				 m_device;
-		ComPtr<ID3D10Blob>			 m_inputSignature;
-		ComPtr<ID3D10VertexShader>	 m_vs;
-		ComPtr<ID3D10PixelShader>	 m_ps;
-		ComPtr<ID3D10GeometryShader> m_gs;
+		ComPtr<ID3DBlob>			 m_inputSignature;
+		ComPtr<ID3D11VertexShader>	 m_vs;
+		ComPtr<ID3D11PixelShader>	 m_ps;
+		ComPtr<ID3D11GeometryShader> m_gs;
 
-		typedef std::vector<ID3D10ShaderResourceView*>	DXResources;
-		typedef std::vector<ID3D10SamplerState*>		DXSamplers;
-		typedef std::vector<ID3D10Buffer*>				DXBuffers;
+		typedef std::vector<ID3D11ShaderResourceView*>	DXResources;
+		typedef std::vector<ID3D11SamplerState*>		DXSamplers;
+		typedef std::vector<ID3D11Buffer*>				DXBuffers;
 
 		// resources per shader type.
 		DXResources	m_dxResources[SHADER_TYPES_COUNT];

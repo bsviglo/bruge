@@ -19,18 +19,18 @@ namespace
 	inline UINT dxDepthStencilClearFlags(uint dsflags)
 	{
 		uint dxFlags = 0;
-		if (dsflags & CLEAR_DEPTH)   dxFlags |= D3D10_CLEAR_DEPTH;
-		if (dsflags & CLEAR_STENCIL) dxFlags |= D3D10_CLEAR_STENCIL;
+		if (dsflags & CLEAR_DEPTH)   dxFlags |= D3D11_CLEAR_DEPTH;
+		if (dsflags & CLEAR_STENCIL) dxFlags |= D3D11_CLEAR_STENCIL;
 		return dxFlags;
 	}
 
 	//-- see EPrimitiveTopology.
-	const D3D10_PRIMITIVE_TOPOLOGY dxPrimTopology[] =
+	const D3D11_PRIMITIVE_TOPOLOGY dxPrimTopology[] =
 	{
-		D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-		D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
-		D3D10_PRIMITIVE_TOPOLOGY_LINELIST,	
-		D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP		
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+		D3D11_PRIMITIVE_TOPOLOGY_LINELIST,	
+		D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP		
 	};
 	
 	//-- 
@@ -74,7 +74,7 @@ namespace brUGE
 {
 namespace render
 {
-	//-- static handle to d3d10 device.
+	//-- static handle to D3D11 device.
 	/*static*/ DXDevice DXRenderDevice::m_dxDevice = NULL;
 	
 	//------------------------------------------
@@ -94,13 +94,13 @@ namespace render
 	//------------------------------------------
 	bool DXRenderDevice::doInit(HWND hWindow, const VideoMode& videoMode)
 	{
-		//-- 1. save the video mode and the window handle.
+		//-- save the video mode and the window handle.
 		m_videoMode = videoMode;
 		m_hWnd		= hWindow;
 
 		HRESULT hr = S_FALSE;
 	
-		//-- 2. configure the swap chain.
+		//-- configure the swap chain.
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd));
 
@@ -117,79 +117,45 @@ namespace render
 		sd.Windowed								= !m_videoMode.fullScreen;
 		sd.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
 	
-		//-- 3. prepare PerfHUD (optional).
-		ID3D10Device* device		  = NULL;
+		//-- create swap chain and device.
+		ID3D11Device* device		  = NULL;
 		IDXGIAdapter* selectedAdapter = NULL; 
-		D3D10_DRIVER_TYPE driverType  = D3D10_DRIVER_TYPE_HARDWARE; 
+		D3D_DRIVER_TYPE driverType  = D3D_DRIVER_TYPE_HARDWARE; 
 
-#if USE_PERFHUD
-		INFO_MSG("Look for 'NVIDIA PerfHUD' adapter and if it is present, override default settings.");
-
-		IDXGIFactory *pDXGIFactory; 
-
-		hr = CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&pDXGIFactory)); 
-		if (FAILED(hr))
-		{
-			ERROR_MSG("Can't create dxgi factory.");
-			return false;
-		}
-
-		//-- Search for a PerfHUD adapter.   
-		UINT nAdapter		  = 0; 
-		IDXGIAdapter* adapter = NULL; 
-
-		while (pDXGIFactory->EnumAdapters(nAdapter, &adapter) != DXGI_ERROR_NOT_FOUND) 
-		{ 
-			if (adapter) 
-			{ 
-				DXGI_ADAPTER_DESC adaptDesc; 
-				if (SUCCEEDED(adapter->GetDesc(&adaptDesc))) 
-				{ 
-					bool isPerfHUD = wcscmp(adaptDesc.Description, L"NVIDIA PerfHUD") == 0; 
-
-					// Select the first adapter in normal circumstances or the PerfHUD one if it exists. 
-					if (nAdapter == 0 || isPerfHUD)
-						selectedAdapter = adapter; 
-
-					if (isPerfHUD)
-						driverType = D3D10_DRIVER_TYPE_REFERENCE; 
-				} 
-			} 
-			++nAdapter; 
-		} 
-
-		INFO_MSG("'NVIDIA PerfHUD' adapter successfully founded.");
-#endif //-- USE_PERFHUD
-
-		//-- 4. create swap chain and device.
-		hr = D3D10CreateDeviceAndSwapChain(
+		hr = D3D11CreateDeviceAndSwapChain(
 			selectedAdapter,
 			driverType,
 			NULL,
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
-			D3D10_CREATE_DEVICE_DEBUG,
+			D3D11_CREATE_DEVICE_DEBUG,
 #else
 			0,
 #endif
-			D3D10_SDK_VERSION,
+			NULL,
+			0,
+			D3D11_SDK_VERSION,
 			&sd,
 			&m_dxgiSwapChain,
-			&device
+			&device,
+			NULL,
+			NULL
 			);
+
+
 
 		if (FAILED(hr))
 		{
-			ERROR_MSG("Can't create d3d10 device or swap chain.");
+			ERROR_MSG("Can't create D3D11 device or swap chain.");
 			return false;
 		}
 
-		//-- 5. capture device to smart object. Now he is responsible for the device.	
+		//-- capture device to smart object. Now he is responsible for the device.	
 		m_dxDevice = device;
 		
-		//-- 6. extract back buffer texture from swap chain and prepare it.
+		//-- extract back buffer texture from swap chain and prepare it.
 		{
-			ComPtr<ID3D10Texture2D> pBackBuffer;
-			hr = m_dxgiSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D),
+			ComPtr<ID3D11Texture2D> pBackBuffer;
+			hr = m_dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
 				reinterpret_cast<void**>(&pBackBuffer));
 			if (FAILED(hr) || m_dxDevice.hasError())
 			{
@@ -215,7 +181,7 @@ namespace render
 			m_mainColorRT = texture;
 		}
 		
-		//-- 7. create depth stencil buffer if needed.
+		//-- create depth stencil buffer if needed.
 		{
 			ITexture::Desc desc;
 			desc.width			= m_videoMode.width;
@@ -246,13 +212,13 @@ namespace render
 			m_mainDepthRT = texture;
 		}
 		
-		//-- 8. set just now created back and depth buffers as render targets to device.
+		//-- set just now created back and depth buffers as render targets to device.
 		{
-			ID3D10RenderTargetView* rts = toDxTex(m_mainColorRT)->getRTView();
-			m_dxDevice->OMSetRenderTargets(1, &rts,	toDxTex(m_mainDepthRT)->getDSView());
+			ID3D11RenderTargetView* rts = toDxTex(m_mainColorRT)->getRTView();
+			m_dxDevice.immediateContext()->OMSetRenderTargets(1, &rts,	toDxTex(m_mainDepthRT)->getDSView());
 		}
 		
-		//-- 9. setup view port.
+		//-- setup view port.
 		m_dxCurViewPort.TopLeftX = 0;		
 		m_dxCurViewPort.TopLeftY = 0;		
 		m_dxCurViewPort.MinDepth = 0;
@@ -260,7 +226,7 @@ namespace render
 		m_dxCurViewPort.Width    = 0;
 		m_dxCurViewPort.Height   = 0;
 
-		//-- 10. everything is ok!
+		//-- everything is ok!
 		return true;
 	}
 
@@ -269,7 +235,7 @@ namespace render
 	{
 		if (m_dxDevice.isValid())
 		{
-			m_dxDevice->ClearState();
+			m_dxDevice.immediateContext()->ClearState();
 			m_dxDevice.reset();
 		}
 	}
@@ -294,7 +260,7 @@ namespace render
 	{
 		// ToDo:
 		DXShader::resetToDefaults();
-		m_dxDevice->ClearState();
+		m_dxDevice.immediateContext()->ClearState();
 	}
 
 	//------------------------------------------
@@ -304,25 +270,25 @@ namespace render
 		m_dxCurViewPort.TopLeftY = y;
 		m_dxCurViewPort.Width    = width;
 		m_dxCurViewPort.Height   = height;
-		m_dxDevice->RSSetViewports(1, &m_dxCurViewPort);
+		m_dxDevice.immediateContext()->RSSetViewports(1, &m_dxCurViewPort);
 	}
 
 	//------------------------------------------
 	void DXRenderDevice::doSetScissorRect(uint x, uint y, uint width, uint height)
 	{
-		D3D10_RECT rect;
+		D3D11_RECT rect;
 		rect.left   = x;
 		rect.right  = x + width;
 		rect.top	= y;
 		rect.bottom = y + height;
 
-		m_dxDevice->RSSetScissorRects(1, &rect);
+		m_dxDevice.immediateContext()->RSSetScissorRects(1, &rect);
 	}
 
 	//------------------------------------------
 	void DXRenderDevice::doCopyTexture(ITexture* src, ITexture* dst)
 	{
-		m_dxDevice->CopyResource(toDxTex(dst)->getTex(), toDxTex(src)->getTex());
+		m_dxDevice.immediateContext()->CopyResource(toDxTex(dst)->getTex(), toDxTex(src)->getTex());
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -335,12 +301,12 @@ namespace render
 	{
 		if (m_mainColorRT && (clearFlags & CLEAR_COLOR))
 		{
-			m_dxDevice->ClearRenderTargetView(toDxTex(m_mainColorRT)->getRTView(), color.toPtr());
+			m_dxDevice.immediateContext()->ClearRenderTargetView(toDxTex(m_mainColorRT)->getRTView(), color.toPtr());
 		}
 
 		if (m_mainDepthRT && (clearFlags & CLEAR_DEPTH || clearFlags & CLEAR_STENCIL))
 		{
-			m_dxDevice->ClearDepthStencilView(
+			m_dxDevice.immediateContext()->ClearDepthStencilView(
 				toDxTex(m_mainDepthRT)->getDSView(),
 				dxDepthStencilClearFlags(clearFlags), depth, stencil
 				);
@@ -350,13 +316,13 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::doClearColorRT(ITexture* crt, const Color& color)
 	{
-		m_dxDevice->ClearRenderTargetView(toDxTex(crt)->getRTView(), color.toPtr());
+		m_dxDevice.immediateContext()->ClearRenderTargetView(toDxTex(crt)->getRTView(), color.toPtr());
 	}
 
 	//------------------------------------------
 	void DXRenderDevice::doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil)
 	{
-		m_dxDevice->ClearDepthStencilView(
+		m_dxDevice.immediateContext()->ClearDepthStencilView(
 			toDxTex(dsrt)->getDSView(), dxDepthStencilClearFlags(clearFlags),
 			depth, stencil
 			);
@@ -365,6 +331,8 @@ namespace render
 	//------------------------------------------
 	void DXRenderDevice::_drawCommon(EPrimitiveTopology topology, bool indexed/* = true*/)
 	{
+		ID3D11DeviceContext* c = m_dxDevice.immediateContext();
+
 		//-- 1. set render targets.
 		if (m_isRTsChangeStateDirty)
 		{
@@ -373,26 +341,25 @@ namespace render
 			for (uint i = 0; i < MAX_MRTS; ++i)
 				m_dxCurColorRTs[i] = m_curRTs.colors[i] ? toDxTex(m_curRTs.colors[i])->getRTView() : NULL;
 
-			m_dxDevice->OMSetRenderTargets(MAX_MRTS, m_dxCurColorRTs, m_dxCurDepthRT);
+			c->OMSetRenderTargets(MAX_MRTS, m_dxCurColorRTs, m_dxCurDepthRT);
 			m_isRTsChangeStateDirty = false;
 		}
 		
 		//-- 2. set render states.
 		{
-			m_dxDevice->RSSetState(m_dxRasterStates[m_curRasterState]);
-			m_dxDevice->OMSetDepthStencilState(m_dxDepthStates[m_curDepthState.id], m_curDepthState.stencilRef);
-			m_dxDevice->OMSetBlendState(m_dxBlendStates[m_curBlendState.id], m_curBlendState.factor, m_curBlendState.sampleMask);
+			c->RSSetState(m_dxRasterStates[m_curRasterState]);
+			c->OMSetDepthStencilState(m_dxDepthStates[m_curDepthState.id], m_curDepthState.stencilRef);
+			c->OMSetBlendState(m_dxBlendStates[m_curBlendState.id], m_curBlendState.factor, m_curBlendState.sampleMask);
 		}
 		
 		//-- 3. set input layout, primitive topology, index- and vertex-buffers.
 		{
-			m_dxDevice->IASetInputLayout(m_dxVertLayouts[m_curVertLayout]);
-
-			m_dxDevice->IASetPrimitiveTopology(dxPrimTopology[topology]);
+			c->IASetInputLayout(m_dxVertLayouts[m_curVertLayout]);
+			c->IASetPrimitiveTopology(dxPrimTopology[topology]);
 
 			if (indexed)
 			{
-				m_dxDevice->IASetIndexBuffer(static_cast<DXBuffer*>(m_curIB)->getBuffer(),
+				c->IASetIndexBuffer(static_cast<DXBuffer*>(m_curIB)->getBuffer(),
 					(m_curIB->getElemSize() == 2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 			}
 
@@ -406,7 +373,7 @@ namespace render
 					m_dxCurVBStreamsStrides[i] = vbs.buffer->getElemSize();
 				}
 			}
-			m_dxDevice->IASetVertexBuffers(0, m_curVBStreamsCount, m_dxCurVBStreams,
+			c->IASetVertexBuffers(0, m_curVBStreamsCount, m_dxCurVBStreams,
 				m_dxCurVBStreamsStrides, m_dxCurVBStreamsOffsets);
 		}
 	
@@ -424,7 +391,7 @@ namespace render
 		_drawCommon(topology, false);
 
 		//-- finally do actual drawing.
-		m_dxDevice->Draw(count, first);
+		m_dxDevice.immediateContext()->Draw(count, first);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -439,7 +406,7 @@ namespace render
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice->DrawIndexed(count, first, 0);
+		m_dxDevice.immediateContext()->DrawIndexed(count, first, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -455,7 +422,7 @@ namespace render
 		_drawCommon(topology, false);
 		
 		//-- finally do actual drawing.
-		m_dxDevice->DrawInstanced(count, instanceCount, first, 0);
+		m_dxDevice.immediateContext()->DrawInstanced(count, instanceCount, first, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -471,7 +438,7 @@ namespace render
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice->DrawIndexedInstanced(count, instanceCount, first, 0, 0);
+		m_dxDevice.immediateContext()->DrawIndexedInstanced(count, instanceCount, first, 0, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -578,8 +545,8 @@ namespace render
 	VertexLayoutID DXRenderDevice::doCreateVertexLayout(
 		const VertexDesc* vd, uint count, const IShader& shader)
 	{
-		std::vector<D3D10_INPUT_ELEMENT_DESC> dxDescs(count);
-		D3D10_INPUT_ELEMENT_DESC oDesc;
+		std::vector<D3D11_INPUT_ELEMENT_DESC> dxDescs(count);
+		D3D11_INPUT_ELEMENT_DESC oDesc;
 
 		size_t sizes[MAX_VERTEX_STREAMS];
 		for (uint i = 0; i < MAX_VERTEX_STREAMS; ++i)
@@ -602,7 +569,7 @@ namespace render
 			oDesc.AlignedByteOffset	= sizes[iDesc.stream];
 			
 			// ToDo: reconsider with respect to instancing.
-			oDesc.InputSlotClass		= D3D10_INPUT_PER_VERTEX_DATA; 
+			oDesc.InputSlotClass		= D3D11_INPUT_PER_VERTEX_DATA; 
 			oDesc.InstanceDataStepRate	= 0;
 
 			dxDescs[i] = oDesc;
@@ -611,8 +578,8 @@ namespace render
 			sizes[iDesc.stream] += dxVertFormatSize[iDesc.type] * iDesc.size;
 		}
 		
-		ComPtr<ID3D10InputLayout> dxLayout;
-		ID3D10Blob* inputSignature = static_cast<const DXShader*>(&shader)->getInputSignature();
+		ComPtr<ID3D11InputLayout> dxLayout;
+		ID3DBlob* inputSignature = static_cast<const DXShader*>(&shader)->getInputSignature();
 
 		HRESULT hr = m_dxDevice->CreateInputLayout(&dxDescs[0],	dxDescs.size(),
 			inputSignature->GetBufferPointer(),	inputSignature->GetBufferSize(), &dxLayout);

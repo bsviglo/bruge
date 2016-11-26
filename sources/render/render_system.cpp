@@ -50,10 +50,10 @@ namespace
 	{
 #ifdef _DEBUG
 		{ "GL3Render_d.dll",	"OpenGL 3.3",	"glsl"},
-		{ "DX10Render_d.dll",	"DirectX 10",	"hlsl"}
+		{ "D3D11Render_d.dll",	"D3D11",		"hlsl"}
 #else
 		{ "GL3Render.dll",		"OpenGL 3.3",	"glsl"},
-		{ "DX10Render.dll",		"DirectX 10",	"hlsl"}
+		{ "D3D11Render.dll",	"D3D11",		"hlsl"}
 #endif //-- _DEBUG
 	};
 }
@@ -70,7 +70,7 @@ namespace render
 
 	//----------------------------------------------------------------------------------------------
 	RenderSystem::RenderSystem()
-		:	m_renderAPI(RENDER_API_DX10),
+		:	m_renderAPI(RENDER_API_D3D11),
 			m_shaderContext(new ShaderContext),
 			m_materials(new Materials)
 
