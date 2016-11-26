@@ -9,8 +9,8 @@
 
 #undef NOMINMAX
 #define NOMINMAX // required to stop windows.h screwing up std::min definition
-#include <d3d10.h>
-#include <d3d10shader.h>
+#include <d3d11.h>
+#include <d3d11shader.h>
 
 #include "utils/ComPtr.h"
 
@@ -42,5 +42,4 @@ extern brUGE::utils::LogManager* g_logger;
 #define ERROR_MSG	g_logger->error
 
 //-- compile-time configurations flags.
-#define USE_PERFHUD			 1
 #define USE_FORCE_DEBUG_MODE 0

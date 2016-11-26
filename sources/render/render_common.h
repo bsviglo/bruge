@@ -42,7 +42,7 @@ namespace render
 	enum ERenderAPIType
 	{
 		RENDER_API_GL3,
-		RENDER_API_DX10,
+		RENDER_API_D3D11,
 	};
 
 	//-- multi-sampling info.

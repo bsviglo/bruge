@@ -6,7 +6,7 @@ namespace render
 {
 	
 	//------------------------------------------
-	DXDevice::DXDevice(ID3D10Device* device /* = NULL */) :	m_device(device)
+	DXDevice::DXDevice(ID3D11Device* device /* = NULL */) :	m_device(device)
 	{
 
 	}
@@ -18,7 +18,7 @@ namespace render
 	}
 	
 	//------------------------------------------
-	ID3D10Device* DXDevice::operator = (ID3D10Device* device)
+	ID3D11Device* DXDevice::operator = (ID3D11Device* device)
 	{
 		m_device = device;
 		return m_device.get();
@@ -48,8 +48,8 @@ namespace render
 			assert(false && "unknown HRESULT."); // unknown HRESULT
 		}
 
-		ID3D10InfoQueue* pInfoQueue = NULL; 
-		HRESULT hr = m_device->QueryInterface(__uuidof(ID3D10InfoQueue), (LPVOID*)&pInfoQueue);
+		ID3D11InfoQueue* pInfoQueue = NULL; 
+		HRESULT hr = m_device->QueryInterface(__uuidof(ID3D11InfoQueue), (LPVOID*)&pInfoQueue);
 
 		if (SUCCEEDED(hr))
 		{
@@ -58,7 +58,7 @@ namespace render
 			{
 				SIZE_T messageLength = 0;
 				hr = pInfoQueue->GetMessage(i, NULL, &messageLength);
-				D3D10_MESSAGE* pMessage = (D3D10_MESSAGE*)malloc(messageLength);
+				D3D11_MESSAGE* pMessage = (D3D11_MESSAGE*)malloc(messageLength);
 				hr = pInfoQueue->GetMessage(i, pMessage, &messageLength);
 				res += pMessage->pDescription + std::string("\n");
 				free(pMessage);

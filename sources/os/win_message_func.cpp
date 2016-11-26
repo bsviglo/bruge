@@ -6,7 +6,7 @@ using namespace brUGE;
 using namespace brUGE::render;
 
 bool g_needToStartApp	   = true;
-ERenderAPIType g_renderAPI = RENDER_API_DX10;
+ERenderAPIType g_renderAPI = RENDER_API_D3D11;
 
 // start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
@@ -34,9 +34,6 @@ namespace
 	//--
 	DisplayResolution dResolutions[] = 
 	{
-		{ 640,  480, 32},
-		{ 800,  600, 32},
-		{1024,  600, 32},
 		{1024,  768, 32},
 		{1366,  768, 32},
 		{1280, 1024, 32},
@@ -152,7 +149,7 @@ namespace os
 				
 				//-- api type.
 				SendMessage(g_renderApiBox, CB_ADDSTRING, 0, (LPARAM)"OpenGL 3.*");
-				SendMessage(g_renderApiBox, CB_ADDSTRING, 0, (LPARAM)"Direct3D 10");
+				SendMessage(g_renderApiBox, CB_ADDSTRING, 0, (LPARAM)"D3D11");
 
 				//-- screen resolutions.
 				for( uint i = 0; i < array_size(dResolutions); ++i)
@@ -166,7 +163,7 @@ namespace os
 				for( uint i = 0; i < array_size(multiSamplingTypes); ++i)
 					SendMessage(g_antialiasingBox, CB_ADDSTRING, 0, (LPARAM)toStr(multiSamplingTypes[i]).c_str());
 
-				SendMessage(g_renderApiBox,	   CB_SETCURSEL, 1, (LPARAM)"Direct3D 10"); 
+				SendMessage(g_renderApiBox,	   CB_SETCURSEL, 1, (LPARAM)"D3D11"); 
 				SendMessage(g_resolutionsBox,  CB_SETCURSEL, 0, (LPARAM)toStr(dResolutions[0]).c_str()); 
 				SendMessage(g_modeBox,		   CB_SETCURSEL, 0, (LPARAM)"windowed"); 
 				SendMessage(g_antialiasingBox, CB_SETCURSEL, 0, (LPARAM)toStr(multiSamplingTypes[0]).c_str()); 

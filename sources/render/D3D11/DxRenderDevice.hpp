@@ -18,8 +18,8 @@ namespace render
 		DXRenderDevice();
 		virtual ~DXRenderDevice();
 		
-		ID3D10Include*				shaderInclude() { return m_shaderIncludes.get(); }
-		ID3D10SamplerState*			getSamplerState(SamplerStateID id) { return m_dxSamplerStates[id]; }
+		ID3DInclude*				shaderInclude() { return m_shaderIncludes.get(); }
+		ID3D11SamplerState*			getSamplerState(SamplerStateID id) { return m_dxSamplerStates[id]; }
 		static DXDevice&			device() { return m_dxDevice; }	
 
 	protected:
@@ -57,11 +57,11 @@ namespace render
 		void _drawCommon(EPrimitiveTopology topology, bool indexed = true);
 
 	private:
-		typedef std::vector<ComPtr<ID3D10DepthStencilState> > DepthStencilStates;
-		typedef std::vector<ComPtr<ID3D10BlendState> >		  BlendStates;
-		typedef std::vector<ComPtr<ID3D10RasterizerState> >	  RasterizerStates;
-		typedef std::vector<ComPtr<ID3D10SamplerState> >	  SamplerStates;
-		typedef std::vector<ComPtr<ID3D10InputLayout> >		  InputLayouts;
+		typedef std::vector<ComPtr<ID3D11DepthStencilState> > DepthStencilStates;
+		typedef std::vector<ComPtr<ID3D11BlendState> >		  BlendStates;
+		typedef std::vector<ComPtr<ID3D11RasterizerState> >	  RasterizerStates;
+		typedef std::vector<ComPtr<ID3D11SamplerState> >	  SamplerStates;
+		typedef std::vector<ComPtr<ID3D11InputLayout> >		  InputLayouts;
 
 		ComPtr<IDXGISwapChain>			m_dxgiSwapChain;
 		DepthStencilStates  			m_dxDepthStates;
@@ -70,11 +70,11 @@ namespace render
 		SamplerStates					m_dxSamplerStates;
 		InputLayouts					m_dxVertLayouts;
 		
-		ID3D10RenderTargetView* 		m_dxCurColorRTs[MAX_MRTS];
-		ID3D10DepthStencilView* 		m_dxCurDepthRT;
-		D3D10_VIEWPORT					m_dxCurViewPort;
+		ID3D11RenderTargetView* 		m_dxCurColorRTs[MAX_MRTS];
+		ID3D11DepthStencilView* 		m_dxCurDepthRT;
+		D3D11_VIEWPORT					m_dxCurViewPort;
 
-		ID3D10Buffer*					m_dxCurVBStreams[MAX_VERTEX_STREAMS];
+		ID3D11Buffer*					m_dxCurVBStreams[MAX_VERTEX_STREAMS];
 		UINT		 					m_dxCurVBStreamsStrides[MAX_VERTEX_STREAMS];
 		UINT		 					m_dxCurVBStreamsOffsets[MAX_VERTEX_STREAMS];
 
@@ -92,7 +92,7 @@ namespace render
 	struct DXRasterizerState
 	{
 		bool create(const RasterizerStateDesc& desc);
-		ComPtr<ID3D10RasterizerState> state;
+		ComPtr<ID3D11RasterizerState> state;
 	};
 
 
@@ -100,7 +100,7 @@ namespace render
 	struct DXDepthStencilState
 	{
 		bool create(const DepthStencilStateDesc& desc);
-		ComPtr<ID3D10DepthStencilState> state;
+		ComPtr<ID3D11DepthStencilState> state;
 	};
 
 
@@ -108,7 +108,7 @@ namespace render
 	struct DXBlendState
 	{
 		bool create(const BlendStateDesc& desc);
-		ComPtr<ID3D10BlendState> state;
+		ComPtr<ID3D11BlendState> state;
 	};
 
 
@@ -116,7 +116,7 @@ namespace render
 	struct DXSamplerState
 	{
 		bool create(const SamplerStateDesc& desc);
-		ComPtr<ID3D10SamplerState> state;
+		ComPtr<ID3D11SamplerState> state;
 	};
 
 } // render
