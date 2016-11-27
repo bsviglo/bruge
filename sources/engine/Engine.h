@@ -28,20 +28,6 @@ namespace brUGE
 		class PhysicWorld;
 	}
 
-
-	//-- Optional dialog showed before starting the engine. Gives opportunity to choice desired
-	//-- engine options.
-	//----------------------------------------------------------------------------------------------
-	class EngineConfigDialog : public NonCopyable
-	{
-	public:
-		EngineConfigDialog();
-		~EngineConfigDialog();
-
-		bool display();
-	};
-
-
 	//-- Entry point of the brUGE.
 	//----------------------------------------------------------------------------------------------
 	class Engine : public utils::Singleton<Engine>, public IInputListener, public NonCopyable
@@ -76,13 +62,6 @@ namespace brUGE
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
 	private:
-		//-- ToDo: reconsider. It seems useless.
-		static DWORD WINAPI _eventGenerator(LPVOID lpParameter);
-		static DWORD WINAPI _bgTask_loadGameResources(LPVOID lpParameter);
-
-		bool _initRenderSystem(render::ERenderAPIType api, const render::VideoMode& videoMode);
-		void _releaseRenderSystem();
-
 		void _fps();
 
 		//-- declare console functions.
@@ -96,13 +75,10 @@ namespace brUGE
 
 		std::string			 						m_title;
 		HINSTANCE			 						m_hInstance;
-		HANDLE				 						m_hThread;
-		DWORD				 						m_threadId;
 		HWND				 						m_hWnd;
 
 		static uint									m_maxFPS;
-		static HANDLE		 						m_hEvent;
-		static bool			 						m_isWorking;
+		static bool			 						m_isRunning;
 		
 		std::unique_ptr<IDemo>						m_demo;
 		std::unique_ptr<Console>					m_console;
@@ -113,7 +89,6 @@ namespace brUGE
 		os::WinApp			 						m_mainWindow;
 		render::RenderSystem 						m_renderSys;
 		InputManager		 						m_inputSystem;
-		EngineConfigDialog							m_configDialog;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;

@@ -58,6 +58,9 @@ namespace render
 	//-- video mode info.
 	struct VideoMode
 	{
+		VideoMode() : width(0), height(0), bpp(0), depth(0), stencil(0), frequancy(0), vSync(false), fullScreen(false) { }
+		VideoMode(uint w, uint h) : width(w), height(h), bpp(32), depth(16), stencil(8), frequancy(60), vSync(false), fullScreen(false) { }
+
 		uint			width;
 		uint			height;
 		uint			bpp;

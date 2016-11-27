@@ -11,6 +11,9 @@
 #include "render/game_world.hpp"
 #include "render/physic_world.hpp"
 
+#include "SDL/SDL.h"
+#include "SDL/SDL_syswm.h"
+
 using namespace brUGE;
 using namespace brUGE::render;
 using namespace brUGE::physic;
@@ -27,21 +30,8 @@ namespace brUGE
 
 	DEFINE_SINGLETON(Engine)
 
-	bool	Engine::m_isWorking = true;
-	HANDLE	Engine::m_hEvent	= NULL;
+	bool	Engine::m_isRunning = true;
 	uint	Engine::m_maxFPS	= 60;  //-- ToDo: move to config.
-
-	//------------------------------------------
-	DWORD WINAPI Engine::_eventGenerator(LPVOID /*lpParameter*/)
-	{
-		while (m_isWorking)
-		{
-			::Sleep(1000 / m_maxFPS);
-			SetEvent(m_hEvent);
-		}
-		SetEvent(m_hEvent);
-		return 0;
-	}
 
 	//------------------------------------------
 	Engine::Engine() : 
@@ -76,247 +66,50 @@ namespace brUGE
 
 		// деинициализация ком подсистемы. Необходимо для DirectInput
 		CoUninitialize();
-	}
 
-	//------------------------------------------
-	int Engine::run()
-	{
-		uint64 newTime  = m_timer.time();
-		uint64 prevTime = m_timer.time();
-
-		float dt = 0;
-		MSG msg	= { 0 };
-		//Thread thread;
-
-		//m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		//thread.createThread(Engine::_eventGenerator);
-		//thread.setPriority(THREAD_PRIORITY_TIME_CRITICAL);
-
-		//-- do main cycle.
-		while (m_isWorking)
-		{
-			// clamp engine tick time.
-			newTime = m_timer.time();
-			dt = (newTime - prevTime) * 0.001f;
-			prevTime = newTime;
-
-			// check queue of messages.
-			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-			{
-				if (msg.message == WM_QUIT)
-				{
-					m_isWorking = false;
-					return 0;
-				}
-				else
-				{
-					TranslateMessage (&msg);
-					DispatchMessage (&msg);
-				}
-			}
-
-			//if (m_renderSys->getHWnd() == GetActiveWindow())
-			//{
-			m_timingPanel->start();
-			{
-				
-				//-- do tick.
-				{
-					SCOPED_TIME_MEASURER_EX("update")
-
-					//-- update timing panel.
-					m_timingPanel->update(dt);
-
-					//-- update input.
-					{
-						SCOPED_TIME_MEASURER_EX("input")
-						m_inputSystem.update();
-					}
-
-					//-- start updating imgui input.
-					imguiBeginFrame(
-						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
-						);
-
-					m_gameWorld->beginUpdate(dt);
-
-					//-- do pre-animation.
-					{
-						SCOPED_TIME_MEASURER_EX("pre-animation")
-						m_animEngine->preAnimate(dt);
-					}
-					
-					{
-						SCOPED_TIME_MEASURER_EX("animation")
-						m_animEngine->animate();
-					}
-
-					//-- simulate physics.
-					{
-						SCOPED_TIME_MEASURER_EX("physic")
-						m_physicWorld->simulateDynamics(dt);
-					}
-
-					{
-						SCOPED_TIME_MEASURER_EX("post-animation")
-						m_animEngine->postAnimate();
-					}
-
-					m_renderWorld->update(dt);
-
-					//-- ToDo: some old stuff.
-					updateFrame(dt);
-
-					//m_collisionWorld.update(dt);
-
-					m_gameWorld->endUpdate();
-				}
-				
-				//-- do draw.
-				{
-					SCOPED_TIME_MEASURER_EX("draw")
-
-					m_renderSys.beginFrame();
-					m_renderWorld->draw();
-					//-- ToDo: some old stuff.
-					drawFrame(dt);
-
-					m_renderSys.endFrame();
-				}
-
-				//-- finish updating imgui input.
-				imguiEndFrame();
-				m_imguiInput.scroll = 0;
-				
-				//-- wait next frame.
-				/*
-				{
-					SCOPED_TIME_MEASURER_EX("CPU idle")
-					uint curDelta = static_cast<uint>(dt * 1000);
-					uint maxDelta = static_cast<uint>(1000.0f / m_maxFPS);
-					if (curDelta < maxDelta)
-					{
-						::Sleep(maxDelta - curDelta);
-					}
-					//WaitForSingleObject(m_hEvent, INFINITE);
-				}
-				*/
-			}
-			m_timingPanel->stop();
-			//}
-		}
-		return 0;
-	}
-
-	//------------------------------------------
-	void Engine::stop()
-	{
-		m_isWorking = false;
-	}
-	
-	//------------------------------------------
-	bool Engine::_initRenderSystem(ERenderAPIType api, const VideoMode& videoMode)
-	{
-		DWORD dwWindowFlags = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE;
-		dwWindowFlags |= (videoMode.fullScreen) ? WS_POPUP : WS_OVERLAPPEDWINDOW;
-
-		m_hWnd = m_mainWindow.createWnd(g_engineName, videoMode.width, videoMode.height, dwWindowFlags);
-		if (!m_hWnd)
-		{
-			ERROR_MSG("Can't create main render window.");
-			return false;
-		}
-		
-		//-- adjust client window size.
-		if (!videoMode.fullScreen)
-		{
-			RECT windowRect = {0, 0, static_cast<LONG>(videoMode.width), static_cast<LONG>(videoMode.height)};
-
-			//-- find the total size of the window, including menu and some other window stuff,
-			//-- needed to have the client rect as width x height.
-			AdjustWindowRectEx(&windowRect, dwWindowFlags, GetMenu(m_hWnd) != NULL, NULL);
-			
-			//-- change the window size.
-			MoveWindow(m_hWnd, 0, 0,
-				windowRect.right - windowRect.left,	windowRect.bottom - windowRect.top,	FALSE
-				);
-	
-			ShowWindow(m_hWnd, SW_SHOW);
-		}
-
-		return m_renderSys.init(api, m_hWnd, videoMode);
-	}
-	
-	//------------------------------------------
-	void Engine::_releaseRenderSystem()
-	{
-		m_renderSys.shutDown();
-		m_mainWindow.kill();
+		SDL_Quit();
 	}
 
 	//------------------------------------------
 	void Engine::init(HINSTANCE hInstance, IDemo* demo)
 	{
+		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
+
+		//-- ToDo: load this values from config
+		m_videoMode = VideoMode(1024, 768);
+
+		SDL_Window* window = SDL_CreateWindow(
+			g_engineName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_videoMode.width, m_videoMode.height, 0);
+
+		SDL_SysWMinfo info;
+		SDL_VERSION(&info.version);
+		if (SDL_GetWindowWMInfo(window, &info))
+		{
+			m_hWnd = info.info.win.window;
+		}
+
 		m_hInstance = hInstance;
-
-		//-- show config window...
-		INFO_MSG("Init menu ... ");
-		if (m_configDialog.display())
-		{
-			// ToDo: save config.
-		}
-		else
-		{
-			m_isWorking = false;
-			return;
-		}
-		INFO_MSG("Init menu ... completed.");
-		
-		//-- terminate application.
-		if (!g_needToStartApp)
-		{
-			m_isWorking = false;
-			return;
-		}
-
-		//-- register render window.
-		INFO_MSG("Register render window class ... ");
-		if (!m_mainWindow.init(m_hInstance, g_engineName, g_mainWndProc))
-		{
-			BR_EXCEPT("Can't register render window class.");
-		}
-		INFO_MSG("Register main window class ... completed.");
 		
 		//--
 		ConError(g_engineName);
 
-		INFO_MSG("Init resource system ... ");
 		if (!m_resManager->init())
 		{
 			BR_EXCEPT("Can't init resource system.");
 		}
 		INFO_MSG("Init resource system ... completed.");
 
-		//-- init render sub-system.
-		INFO_MSG("Init render system ... ");		
-
-		// ToDo: fix this stuff.
-		m_videoMode.bpp = 32;
-		m_videoMode.depth = 16;
-		m_videoMode.frequancy = 60;
-
-		if (!_initRenderSystem(g_renderAPI, m_videoMode))
+		//-- init render sub-system.	
+		if (!m_renderSys.init(g_renderAPI, m_hWnd, m_videoMode))
 		{
 			BR_EXCEPT("Can't init render system.");
 		}
-
 		INFO_MSG("Init render system ... completed.");
 
 		//-- init console drawing mode.
 		m_console->initDrawingMode(m_videoMode);
 		
 		//-- init timing panel.
-		INFO_MSG("Init timing panel ... ");
 		if (!m_timingPanel->init())
 		{
 			BR_EXCEPT("Can't init timing panel.");
@@ -324,7 +117,6 @@ namespace brUGE
 		INFO_MSG("Init timing panel ... completed.");
 
 		//-- init watchers panel.
-		INFO_MSG("Init watchers panel ... ");
 		if (!m_watchersPanel->init())
 		{
 			BR_EXCEPT("Can't init watchers panel.");
@@ -332,7 +124,6 @@ namespace brUGE
 		INFO_MSG("Init watchers panel ... completed.");
 
 		//-- init input sub-system.
-		INFO_MSG("Init input system ... ");
 		if (!m_inputSystem.init(m_hWnd, hInstance))
 		{
 			BR_EXCEPT("Can't init input system.");
@@ -340,16 +131,6 @@ namespace brUGE
 		m_inputSystem.setListeners(this, this);
 		INFO_MSG("Init input system ... completed.");
 
-/*
-		//-- init sound sub-system.
-		LOG("Initialization sound system ... ");
-		soundSystem = new SoundSystem();
-		if(!soundSystem->initialize())
-			throw brException("Initialization sound system ... failed");
-		soundSystem->setVolume(5.5f);
-		ssManager = soundSystem->createSSManager("");
-		LOG("Initialization sound system ... completed.");
-*/
 		if (!m_physicWorld->init())
 		{
 			BR_EXCEPT("Can't init physic world.");
@@ -371,7 +152,6 @@ namespace brUGE
 		}
 
 		//-- init demo.
-		INFO_MSG("Init demo ... ");
 		m_demo.reset(demo);
 		if (!m_demo->init())
 		{
@@ -401,8 +181,116 @@ namespace brUGE
 		m_physicWorld.reset();
 		m_resManager.reset();
 
-		//-- release render system.
-		_releaseRenderSystem();
+		m_renderSys.shutDown();
+	}
+
+	//------------------------------------------
+	int Engine::run()
+	{
+		uint64 newTime = SDL_GetPerformanceCounter();
+		uint64 prevTime = SDL_GetPerformanceCounter();
+
+		float dt = 0;
+		MSG msg = { 0 };
+
+		//-- do main cycle.
+		while (m_isRunning)
+		{
+			// clamp engine tick time.
+			newTime = SDL_GetPerformanceCounter();
+			dt = (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency());
+			prevTime = newTime;
+
+			SDL_Event event;
+			while (SDL_PollEvent(&event))
+			{
+				if (event.type == SDL_QUIT)
+				{
+					m_isRunning = false;
+					return 0;
+				}
+			}
+
+			m_timingPanel->start();
+			{
+				//-- do tick.
+				{
+					SCOPED_TIME_MEASURER_EX("update")
+
+					//-- update timing panel.
+					m_timingPanel->update(dt);
+
+				//-- update input.
+				{
+					SCOPED_TIME_MEASURER_EX("input")
+					m_inputSystem.update();
+				}
+
+				//-- start updating imgui input.
+				imguiBeginFrame(
+					m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
+				);
+
+				m_gameWorld->beginUpdate(dt);
+
+				//-- do pre-animation.
+				{
+					SCOPED_TIME_MEASURER_EX("pre-animation")
+						m_animEngine->preAnimate(dt);
+				}
+
+				{
+					SCOPED_TIME_MEASURER_EX("animation")
+						m_animEngine->animate();
+				}
+
+				//-- simulate physics.
+				{
+					SCOPED_TIME_MEASURER_EX("physic")
+						m_physicWorld->simulateDynamics(dt);
+				}
+
+				{
+					SCOPED_TIME_MEASURER_EX("post-animation")
+						m_animEngine->postAnimate();
+				}
+
+				m_renderWorld->update(dt);
+
+				//-- ToDo: some old stuff.
+				updateFrame(dt);
+
+				//m_collisionWorld.update(dt);
+
+				m_gameWorld->endUpdate();
+				}
+
+				//-- do draw.
+				{
+					SCOPED_TIME_MEASURER_EX("draw")
+
+					m_renderSys.beginFrame();
+					m_renderWorld->draw();
+					//-- ToDo: some old stuff.
+					drawFrame(dt);
+
+					m_renderSys.endFrame();
+				}
+
+				//-- finish updating imgui input.
+				imguiEndFrame();
+				m_imguiInput.scroll = 0;
+			}
+			m_timingPanel->stop();
+		}
+
+		return 0;
+	}
+
+	//------------------------------------------
+	void Engine::stop()
+	{
+		m_isRunning = false;
 	}
 
 	//------------------------------------------
@@ -489,7 +377,7 @@ namespace brUGE
 	int Engine::_exit()
 	{
 		ConPrint("Bye!");
-		m_isWorking = false;
+		m_isRunning = false;
 		return 0;
 	}
 

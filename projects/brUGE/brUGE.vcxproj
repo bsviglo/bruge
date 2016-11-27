@@ -123,9 +123,9 @@
 /NODEFAULTLIB:msvcrt.lib
 /NODEFAULTLIB:libcd.lib
 /NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype27MT_d.lib;pugixml_d.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype27MT_d.lib;pugixml_d.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
       <SubSystem>Windows</SubSystem>
@@ -148,8 +148,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype27MT.lib;pugixml.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype27MT.lib;pugixml.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
     </Lib>
