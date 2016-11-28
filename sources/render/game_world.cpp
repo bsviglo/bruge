@@ -41,28 +41,37 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool GameWorld::handleMouseClick(const MouseEvent& me)
+	bool GameWorld::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 	{
 		if (m_playerObj)
-			return m_playerObj->handleMouseClick(me);
+			return m_playerObj->handleMouseButtonEvent(e);
 
 		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool GameWorld::handleMouseMove(const MouseAxisEvent& mae)
+	bool GameWorld::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 	{
 		if (m_playerObj)
-			return m_playerObj->handleMouseMove(mae);
+			return m_playerObj->handleMouseMotionEvent(e);
 
 		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool GameWorld::handleKeyboardEvent(const KeyboardEvent& ke)
+	bool GameWorld::handleKeyboardEvent(const SDL_KeyboardEvent& e)
 	{
 		if (m_playerObj)
-			return m_playerObj->handleKeyboardEvent(ke);
+			return m_playerObj->handleKeyboardEvent(e);
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool GameWorld::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
+	{
+		if (m_playerObj)
+			return m_playerObj->handleMouseWheelEvent(e);
 
 		return false;
 	}

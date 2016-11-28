@@ -33,7 +33,7 @@ namespace brUGE
 	bool	Engine::m_isRunning = true;
 	uint	Engine::m_maxFPS	= 60;  //-- ToDo: move to config.
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	Engine::Engine() : 
 		m_logManager("log", true, false),
 		m_console(new Console()),
@@ -45,9 +45,6 @@ namespace brUGE
 		m_resManager(new ResourcesManager()),
 		m_physicWorld(new PhysicWorld())
 	{
-		//-- init COM-system. That is necessary for DirectInput.
-		CoInitialize(NULL);
-
 		m_timer.start();
 
 		//-- register console commands.
@@ -58,34 +55,39 @@ namespace brUGE
 		REGISTER_RO_MEMBER_WATCHER("FPS", float, Engine, m_fps);
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	Engine::~Engine()
 	{
 		// удaляемся не кидая при этом исключений. :)
 		shutdown();
 
-		// деинициализация ком подсистемы. Необходимо для DirectInput
-		CoUninitialize();
-
 		SDL_Quit();
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::init(HINSTANCE hInstance, IDemo* demo)
 	{
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 
 		//-- ToDo: load this values from config
 		m_videoMode = VideoMode(1024, 768);
 
 		SDL_Window* window = SDL_CreateWindow(
-			g_engineName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_videoMode.width, m_videoMode.height, 0);
+			g_engineName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			m_videoMode.width, m_videoMode.height, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_BORDERLESS
+		);
 
 		SDL_SysWMinfo info;
 		SDL_VERSION(&info.version);
 		if (SDL_GetWindowWMInfo(window, &info))
 		{
 			m_hWnd = info.info.win.window;
+			int32 w = 0, h = 0;
+			SDL_GetWindowSize(window, &w, &h);
+
+			m_videoMode.width = w;
+			m_videoMode.height = h;
 		}
 
 		m_hInstance = hInstance;
@@ -123,14 +125,6 @@ namespace brUGE
 		}
 		INFO_MSG("Init watchers panel ... completed.");
 
-		//-- init input sub-system.
-		if (!m_inputSystem.init(m_hWnd, hInstance))
-		{
-			BR_EXCEPT("Can't init input system.");
-		}
-		m_inputSystem.setListeners(this, this);
-		INFO_MSG("Init input system ... completed.");
-
 		if (!m_physicWorld->init())
 		{
 			BR_EXCEPT("Can't init physic world.");
@@ -162,7 +156,7 @@ namespace brUGE
 		INFO_MSG("Starting Message Loop...");
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::shutdown()
 	{
 		//-- release demo first, because it may contain render resources.
@@ -184,7 +178,7 @@ namespace brUGE
 		m_renderSys.shutDown();
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	int Engine::run()
 	{
 		uint64 newTime = SDL_GetPerformanceCounter();
@@ -196,7 +190,7 @@ namespace brUGE
 		//-- do main cycle.
 		while (m_isRunning)
 		{
-			// clamp engine tick time.
+			// calculate engine tick time.
 			newTime = SDL_GetPerformanceCounter();
 			dt = (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency());
 			prevTime = newTime;
@@ -204,7 +198,36 @@ namespace brUGE
 			SDL_Event event;
 			while (SDL_PollEvent(&event))
 			{
-				if (event.type == SDL_QUIT)
+				if (event.type == SDL_WINDOWEVENT)
+				{
+					switch (event.window.event)
+					{
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						break;
+					case SDL_WINDOWEVENT_CLOSE:
+						m_isRunning = false;
+						break;
+					default:
+						break;
+					}
+				}
+				else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+				{
+					handleKeyboardEvent(event.key);
+				}
+				else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
+				{
+					handleMouseButtonEvent(event.button);
+				}
+				else if (event.type == SDL_MOUSEMOTION)
+				{
+					handleMouseMotionEvent(event.motion);
+				}
+				else if (event.type == SDL_MOUSEWHEEL)
+				{
+					handleMouseWheelEvent(event.wheel);
+				}
+				else if (event.type == SDL_QUIT)
 				{
 					m_isRunning = false;
 					return 0;
@@ -220,49 +243,43 @@ namespace brUGE
 					//-- update timing panel.
 					m_timingPanel->update(dt);
 
-				//-- update input.
-				{
-					SCOPED_TIME_MEASURER_EX("input")
-					m_inputSystem.update();
-				}
+					//-- start updating imgui input.
+					imguiBeginFrame(
+						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
+					);
 
-				//-- start updating imgui input.
-				imguiBeginFrame(
-					m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
-				);
+					m_gameWorld->beginUpdate(dt);
 
-				m_gameWorld->beginUpdate(dt);
-
-				//-- do pre-animation.
-				{
-					SCOPED_TIME_MEASURER_EX("pre-animation")
+					//-- do pre-animation.
+					{
+						SCOPED_TIME_MEASURER_EX("pre-animation")
 						m_animEngine->preAnimate(dt);
-				}
+					}
 
-				{
-					SCOPED_TIME_MEASURER_EX("animation")
+					{
+						SCOPED_TIME_MEASURER_EX("animation")
 						m_animEngine->animate();
-				}
+					}
 
-				//-- simulate physics.
-				{
-					SCOPED_TIME_MEASURER_EX("physic")
+					//-- simulate physics.
+					{
+						SCOPED_TIME_MEASURER_EX("physic")
 						m_physicWorld->simulateDynamics(dt);
-				}
+					}
 
-				{
-					SCOPED_TIME_MEASURER_EX("post-animation")
+					{
+						SCOPED_TIME_MEASURER_EX("post-animation")
 						m_animEngine->postAnimate();
-				}
+					}
 
-				m_renderWorld->update(dt);
+					m_renderWorld->update(dt);
 
-				//-- ToDo: some old stuff.
-				updateFrame(dt);
+					//-- ToDo: some old stuff.
+					updateFrame(dt);
 
-				//m_collisionWorld.update(dt);
+					//m_collisionWorld.update(dt);
 
-				m_gameWorld->endUpdate();
+					m_gameWorld->endUpdate();
 				}
 
 				//-- do draw.
@@ -287,61 +304,70 @@ namespace brUGE
 		return 0;
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::stop()
 	{
 		m_isRunning = false;
 	}
 
-	//------------------------------------------
-	void Engine::handleMouseClick(const MouseEvent& me)
+	//--------------------------------------------------------------------------------------------------
+	void Engine::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 	{
-		if		(me.button == MB_LEFT_BUTTON  && me.isDown) m_imguiInput.button = IMGUI_MBUT_LEFT;
-		else if (me.button == MB_RIGHT_BUTTON && me.isDown) m_imguiInput.button = IMGUI_MBUT_RIGHT;
-		else												m_imguiInput.button = 0;
+		if		(e.button == SDL_BUTTON_LEFT  && e.state == SDL_PRESSED)	m_imguiInput.button = IMGUI_MBUT_LEFT;
+		else if (e.button == SDL_BUTTON_RIGHT && e.state == SDL_PRESSED)	m_imguiInput.button = IMGUI_MBUT_RIGHT;
+		else																m_imguiInput.button = 0;
 
-		m_gameWorld->handleMouseClick(me);
-		m_demo->handleMouseClick(me);
+		m_gameWorld->handleMouseButtonEvent(e);
+		m_demo->handleMouseButtonEvent(e);
 	}
 
-	//------------------------------------------
-	void Engine::handleMouseMove(const MouseAxisEvent& mae)
+	//--------------------------------------------------------------------------------------------------
+	void Engine::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 	{
-		m_imguiInput.mx		= mae.absX;
-		m_imguiInput.my		= Engine::instance().getVideoMode().height - mae.absY;
-		m_imguiInput.scroll	= -static_cast<int>(clamp<float>(-100, mae.relZ, +100) / 5);
+		m_imguiInput.mx		= e.x;
+		m_imguiInput.my		= Engine::instance().getVideoMode().height - e.y;
 
-		m_gameWorld->handleMouseMove(mae);
-		m_demo->handleMouseMove(mae);
+		m_gameWorld->handleMouseMotionEvent(e);
+		m_demo->handleMouseMotionEvent(e);
 	}
 
-	//------------------------------------------
-	void Engine::handleKeyboardEvent(const KeyboardEvent& ke)
+	//--------------------------------------------------------------------------------------------------
+	void Engine::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
 	{
-		if (ke.keyCode == DIK_GRAVE && ke.state == KS_DOWN)
+		m_imguiInput.scroll = -static_cast<int>(clamp<float>(-100, e.y, +100) / 5);
+
+		m_gameWorld->handleMouseWheelEvent(e);
+		m_demo->handleMouseWheelEvent(e);
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	void Engine::handleKeyboardEvent(const SDL_KeyboardEvent& e)
+	{
+		if (e.keysym.sym == SDLK_BACKQUOTE && e.state == SDL_PRESSED)
 		{
 			m_console->visible(!m_console->visible());
 			return;
 		}
-		else if (ke.keyCode == DIK_F1 && ke.state == KS_DOWN)
+		else if (e.keysym.sym == SDLK_F1 && e.state == SDL_PRESSED)
 		{
 			m_watchersPanel->visible(!m_watchersPanel->visible());
 			return;
 		}
-		else if (ke.keyCode == DIK_F2 && ke.state == KS_DOWN)
+		else if (e.keysym.sym == SDLK_F2 && e.state == SDL_PRESSED)
 		{
 			m_timingPanel->visible(!m_timingPanel->visible());
 			return;
 		}
 
-		if (m_console->visible() && m_console->handleKey(ke.keyCode, ke.state, ke.text))
-			return;
+		//-- ToDo: will be substituted with new imgui library
+		//if (m_console->visible() && m_console->handleKey(ke.keyCode, ke.state, ke.text))
+		//	return;
 
-		m_gameWorld->handleKeyboardEvent(ke);
-		m_demo->handleKeyboardEvent(ke);
+		m_gameWorld->handleKeyboardEvent(e);
+		m_demo->handleKeyboardEvent(e);
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::updateFrame(float dt)
 	{
 		m_demo->update(dt);
@@ -349,14 +375,14 @@ namespace brUGE
 	}
 
 	//-- ToDo: reconsider. Old stuff.
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::drawFrame(float dt)
 	{
 		m_demo->render(dt);
 		m_console->draw();
 	}
 	
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	void Engine::_fps()
 	{
 		static float currentFPS = 0;
@@ -373,7 +399,7 @@ namespace brUGE
 		++currentFPS;
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	int Engine::_exit()
 	{
 		ConPrint("Bye!");
@@ -381,7 +407,7 @@ namespace brUGE
 		return 0;
 	}
 
-	//------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 	int Engine::_setMaxFPS(int fps)
 	{
 		m_maxFPS = fps;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "control/input_listener.h"
+#include "SDL/SDL_events.h"
 #include "console/Console.h"
 #include <string>
 
@@ -25,9 +25,10 @@ namespace brUGE
 		virtual void update(float dt) = 0;
 		virtual void render(float dt) = 0;
 
-		virtual bool handleMouseClick	(const MouseEvent& me) = 0;
-		virtual bool handleMouseMove	(const MouseAxisEvent& mae) = 0;
-		virtual bool handleKeyboardEvent(const KeyboardEvent& ke) = 0;
+		virtual bool handleMouseButtonEvent(const SDL_MouseButtonEvent& e) = 0;
+		virtual bool handleMouseMotionEvent(const SDL_MouseMotionEvent& e) = 0;
+		virtual bool handleMouseWheelEvent(const SDL_MouseWheelEvent& e) = 0;
+		virtual bool handleKeyboardEvent(const SDL_KeyboardEvent& e) = 0;
 
 	protected:
 		int demoDesc()

@@ -6,10 +6,10 @@
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
-#include "control/InputManager.h"
 #include "loader/ResourcesManager.h"
 #include "os/WinApp.h"
 #include "os/FileSystem.h"
+#include "SDL/SDL_events.h"
 #include <memory>
 
 namespace brUGE
@@ -29,8 +29,8 @@ namespace brUGE
 	}
 
 	//-- Entry point of the brUGE.
-	//----------------------------------------------------------------------------------------------
-	class Engine : public utils::Singleton<Engine>, public IInputListener, public NonCopyable
+	//--------------------------------------------------------------------------------------------------
+	class Engine : public utils::Singleton<Engine>, public NonCopyable
 	{
 	public:
 		Engine();
@@ -45,10 +45,6 @@ namespace brUGE
 		
 		void						updateFrame(float dt);
 		void						drawFrame(float dt);
-
-		virtual void				handleMouseClick(const MouseEvent &me);
-		virtual void				handleMouseMove(const MouseAxisEvent &mae);
-		virtual void				handleKeyboardEvent(const KeyboardEvent &ke);
 
 		HINSTANCE					getHInstance()	  { return m_hInstance; }
 		
@@ -69,6 +65,11 @@ namespace brUGE
 		int _setMaxFPS(int fps);
 		int _showFPS(bool show);
 
+		void						handleMouseButtonEvent(const SDL_MouseButtonEvent& e);
+		void						handleMouseMotionEvent(const SDL_MouseMotionEvent& e);
+		void						handleMouseWheelEvent(const SDL_MouseWheelEvent& e);
+		void						handleKeyboardEvent(const SDL_KeyboardEvent& e);
+
 	private:
 		os::FileSystem		 						m_fileSystem;
 		utils::LogManager	 						m_logManager; 
@@ -88,7 +89,6 @@ namespace brUGE
 		utils::Timer		 						m_timer;
 		os::WinApp			 						m_mainWindow;
 		render::RenderSystem 						m_renderSys;
-		InputManager		 						m_inputSystem;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;

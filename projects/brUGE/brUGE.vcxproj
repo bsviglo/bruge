@@ -369,14 +369,6 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\control\control.vcxproj">
-      <Project>{81f476da-88d5-4821-96af-f96705d23ed1}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <Private>true</Private>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

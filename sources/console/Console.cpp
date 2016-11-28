@@ -397,8 +397,10 @@ namespace brUGE
 		m_cmdsMap[name] = handler;
 	}
 	
+	//-- ToDo:
 	//-- handles the keyboard input.
 	//---------------------------------------------------------------------------------------------
+#if 0
 	bool Console::handleKey(uchar key, KeyState state, uint text)
 	{
 		if (!m_isVisible) return false;
@@ -533,6 +535,7 @@ namespace brUGE
 
 		return true;
 	}
+#endif
 	
 	//-- This function performs parsing of a console command.
 	//-- Note: At first we look for command name in the registered commands list. Then we parse 

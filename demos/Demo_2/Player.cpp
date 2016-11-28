@@ -1,6 +1,5 @@
 #include "Player.hpp"
 #include "console/Console.h"
-#include "control/InputManager.h"
 #include "math/Matrix4x4.hpp"
 #include "math/math_funcs.hpp"
 #include "render/render_common.h"
@@ -136,9 +135,9 @@ void Player::beginUpdate(float dt)
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Player::handleMouseClick(const MouseEvent& me)
+bool Player::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 {
-	if (me.button == MB_LEFT_BUTTON && me.isDown)
+	if (e.button == SDL_BUTTON_LEFT && e.state == SDL_PRESSED)
 	{
 		const PhysicWorld& physWorld = Engine::instance().physicWorld();
 
@@ -176,24 +175,27 @@ bool Player::handleMouseClick(const MouseEvent& me)
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Player::handleMouseMove(const MouseAxisEvent& mae)
+bool Player::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 {
-	moveByMouse(mae.relX, mae.relY, mae.relZ);
+	moveByMouse(e.xrel, e.yrel);
+	return true;
+}
 
-	m_cameraZoom -= mae.relZ * 0.01;
-	m_cameraZoom  = clamp(6.0f, m_cameraZoom, 15.0f);
-
+bool Player::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
+{
+	m_cameraZoom -= e.y;
+	m_cameraZoom = clamp(6.0f, m_cameraZoom, 15.0f);
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Player::handleKeyboardEvent(const KeyboardEvent& /*ke*/)
+bool Player::handleKeyboardEvent(const SDL_KeyboardEvent&)
 {
 	return false;
 }
 
 //--------------------------------------------------------------------------------------------------
-void Player::moveByMouse(float dx, float /*dy*/, float /*dz*/)
+void Player::moveByMouse(float dx, float /*dy*/)
 {
 	float mouseAccel = 5.0f;
 	float mouseSens  = 0.0125f;
@@ -201,7 +203,7 @@ void Player::moveByMouse(float dx, float /*dy*/, float /*dz*/)
 	dx = max(-mouseAccel, dx);
 	dx = min(dx, mouseAccel);
 
-	m_yawDiff = -dx * mouseSens;
+	m_yawDiff -= dx * mouseSens;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -209,16 +211,16 @@ void Player::moveByKey(float dt)
 {
 	if (Console::instance().visible()) return;
 
-	InputManager& im = InputManager::instance();
-
 	//-- calculate multiplier and adjust it by time.
-	float multiplier = im.isModifierDown(KM_SHIFT) ? 2.0f : 1.0f;
+	float multiplier = (SDL_GetModState() & KMOD_SHIFT) ? 2.0f : 1.0f;
 	multiplier *= dt;
 
-	if (im.isKeyDown(DIK_W)) move  (+multiplier * m_speed);	//W
-	if (im.isKeyDown(DIK_S)) move  (-multiplier * m_speed);	//S
-	if (im.isKeyDown(DIK_D)) strafe(+multiplier * m_speed);	//A
-	if (im.isKeyDown(DIK_A)) strafe(-multiplier * m_speed);	//D
+	const auto* keyState = SDL_GetKeyboardState(nullptr);
+
+	if (keyState[SDL_SCANCODE_W]) move  (+multiplier * m_speed);	//W
+	if (keyState[SDL_SCANCODE_S]) move  (-multiplier * m_speed);	//S
+	if (keyState[SDL_SCANCODE_D]) strafe(+multiplier * m_speed);	//A
+	if (keyState[SDL_SCANCODE_A]) strafe(-multiplier * m_speed);	//D
 }
 
 //--------------------------------------------------------------------------------------------------
