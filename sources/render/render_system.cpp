@@ -5,7 +5,7 @@
 #include "IRenderDevice.h"
 #include "render_dll_Interface.h"
 #include "materials.hpp"
-#include "materials.hpp"
+#include "SDL/SDL_loadso.h"
 
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
@@ -72,7 +72,8 @@ namespace render
 	RenderSystem::RenderSystem()
 		:	m_renderAPI(RENDER_API_D3D11),
 			m_shaderContext(new ShaderContext),
-			m_materials(new Materials)
+			m_materials(new Materials),
+			m_renderModuleDLL(nullptr)
 
 	{
 		//-- register console functions.
@@ -94,23 +95,24 @@ namespace render
 		m_screenRes.width  = m_videoMode.width;
 		m_screenRes.height = m_videoMode.height;
 
-		if (!m_dynamicLib.load(g_renderDesc[m_renderAPI].dllString))
+		m_renderModuleDLL = SDL_LoadObject(g_renderDesc[m_renderAPI].dllString);
+		if (!m_renderModuleDLL)
 		{
 			ERROR_MSG("Can't load render system '%s'.", g_renderDesc[m_renderAPI].dllString);
 			return false;
 		}
 
-		createRender create = static_cast<createRender>(m_dynamicLib.getSymbol("createRender"));
-		if (create == NULL)
+		if (auto create = static_cast<createRender>(SDL_LoadFunction(m_renderModuleDLL, "createRender")))
 		{
-			ERROR_MSG("function 'getSymbol('createRender')' return NULL pointer.");
-			shutDown(); //-- unload library.
+			RenderDllInterface rcc;
+			create(&rcc, &utils::LogManager::instance());
+			m_device = rcc.device;
+		}
+		else
+		{
+			ERROR_MSG("There is no 'createRender' function in render dll.");
 			return false;
 		}
-
-		RenderDllInterface rcc;
-		create(&rcc, &utils::LogManager::instance());
-		m_device = rcc.device;
 
 		if (!m_device->init(hWindow, videoMode))
 		{
@@ -137,7 +139,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void RenderSystem::shutDown()
 	{
-		if (m_dynamicLib.isLoaded())
+		if (m_renderModuleDLL)
 		{
 			_finiPasses();
 
@@ -147,16 +149,19 @@ namespace render
 			m_device->resetToDefaults();
 			m_device->shutDown();
 
-			destroyRender destroy = static_cast<destroyRender>(m_dynamicLib.getSymbol("destroyRender"));
-			if (destroy == NULL)
+			if (auto destroy = static_cast<destroyRender>(SDL_LoadFunction(m_renderModuleDLL, "destroyRender")))
 			{
-				ERROR_MSG("function 'getSymbol('destroyRender')' return NULL pointer.");
+				destroy();
+			}
+			else
+			{
+				ERROR_MSG("There is not 'destroyRender' function in render dll.");
 				return;
 			}
 
-			destroy();
-			m_device = NULL;
-			m_dynamicLib.free();
+			m_device = nullptr;
+			SDL_UnloadObject(m_renderModuleDLL);
+			m_renderModuleDLL = nullptr;
 		}
 	}
 

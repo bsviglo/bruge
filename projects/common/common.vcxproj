@@ -129,7 +129,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\sources\utils\ArgParser.cpp" />
     <ClCompile Include="..\..\sources\utils\BSPTree.cpp" />
-    <ClCompile Include="..\..\sources\utils\DynamicLib.cpp" />
     <ClCompile Include="..\..\sources\utils\LogManager.cpp" />
     <ClCompile Include="..\..\sources\os\os_utils.cpp" />
     <ClCompile Include="..\..\sources\utils\string_utils.cpp" />
@@ -142,7 +141,6 @@
     <ClInclude Include="..\..\sources\utils\BSPTree.h" />
     <ClInclude Include="..\..\sources\utils\ComPtr.h" />
     <ClInclude Include="..\..\sources\utils\Data.hpp" />
-    <ClInclude Include="..\..\sources\utils\DynamicLib.h" />
     <ClInclude Include="..\..\sources\utils\LogManager.h" />
     <ClInclude Include="..\..\sources\os\os_utils.hpp" />
     <ClInclude Include="..\..\sources\utils\NonCopyable.hpp" />

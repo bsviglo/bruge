@@ -15,9 +15,6 @@
     <ClCompile Include="..\..\sources\utils\BSPTree.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\utils\DynamicLib.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\utils\LogManager.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\utils\Data.hpp">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\utils\DynamicLib.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\utils\LogManager.h">
