@@ -76,8 +76,8 @@ bool Demo::init()
 		Player* player = new Player();
 
 		mat4f mat;
-		mat.setScale(0.4f, 0.4f, 0.4f);
-		mat.postRotateX(degToRad(-90.0f));
+		mat.setIdentity();
+		//mat.postRotateX(degToRad(-90.0f));
 
 		gameWorld.addPlayer(player, "resources/models/player.xml", &mat);
 	}
@@ -158,8 +158,7 @@ bool Demo::init()
 		for (uint i = 0; i < 1250; ++i)
 		{
 			mat.setIdentity();
-			mat.setScale(0.4f, 0.4f, 0.4f);
-			mat.postRotateX(degToRad(-90.0f));
+			//mat.postRotateX(degToRad(-90.0f));
 			//mat.postRotateY(random() * 6.24f);
 			mat.postTranslation(-random(100), 0.0f, -random(100));
 			mat.postTranslation(random(100), 0, random(100));
@@ -199,20 +198,16 @@ void Demo::update(float /*dt*/)
 	{
 		if (m_cursorVisible)
 		{
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 			m_cursorVisible = false;
-			ShowCursor(FALSE);
 		}
-
-		//-- set cursor on the center of the window.
-		ScreenResolution sr = render::rs().screenRes();
-		SetCursorPos(sr.width / 2, sr.height / 2);
 	}
 	else
 	{
 		if (!m_cursorVisible)
 		{
+			SDL_SetRelativeMouseMode(SDL_FALSE);
 			m_cursorVisible = true;
-			ShowCursor(TRUE);
 		}
 	}
 

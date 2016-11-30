@@ -16,14 +16,14 @@ using namespace brUGE::render;
 using namespace brUGE::physic;
 
 //--------------------------------------------------------------------------------------------------
-Player::Player() : m_speed(10.f), m_yawDiff(0.0f), m_posDiff(0,0,0), m_cameraZoom(15.0f), m_walking(false)
+Player::Player() : m_speed(8.f), m_yawDiff(0.0f), m_posDiff(0,0,0), m_cameraZoom(15.0f), m_walking(false)
 {
 	m_source.setTranslation(0.0f, m_cameraZoom, 0.0f);
 	m_target.setRotateX(degToRad(70.0f));
 	m_target.postRotateY(degToRad(90.0f));
 
 	Projection proj;
-	proj.fov	  = 90.0f;
+	proj.fov	  = 75.0f;
 	proj.nearDist = 0.5f;
 	proj.farDist  = 50.0f;
 
@@ -76,11 +76,11 @@ void Player::beginUpdate(float dt)
 	//-- update player transform.
 	mat4f& world = m_transform.m_worldMat;
 	{
-		world.preRotateZ(-m_yawDiff);
+		world.preRotateY(-m_yawDiff);
 		world.postTranslation(m_posDiff);
 	}
 
-	DebugDrawer::instance().drawCoordAxis(world, 1.0f);
+	DebugDrawer::instance().drawCoordAxis(world, 0.2f);
 
 	//-- update camera.
 	{
@@ -198,12 +198,13 @@ bool Player::handleKeyboardEvent(const SDL_KeyboardEvent&)
 void Player::moveByMouse(float dx, float /*dy*/)
 {
 	float mouseAccel = 5.0f;
-	float mouseSens  = 0.0125f;
+	float mouseSens  = 0.00125f;
 
+	dx *= mouseSens;
 	dx = max(-mouseAccel, dx);
 	dx = min(dx, mouseAccel);
 
-	m_yawDiff -= dx * mouseSens;
+	m_yawDiff -= dx;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -219,8 +220,8 @@ void Player::moveByKey(float dt)
 
 	if (keyState[SDL_SCANCODE_W]) move  (+multiplier * m_speed);	//W
 	if (keyState[SDL_SCANCODE_S]) move  (-multiplier * m_speed);	//S
-	if (keyState[SDL_SCANCODE_D]) strafe(+multiplier * m_speed);	//A
-	if (keyState[SDL_SCANCODE_A]) strafe(-multiplier * m_speed);	//D
+	if (keyState[SDL_SCANCODE_D]) strafe(-multiplier * m_speed);	//A
+	if (keyState[SDL_SCANCODE_A]) strafe(+multiplier * m_speed);	//D
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -232,5 +233,5 @@ void Player::move(float value)
 //--------------------------------------------------------------------------------------------------
 void Player::strafe(float value)
 {
-	m_posDiff += m_transform.m_worldMat.applyToUnitAxis(mat4f::Y_AXIS).scale(value);	
+	m_posDiff += m_transform.m_worldMat.applyToUnitAxis(mat4f::Z_AXIS).scale(value);	
 }
