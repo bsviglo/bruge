@@ -2,7 +2,7 @@
 
 #include "prerequisites.hpp"
 #include "utils/Singleton.h"
-#include "utils/Timer.h"
+#include "SDL/SDL_timer.h"
 #include <string>
 #include <vector>
 
@@ -21,10 +21,10 @@ namespace brUGE
 		struct MeasureNode
 		{
 			MeasureNode(const std::string& name_, MeasureNodeID parent_)
-				: name(name_), time(0), remainderTime(0), parent(parent_) { }
+				: name(name_), time(0.0f), remainderTime(0.0f), parent(parent_) { }
 
-			uint64		   time; //-- in microseconds(us)
-			int64		   remainderTime;
+			float		   time;
+			float		   remainderTime;
 			MeasureNodeID  parent;	
 			MeasureNodeIDs childs;
 			std::string	   name;
@@ -51,20 +51,18 @@ namespace brUGE
 
 			inline void start()
 			{
-				utils::Timer& timer = utils::Timer::instance();
 				TimingPanel& tmm	= TimingPanel::instance();
 
 				tmm._enable(m_node);
-				m_startTime = timer.timeInUS();
+				m_startTime = SDL_GetPerformanceCounter();
 			}
 
 			inline void stop()
 			{
-				utils::Timer& timer		= utils::Timer::instance();
 				TimingPanel& tmm	    = TimingPanel::instance();
 				MeasureNode& node	    = tmm._getNode(m_node);
 				MeasureNode& parentNode = tmm._getNode(node.parent);
-				const uint64 delta		= timer.timeInUS() - m_startTime;
+				const float delta		= static_cast<float>(SDL_GetPerformanceCounter() - m_startTime) / SDL_GetPerformanceFrequency();
 
 				node.time += delta;
 				node.remainderTime += delta;

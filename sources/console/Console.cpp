@@ -11,7 +11,6 @@
 #include "loader/ResourcesManager.h"
 #include "os/FileSystem.h"
 #include "utils/LogManager.h"
-#include "utils/Timer.h"
 #include "utils/string_utils.h"
 
 using namespace brUGE;
@@ -27,7 +26,7 @@ namespace
 	//-- global to this module constants.
 	uint  g_consoleVMargin      = 0;
 	uint  g_consoleHMargin	    = 2;
-	uint  g_consoleBlinkTimeout = 500; // ms
+	float g_consoleBlinkTimeout = 0.5; // sec
 
 	Color g_warningColor (1.0f, 1.0f, 0.0f, 1.0f);
 	Color g_errorColor   (1.0f, 0.0f, 0.0f, 1.0f);
@@ -263,8 +262,6 @@ namespace brUGE
 	//---------------------------------------------------------------------------------------------
 	void Console::_realDraw()
 	{
-		Timer& timer = Timer::instance();
-
 		render::rd()->setDepthStencilState(m_stateDS, 0);
 		render::rd()->setRasterizerState(m_stateR);
 		render::rd()->setBlendState(m_stateB, NULL, 0xffffffff);
@@ -277,13 +274,13 @@ namespace brUGE
 
 		render::rd()->draw(PRIM_TOPOLOGY_TRIANGLE_STRIP, 0, 4);
 
-		static int64 time = timer.time();
+		static uint64 time = SDL_GetPerformanceCounter();
 		uint y = m_heightSc * m_heightPercent + g_consoleVMargin;
 
-		if ((timer.time() - time) >= g_consoleBlinkTimeout)
+		if (static_cast<float>((SDL_GetPerformanceCounter() - time) / SDL_GetPerformanceFrequency()) >= g_consoleBlinkTimeout)
 		{
 			m_showCursor = !m_showCursor;
-			time = timer.time();
+			time = SDL_GetPerformanceCounter();
 		}
 
 		m_font->beginDraw();

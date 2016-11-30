@@ -16,14 +16,12 @@ namespace
 	//---------------------------------------------------------------------------------------------
 	inline void formatStr(std::string& out, float timeInPercent, uint64 time)
 	{
-		uint64 ms = time / 1000;
+		float ms = time * 1000;
 
 		std::string offset1((timeInPercent < 100) ? ((timeInPercent < 10) ? 2 : 1) : 0, ' ');
 		std::string offset2(((ms < 100) ? ((ms < 10) ? 2 : 1) : 0), '0');
 
-		out = makeStr("%s%.2f%% %s%.3f us",
-			offset1.c_str(), timeInPercent, offset2.c_str(), time * 0.001f
-			);		
+		out = makeStr("%s%.2f%% %s%.3f us", offset1.c_str(), timeInPercent, offset2.c_str(), time);		
 	}
 
 }
@@ -85,7 +83,7 @@ namespace brUGE
 		{
 			imguiLabel(
 				makeStr("Stats: %.3f us (%.2f fps).",
-				m_totalFrameTime * 0.001f, 1000000.0f / m_totalFrameTime).c_str()
+				m_totalFrameTime * 1000.0f, 1.0f / m_totalFrameTime).c_str()
 				);
 
 			_recursiveVisualize(m_root);
@@ -151,8 +149,8 @@ namespace brUGE
 	void TimingPanel::_recursiveUpdate(TimingPanel::MeasureNodeID nodeID, uint level)
 	{
 		MeasureNode& node		   = _getNode(nodeID);
-		const uint64 time		   = node.time / m_measuresPerUpdate;
-		const uint64 remainderTime = node.remainderTime / m_measuresPerUpdate;
+		const float time		   = node.time / m_measuresPerUpdate;
+		const float remainderTime = node.remainderTime / m_measuresPerUpdate;
 
 		formatStr(node.visual.common, (time / m_totalFrameTime) * 100.0f, time);
 

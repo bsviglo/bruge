@@ -5,8 +5,8 @@
 #include "os/FileSystem.h"
 #include "utils/string_utils.h"
 #include "vertex_declarations.hpp"
-#include "utils/Timer.h"
 #include "console/Console.h"
+#include "SDL/SDL_timer.h"
 
 
 using namespace brUGE;
@@ -391,16 +391,15 @@ namespace render
 			}
 		}
 
-		uint64 startTime = Timer::instance().timeInUS();
+		uint64 startTime = SDL_GetPerformanceCounter();
 
 		Ptr<IShader> shader = rd()->createShader(
 			src.c_str(), macroses.empty() ? nullptr : &macroses[0], macroses.size()
 			);
 
-		uint64 endTime  = Timer::instance().timeInUS();
-		uint64 diffTime = endTime - startTime;
-		WARNING_MSG("Shader '%s' has been compiled in %d ms", name, diffTime / 1000);
-		ConWarning("Shader '%s' has been compiled in %d ms", name, diffTime / 1000);
+		uint64 diffTime = ((SDL_GetPerformanceCounter() - startTime) * 1000) / SDL_GetPerformanceFrequency();
+		WARNING_MSG("Shader '%s' has been compiled in %d ms", name, diffTime);
+		ConWarning("Shader '%s' has been compiled in %d ms", name, diffTime);
 
 		if (shader)	
 		{

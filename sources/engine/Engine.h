@@ -2,7 +2,6 @@
 
 #include "prerequisites.hpp"
 #include "utils/Singleton.h"
-#include "utils/Timer.h"
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
@@ -86,7 +85,6 @@ namespace brUGE
 		std::unique_ptr<WatchersPanel>				m_watchersPanel;
 		std::unique_ptr<TimingPanel>				m_timingPanel;
 		render::VideoMode	 						m_videoMode;
-		utils::Timer		 						m_timer;
 		os::WinApp			 						m_mainWindow;
 		render::RenderSystem 						m_renderSys;
 	

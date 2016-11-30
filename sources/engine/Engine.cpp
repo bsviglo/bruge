@@ -45,8 +45,6 @@ namespace brUGE
 		m_resManager(new ResourcesManager()),
 		m_physicWorld(new PhysicWorld())
 	{
-		m_timer.start();
-
 		//-- register console commands.
 		REGISTER_CONSOLE_METHOD("sys_setMaxFPS", _setMaxFPS, Engine);
 		REGISTER_CONSOLE_METHOD("exit",			 _exit,		 Engine);
@@ -68,7 +66,6 @@ namespace brUGE
 	void Engine::init(HINSTANCE hInstance, IDemo* demo)
 	{
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
-		SDL_SetRelativeMouseMode(SDL_FALSE);
 
 		//-- ToDo: load this values from config
 		m_videoMode = VideoMode(1024, 768);
@@ -385,18 +382,8 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::_fps()
 	{
-		static float currentFPS = 0;
-		static int64 firstTime = m_timer.time();
-
-		int64 temp = m_timer.time() - firstTime;
-		if( temp >= 1000 )
-		{
-			m_fps = currentFPS - (float(temp) - 1000.0f) * currentFPS * 0.001f;
-			currentFPS = 0;
-			firstTime = m_timer.time();
-		}
-
-		++currentFPS;
+		//-- ToDo: fix it.
+		m_fps = 0.0f;
 	}
 
 	//--------------------------------------------------------------------------------------------------
