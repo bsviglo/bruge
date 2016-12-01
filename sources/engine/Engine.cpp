@@ -1,7 +1,6 @@
 #include "Engine.h"
 #include "IDemo.h"
 #include "Exception.h"
-#include "utils/Thread.h"
 #include "render/IRenderDevice.h"
 #include "gui/imgui.h"
 
@@ -21,8 +20,11 @@ using namespace brUGE::utils;
 using namespace brUGE::os;
 using namespace brUGE::math;
 
-extern bool g_needToStartApp;
-extern brUGE::render::ERenderAPIType g_renderAPI;
+namespace
+{
+	bool g_needToStartApp = true;
+	brUGE::render::ERenderAPIType g_renderAPI = RENDER_API_D3D11;
+}
 
 namespace brUGE
 {
@@ -63,7 +65,7 @@ namespace brUGE
 	}
 
 	//--------------------------------------------------------------------------------------------------
-	void Engine::init(HINSTANCE hInstance, IDemo* demo)
+	void Engine::init(HINSTANCE, IDemo* demo)
 	{
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
 
@@ -86,8 +88,6 @@ namespace brUGE
 			m_videoMode.width = w;
 			m_videoMode.height = h;
 		}
-
-		m_hInstance = hInstance;
 		
 		//--
 		ConError(g_engineName);

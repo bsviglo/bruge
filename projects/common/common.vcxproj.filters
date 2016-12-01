@@ -24,9 +24,6 @@
     <ClCompile Include="..\..\sources\utils\string_utils.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\utils\Thread.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\utils\ArgParser.h">
@@ -57,9 +54,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\utils\TernaryTree.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\utils\Thread.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\math\OBB.hpp">

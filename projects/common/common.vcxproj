@@ -132,7 +132,6 @@
     <ClCompile Include="..\..\sources\utils\LogManager.cpp" />
     <ClCompile Include="..\..\sources\os\os_utils.cpp" />
     <ClCompile Include="..\..\sources\utils\string_utils.cpp" />
-    <ClCompile Include="..\..\sources\utils\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\math\math_all.hpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="..\..\sources\utils\Singleton.h" />
     <ClInclude Include="..\..\sources\utils\string_utils.h" />
     <ClInclude Include="..\..\sources\utils\TernaryTree.h" />
-    <ClInclude Include="..\..\sources\utils\Thread.h" />
     <ClInclude Include="..\..\sources\math\AABB.hpp" />
     <ClInclude Include="..\..\sources\math\Plane.hpp" />
     <ClInclude Include="..\..\sources\math\math_types.hpp" />

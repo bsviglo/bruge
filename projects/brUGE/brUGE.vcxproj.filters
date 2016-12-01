@@ -34,10 +34,6 @@
     <Filter Include="common">
       <UniqueIdentifier>{c43b6593-0e01-4773-a28b-ee97341581e1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-    </Filter>
     <Filter Include="render\framework\decals">
       <UniqueIdentifier>{b486b571-afbb-4e47-ac5d-748b4de8995e}</UniqueIdentifier>
     </Filter>
@@ -98,12 +94,6 @@
       <Filter>loader</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\os\FileSystem.cpp">
-      <Filter>os</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\os\win_message_func.cpp">
-      <Filter>os</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\os\WinApp.cpp">
       <Filter>os</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
@@ -228,9 +218,6 @@
     <ClInclude Include="..\..\sources\os\FileSystem.h">
       <Filter>os</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\os\WinApp.h">
-      <Filter>os</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\Color.h">
       <Filter>render\core</Filter>
     </ClInclude>
@@ -284,9 +271,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\Exception.h">
       <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\win32Res\resource.h">
-      <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\decal_manager.hpp">
       <Filter>render\framework\decals</Filter>
@@ -348,19 +332,6 @@
     <ClInclude Include="..\..\sources\render\mesh_formats.hpp">
       <Filter>render\framework\meshes</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\sources\win32Res\brUGE_icon.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\..\sources\win32Res\brUGE_image.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">

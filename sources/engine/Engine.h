@@ -6,7 +6,6 @@
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
-#include "os/WinApp.h"
 #include "os/FileSystem.h"
 #include "SDL/SDL_events.h"
 #include <memory>
@@ -44,8 +43,6 @@ namespace brUGE
 		
 		void						updateFrame(float dt);
 		void						drawFrame(float dt);
-
-		HINSTANCE					getHInstance()	  { return m_hInstance; }
 		
 		render::VideoMode&			getVideoMode()    { return m_videoMode; }
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
@@ -74,7 +71,6 @@ namespace brUGE
 		utils::LogManager	 						m_logManager; 
 
 		std::string			 						m_title;
-		HINSTANCE			 						m_hInstance;
 		HWND				 						m_hWnd;
 
 		static uint									m_maxFPS;
@@ -85,7 +81,6 @@ namespace brUGE
 		std::unique_ptr<WatchersPanel>				m_watchersPanel;
 		std::unique_ptr<TimingPanel>				m_timingPanel;
 		render::VideoMode	 						m_videoMode;
-		os::WinApp			 						m_mainWindow;
 		render::RenderSystem 						m_renderSys;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
