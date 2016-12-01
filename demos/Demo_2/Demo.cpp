@@ -155,7 +155,7 @@ bool Demo::init()
 		}
 */
 
-		for (uint i = 0; i < 1250; ++i)
+		for (uint i = 0; i < 250; ++i)
 		{
 			mat.setIdentity();
 			//mat.postRotateX(degToRad(-90.0f));
@@ -181,9 +181,7 @@ void Demo::shutdown()
 //-------------------------------------------------------------------------------------------------
 void Demo::update(float /*dt*/)
 {
-	//-- ToDo:
-	m_imguiActive = false;
-	//SDL_GetKeyboardState()[SDL_SCANCODE_LCTRL];
+	m_imguiActive = SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_LCTRL];
 
 	//-- draw gui.
 	//gui();
@@ -224,8 +222,7 @@ void Demo::gui()
 	static bool showTools = false;
 	static float slider[20] = {3.5f, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-	//-- ToDo:
-	m_imguiActive = false;// InputManager::instance().isKeyDown(DIK_LCONTROL);
+	m_imguiActive = SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_LCTRL];
 
 	if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
 		m_imguiActive = true;

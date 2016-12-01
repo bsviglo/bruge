@@ -14,14 +14,14 @@ namespace
 	const float g_updateInterval = 0.2f;
 
 	//---------------------------------------------------------------------------------------------
-	inline void formatStr(std::string& out, float timeInPercent, uint64 time)
+	inline void formatStr(std::string& out, float timeInPercent, float time)
 	{
 		float ms = time * 1000;
 
 		std::string offset1((timeInPercent < 100) ? ((timeInPercent < 10) ? 2 : 1) : 0, ' ');
 		std::string offset2(((ms < 100) ? ((ms < 10) ? 2 : 1) : 0), '0');
 
-		out = makeStr("%s%.2f%% %s%.3f us", offset1.c_str(), timeInPercent, offset2.c_str(), time);		
+		out = makeStr("%s%.2f%% %s%.3f us", offset1.c_str(), timeInPercent, offset2.c_str(), ms);		
 	}
 
 }
