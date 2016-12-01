@@ -24,12 +24,11 @@ namespace
 {
 	bool g_needToStartApp = true;
 	brUGE::render::ERenderAPIType g_renderAPI = RENDER_API_D3D11;
+	const char* const g_engineName = "black and red Unicorn Graphics Engine";
 }
 
 namespace brUGE
 {
-	const char* const g_engineName = "black and red Unicorn Graphics Engine";
-
 	DEFINE_SINGLETON(Engine)
 
 	bool	Engine::m_isRunning = true;
