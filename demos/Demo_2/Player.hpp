@@ -2,7 +2,6 @@
 
 #include "prerequisites.hpp"
 #include "math/Vector3.hpp"
-#include "control/input_listener.h"
 #include "utils/Data.hpp"
 #include "render/game_world.hpp"
 #include "render/CursorCamera.hpp"
@@ -25,12 +24,13 @@ public:
 	virtual void postAnimUpdate()	{ }
 	virtual void endUpdate()		{ }
 
-	virtual bool handleMouseClick	(const brUGE::MouseEvent& me);
-	virtual bool handleMouseMove	(const brUGE::MouseAxisEvent& mae);
-	virtual bool handleKeyboardEvent(const brUGE::KeyboardEvent& ke);
+	virtual bool handleMouseButtonEvent(const SDL_MouseButtonEvent& e) override;
+	virtual bool handleMouseMotionEvent(const SDL_MouseMotionEvent& e) override;
+	virtual bool handleMouseWheelEvent(const SDL_MouseWheelEvent& e) override;
+	virtual bool handleKeyboardEvent(const SDL_KeyboardEvent& e) override;
 
 private:
-	void moveByMouse(float dx, float dy, float dz);
+	void moveByMouse(float dx, float dy);
 	void moveByKey	(float dt);
 	void move		(float value);				
 	void strafe		(float value);

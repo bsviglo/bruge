@@ -76,8 +76,8 @@ bool Demo::init()
 		Player* player = new Player();
 
 		mat4f mat;
-		mat.setScale(0.4f, 0.4f, 0.4f);
-		mat.postRotateX(degToRad(-90.0f));
+		mat.setIdentity();
+		//mat.postRotateX(degToRad(-90.0f));
 
 		gameWorld.addPlayer(player, "resources/models/player.xml", &mat);
 	}
@@ -158,8 +158,7 @@ bool Demo::init()
 		for (uint i = 0; i < 1250; ++i)
 		{
 			mat.setIdentity();
-			mat.setScale(0.4f, 0.4f, 0.4f);
-			mat.postRotateX(degToRad(-90.0f));
+			//mat.postRotateX(degToRad(-90.0f));
 			//mat.postRotateY(random() * 6.24f);
 			mat.postTranslation(-random(100), 0.0f, -random(100));
 			mat.postTranslation(random(100), 0, random(100));
@@ -182,7 +181,9 @@ void Demo::shutdown()
 //-------------------------------------------------------------------------------------------------
 void Demo::update(float /*dt*/)
 {
-	m_imguiActive = InputManager::instance().isKeyDown(DIK_LCONTROL);
+	//-- ToDo:
+	m_imguiActive = false;
+	//SDL_GetKeyboardState()[SDL_SCANCODE_LCTRL];
 
 	//-- draw gui.
 	//gui();
@@ -197,20 +198,16 @@ void Demo::update(float /*dt*/)
 	{
 		if (m_cursorVisible)
 		{
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 			m_cursorVisible = false;
-			ShowCursor(FALSE);
 		}
-
-		//-- set cursor on the center of the window.
-		ScreenResolution sr = render::rs().screenRes();
-		SetCursorPos(sr.width / 2, sr.height / 2);
 	}
 	else
 	{
 		if (!m_cursorVisible)
 		{
+			SDL_SetRelativeMouseMode(SDL_FALSE);
 			m_cursorVisible = true;
-			ShowCursor(TRUE);
 		}
 	}
 
@@ -227,7 +224,8 @@ void Demo::gui()
 	static bool showTools = false;
 	static float slider[20] = {3.5f, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-	m_imguiActive = InputManager::instance().isKeyDown(DIK_LCONTROL);
+	//-- ToDo:
+	m_imguiActive = false;// InputManager::instance().isKeyDown(DIK_LCONTROL);
 
 	if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
 		m_imguiActive = true;
@@ -264,7 +262,7 @@ void Demo::render(float /*dt*/)
 }
 
 //-------------------------------------------------------------------------------------------------
-bool Demo::handleMouseClick(const MouseEvent& /*me*/)
+bool Demo::handleMouseButtonEvent(const SDL_MouseButtonEvent&)
 {
 	if (m_imguiActive) return true;
 
@@ -291,7 +289,7 @@ bool Demo::handleMouseClick(const MouseEvent& /*me*/)
 }
 
 //-------------------------------------------------------------------------------------------------
-bool Demo::handleMouseMove(const MouseAxisEvent& /*mae*/)
+bool Demo::handleMouseMotionEvent(const SDL_MouseMotionEvent&)
 {
 	if (m_imguiActive) return true;
 
@@ -299,7 +297,13 @@ bool Demo::handleMouseMove(const MouseAxisEvent& /*mae*/)
 }
 
 //-------------------------------------------------------------------------------------------------
-bool Demo::handleKeyboardEvent(const KeyboardEvent& /*ke*/)
+bool Demo::handleMouseWheelEvent(const SDL_MouseWheelEvent&)
+{
+	return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+bool Demo::handleKeyboardEvent(const SDL_KeyboardEvent&)
 {
 	return false;
 }

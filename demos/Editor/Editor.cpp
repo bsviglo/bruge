@@ -1,6 +1,5 @@
 #include "Editor.hpp"
 #include "console/Console.h"
-#include "control/InputManager.h"
 #include "math/Matrix4x4.hpp"
 #include "math/math_funcs.hpp"
 #include "render/render_common.h"
@@ -229,16 +228,16 @@ void Editor::render(float dt)
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Editor::handleMouseClick(const MouseEvent& me)
+bool Editor::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 {
-	if (me.button == MB_RIGHT_BUTTON)
-		m_guiActive = !me.isDown; 
+	if (e.button == SDL_BUTTON_RIGHT)
+		m_guiActive = (e.state != SDL_PRESSED); 
 
 	return false;
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Editor::handleMouseMove(const MouseAxisEvent& mae)
+bool Editor::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 {
 	if (m_guiActive)
 		return true;
@@ -246,13 +245,11 @@ bool Editor::handleMouseMove(const MouseAxisEvent& mae)
 	float mouseAccel = 5.0f;
 	float mouseSens  = 0.0125f;
 
-	m_xyz.x += clamp(-mouseAccel, mae.relY, mouseAccel) * mouseSens;
-	m_xyz.y += clamp(-mouseAccel, mae.relX, mouseAccel) * mouseSens;
-	m_xyz.z -= mae.relZ * 0.005f;
+	m_xyz.x += clamp<float>(-mouseAccel, e.yrel, mouseAccel) * mouseSens;
+	m_xyz.y += clamp<float>(-mouseAccel, e.xrel, mouseAccel) * mouseSens;
 
 	//-- clamp angles.
-	m_xyz.x = clamp(0.1f, m_xyz.x, (float)+PI * 0.5f);
-	m_xyz.z = clamp(1.0f, m_xyz.z, 100.0f);
+	m_xyz.x = clamp<float>(0.1f, m_xyz.x, (float)+PI * 0.5f);
 
 	if (m_xyz.y < -PI_2)	m_xyz.y -= -PI_2;
 	if (m_xyz.y > +PI_2)	m_xyz.y -= +PI_2;
@@ -261,7 +258,19 @@ bool Editor::handleMouseMove(const MouseAxisEvent& mae)
 }
 
 //--------------------------------------------------------------------------------------------------
-bool Editor::handleKeyboardEvent(const KeyboardEvent& /*ke*/)
+bool Editor::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
+{
+	if (m_guiActive)
+		return true;
+
+	m_xyz.z -= e.y;
+	m_xyz.z = clamp<float>(1.0f, m_xyz.z, 100.0f);
+
+	return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+bool Editor::handleKeyboardEvent(const SDL_KeyboardEvent& /*e*/)
 {
 	return false;
 }

@@ -1,7 +1,7 @@
 #include "FreeCamera.h"
-#include "control/InputManager.h"
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
+#include "SDL/SDL_keyboard.h"
 
 namespace brUGE
 {
@@ -74,20 +74,18 @@ namespace brUGE
 	{
 		if (Console::instance().visible()) return;
 
-		InputManager& im = InputManager::instance();
-		
-		float multiplier = 1.0f;
-		if (im.isModifierDown(KM_SHIFT))	multiplier = 2.0f;
-
-		//-- adjust by time.
+		//-- calculate multiplier and adjust it by time.
+		float multiplier = (SDL_GetModState() & KMOD_SHIFT) ? 2.0f : 1.0f;
 		multiplier *= dt;
 
-		if (im.isKeyDown(DIK_W)) move  (+multiplier * m_speed);	//W
-		if (im.isKeyDown(DIK_S)) move  (-multiplier * m_speed);	//S
-		if (im.isKeyDown(DIK_D)) strafe(+multiplier * m_speed);	//A
-		if (im.isKeyDown(DIK_A)) strafe(-multiplier * m_speed);	//D
-		if (im.isKeyDown(DIK_E)) rise  (+multiplier * m_speed);	//Q
-		if (im.isKeyDown(DIK_Q)) rise  (-multiplier * m_speed);	//E
+		const auto* keyState = SDL_GetKeyboardState(nullptr);
+
+		if (keyState[SDL_SCANCODE_W]) move  (+multiplier * m_speed);	//W
+		if (keyState[SDL_SCANCODE_S]) move  (-multiplier * m_speed);	//S
+		if (keyState[SDL_SCANCODE_D]) strafe(+multiplier * m_speed);	//A
+		if (keyState[SDL_SCANCODE_A]) strafe(-multiplier * m_speed);	//D
+		if (keyState[SDL_SCANCODE_E]) rise  (+multiplier * m_speed);	//Q
+		if (keyState[SDL_SCANCODE_Q]) rise  (-multiplier * m_speed);	//E
 	}
 
 	//------------------------------------------

@@ -2,14 +2,12 @@
 
 #include "prerequisites.hpp"
 #include "utils/Singleton.h"
-#include "utils/Timer.h"
 #include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
-#include "control/InputManager.h"
 #include "loader/ResourcesManager.h"
-#include "os/WinApp.h"
 #include "os/FileSystem.h"
+#include "SDL/SDL_events.h"
 #include <memory>
 
 namespace brUGE
@@ -28,23 +26,9 @@ namespace brUGE
 		class PhysicWorld;
 	}
 
-
-	//-- Optional dialog showed before starting the engine. Gives opportunity to choice desired
-	//-- engine options.
-	//----------------------------------------------------------------------------------------------
-	class EngineConfigDialog : public NonCopyable
-	{
-	public:
-		EngineConfigDialog();
-		~EngineConfigDialog();
-
-		bool display();
-	};
-
-
 	//-- Entry point of the brUGE.
-	//----------------------------------------------------------------------------------------------
-	class Engine : public utils::Singleton<Engine>, public IInputListener, public NonCopyable
+	//--------------------------------------------------------------------------------------------------
+	class Engine : public utils::Singleton<Engine>, public NonCopyable
 	{
 	public:
 		Engine();
@@ -59,12 +43,6 @@ namespace brUGE
 		
 		void						updateFrame(float dt);
 		void						drawFrame(float dt);
-
-		virtual void				handleMouseClick(const MouseEvent &me);
-		virtual void				handleMouseMove(const MouseAxisEvent &mae);
-		virtual void				handleKeyboardEvent(const KeyboardEvent &ke);
-
-		HINSTANCE					getHInstance()	  { return m_hInstance; }
 		
 		render::VideoMode&			getVideoMode()    { return m_videoMode; }
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
@@ -76,13 +54,6 @@ namespace brUGE
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
 	private:
-		//-- ToDo: reconsider. It seems useless.
-		static DWORD WINAPI _eventGenerator(LPVOID lpParameter);
-		static DWORD WINAPI _bgTask_loadGameResources(LPVOID lpParameter);
-
-		bool _initRenderSystem(render::ERenderAPIType api, const render::VideoMode& videoMode);
-		void _releaseRenderSystem();
-
 		void _fps();
 
 		//-- declare console functions.
@@ -90,30 +61,27 @@ namespace brUGE
 		int _setMaxFPS(int fps);
 		int _showFPS(bool show);
 
+		void						handleMouseButtonEvent(const SDL_MouseButtonEvent& e);
+		void						handleMouseMotionEvent(const SDL_MouseMotionEvent& e);
+		void						handleMouseWheelEvent(const SDL_MouseWheelEvent& e);
+		void						handleKeyboardEvent(const SDL_KeyboardEvent& e);
+
 	private:
 		os::FileSystem		 						m_fileSystem;
 		utils::LogManager	 						m_logManager; 
 
 		std::string			 						m_title;
-		HINSTANCE			 						m_hInstance;
-		HANDLE				 						m_hThread;
-		DWORD				 						m_threadId;
 		HWND				 						m_hWnd;
 
 		static uint									m_maxFPS;
-		static HANDLE		 						m_hEvent;
-		static bool			 						m_isWorking;
+		static bool			 						m_isRunning;
 		
 		std::unique_ptr<IDemo>						m_demo;
 		std::unique_ptr<Console>					m_console;
 		std::unique_ptr<WatchersPanel>				m_watchersPanel;
 		std::unique_ptr<TimingPanel>				m_timingPanel;
 		render::VideoMode	 						m_videoMode;
-		utils::Timer		 						m_timer;
-		os::WinApp			 						m_mainWindow;
 		render::RenderSystem 						m_renderSys;
-		InputManager		 						m_inputSystem;
-		EngineConfigDialog							m_configDialog;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;

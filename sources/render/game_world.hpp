@@ -4,7 +4,7 @@
 #include "utils/Data.hpp"
 #include "math/AABB.hpp"
 #include "math/Matrix4x4.hpp"
-#include "control/input_listener.h"
+#include "SDL/SDL_events.h"
 #include <vector>
 #include <memory>
 
@@ -104,9 +104,10 @@ namespace brUGE
 		IPlayerObj() { }
 		virtual ~IPlayerObj() { }
 
-		virtual bool handleMouseClick	(const MouseEvent& me) = 0;
-		virtual bool handleMouseMove	(const MouseAxisEvent& mae) = 0;
-		virtual bool handleKeyboardEvent(const KeyboardEvent& ke) = 0;
+		virtual bool handleMouseButtonEvent(const SDL_MouseButtonEvent& e) = 0;
+		virtual bool handleMouseMotionEvent(const SDL_MouseMotionEvent& e) = 0;
+		virtual bool handleMouseWheelEvent(const SDL_MouseWheelEvent& e) = 0;
+		virtual bool handleKeyboardEvent(const SDL_KeyboardEvent& e) = 0;
 	};
 
 
@@ -120,9 +121,10 @@ namespace brUGE
 
 		bool			init();
 
-		bool			handleMouseClick(const MouseEvent& me);
-		bool			handleMouseMove(const MouseAxisEvent& mae);
-		bool			handleKeyboardEvent(const KeyboardEvent& ke);
+		bool			handleMouseButtonEvent(const SDL_MouseButtonEvent& e);
+		bool			handleMouseMotionEvent(const SDL_MouseMotionEvent& e);
+		bool			handleMouseWheelEvent(const SDL_MouseWheelEvent& e);
+		bool			handleKeyboardEvent(const SDL_KeyboardEvent& e);
 
 		//-- load and save map.
 		bool			loadMap(const char* mapName);

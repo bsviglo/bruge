@@ -3,7 +3,6 @@
 #include "render_common.h"
 #include "utils/string_utils.h"
 #include "utils/Singleton.h"
-#include "utils/DynamicLib.h"
 #include "render/IShader.h"
 #include "render/IRenderDevice.h"
 #include "render/state_objects.h"
@@ -148,7 +147,7 @@ namespace render
 		VideoMode			m_videoMode;
 		ScreenResolution	m_screenRes;
 		ERenderAPIType		m_renderAPI;
-		utils::DynamicLib	m_dynamicLib;
+		void*				m_renderModuleDLL;
 		ShaderContextPtr	m_shaderContext;
 		MaterialsPtr		m_materials;
 

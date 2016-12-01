@@ -7,7 +7,6 @@
 #include "render/Color.h"
 #include "render/Font.h"
 #include "utils/Singleton.h"
-#include "control/input_listener.h"
 
 #include <stdarg.h>
 #include <map>
@@ -37,6 +36,7 @@ namespace brUGE
 		bool visible() const	{ return m_isVisible; }
 		void visible(bool flag);
 
+		//-- ToDo:
 		// Метод осуществляет обработку клавиш для введения текстовой информации в консоли.
 		// Примечание:	необходимо его вызвать по мере поступления событий клавиатуры.
 		// Примечание:	Используется ТОЛЬКО для ввода текста, т.е. функциональносит текстового редактора.
@@ -45,7 +45,7 @@ namespace brUGE
 		//				состояния вверх вниз. Поэтому идет опрос состояния устройства о нажатии клавиши,
 		//				а не получение меседжей, что может замедлить этот процесс.
 		//------------------------------------------
-		bool handleKey(uchar key, KeyState state, uint text);
+		//bool handleKey(uchar key, KeyState state, uint text);
 
 		// Вызывается неявно движком на каждом тике.
 		//------------------------------------------

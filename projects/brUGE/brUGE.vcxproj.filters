@@ -28,15 +28,8 @@
     <Filter Include="render\framework\animation">
       <UniqueIdentifier>{49e52257-81b3-48fc-8940-0adaeae3c79d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="scene">
-      <UniqueIdentifier>{cb7e4a53-7559-49dc-835c-6db3fb27d74b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common">
       <UniqueIdentifier>{c43b6593-0e01-4773-a28b-ee97341581e1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
     <Filter Include="render\framework\decals">
       <UniqueIdentifier>{b486b571-afbb-4e47-ac5d-748b4de8995e}</UniqueIdentifier>
@@ -100,12 +93,6 @@
     <ClCompile Include="..\..\sources\os\FileSystem.cpp">
       <Filter>os</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\os\win_message_func.cpp">
-      <Filter>os</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\os\WinApp.cpp">
-      <Filter>os</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
       <Filter>render\core</Filter>
     </ClCompile>
@@ -129,18 +116,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\animation_engine.cpp">
       <Filter>render\framework\animation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
-      <Filter>scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_QuadTreeNode.cpp">
-      <Filter>scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_SceneManager.cpp">
-      <Filter>scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_StaticObject.cpp">
-      <Filter>scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\physic_world.cpp">
       <Filter>render\worlds</Filter>
@@ -171,9 +146,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\Mesh.cpp">
       <Filter>render\framework\meshes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\Frustum.cpp">
-      <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp">
       <Filter>render\framework\shadows</Filter>
@@ -226,9 +198,6 @@
       <Filter>loader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\os\FileSystem.h">
-      <Filter>os</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\os\WinApp.h">
       <Filter>os</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Color.h">
@@ -285,9 +254,6 @@
     <ClInclude Include="..\..\sources\Exception.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\win32Res\resource.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\decal_manager.hpp">
       <Filter>render\framework\decals</Filter>
     </ClInclude>
@@ -321,9 +287,6 @@
     <ClInclude Include="..\..\sources\render\Mesh.hpp">
       <Filter>render\framework\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\Frustum.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\vertex_format.hpp">
       <Filter>render\framework\materials</Filter>
     </ClInclude>
@@ -350,33 +313,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\sources\win32Res\brUGE_icon.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\..\sources\win32Res\brUGE_image.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">
       <Filter>loader</Filter>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_QuadTree.h">
-      <Filter>scene</Filter>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_QuadTreeNode.h">
-      <Filter>scene</Filter>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_SceneManager.h">
-      <Filter>scene</Filter>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_StaticObject.h">
-      <Filter>scene</Filter>
     </CustomBuildStep>
   </ItemGroup>
 </Project>

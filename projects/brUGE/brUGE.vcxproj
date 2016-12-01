@@ -123,9 +123,9 @@
 /NODEFAULTLIB:msvcrt.lib
 /NODEFAULTLIB:libcd.lib
 /NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype27MT_d.lib;pugixml_d.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype27MT_d.lib;pugixml_d.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
       <SubSystem>Windows</SubSystem>
@@ -148,8 +148,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype27MT.lib;pugixml.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype27MT.lib;pugixml.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
     </Lib>
@@ -212,8 +212,6 @@
     <ClCompile Include="..\..\sources\loader\ResourcesManager.cpp" />
     <ClCompile Include="..\..\sources\loader\TextureLoader.cpp" />
     <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
-    <ClCompile Include="..\..\sources\os\win_message_func.cpp" />
-    <ClCompile Include="..\..\sources\os\WinApp.cpp" />
     <ClCompile Include="..\..\sources\render\CursorCamera.cpp" />
     <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
@@ -222,11 +220,6 @@
     <ClCompile Include="..\..\sources\render\Camera.cpp" />
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
     <ClCompile Include="..\..\sources\render\Font.cpp" />
-    <ClCompile Include="..\..\sources\render\Frustum.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\light_manager.cpp" />
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
@@ -245,26 +238,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\terrain_system.cpp" />
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
-    <ClCompile Include="..\..\sources\scene\br_QuadTree.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_QuadTreeNode.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_SceneManager.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\scene\br_StaticObject.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Console.h" />
@@ -287,7 +260,6 @@
     <ClInclude Include="..\..\sources\loader\ResourcesManager.h" />
     <ClInclude Include="..\..\sources\loader\TextureLoader.h" />
     <ClInclude Include="..\..\sources\os\FileSystem.h" />
-    <ClInclude Include="..\..\sources\os\WinApp.h" />
     <ClInclude Include="..\..\sources\render\decal_manager.hpp" />
     <ClInclude Include="..\..\sources\render\FreeCamera.h" />
     <ClInclude Include="..\..\sources\render\Color.h" />
@@ -314,36 +286,11 @@
     <ClInclude Include="..\..\sources\render\Camera.h" />
     <ClInclude Include="..\..\sources\render\DebugDrawer.h" />
     <ClInclude Include="..\..\sources\render\Font.h" />
-    <ClInclude Include="..\..\sources\render\Frustum.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\Mesh.hpp" />
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />
     <ClInclude Include="..\..\sources\render\render_system.hpp" />
     <ClInclude Include="..\..\sources\render\render_world.hpp" />
     <ClInclude Include="..\..\sources\render\animation_engine.hpp" />
-    <CustomBuildStep Include="..\..\sources\scene\br_QuadTree.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_QuadTreeNode.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_SceneManager.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\..\sources\scene\br_StaticObject.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
     <ClInclude Include="..\..\sources\build_time.h" />
     <ClInclude Include="..\..\sources\Exception.h" />
     <ClInclude Include="..\..\sources\prerequisites.hpp" />
@@ -351,26 +298,10 @@
     <ClInclude Include="..\..\sources\render\CursorCamera.hpp" />
     <ClInclude Include="..\..\sources\render\vertex_format.hpp" />
     <ClInclude Include="..\..\sources\render\vertex_declarations.hpp" />
-    <ClInclude Include="..\..\sources\win32Res\resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\sources\win32Res\brUGE_icon.ico" />
-    <None Include="..\..\sources\win32Res\brUGE_image.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\sources\win32Res\brUGE.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{6d301912-935e-4de6-9249-65bb47fafc5d}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <Private>true</Private>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-    <ProjectReference Include="..\control\control.vcxproj">
-      <Project>{81f476da-88d5-4821-96af-f96705d23ed1}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Private>true</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

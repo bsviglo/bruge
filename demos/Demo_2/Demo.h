@@ -19,14 +19,15 @@ public:
 	Demo();
 	virtual ~Demo();
 
-	virtual bool init();
-	virtual void shutdown();
-	virtual void update(float dt);
-	virtual void render(float dt);
+	virtual bool	init() override;
+	virtual void	shutdown() override;
+	virtual void	update(float dt) override;
+	virtual void	render(float dt) override;
 
-	virtual bool handleMouseClick	(const MouseEvent& me);
-	virtual bool handleMouseMove	(const MouseAxisEvent& mae);
-	virtual bool handleKeyboardEvent(const KeyboardEvent& ke);
+	virtual bool	handleMouseButtonEvent(const SDL_MouseButtonEvent& e) override;
+	virtual bool	handleMouseMotionEvent(const SDL_MouseMotionEvent& e) override;
+	virtual bool	handleMouseWheelEvent(const SDL_MouseWheelEvent& e) override;
+	virtual bool	handleKeyboardEvent(const SDL_KeyboardEvent& e) override;
 
 private:
 	void gui();

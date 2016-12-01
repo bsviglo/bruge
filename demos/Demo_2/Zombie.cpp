@@ -1,6 +1,5 @@
 #include "Zombie.hpp" 
 #include "console/Console.h"
-#include "control/InputManager.h"
 #include "math/Matrix4x4.hpp"
 #include "math/math_funcs.hpp"
 #include "render/render_common.h"
@@ -82,7 +81,7 @@ void Zombie::receiveEvent(const GameEvent& event)
 		{
 			//-- play death animation.
 			Engine::instance().animationEngine().stopAnim(m_animCtrl);
-			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/idle", true);
+			Engine::instance().animationEngine().playAnim(m_animCtrl, "zfat/death", false);
 			m_state = STATE_DEAD;
 		}
 		else
@@ -110,7 +109,7 @@ float signAngle(const vec3f& v1, const vec3f& v2)
 //--------------------------------------------------------------------------------------------------
 void Zombie::beginUpdate(float dt)
 {
-	DebugDrawer::instance().drawCoordAxis(m_transform.m_worldMat, 1.0f);
+	DebugDrawer::instance().drawCoordAxis(m_transform.m_worldMat, 0.2f);
 
 	//-- zombie is dead.
 	if (m_state == STATE_DEAD)
@@ -190,6 +189,6 @@ void Zombie::beginUpdate(float dt)
 	
 	//-- reconstruct world pos.
 	m_transform.m_worldMat = m_originMat;
-	m_transform.m_worldMat.preRotateZ(m_accumYaw);
+	m_transform.m_worldMat.preRotateY(m_accumYaw);
 	m_transform.m_worldMat.postTranslation(m_accumPos);
 }
