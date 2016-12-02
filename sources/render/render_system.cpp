@@ -723,7 +723,7 @@ namespace render
 				if (ro.m_IB)
 				{
 					m_device->drawIndexedInstanced(
-						ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount, ro.m_instanceCount
+						ro.m_primTopolpgy, ro.m_startIndex, ro.m_baseVertex, ro.m_indicesCount, ro.m_instanceCount
 						);
 				}
 				else
@@ -737,7 +737,7 @@ namespace render
 			{
 				if (ro.m_IB)
 				{
-					m_device->drawIndexed(ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount);
+					m_device->drawIndexed(ro.m_primTopolpgy, ro.m_startIndex, ro.m_baseVertex, ro.m_indicesCount);
 				}
 				else
 				{

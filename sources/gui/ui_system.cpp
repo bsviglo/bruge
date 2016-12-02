@@ -95,6 +95,26 @@ namespace ui
 		ImGui::Render();
 		auto* drawData = ImGui::GetDrawData();
 
+		float L = 0.0f;
+        float R = ImGui::GetIO().DisplaySize.x;
+        float B = ImGui::GetIO().DisplaySize.y;
+        float T = 0.0f;
+
+		mat4f orthoMat;
+		orthoMat.setOrthoOffCenterProj(L, R, B, T, 0.0f, 1.0f);
+
+		// Orthographic projection for (0,0)-(w,h)
+		//auto displaySize = Vector4((float)fbWidth, (float)fbHeight, 0.0f, 1.0f);
+		//Matrix projection;
+		//Matrix world;
+		//projection.orthogonalProjection(displaySize.x, -displaySize.y, -1.0f, 1.0f);
+		//world.setTranslate(Vector3(-displaySize.x, -displaySize.y, 0.0f) * 0.5f);
+		//if (impl->useHalfTexelOffset)
+		//	world.postTranslateBy(Vector3(0.5f, 0.5f, 0));
+		//world.postMultiply(projection);
+		//
+		//effectBinding->setMatrix("g_transform", world);
+
 		void* vb = m_vb->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
 		void* ib = m_ib->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
 
@@ -126,32 +146,29 @@ namespace ui
 		rd()->setShader(m_shader.get());
 
 		// Render command lists
+		int vtxOffset = 0;
+		int idxOffset = 0;
 		for (int i = 0; i < drawData->CmdListsCount; ++i)
 		{
-		    const auto* cmdList   = drawData->CmdLists[i];
-		    const auto* vtxBuffer = cmdList->VtxBuffer.Data;
-		    const auto* idxBuffer = cmdList->IdxBuffer.Data;
-
+		    const ImDrawList* cmdList = drawData->CmdLists[i];
 		    for (int c = 0; c < cmdList->CmdBuffer.Size; ++c)
 		    {
 		        const ImDrawCmd* cmd = &cmdList->CmdBuffer[c];
-
-				rd()->setScissorRect(
-						cmd.rect.x, rs().screenRes().height - (cmd.rect.y + cmd.rect.h),
-						cmd.rect.w, cmd.rect.h
-						);
-
-				m_shader->setTexture("font", m_texture.get(), m_stateS);
-				rd()->draw(PRIM_TOPOLOGY_TRIANGLE_LIST, 0, count * 4);
-
-
-	            glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
-	            glScissor((int)cmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-	            glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
-		        idx_buffer += pcmd->ElemCount;
+		        if (cmd->UserCallback)
+		        {
+		            cmd->UserCallback(cmdList, cmd);
+		        }
+		        else
+		        {
+		            //const D3D10_RECT r = { (LONG)pcmd->ClipRect.x, (LONG)pcmd->ClipRect.y, (LONG)pcmd->ClipRect.z, (LONG)pcmd->ClipRect.w };
+		            //ctx->PSSetShaderResources(0, 1, (ID3D10ShaderResourceView**)&pcmd->TextureId);
+		            //ctx->RSSetScissorRects(1, &r);
+		            //rd()->drawIndexed(pcmd->ElemCount, idx_offset, vtx_offset);
+		        }
+		        idxOffset += cmd->ElemCount;
 		    }
+		    vtxOffset += cmdList->VtxBuffer.Size;
 		}
-		#undef OFFSETOF
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -197,5 +214,6 @@ namespace ui
 		ImGui::GetIO().AddInputCharactersUTF8(e.text);
 		return true;
 	}
+
 }
 }

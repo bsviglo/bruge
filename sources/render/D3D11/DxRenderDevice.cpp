@@ -400,13 +400,13 @@ namespace render
 	}
 
 	//------------------------------------------
-	void DXRenderDevice::doDrawIndexed(EPrimitiveTopology topology, uint first, uint count)
+	void DXRenderDevice::doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count)
 	{
 		//-- do common draw setup.
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice.immediateContext()->DrawIndexed(count, first, 0);
+		m_dxDevice.immediateContext()->DrawIndexed(count, first, baseVertex);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -432,13 +432,13 @@ namespace render
 
 	//------------------------------------------
 	void DXRenderDevice::doDrawIndexedInstanced(
-		EPrimitiveTopology topology, uint first, uint count, uint instanceCount)
+		EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount)
 	{
 		//-- do common draw setup.
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice.immediateContext()->DrawIndexedInstanced(count, instanceCount, first, 0, 0);
+		m_dxDevice.immediateContext()->DrawIndexedInstanced(count, instanceCount, first, baseVertex, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
