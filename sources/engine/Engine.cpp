@@ -223,6 +223,10 @@ namespace brUGE
 				{
 					handleMouseWheelEvent(event.wheel);
 				}
+				else if (event.type == SDL_TEXTINPUT)
+				{
+					handleTextInputEvent(event.text);
+				}
 				else if (event.type == SDL_QUIT)
 				{
 					m_isRunning = false;

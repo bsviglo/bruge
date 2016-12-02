@@ -723,13 +723,13 @@ namespace render
 				if (ro.m_IB)
 				{
 					m_device->drawIndexedInstanced(
-						ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
+						ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount, ro.m_instanceCount
 						);
 				}
 				else
 				{
 					m_device->drawInstanced(
-						ro.m_primTopolpgy, 0, ro.m_indicesCount, ro.m_instanceCount
+						ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount, ro.m_instanceCount
 						);
 				}
 			}
@@ -737,11 +737,11 @@ namespace render
 			{
 				if (ro.m_IB)
 				{
-					m_device->drawIndexed(ro.m_primTopolpgy, 0, ro.m_indicesCount);
+					m_device->drawIndexed(ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount);
 				}
 				else
 				{
-					m_device->draw(ro.m_primTopolpgy, 0, ro.m_indicesCount);
+					m_device->draw(ro.m_primTopolpgy, ro.m_startIndex, ro.m_indicesCount);
 				}
 			}
 		}

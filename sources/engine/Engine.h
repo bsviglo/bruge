@@ -65,6 +65,7 @@ namespace brUGE
 		void						handleMouseMotionEvent(const SDL_MouseMotionEvent& e);
 		void						handleMouseWheelEvent(const SDL_MouseWheelEvent& e);
 		void						handleKeyboardEvent(const SDL_KeyboardEvent& e);
+		void						handleTextInputEvent(const SDL_TextInputEvent& e);
 
 	private:
 		os::FileSystem		 						m_fileSystem;

@@ -194,8 +194,10 @@
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
     <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
     <ClCompile Include="..\..\sources\engine\Engine.cpp" />
-    <ClCompile Include="..\..\sources\gui\imgui.cpp" />
-    <ClCompile Include="..\..\sources\gui\imgui_render.cpp" />
+    <ClCompile Include="..\..\sources\gui\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\sources\gui\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\sources\gui\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\sources\gui\ui_system.cpp" />
     <ClCompile Include="..\..\sources\loader\LwoLoader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -251,8 +253,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_LTCG|Win32'">true</ExcludedFromBuild>
     </CustomBuildStep>
-    <ClInclude Include="..\..\sources\gui\imgui.h" />
-    <ClInclude Include="..\..\sources\gui\imgui_render.hpp" />
+    <ClInclude Include="..\..\sources\gui\imgui\imconfig.h" />
+    <ClInclude Include="..\..\sources\gui\imgui\imgui.h" />
+    <ClInclude Include="..\..\sources\gui\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\sources\gui\imgui\stb_rect_pack.h" />
+    <ClInclude Include="..\..\sources\gui\imgui\stb_textedit.h" />
+    <ClInclude Include="..\..\sources\gui\imgui\stb_truetype.h" />
+    <ClInclude Include="..\..\sources\gui\ui_system.hpp" />
     <ClInclude Include="..\..\sources\loader\ObjLoader.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

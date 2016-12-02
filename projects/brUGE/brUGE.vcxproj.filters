@@ -37,9 +37,6 @@
     <Filter Include="render\framework\materials">
       <UniqueIdentifier>{2024fc1a-27be-4c60-a049-37e9b785faf3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{ea45d212-f66f-4ec7-a93f-e72b3a3a74ca}</UniqueIdentifier>
-    </Filter>
     <Filter Include="render\framework\post processing">
       <UniqueIdentifier>{7c637e0e-deee-4c19-b069-d818cf7bfce9}</UniqueIdentifier>
     </Filter>
@@ -60,6 +57,12 @@
     </Filter>
     <Filter Include="render\camera">
       <UniqueIdentifier>{7abdabc2-d05c-46f7-932b-4be6172caf32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{ea45d212-f66f-4ec7-a93f-e72b3a3a74ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\imgui">
+      <UniqueIdentifier>{eb770bcc-c240-432e-a8fd-83e5273ea9ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,12 +129,6 @@
     <ClCompile Include="..\..\sources\render\materials.cpp">
       <Filter>render\framework\materials</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\gui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\gui\imgui_render.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\shader_context.cpp">
       <Filter>render\framework\materials</Filter>
     </ClCompile>
@@ -167,6 +164,18 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\CursorCamera.cpp">
       <Filter>render\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\ui_system.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\imgui\imgui.cpp">
+      <Filter>ui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\imgui\imgui_demo.cpp">
+      <Filter>ui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\gui\imgui\imgui_draw.cpp">
+      <Filter>ui\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -260,12 +269,6 @@
     <ClInclude Include="..\..\sources\render\materials.hpp">
       <Filter>render\framework\materials</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\gui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\gui\imgui_render.hpp">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\render\post_processing.hpp">
       <Filter>render\framework\post processing</Filter>
     </ClInclude>
@@ -310,6 +313,27 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\mesh_formats.hpp">
       <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\ui_system.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\imconfig.h">
+      <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\imgui.h">
+      <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\imgui_internal.h">
+      <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\stb_rect_pack.h">
+      <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\stb_textedit.h">
+      <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\gui\imgui\stb_truetype.h">
+      <Filter>ui\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
