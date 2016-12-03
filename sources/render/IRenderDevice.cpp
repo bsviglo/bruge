@@ -150,8 +150,8 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::swapBuffers()
 	{
-		m_primitivesCount = 0;
-		m_drawCallsCount  = 0;  
+		m_statistics.drawCallsCount = 0;
+		m_statistics.primitivesCount = 0;  
 		doSwapBuffers();
 	} 
 
@@ -160,8 +160,8 @@ namespace render
 	{
 		assert(count != 0 && "count must be a value > 0.");
 
-		m_primitivesCount += count;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count;
+		++m_statistics.drawCallsCount;
 		doDraw(topology, first, count);
 	}
 
@@ -170,8 +170,8 @@ namespace render
 	{
 		assert(count != 0 && "count must be a value > 0.");
 
-		m_primitivesCount += count;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count;
+		++m_statistics.drawCallsCount;
 		doDrawIndexed(topology, first, baseVertex, count);
 	}
 
@@ -182,8 +182,8 @@ namespace render
 		assert(count != 0 && "count must be a value > 0.");
 		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
 
-		m_primitivesCount += count * instanceCount;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count * instanceCount;
+		++m_statistics.drawCallsCount;
 		doDrawInstanced(topology, first, count, instanceCount);
 	}
 
@@ -194,8 +194,8 @@ namespace render
 		assert(count != 0 && "count must be a value > 0.");
 		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
 
-		m_primitivesCount += count * instanceCount;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count * instanceCount;
+		++m_statistics.drawCallsCount;
 		doDrawIndexedInstanced(topology, first, baseVertex, count, instanceCount);
 	}
 

@@ -65,7 +65,7 @@ namespace brUGE
 
 		SDL_Window* window = SDL_CreateWindow(
 			g_engineName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			m_videoMode.width, m_videoMode.height, /*SDL_WINDOW_MAXIMIZED | */SDL_WINDOW_BORDERLESS
+			m_videoMode.width, m_videoMode.height, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_BORDERLESS
 		);
 
 		SDL_SysWMinfo info;
@@ -281,6 +281,7 @@ namespace brUGE
 					m_renderSys.beginFrame();
 					m_renderWorld->draw();
 					m_demo->render(dt);
+					displayStatistics(dt);
 					m_uiSystem->draw();
 					m_renderSys.endFrame();
 				}
@@ -362,19 +363,31 @@ namespace brUGE
 		m_watchersPanel->update(dt);
 	}
 
-	//-- ToDo: reconsider. Old stuff.
-	//--------------------------------------------------------------------------------------------------
-	void Engine::drawFrame(float dt)
-	{
-		m_demo->render(dt);
-	}
-
 	//--------------------------------------------------------------------------------------------------
 	int Engine::_exit()
 	{
 		ConPrint("Bye!");
 		isRunning = false;
 		return 0;
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	void Engine::displayStatistics(float dt)
+	{
+		bool enabled = true;
+
+		ImGui::SetNextWindowPos(ImVec2(10, 10));
+		if (!ImGui::Begin("Example: Fixed Overlay", &enabled, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		{
+			ImGui::End();
+			return;
+		}
+		ImGui::Text("Statistics:");
+		ImGui::Separator();
+		ImGui::Text("FSP | TPF : %d | %.2f ms ", static_cast<uint>(1.0f / dt), dt * 1000);
+		ImGui::Text("Draw calls: %d           ", m_renderSys.statistics().drawCallsCount);
+		ImGui::Text("Primitives: %d k         ", m_renderSys.statistics().primitivesCount / 1000);
+		ImGui::End();
 	}
 	
 }/*end namespace brUGE*/

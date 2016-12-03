@@ -128,10 +128,6 @@ namespace render
 			return false;
 		}
 
-		//-- register watchers.
-		REGISTER_RO_WATCHER("primitives count", uint, m_device->m_primitivesCount);
-		REGISTER_RO_WATCHER("draw calls count", uint, m_device->m_drawCallsCount);
-
 		return _initPasses();
 	}
 	

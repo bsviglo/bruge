@@ -263,11 +263,7 @@ namespace render
 		HWND				m_hWnd;
 		VideoMode			m_videoMode;
 
-		//-- watchers.
-		uint				m_primitivesCount;
-		uint				m_drawCallsCount;
-		//uint				m_textureMemoryUsed;
-		//uint				m_videoMemoryUsed;			
+		RenderStatistics	m_statistics;		
 	};
 
 } // render

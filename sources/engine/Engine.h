@@ -32,7 +32,7 @@ namespace brUGE
 
 	//-- Entry point of the brUGE.
 	//--------------------------------------------------------------------------------------------------
-	class Engine : public utils::Singleton<Engine>, public NonCopyable
+	class Engine : public utils::Singleton<Engine>
 	{
 	public:
 		Engine();
@@ -46,7 +46,6 @@ namespace brUGE
 		void						stop();
 		
 		void						updateFrame(float dt);
-		void						drawFrame(float dt);
 		
 		render::VideoMode&			getVideoMode()    { return m_videoMode; }
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
@@ -61,6 +60,7 @@ namespace brUGE
 
 		//-- declare console functions.
 		int _exit();
+		void displayStatistics(float dt);
 
 		void						handleMouseButtonEvent(const SDL_MouseButtonEvent& e);
 		void						handleMouseMotionEvent(const SDL_MouseMotionEvent& e);

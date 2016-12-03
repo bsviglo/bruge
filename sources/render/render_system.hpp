@@ -62,7 +62,7 @@ namespace render
 
 	//-- The main class of the render system.
 	//----------------------------------------------------------------------------------------------
-	class RenderSystem : public utils::Singleton<RenderSystem>, public NonCopyable
+	class RenderSystem : public utils::Singleton<RenderSystem>
 	{
 	public:
 		//-- ToDo: reconsider this representation of the render passes.
@@ -113,6 +113,7 @@ namespace render
 
 		const RenderCamera*			camera()		const	 { return m_camera; }
 		ERenderAPIType				gapi()			const	 { return m_renderAPI; }
+		const RenderStatistics&		statistics()	const	 { return m_device->m_statistics;  }
 		ScreenResolution			screenRes()		const	 { return m_screenRes;  }
 		IRenderDevice*				device()		const	 { return m_device; }
 		ShaderContext&				shaderContext()			 { return *m_shaderContext.get(); }

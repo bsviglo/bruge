@@ -116,5 +116,13 @@ namespace render
 		mat4f m_viewProj;
 	};
 
+	//----------------------------------------------------------------------------------------------
+	struct RenderStatistics
+	{
+		RenderStatistics() : primitivesCount(0), drawCallsCount(0) { }
+
+		uint primitivesCount;
+		uint drawCallsCount;
+	};
 } // render
 } // brUGE
