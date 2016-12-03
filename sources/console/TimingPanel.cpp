@@ -13,14 +13,14 @@ namespace
 	const float g_updateInterval = 0.2f;
 
 	//---------------------------------------------------------------------------------------------
-	inline void formatStr(std::string& out, float timeInPercent, uint64 time)
+	inline void formatStr(std::string& out, float timeInPercent, float time)
 	{
 		float ms = time * 1000;
 
 		std::string offset1((timeInPercent < 100) ? ((timeInPercent < 10) ? 2 : 1) : 0, ' ');
 		std::string offset2(((ms < 100) ? ((ms < 10) ? 2 : 1) : 0), '0');
 
-		out = makeStr("%s%.2f%% %s%.3f us", offset1.c_str(), timeInPercent, offset2.c_str(), time);		
+		out = makeStr("%s(%.2f) %s%.3f us", offset1.c_str(), timeInPercent, offset2.c_str(), ms);		
 	}
 
 }
@@ -76,18 +76,19 @@ namespace brUGE
 	{
 		if (!m_isVisible) return;
 
-		//uint height = rs().screenRes().height;
-		//
-		//imguiBeginScrollArea("Real-time timing console", 10, height*0.4, 400, height*0.6-10, &m_scroll);
-		//{
-		//	imguiLabel(
-		//		makeStr("Stats: %.3f us (%.2f fps).",
-		//		m_totalFrameTime * 1000.0f, 1.0f / m_totalFrameTime).c_str()
-		//		);
-		//
-		//	_recursiveVisualize(m_root);
-		//}
-		//imguiEndScrollArea();
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiSetCond_FirstUseEver);
+		if (!ImGui::Begin("Real-time timing console", &m_isVisible, 0))
+		{
+			// Early out if the window is collapsed, as an optimization.
+			ImGui::End();
+			return;
+		}
+
+		ImGui::Text("Stats: %.3f us (%.2f fps).", m_totalFrameTime * 1000.0f, 1.0f / m_totalFrameTime);
+
+		_recursiveVisualize(m_root);
+
+		ImGui::End();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -120,35 +121,45 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void TimingPanel::_recursiveVisualize(TimingPanel::MeasureNodeID /*nodeID*/)
+	void TimingPanel::_recursiveVisualize(TimingPanel::MeasureNodeID nodeID)
 	{
-		//MeasureNode& node = _getNode(nodeID);
-		//
-		//if (node.childs.empty())
-		//{
-		//	imguiKeyValue(node.name.c_str(), node.visual.common.c_str());
-		//}
-		//else
-		//{
-		//	imguiCollapse(node.name.c_str(), node.visual.common.c_str(), &node.visual.showChilds);
-		//	if (node.visual.showChilds)
-		//	{
-		//		imguiIndent();
-		//		for (uint i = 0; i < node.childs.size(); ++i)
-		//		{
-		//			_recursiveVisualize(node.childs[i]);
-		//		}
-		//		imguiKeyValue("<remainder>", node.visual.remainder.c_str());
-		//		imguiUnindent();
-		//	}
-		//}
+		MeasureNode& node = _getNode(nodeID);
+		
+		if (node.childs.empty())
+		{
+			ImGui::Text(node.name.c_str());
+			ImGui::SameLine(300);
+			ImGui::Text(node.visual.common.c_str());
+		}
+		else
+		{
+			if (ImGui::TreeNode(node.name.c_str()))
+			{
+				ImGui::SameLine(300);
+				ImGui::Text(node.visual.common.c_str());
+
+				for (uint i = 0; i < node.childs.size(); ++i)
+				{
+					_recursiveVisualize(node.childs[i]);
+				}
+				ImGui::Text("<remainder>");
+				ImGui::SameLine(300);
+				ImGui::Text(node.visual.remainder.c_str());
+				ImGui::TreePop();
+			}
+			else
+			{
+				ImGui::SameLine(300);
+				ImGui::Text(node.visual.common.c_str());
+			}
+		}
 	}
 
 	//---------------------------------------------------------------------------------------------
 	void TimingPanel::_recursiveUpdate(TimingPanel::MeasureNodeID nodeID, uint level)
 	{
-		MeasureNode& node		   = _getNode(nodeID);
-		const float time		   = node.time / m_measuresPerUpdate;
+		MeasureNode& node		  = _getNode(nodeID);
+		const float time		  = node.time / m_measuresPerUpdate;
 		const float remainderTime = node.remainderTime / m_measuresPerUpdate;
 
 		formatStr(node.visual.common, (time / m_totalFrameTime) * 100.0f, time);

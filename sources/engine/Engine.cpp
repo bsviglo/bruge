@@ -335,11 +335,11 @@ namespace brUGE
 		//	m_watchersPanel->visible(!m_watchersPanel->visible());
 		//	return;
 		//}
-		//else if (e.keysym.sym == SDLK_F2 && e.state == SDL_PRESSED)
-		//{
-		//	m_timingPanel->visible(!m_timingPanel->visible());
-		//	return;
-		//}
+		if (e.keysym.sym == SDLK_F2 && e.state == SDL_PRESSED)
+		{
+			m_timingPanel->visible(!m_timingPanel->visible());
+			return;
+		}
 
 		//-- ToDo: will be substituted with new imgui library
 		//if (m_console->visible() && m_console->handleKey(ke.keyCode, ke.state, ke.text))
