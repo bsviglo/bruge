@@ -150,8 +150,8 @@ namespace render
 	//------------------------------------------
 	void IRenderDevice::swapBuffers()
 	{
-		m_primitivesCount = 0;
-		m_drawCallsCount  = 0;  
+		m_statistics.drawCallsCount = 0;
+		m_statistics.primitivesCount = 0;  
 		doSwapBuffers();
 	} 
 
@@ -160,19 +160,19 @@ namespace render
 	{
 		assert(count != 0 && "count must be a value > 0.");
 
-		m_primitivesCount += count;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count;
+		++m_statistics.drawCallsCount;
 		doDraw(topology, first, count);
 	}
 
 	//------------------------------------------
-	void IRenderDevice::drawIndexed(EPrimitiveTopology topology, uint first, uint count)
+	void IRenderDevice::drawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count)
 	{
 		assert(count != 0 && "count must be a value > 0.");
 
-		m_primitivesCount += count;
-		++m_drawCallsCount;  
-		doDrawIndexed(topology, first, count);
+		m_statistics.primitivesCount += count;
+		++m_statistics.drawCallsCount;
+		doDrawIndexed(topology, first, baseVertex, count);
 	}
 
 	//------------------------------------------
@@ -182,21 +182,21 @@ namespace render
 		assert(count != 0 && "count must be a value > 0.");
 		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
 
-		m_primitivesCount += count * instanceCount;
-		++m_drawCallsCount;  
+		m_statistics.primitivesCount += count * instanceCount;
+		++m_statistics.drawCallsCount;
 		doDrawInstanced(topology, first, count, instanceCount);
 	}
 
 	//------------------------------------------
 	void IRenderDevice::drawIndexedInstanced(
-		EPrimitiveTopology topology, uint first, uint count, uint instanceCount)
+		EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount)
 	{
 		assert(count != 0 && "count must be a value > 0.");
 		assert(instanceCount != 0 && "instanceCount must be a value > 0.");
 
-		m_primitivesCount += count * instanceCount;
-		++m_drawCallsCount;  
-		doDrawIndexedInstanced(topology, first, count, instanceCount);
+		m_statistics.primitivesCount += count * instanceCount;
+		++m_statistics.drawCallsCount;
+		doDrawIndexedInstanced(topology, first, baseVertex, count, instanceCount);
 	}
 
 	//------------------------------------------

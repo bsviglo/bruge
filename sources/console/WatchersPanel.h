@@ -3,7 +3,6 @@
 #include "prerequisites.hpp"
 #include "utils/Singleton.h"
 #include "utils/ArgParser.h"
-#include "render/Font.h"
 
 #include <string>
 #include <vector>

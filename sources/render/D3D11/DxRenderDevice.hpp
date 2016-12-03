@@ -38,9 +38,9 @@ namespace render
 		virtual void				doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil);
 
 		virtual void				doDraw(EPrimitiveTopology topology, uint first, uint count);
-		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint count);
+		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count);
 		virtual void				doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
-		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
+		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount);
 
 		virtual Ptr<IBuffer>		doCreateBuffer(IBuffer::EType type, const void* data, uint elemCount, uint elemSize, IBuffer::EUsage usage, IBuffer::ECPUAccess access);
 		virtual Ptr<ITexture>		doCreateTexture(const ITexture::Desc& desc, const ITexture::Data* data, uint size);

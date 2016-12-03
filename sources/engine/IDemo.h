@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SDL/SDL_events.h"
-#include "console/Console.h"
 #include <string>
 
 namespace brUGE

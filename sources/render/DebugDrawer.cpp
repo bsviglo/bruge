@@ -5,7 +5,6 @@
 #include "IShader.h"
 #include "state_objects.h"
 #include "os/FileSystem.h"
-#include "console/Console.h"
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
 
@@ -98,13 +97,6 @@ namespace render
 			{
 				return false;
 			}
-		}
-
-		//-- font.
-		{
-			m_font = ResourcesManager::instance().loadFont("system/font/VeraMono", 12, vec2ui(32, 127));
-			if (!m_font.isValid())
-				return false;
 		}
 
 		return true;
@@ -562,30 +554,8 @@ namespace render
 		//-- ToDo: reconsider.
 		//-- 3. do text drawing.
 		{
-			if (!m_textDataVec.empty())
-			{
-				m_font->beginDraw();
-				for (uint i = 0; i < m_textDataVec.size(); ++i)
-				{
-					const TextData& data = m_textDataVec[i];
-
-					vec4f projPos = rs().camera()->m_viewProj.applyToPoint(data.m_pos.toVec4());
-					if (!almostZero(projPos.w) && projPos.w > 0)
-					{
-						vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
-						vec2f curPos(
-							(0.5f * (1.0f + clipPos.x)) * rs().screenRes().width,
-							(0.5f * (1.0f - clipPos.y)) * rs().screenRes().height
-							);
-
-						m_font->draw2D(curPos, data.m_color, data.m_text);
-					}
-				}
-				m_font->endDraw();
-
-				//-- clear text data list.
-				m_textDataVec.clear();
-			}
+			//-- clear text data list.
+			m_textDataVec.clear();
 		}
 	}
 

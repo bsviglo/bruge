@@ -28,12 +28,14 @@ namespace render
 	{
 		RenderOp()
 			:	m_primTopolpgy(PRIM_TOPOLOGY_TRIANGLE_LIST), m_VBs(nullptr), m_VBCount(0), m_IB(nullptr),
-				m_matrixPaletteCount(0), m_matrixPalette(nullptr), m_indicesCount(0),
+				m_matrixPaletteCount(0), m_matrixPalette(nullptr), m_startIndex(0), m_baseVertex(0), m_indicesCount(0),
 				m_instanceTB(nullptr), m_instanceCount(0), m_worldMat(nullptr), m_material(nullptr),
 				m_instanceData(nullptr), m_instanceSize(0), m_userData(nullptr)
 		{ }
 
 		//-- primitive topology of geometry.
+		uint16				m_startIndex;
+		uint16				m_baseVertex;
 		uint16				m_indicesCount;
 		EPrimitiveTopology	m_primTopolpgy;
 		//-- main data of static mesh and terrain.
@@ -60,7 +62,7 @@ namespace render
 
 	//-- The main class of the render system.
 	//----------------------------------------------------------------------------------------------
-	class RenderSystem : public utils::Singleton<RenderSystem>, public NonCopyable
+	class RenderSystem : public utils::Singleton<RenderSystem>
 	{
 	public:
 		//-- ToDo: reconsider this representation of the render passes.
@@ -111,6 +113,7 @@ namespace render
 
 		const RenderCamera*			camera()		const	 { return m_camera; }
 		ERenderAPIType				gapi()			const	 { return m_renderAPI; }
+		const RenderStatistics&		statistics()	const	 { return m_device->m_statistics;  }
 		ScreenResolution			screenRes()		const	 { return m_screenRes;  }
 		IRenderDevice*				device()		const	 { return m_device; }
 		ShaderContext&				shaderContext()			 { return *m_shaderContext.get(); }

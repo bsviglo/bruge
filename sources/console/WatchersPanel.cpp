@@ -3,7 +3,7 @@
 #include "render/Color.h"
 #include "render/render_system.hpp"
 #include "utils/string_utils.h"
-#include "gui/imgui.h"
+#include "gui/imgui/imgui.h"
 
 using namespace brUGE::render;
 using namespace brUGE::utils;
@@ -70,27 +70,27 @@ namespace brUGE
 
 		if (!m_isVisible) return;
 
-		uint height = rs().screenRes().height;
-
-		imguiBeginScrollArea("Real-time watchers console", 10, height*0.4, 450, height*0.6-10, &m_scroll);
-		{
-			std::string line;
-
-			for (uint i = 0; i < m_roWatchers.size(); ++i)
-			{
-				const WatcherDesc& desc = m_roWatchers[i];
-				line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
-				imguiLabel(line.c_str());
-			}
-
-			for (uint i = 0; i < m_rwWatchers.size(); ++i)
-			{
-				const WatcherDesc& desc = m_rwWatchers[i];
-				line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
-				imguiLabel(line.c_str());
-			}
-		}
-		imguiEndScrollArea();
+		//uint height = rs().screenRes().height;
+		//
+		//imguiBeginScrollArea("Real-time watchers console", 10, height*0.4, 450, height*0.6-10, &m_scroll);
+		//{
+		//	std::string line;
+		//
+		//	for (uint i = 0; i < m_roWatchers.size(); ++i)
+		//	{
+		//		const WatcherDesc& desc = m_roWatchers[i];
+		//		line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
+		//		imguiLabel(line.c_str());
+		//	}
+		//
+		//	for (uint i = 0; i < m_rwWatchers.size(); ++i)
+		//	{
+		//		const WatcherDesc& desc = m_rwWatchers[i];
+		//		line = makeStr("%s = %s", desc.m_name.c_str(), desc.m_watcher->get().c_str());
+		//		imguiLabel(line.c_str());
+		//	}
+		//}
+		//imguiEndScrollArea();
 	}
 
 	//---------------------------------------------------------------------------------------------

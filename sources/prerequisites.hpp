@@ -55,3 +55,13 @@ const Handle CONST_INVALID_HANDLE = -1;
 #define INFO_MSG	brUGE::utils::LogManager::instance().info
 #define WARNING_MSG brUGE::utils::LogManager::instance().warning
 #define ERROR_MSG	brUGE::utils::LogManager::instance().error
+
+//-- ToDo:
+#define ConPrint
+#define ConWarning
+#define ConError
+
+#define REGISTER_CONSOLE_VALUE(m_name, type, value)
+#define REGISTER_CONSOLE_MEMBER_VALUE(m_name, type, value, className)
+#define REGISTER_CONSOLE_FUNC(m_name, func)
+#define REGISTER_CONSOLE_METHOD(m_name, func, className)

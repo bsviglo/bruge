@@ -5,7 +5,6 @@
 #include "utils/Singleton.h"
 #include "render/render_common.h"
 #include "render/Mesh.hpp"
-#include "render/Font.h"
 #include "TextureLoader.h"
 
 #include <string>
@@ -33,16 +32,12 @@ namespace brUGE
 		bool init();
 
 		//-- ToDo:
-		//Ptr<render::Model>			loadModel  		(const char* name, bool loadCollision = true);
-		
-		//-- Note: the name of font calculated as fonts file name + underline + the size of the font.
-		//-- e.g. verafont_8, this means that the name is 'verafont' and the size is 8.
-		Ptr<render::Font>			loadFont   		(const char* name, uint size, const vec2ui& glyphsRange);
+		//Ptr<render::Model>		loadModel  		(const char* name, bool loadCollision = true);
 		Ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
 		Ptr<render::ITexture>		loadTexture		(const char* name);
 		Ptr<render::Mesh>			loadMesh   		(const char* name, bool simpleMaterial = false);
 		Ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
-		//Ptr<render::Animation>		loadAnimation	(const char* name);
+		//Ptr<render::Animation>	loadAnimation	(const char* name);
 		//Ptr<Sound>				loadSound  (const char* name);
 
 		bool makeSharedShaderConstants(const char* name, const Ptr<render::IBuffer>& newBuffer);
@@ -108,7 +103,6 @@ namespace brUGE
 		Cache<render::IShader>  			m_shadersCache;
 		Cache<render::Mesh>					m_meshesCache;
 		Cache<render::SkinnedMesh>			m_skinnedMeshesCache;
-		Cache<render::Font>					m_fontsCache;
 		//Cache<render::Animation>			m_animationsCashe;
 		//Cache<Sound>						m_soundesCache;
 		

@@ -5,7 +5,6 @@
 #include "os/FileSystem.h"
 #include "utils/string_utils.h"
 #include "vertex_declarations.hpp"
-#include "console/Console.h"
 #include "SDL/SDL_timer.h"
 
 

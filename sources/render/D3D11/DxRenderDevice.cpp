@@ -39,7 +39,7 @@ namespace
 	//-- see EAttributeFormat.
 	const DXGI_FORMAT dxVertFormats[][4] =
 	{
-		DXGI_FORMAT_R8_SINT,   DXGI_FORMAT_R8G8_SINT,    DXGI_FORMAT_UNKNOWN,		  DXGI_FORMAT_R8G8B8A8_SINT,
+		DXGI_FORMAT_R8_UNORM,  DXGI_FORMAT_R8G8_UNORM,   DXGI_FORMAT_UNKNOWN,		  DXGI_FORMAT_R8G8B8A8_UNORM,
 		DXGI_FORMAT_R16_SINT,  DXGI_FORMAT_R16G16_SINT,  DXGI_FORMAT_UNKNOWN,		  DXGI_FORMAT_R16G16B16A16_SINT,
 		DXGI_FORMAT_R32_SINT,  DXGI_FORMAT_R32G32_SINT,  DXGI_FORMAT_R32G32B32_SINT,  DXGI_FORMAT_R32G32B32A32_SINT,
 		DXGI_FORMAT_R32_UINT,  DXGI_FORMAT_R32G32_UINT,  DXGI_FORMAT_R32G32B32_UINT,  DXGI_FORMAT_R32G32B32A32_UINT,
@@ -400,13 +400,13 @@ namespace render
 	}
 
 	//------------------------------------------
-	void DXRenderDevice::doDrawIndexed(EPrimitiveTopology topology, uint first, uint count)
+	void DXRenderDevice::doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count)
 	{
 		//-- do common draw setup.
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice.immediateContext()->DrawIndexed(count, first, 0);
+		m_dxDevice.immediateContext()->DrawIndexed(count, first, baseVertex);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -432,13 +432,13 @@ namespace render
 
 	//------------------------------------------
 	void DXRenderDevice::doDrawIndexedInstanced(
-		EPrimitiveTopology topology, uint first, uint count, uint instanceCount)
+		EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount)
 	{
 		//-- do common draw setup.
 		_drawCommon(topology, true);
 
 		//-- finally do actual drawing.
-		m_dxDevice.immediateContext()->DrawIndexedInstanced(count, instanceCount, first, 0, 0);
+		m_dxDevice.immediateContext()->DrawIndexedInstanced(count, instanceCount, first, baseVertex, 0);
 
 #if defined(_DEBUG) || USE_FORCE_DEBUG_MODE
 		if (m_dxDevice.hasError())
@@ -584,7 +584,7 @@ namespace render
 		HRESULT hr = m_dxDevice->CreateInputLayout(&dxDescs[0],	dxDescs.size(),
 			inputSignature->GetBufferPointer(),	inputSignature->GetBufferSize(), &dxLayout);
 
-		if (FAILED(hr) || m_dxDevice.hasError())
+		if (FAILED(hr) && m_dxDevice.hasError())
 		{
 			ERROR_MSG("Failed to create vertex layout.\nDesc: " + m_dxDevice.getErrorDesc());
 			return INVALID_ID;

@@ -1,5 +1,4 @@
 #include "FileSystem.h"
-#include "console/Console.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
@@ -10,6 +9,7 @@
 #include <windows.h>
 
 #include "utils/string_utils.h"
+#include "utils/LogManager.h"
 
 #include <iostream>
 #include <fstream>

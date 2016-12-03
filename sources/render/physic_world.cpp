@@ -8,7 +8,6 @@
 #include "render/DebugDrawer.h"
 #include "render/Color.h"
 #include "render/Mesh.hpp"
-#include "console/Console.h"
 #include <algorithm>
 
 using namespace brUGE;

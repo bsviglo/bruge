@@ -16,7 +16,6 @@ namespace render
 {
 	//class SkyBox;
 	class DebugDrawer;
-	class imguiRender;
 	class DecalManager;
 	class LightsManager;
 	class MeshManager;
@@ -49,7 +48,6 @@ namespace render
 	private:
 		typedef std::unique_ptr<DebugDrawer>    DebugDrawerPtr;
 		typedef std::unique_ptr<DecalManager>   DecalManagerPtr;
-		typedef std::unique_ptr<imguiRender>    ImguiRenderPtr;
 		typedef std::unique_ptr<LightsManager>  LightsManagerPtr;
 		typedef std::unique_ptr<MeshManager>    MeshManagerPtr;
 		typedef std::unique_ptr<ShadowManager>  ShadowManagerPtr;
@@ -60,7 +58,6 @@ namespace render
 		Ptr<Camera>		  m_camera;
 		DebugDrawerPtr	  m_debugDrawer;
 		DecalManagerPtr   m_decalManager;
-		ImguiRenderPtr	  m_imguiRender;
 		LightsManagerPtr  m_lightsManager;
 		MeshManagerPtr	  m_meshManager;
 		ShadowManagerPtr  m_shadowManager;

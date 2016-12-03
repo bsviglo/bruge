@@ -11,7 +11,6 @@ namespace brUGE
 namespace render
 {
 	class Mesh;
-	class Font;
 	class Material;
 
 	//-- Debug information drawer.
@@ -96,7 +95,6 @@ namespace render
 			std::string m_text;
 			Color		m_color;
 		};
-		Ptr<Font>				m_font;
 		std::vector<TextData>	m_textDataVec;
 
 		//-- standard solid meshes like (sphere, hemisphere, box, cylinder, ...)

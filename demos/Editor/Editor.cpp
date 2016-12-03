@@ -1,5 +1,4 @@
 #include "Editor.hpp"
-#include "console/Console.h"
 #include "math/Matrix4x4.hpp"
 #include "math/math_funcs.hpp"
 #include "render/render_common.h"
@@ -11,7 +10,7 @@
 #include "render/light_manager.hpp"
 #include "render/game_world.hpp"
 #include "os/FileSystem.h"
-#include "gui/imgui.h"
+#include "gui/imgui/imgui.h"
 
 using namespace brUGE::os;
 
@@ -290,98 +289,130 @@ Editor::UI::~UI()
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::update()
 {
-	AnimationEngine& animEngine = Engine::instance().animationEngine();
+	//static bool show_test_window = true;
+	//static bool show_another_window = false;
+	//static ImVec4 clear_col = ImColor(114, 144, 154);
+	//
+	//// 1. Show a simple window
+	//// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+	//{
+	//	static float f = 0.0f;
+	//	ImGui::Text("Hello, world!");
+	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+	//	ImGui::ColorEdit3("clear color", (float*)&clear_col);
+	//	if (ImGui::Button("Test Window")) show_test_window ^= 1;
+	//	if (ImGui::Button("Another Window")) show_another_window ^= 1;
+	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	//}
+	//
+	//// 2. Show another simple window, this time using an explicit Begin/End pair
+	//if (show_another_window)
+	//{
+	//	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+	//	ImGui::Begin("Another Window", &show_another_window);
+	//	ImGui::Text("Hello");
+	//	ImGui::End();
+	//}
+	//
+	//// 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+	//if (show_test_window)
+	//{
+	//	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);     // Normally user code doesn't need/want to call it because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
+	//	ImGui::ShowTestWindow(&show_test_window);
+	//}
 
-	uint width	= rs().screenRes().width;
-	uint height = rs().screenRes().height;
-
-	imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
-	{
-		imguiSeparatorLine();
-		imguiLabel("Models:");
-		{
-			imguiIndent();
-			if (imguiButton("Load"))
-			{
-				m_gameObjsList.m_enabled = !m_gameObjsList.m_enabled;
-				if (m_gameObjsList.m_enabled)
-				{
-					m_gameObjsList.m_list.clear();
-					FileSystem::instance().getFilesInDir(
-						"..\\resources\\models", m_gameObjsList.m_list, "xml", true
-						);
-				}
-			}
-			imguiUnindent();
-		}
-
-		imguiSeparatorLine();
-		imguiLabel("Animations:");
-		{
-			imguiIndent();
-			if (imguiButton("Load", m_self.m_activeSkinModel))
-			{
-				m_animList.m_enabled = !m_animList.m_enabled;
-				if (m_animList.m_enabled)
-				{
-					m_animList.m_list.clear();
-					FileSystem::instance().getFilesInDir(
-						"..\\resources\\models\\" + m_self.m_objName, m_animList.m_list, "animation", true
-						);
-				}
-			}
-			if (imguiCheck("looped", &m_self.m_looped, m_self.m_activeSkinModel))
-			{
-				animEngine.stopAnim(m_self.m_animCtrl);
-				animEngine.playAnim(m_self.m_animCtrl, m_self.m_animName.c_str(), m_self.m_looped);
-			}
-
-			if (imguiCheck("stepped", &m_self.m_stepped, m_self.m_activeSkinModel))
-			{
-				if (m_self.m_stepped)
-					animEngine.pauseAnim(m_self.m_animCtrl);
-				else
-					animEngine.continueAnim(m_self.m_animCtrl);
-			}
-
-			if (imguiSlider("frames", &m_self.m_curFrame, 0.0f, m_self.m_numFrames, 1.0f, m_self.m_activeSkinModel && m_self.m_stepped))
-			{
-				animEngine.goToAnim(m_self.m_animCtrl, m_self.m_curFrame);
-			}
-
-			imguiUnindent();
-		}
-
-		imguiSeparatorLine();
-		imguiLabel("Sun:");
-		{
-			imguiIndent();
-			imguiSlider("sun yaw angle", &m_self.m_sunAngles.x, 0.0f, 360.0f, 0.5f);
-			imguiSlider("sun pitch angle", &m_self.m_sunAngles.y, 0.0f, 90.0f, 0.5f);
-			imguiUnindent();
-		}
-
-		imguiLabel("Material:");
-		{
-			imguiIndent();
-			imguiUnindent();
-		}
-		imguiLabel("Physics:");
-		{
-			static float mass = 0.0f;
-
-			imguiIndent();
-			imguiButton("choose node...");
-			imguiSlider("mass, kg", &mass, 0.0f, 500.0f, 0.1f);
-			imguiButton("choose shape type...");
-			{
-				imguiIndent();
-				imguiUnindent();
-			}
-			imguiUnindent();
-		}
-	}
-	imguiEndScrollArea();
+	//AnimationEngine& animEngine = Engine::instance().animationEngine();
+	//
+	//uint width	= rs().screenRes().width;
+	//uint height = rs().screenRes().height;
+	//
+	//imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
+	//{
+	//	imguiSeparatorLine();
+	//	imguiLabel("Models:");
+	//	{
+	//		imguiIndent();
+	//		if (imguiButton("Load"))
+	//		{
+	//			m_gameObjsList.m_enabled = !m_gameObjsList.m_enabled;
+	//			if (m_gameObjsList.m_enabled)
+	//			{
+	//				m_gameObjsList.m_list.clear();
+	//				FileSystem::instance().getFilesInDir(
+	//					"..\\resources\\models", m_gameObjsList.m_list, "xml", true
+	//					);
+	//			}
+	//		}
+	//		imguiUnindent();
+	//	}
+	//
+	//	imguiSeparatorLine();
+	//	imguiLabel("Animations:");
+	//	{
+	//		imguiIndent();
+	//		if (imguiButton("Load", m_self.m_activeSkinModel))
+	//		{
+	//			m_animList.m_enabled = !m_animList.m_enabled;
+	//			if (m_animList.m_enabled)
+	//			{
+	//				m_animList.m_list.clear();
+	//				FileSystem::instance().getFilesInDir(
+	//					"..\\resources\\models\\" + m_self.m_objName, m_animList.m_list, "animation", true
+	//					);
+	//			}
+	//		}
+	//		if (imguiCheck("looped", &m_self.m_looped, m_self.m_activeSkinModel))
+	//		{
+	//			animEngine.stopAnim(m_self.m_animCtrl);
+	//			animEngine.playAnim(m_self.m_animCtrl, m_self.m_animName.c_str(), m_self.m_looped);
+	//		}
+	//
+	//		if (imguiCheck("stepped", &m_self.m_stepped, m_self.m_activeSkinModel))
+	//		{
+	//			if (m_self.m_stepped)
+	//				animEngine.pauseAnim(m_self.m_animCtrl);
+	//			else
+	//				animEngine.continueAnim(m_self.m_animCtrl);
+	//		}
+	//
+	//		if (imguiSlider("frames", &m_self.m_curFrame, 0.0f, m_self.m_numFrames, 1.0f, m_self.m_activeSkinModel && m_self.m_stepped))
+	//		{
+	//			animEngine.goToAnim(m_self.m_animCtrl, m_self.m_curFrame);
+	//		}
+	//
+	//		imguiUnindent();
+	//	}
+	//
+	//	imguiSeparatorLine();
+	//	imguiLabel("Sun:");
+	//	{
+	//		imguiIndent();
+	//		imguiSlider("sun yaw angle", &m_self.m_sunAngles.x, 0.0f, 360.0f, 0.5f);
+	//		imguiSlider("sun pitch angle", &m_self.m_sunAngles.y, 0.0f, 90.0f, 0.5f);
+	//		imguiUnindent();
+	//	}
+	//
+	//	imguiLabel("Material:");
+	//	{
+	//		imguiIndent();
+	//		imguiUnindent();
+	//	}
+	//	imguiLabel("Physics:");
+	//	{
+	//		static float mass = 0.0f;
+	//
+	//		imguiIndent();
+	//		imguiButton("choose node...");
+	//		imguiSlider("mass, kg", &mass, 0.0f, 500.0f, 0.1f);
+	//		imguiButton("choose shape type...");
+	//		{
+	//			imguiIndent();
+	//			imguiUnindent();
+	//		}
+	//		imguiUnindent();
+	//	}
+	//}
+	//imguiEndScrollArea();
 
 	//-- display combo box.
 	displayGameObjs();
@@ -391,48 +422,48 @@ void Editor::UI::update()
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::displayGameObjs()
 {
-	if (m_gameObjsList.m_enabled)
-	{
-		uint width	= rs().screenRes().width;
-		uint height = rs().screenRes().height;
-
-		imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_gameObjsList.m_scroll);
-
-		for (uint i = 0; i < m_gameObjsList.m_list.size(); ++i)
-		{
-			const char* name = m_gameObjsList.m_list[i].c_str();
-
-			if (imguiItem(name))
-			{
-				m_self.loadGameObj(name);
-				m_gameObjsList.m_enabled = false;
-			}
-		}
-		imguiEndScrollArea();
-	}
+	//if (m_gameObjsList.m_enabled)
+	//{
+	//	uint width	= rs().screenRes().width;
+	//	uint height = rs().screenRes().height;
+	//
+	//	imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_gameObjsList.m_scroll);
+	//
+	//	for (uint i = 0; i < m_gameObjsList.m_list.size(); ++i)
+	//	{
+	//		const char* name = m_gameObjsList.m_list[i].c_str();
+	//
+	//		if (imguiItem(name))
+	//		{
+	//			m_self.loadGameObj(name);
+	//			m_gameObjsList.m_enabled = false;
+	//		}
+	//	}
+	//	imguiEndScrollArea();
+	//}
 }
 
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::displayAnimation()
 {
-	if (m_animList.m_enabled)
-	{
-		uint width	= rs().screenRes().width;
-		uint height = rs().screenRes().height;
-
-		imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_animList.m_scroll);
-
-		for (uint i = 0; i < m_animList.m_list.size(); ++i)
-		{
-			const char* name = m_animList.m_list[i].c_str();
-
-			if (imguiItem(name))
-			{
-				m_self.loadAnimation(name);
-				m_animList.m_enabled = false;
-			}
-		}
-		imguiEndScrollArea();
-	}
+	//if (m_animList.m_enabled)
+	//{
+	//	uint width	= rs().screenRes().width;
+	//	uint height = rs().screenRes().height;
+	//
+	//	imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_animList.m_scroll);
+	//
+	//	for (uint i = 0; i < m_animList.m_list.size(); ++i)
+	//	{
+	//		const char* name = m_animList.m_list[i].c_str();
+	//
+	//		if (imguiItem(name))
+	//		{
+	//			m_self.loadAnimation(name);
+	//			m_animList.m_enabled = false;
+	//		}
+	//	}
+	//	imguiEndScrollArea();
+	//}
 }
 

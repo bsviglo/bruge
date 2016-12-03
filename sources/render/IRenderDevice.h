@@ -122,9 +122,9 @@ namespace render
 		
 		//-- drawing operations.
 		void			draw(EPrimitiveTopology topology, uint first, uint count);
-		void			drawIndexed(EPrimitiveTopology topology, uint first, uint count);
+		void			drawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count);
 		void			drawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
-		void			drawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount);
+		void			drawIndexedInstanced(EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount);
 
 		//-- state objects.
 		void			setRasterizerState(RasterizerStateID state);
@@ -174,9 +174,9 @@ namespace render
 		virtual void				doCopyTexture(ITexture* src, ITexture* dst) = 0;
 
 		virtual void				doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
-		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint count) = 0;
+		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count) = 0;
 		virtual void				doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
-		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
+		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount) = 0;
 
 		virtual void				doClear(uint clearFlags, const Color& color, float depth, uint8 stencil) = 0;
 		virtual void				doClearColorRT(ITexture* crt, const Color& color) = 0;
@@ -263,11 +263,7 @@ namespace render
 		HWND				m_hWnd;
 		VideoMode			m_videoMode;
 
-		//-- watchers.
-		uint				m_primitivesCount;
-		uint				m_drawCallsCount;
-		//uint				m_textureMemoryUsed;
-		//uint				m_videoMemoryUsed;			
+		RenderStatistics	m_statistics;		
 	};
 
 } // render
