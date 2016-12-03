@@ -1,5 +1,4 @@
 #include "Player.hpp"
-#include "console/Console.h"
 #include "math/Matrix4x4.hpp"
 #include "math/math_funcs.hpp"
 #include "render/render_common.h"
@@ -210,8 +209,6 @@ void Player::moveByMouse(float dx, float /*dy*/)
 //--------------------------------------------------------------------------------------------------
 void Player::moveByKey(float dt)
 {
-	if (Console::instance().visible()) return;
-
 	//-- calculate multiplier and adjust it by time.
 	float multiplier = (SDL_GetModState() & KMOD_SHIFT) ? 2.0f : 1.0f;
 	multiplier *= dt;

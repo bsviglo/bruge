@@ -3,12 +3,9 @@
 #include "Camera.h"
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
-#include "gui/imgui_render.hpp"
-#include "console/Console.h"
 #include "console/TimingPanel.h"
 #include "console/WatchersPanel.h"
 #include "DebugDrawer.h"
-#include "gui/imgui_render.hpp"
 #include "decal_manager.hpp"
 #include "light_manager.hpp"
 #include "mesh_manager.hpp"
@@ -29,7 +26,6 @@ namespace render
 	RenderWorld::RenderWorld()
 		:	m_debugDrawer(new DebugDrawer),
 			m_decalManager(new DecalManager),
-			m_imguiRender(new imguiRender),
 			m_lightsManager(new LightsManager),
 			m_meshManager(new MeshManager),
 			m_shadowManager(new ShadowManager),
@@ -51,7 +47,6 @@ namespace render
 		bool success = true;
 		success &= m_debugDrawer->init();
 		success &= m_decalManager->init();
-		success &= m_imguiRender->init();
 		success &= m_lightsManager->init();
 		success &= m_meshManager->init();
 		success &= m_terrainSystem->init();
@@ -211,8 +206,6 @@ namespace render
 
 			TimingPanel::instance().visualize();
 			WatchersPanel::instance().visualize();
-
-			m_imguiRender->draw();
 		}
 	}
 

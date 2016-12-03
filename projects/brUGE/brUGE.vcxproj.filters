@@ -66,9 +66,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\sources\console\Console.cpp">
-      <Filter>console</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp">
       <Filter>console</Filter>
     </ClCompile>
@@ -106,9 +103,6 @@
       <Filter>render\framework</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp">
-      <Filter>render\framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\Font.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\render_system.cpp">
@@ -179,9 +173,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\sources\console\Console.h">
-      <Filter>console</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\console\Functors.h">
       <Filter>console</Filter>
     </ClInclude>
@@ -240,9 +231,6 @@
       <Filter>render\framework</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\DebugDrawer.h">
-      <Filter>render\framework</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\Font.h">
       <Filter>render\framework</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h">

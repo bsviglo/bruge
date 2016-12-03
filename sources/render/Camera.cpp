@@ -1,6 +1,5 @@
 #include "Camera.h"
 #include "render_system.hpp"
-#include "console/Console.h"
 #include "console/WatchersPanel.h"
 
 namespace brUGE

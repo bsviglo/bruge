@@ -8,7 +8,6 @@
 #include "render/physic_world.hpp"
 #include "render/post_processing.hpp"
 #include "render/terrain_system.hpp"
-#include "gui/imgui.h"
 #include "Player.hpp"
 #include "Zombie.hpp"
 
@@ -155,7 +154,7 @@ bool Demo::init()
 		}
 */
 
-		for (uint i = 0; i < 1250; ++i)
+		for (uint i = 0; i < 250; ++i)
 		{
 			mat.setIdentity();
 			//mat.postRotateX(degToRad(-90.0f));
@@ -227,30 +226,30 @@ void Demo::gui()
 	//-- ToDo:
 	m_imguiActive = false;// InputManager::instance().isKeyDown(DIK_LCONTROL);
 
-	if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
-		m_imguiActive = true;
-
-	for (uint i = 0; i < 20; ++i)
-	{
-		imguiSeparatorLine();
-		imguiSlider("Slider", &slider[i], 0.0f, 20.0f, 0.01f);
-	}
-
-	imguiCheck("Show Log", &showLog);
-	imguiCheck("Show Tools", &showTools);
-
-	imguiSeparator();
-	imguiLabel("Sample");
-	if (imguiButton("Hello BronX!"))
-	{
-	
-	}
-
-	imguiSeparator();
-	imguiLabel("Input Mesh");
-	imguiButton("Hello again BronX!!!");
-
-	imguiEndScrollArea();
+	//if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
+	//	m_imguiActive = true;
+	//
+	//for (uint i = 0; i < 20; ++i)
+	//{
+	//	imguiSeparatorLine();
+	//	imguiSlider("Slider", &slider[i], 0.0f, 20.0f, 0.01f);
+	//}
+	//
+	//imguiCheck("Show Log", &showLog);
+	//imguiCheck("Show Tools", &showTools);
+	//
+	//imguiSeparator();
+	//imguiLabel("Sample");
+	//if (imguiButton("Hello BronX!"))
+	//{
+	//
+	//}
+	//
+	//imguiSeparator();
+	//imguiLabel("Input Mesh");
+	//imguiButton("Hello again BronX!!!");
+	//
+	//imguiEndScrollArea();
 }
 
 //-------------------------------------------------------------------------------------------------

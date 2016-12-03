@@ -3,7 +3,6 @@
 #include "vertex_format.hpp"
 #include "os/FileSystem.h"
 #include "loader/ResourcesManager.h"
-#include "console/Console.h"
 
 //-- ToDo: reconsider.
 #include "engine/Engine.h"

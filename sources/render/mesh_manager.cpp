@@ -3,7 +3,6 @@
 #include "game_world.hpp"
 #include "DebugDrawer.h"
 #include "utils/string_utils.h"
-#include "console/Console.h"
 #include "loader/ResourcesManager.h"
 
 using namespace brUGE::utils;

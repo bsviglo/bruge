@@ -1,5 +1,6 @@
 #include "ui_system.hpp"
-#include "render/render_common.h"
+#include "render/render_system.hpp"
+#include "loader/ResourcesManager.h"
 #include "SDL/SDL_clipboard.h"
 
 namespace
@@ -10,6 +11,8 @@ namespace
 
 namespace brUGE
 {
+	using namespace render;
+
 namespace ui
 {
 	//----------------------------------------------------------------------------------------------
@@ -23,7 +26,7 @@ namespace ui
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool System::init(const render::VideoMode& videoMode)
+	bool System::init(const VideoMode& videoMode)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeyMap[ImGuiKey_Tab]			= SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
@@ -51,6 +54,9 @@ namespace ui
 		io.SetClipboardTextFn			= [] (void*, const char* text) { SDL_SetClipboardText(text); };
 		io.GetClipboardTextFn			= [] (void*) -> const char* { return SDL_GetClipboardText(); };
 		io.ClipboardUserData			= nullptr;
+
+		//--
+		setupRender();
 
 		return true;
 	}
@@ -90,10 +96,15 @@ namespace ui
 	//----------------------------------------------------------------------------------------------
 	void System::draw()
 	{
-		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-		ImGuiIO& io = ImGui::GetIO();
+		//--
 		ImGui::Render();
 		auto* drawData = ImGui::GetDrawData();
+
+		if (drawData->TotalIdxCount >= (2 << 15) || drawData->TotalVtxCount >= (2 << 15))
+		{
+			assert(true && "Too many triangles in UI");
+			return;
+		}
 
 		float L = 0.0f;
         float R = ImGui::GetIO().DisplaySize.x;
@@ -102,18 +113,6 @@ namespace ui
 
 		mat4f orthoMat;
 		orthoMat.setOrthoOffCenterProj(L, R, B, T, 0.0f, 1.0f);
-
-		// Orthographic projection for (0,0)-(w,h)
-		//auto displaySize = Vector4((float)fbWidth, (float)fbHeight, 0.0f, 1.0f);
-		//Matrix projection;
-		//Matrix world;
-		//projection.orthogonalProjection(displaySize.x, -displaySize.y, -1.0f, 1.0f);
-		//world.setTranslate(Vector3(-displaySize.x, -displaySize.y, 0.0f) * 0.5f);
-		//if (impl->useHalfTexelOffset)
-		//	world.postTranslateBy(Vector3(0.5f, 0.5f, 0));
-		//world.postMultiply(projection);
-		//
-		//effectBinding->setMatrix("g_transform", world);
 
 		void* vb = m_vb->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
 		void* ib = m_ib->map<void>(IBuffer::ACCESS_WRITE_DISCARD);
@@ -139,10 +138,11 @@ namespace ui
 
 		rd()->setDepthStencilState(m_stateDS, 0);
 		rd()->setRasterizerState(m_stateR);
-		rd()->setBlendState(m_stateB, NULL, 0xffffffff);
+		rd()->setBlendState(m_stateB, nullptr, 0xffffffff);
 
 		rd()->setVertexLayout(m_vl);
 		rd()->setVertexBuffer(0, m_vb.get());
+		rd()->setIndexBuffer(m_ib.get());
 		rd()->setShader(m_shader.get());
 
 		// Render command lists
@@ -160,10 +160,14 @@ namespace ui
 		        }
 		        else
 		        {
-		            //const D3D10_RECT r = { (LONG)pcmd->ClipRect.x, (LONG)pcmd->ClipRect.y, (LONG)pcmd->ClipRect.z, (LONG)pcmd->ClipRect.w };
-		            //ctx->PSSetShaderResources(0, 1, (ID3D10ShaderResourceView**)&pcmd->TextureId);
-		            //ctx->RSSetScissorRects(1, &r);
-		            //rd()->drawIndexed(pcmd->ElemCount, idx_offset, vtx_offset);
+					rd()->setScissorRect(
+						cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z - cmd->ClipRect.x, cmd->ClipRect.w - cmd->ClipRect.y);
+
+					m_shader->setTexture("g_texture", static_cast<ITexture*>(cmd->TextureId), m_stateS);
+					m_shader->setMat4f("g_transform", orthoMat);
+					m_shader->setBool("g_useTexture", cmd->TextureId);
+
+					rd()->drawIndexed(PRIM_TOPOLOGY_TRIANGLE_LIST, idxOffset, vtxOffset, cmd->ElemCount);
 		        }
 		        idxOffset += cmd->ElemCount;
 		    }
@@ -181,7 +185,7 @@ namespace ui
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool System::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
+	bool System::handleMouseMotionEvent(const SDL_MouseMotionEvent&)
 	{
 		return true;
 	}
@@ -213,6 +217,86 @@ namespace ui
 	{
 		ImGui::GetIO().AddInputCharactersUTF8(e.text);
 		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void System::setupRender()
+	{
+		bool success = true;
+
+		//-- shader and vertex layout.
+		{
+			success &= (m_shader = ResourcesManager::instance().loadShader("ui"));
+
+			VertexDesc desc[] =
+			{
+				{ 0, SEMANTIC_POSITION, TYPE_FLOAT, 2 },
+				{ 0, SEMANTIC_TEXCOORD, TYPE_FLOAT, 2 },
+				{ 0, SEMANTIC_COLOR,	TYPE_BYTE,  4 }
+			};
+			success &= ((m_vl = rd()->createVertexLayout(desc, 3, *m_shader.get())) != INVALID_ID);
+		}
+
+		//-- render states.
+		{
+			SamplerStateDesc samplerDesc;
+			samplerDesc.minMagFilter = SamplerStateDesc::FILTER_BILINEAR;
+			samplerDesc.wrapS = SamplerStateDesc::ADRESS_MODE_WRAP;
+			samplerDesc.wrapT = SamplerStateDesc::ADRESS_MODE_WRAP;
+			m_stateS = rd()->createSamplerState(samplerDesc);
+
+			DepthStencilStateDesc dsDesc;
+			dsDesc.depthEnable = false;
+			m_stateDS = rd()->createDepthStencilState(dsDesc);
+
+			RasterizerStateDesc rDesc;
+			rDesc.scissorEnable = true;
+			m_stateR = rd()->createRasterizedState(rDesc);
+
+			BlendStateDesc bDesc;
+			bDesc.blendEnable[0] = true;
+			bDesc.srcBlend = BlendStateDesc::BLEND_FACTOR_SRC_ALPHA;
+			bDesc.destBlend = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.blendOp = BlendStateDesc::BLEND_OP_ADD;
+			bDesc.srcBlendAlpha = BlendStateDesc::BLEND_FACTOR_INV_SRC_ALPHA;
+			bDesc.destBlendAlpha = BlendStateDesc::BLEND_FACTOR_ZERO;
+			bDesc.blendAlphaOp = BlendStateDesc::BLEND_OP_ADD;
+			m_stateB = rd()->createBlendState(bDesc);
+		}
+
+		//-- buffers 
+		{
+			success &= (m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, (2 << 15), sizeof(ImDrawVert),
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+			));
+
+			success &= (m_ib = rd()->createBuffer(IBuffer::TYPE_INDEX, NULL, (2 << 15), sizeof(ImDrawIdx),
+				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
+			));
+		}
+
+		//-- font
+		{
+			byte* pixels = nullptr;
+			int width = 0, height = 0;
+			ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+			ITexture::Desc fontTexDesc;
+			fontTexDesc.texType = ITexture::TYPE_2D;
+			fontTexDesc.format = ITexture::FORMAT_RGBA8;
+			fontTexDesc.mipLevels = 1;
+			fontTexDesc.bindFalgs = ITexture::BIND_SHADER_RESOURCE;
+			fontTexDesc.width  = width;
+			fontTexDesc.height = height;
+
+			ITexture::Data data = { pixels, static_cast<uint>(width * 4), 0 };
+			success &= (m_texture = rd()->createTexture(fontTexDesc, &data, 1));
+
+			// Store our identifier
+			ImGui::GetIO().Fonts->TexID = m_texture.get();
+		}
+
+		assert(success && "Not All resources has been created.");
 	}
 
 }

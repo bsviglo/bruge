@@ -190,7 +190,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\sources\console\Console.cpp" />
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
     <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
     <ClCompile Include="..\..\sources\engine\Engine.cpp" />
@@ -221,7 +220,6 @@
     <ClCompile Include="..\..\sources\render\game_world.cpp" />
     <ClCompile Include="..\..\sources\render\Camera.cpp" />
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
-    <ClCompile Include="..\..\sources\render\Font.cpp" />
     <ClCompile Include="..\..\sources\render\light_manager.cpp" />
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
@@ -242,7 +240,6 @@
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\sources\console\Console.h" />
     <ClInclude Include="..\..\sources\console\Functors.h" />
     <ClInclude Include="..\..\sources\console\TimingPanel.h" />
     <ClInclude Include="..\..\sources\console\WatchersPanel.h" />
@@ -292,7 +289,6 @@
     <ClInclude Include="..\..\sources\render\physic_world.hpp" />
     <ClInclude Include="..\..\sources\render\Camera.h" />
     <ClInclude Include="..\..\sources\render\DebugDrawer.h" />
-    <ClInclude Include="..\..\sources\render\Font.h" />
     <ClInclude Include="..\..\sources\render\Mesh.hpp" />
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />
     <ClInclude Include="..\..\sources\render\render_system.hpp" />

@@ -218,31 +218,6 @@ namespace brUGE
 */
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<render::Font> ResourcesManager::loadFont(const char* name, uint size, const vec2ui& glyphsRange)
-	{
-		std::string realName = makeStr("%s_%d", name, size);
-
-		Ptr<Font> result = m_fontsCache.find(realName.c_str());
-		if (!result.isValid())
-		{
-			FileSystem& fs = FileSystem::instance();
-
-			RODataPtr data = fs.readFile(makeStr("%s%s.ttf", m_resPath.c_str(), name).c_str());
-			if (!data.get())
-			{
-				return NULL;
-			}
-
-			result = new Font(realName.c_str(), *data.get(), size, glyphsRange);
-			if (result)
-			{
-				m_fontsCache.add(realName.c_str(), result);
-			}
-		}
-		return result;
-	}
-
-	//----------------------------------------------------------------------------------------------
 	bool ResourcesManager::makeSharedShaderConstants(const char* name, const Ptr<IBuffer>& newBuffer)
 	{
 		bool result = false;
@@ -255,7 +230,5 @@ namespace brUGE
 
 		return result;
 	}
-
-
 
 } // brUGE

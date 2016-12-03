@@ -1,8 +1,7 @@
 #include "TimingPanel.h"
-#include "Console.h"
 #include "utils/string_utils.h"
 #include "loader/ResourcesManager.h"
-#include "gui/imgui.h"
+#include "gui/imgui/imgui.h"
 
 using namespace brUGE::render;
 using namespace brUGE::utils;
@@ -77,18 +76,18 @@ namespace brUGE
 	{
 		if (!m_isVisible) return;
 
-		uint height = rs().screenRes().height;
-
-		imguiBeginScrollArea("Real-time timing console", 10, height*0.4, 400, height*0.6-10, &m_scroll);
-		{
-			imguiLabel(
-				makeStr("Stats: %.3f us (%.2f fps).",
-				m_totalFrameTime * 1000.0f, 1.0f / m_totalFrameTime).c_str()
-				);
-
-			_recursiveVisualize(m_root);
-		}
-		imguiEndScrollArea();
+		//uint height = rs().screenRes().height;
+		//
+		//imguiBeginScrollArea("Real-time timing console", 10, height*0.4, 400, height*0.6-10, &m_scroll);
+		//{
+		//	imguiLabel(
+		//		makeStr("Stats: %.3f us (%.2f fps).",
+		//		m_totalFrameTime * 1000.0f, 1.0f / m_totalFrameTime).c_str()
+		//		);
+		//
+		//	_recursiveVisualize(m_root);
+		//}
+		//imguiEndScrollArea();
 	}
 
 	//---------------------------------------------------------------------------------------------
@@ -121,28 +120,28 @@ namespace brUGE
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void TimingPanel::_recursiveVisualize(TimingPanel::MeasureNodeID nodeID)
+	void TimingPanel::_recursiveVisualize(TimingPanel::MeasureNodeID /*nodeID*/)
 	{
-		MeasureNode& node = _getNode(nodeID);
-
-		if (node.childs.empty())
-		{
-			imguiKeyValue(node.name.c_str(), node.visual.common.c_str());
-		}
-		else
-		{
-			imguiCollapse(node.name.c_str(), node.visual.common.c_str(), &node.visual.showChilds);
-			if (node.visual.showChilds)
-			{
-				imguiIndent();
-				for (uint i = 0; i < node.childs.size(); ++i)
-				{
-					_recursiveVisualize(node.childs[i]);
-				}
-				imguiKeyValue("<remainder>", node.visual.remainder.c_str());
-				imguiUnindent();
-			}
-		}
+		//MeasureNode& node = _getNode(nodeID);
+		//
+		//if (node.childs.empty())
+		//{
+		//	imguiKeyValue(node.name.c_str(), node.visual.common.c_str());
+		//}
+		//else
+		//{
+		//	imguiCollapse(node.name.c_str(), node.visual.common.c_str(), &node.visual.showChilds);
+		//	if (node.visual.showChilds)
+		//	{
+		//		imguiIndent();
+		//		for (uint i = 0; i < node.childs.size(); ++i)
+		//		{
+		//			_recursiveVisualize(node.childs[i]);
+		//		}
+		//		imguiKeyValue("<remainder>", node.visual.remainder.c_str());
+		//		imguiUnindent();
+		//	}
+		//}
 	}
 
 	//---------------------------------------------------------------------------------------------

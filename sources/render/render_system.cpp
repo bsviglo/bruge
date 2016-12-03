@@ -7,7 +7,6 @@
 #include "materials.hpp"
 #include "SDL/SDL_loadso.h"
 
-#include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
 

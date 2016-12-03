@@ -2,7 +2,7 @@
 #include "IDemo.h"
 #include "Exception.h"
 #include "render/IRenderDevice.h"
-#include "gui/imgui.h"
+#include "gui/ui_system.hpp"
 
 #include "render/render_system.hpp"
 #include "render/render_world.hpp"
@@ -22,6 +22,7 @@ using namespace brUGE::math;
 
 namespace
 {
+	bool isRunning = true;
 	bool g_needToStartApp = true;
 	brUGE::render::ERenderAPIType g_renderAPI = RENDER_API_D3D11;
 	const char* const g_engineName = "black and red Unicorn Graphics Engine";
@@ -31,35 +32,26 @@ namespace brUGE
 {
 	DEFINE_SINGLETON(Engine)
 
-	bool	Engine::m_isRunning = true;
-	uint	Engine::m_maxFPS	= 60;  //-- ToDo: move to config.
-
 	//--------------------------------------------------------------------------------------------------
 	Engine::Engine() : 
 		m_logManager("log", true, false),
-		m_console(new Console()),
 		m_watchersPanel(new WatchersPanel()),
 		m_timingPanel(new TimingPanel()),
 		m_gameWorld(new GameWorld()),
 		m_animEngine(new AnimationEngine()),
 		m_renderWorld(new RenderWorld()),
 		m_resManager(new ResourcesManager()),
-		m_physicWorld(new PhysicWorld())
+		m_physicWorld(new PhysicWorld()),
+		m_uiSystem(new ui::System())
 	{
 		//-- register console commands.
-		REGISTER_CONSOLE_METHOD("sys_setMaxFPS", _setMaxFPS, Engine);
 		REGISTER_CONSOLE_METHOD("exit",			 _exit,		 Engine);
-
-		//-- register watchers.
-		REGISTER_RO_MEMBER_WATCHER("FPS", float, Engine, m_fps);
 	}
 
 	//--------------------------------------------------------------------------------------------------
 	Engine::~Engine()
 	{
-		// удaляемся не кидая при этом исключений. :)
 		shutdown();
-
 		SDL_Quit();
 	}
 
@@ -73,7 +65,7 @@ namespace brUGE
 
 		SDL_Window* window = SDL_CreateWindow(
 			g_engineName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			m_videoMode.width, m_videoMode.height, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_BORDERLESS
+			m_videoMode.width, m_videoMode.height, /*SDL_WINDOW_MAXIMIZED | */SDL_WINDOW_BORDERLESS
 		);
 
 		SDL_SysWMinfo info;
@@ -104,8 +96,11 @@ namespace brUGE
 		}
 		INFO_MSG("Init render system ... completed.");
 
-		//-- init console drawing mode.
-		m_console->initDrawingMode(m_videoMode);
+		if (!m_uiSystem->init(m_videoMode))
+		{
+			BR_EXCEPT("Can't init ui system.");
+		}
+		INFO_MSG("Init ui system ... completed.");
 		
 		//-- init timing panel.
 		if (!m_timingPanel->init())
@@ -162,7 +157,7 @@ namespace brUGE
 			m_demo.reset();
 		}
 		
-		m_console.reset();
+		m_uiSystem.reset();
 		m_watchersPanel.reset();
 		m_timingPanel.reset();
 		m_gameWorld.reset();
@@ -184,7 +179,7 @@ namespace brUGE
 		MSG msg = { 0 };
 
 		//-- do main cycle.
-		while (m_isRunning)
+		while (isRunning)
 		{
 			// calculate engine tick time.
 			newTime = SDL_GetPerformanceCounter();
@@ -201,7 +196,7 @@ namespace brUGE
 					case SDL_WINDOWEVENT_FOCUS_LOST:
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
-						m_isRunning = false;
+						isRunning = false;
 						break;
 					default:
 						break;
@@ -229,10 +224,12 @@ namespace brUGE
 				}
 				else if (event.type == SDL_QUIT)
 				{
-					m_isRunning = false;
-					return 0;
+					isRunning = false;
 				}
 			}
+
+			//--
+			m_uiSystem->tick(dt);
 
 			m_timingPanel->start();
 			{
@@ -242,11 +239,6 @@ namespace brUGE
 
 					//-- update timing panel.
 					m_timingPanel->update(dt);
-
-					//-- start updating imgui input.
-					imguiBeginFrame(
-						m_imguiInput.mx, m_imguiInput.my, m_imguiInput.button, m_imguiInput.scroll
-					);
 
 					m_gameWorld->beginUpdate(dt);
 
@@ -288,15 +280,10 @@ namespace brUGE
 
 					m_renderSys.beginFrame();
 					m_renderWorld->draw();
-					//-- ToDo: some old stuff.
-					drawFrame(dt);
-
+					m_demo->render(dt);
+					m_uiSystem->draw();
 					m_renderSys.endFrame();
 				}
-
-				//-- finish updating imgui input.
-				imguiEndFrame();
-				m_imguiInput.scroll = 0;
 			}
 			m_timingPanel->stop();
 		}
@@ -307,16 +294,13 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::stop()
 	{
-		m_isRunning = false;
+		isRunning = false;
 	}
 
 	//--------------------------------------------------------------------------------------------------
 	void Engine::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 	{
-		if		(e.button == SDL_BUTTON_LEFT  && e.state == SDL_PRESSED)	m_imguiInput.button = IMGUI_MBUT_LEFT;
-		else if (e.button == SDL_BUTTON_RIGHT && e.state == SDL_PRESSED)	m_imguiInput.button = IMGUI_MBUT_RIGHT;
-		else																m_imguiInput.button = 0;
-
+		m_uiSystem->handleMouseButtonEvent(e);
 		m_gameWorld->handleMouseButtonEvent(e);
 		m_demo->handleMouseButtonEvent(e);
 	}
@@ -324,9 +308,7 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 	{
-		m_imguiInput.mx		= e.x;
-		m_imguiInput.my		= Engine::instance().getVideoMode().height - e.y;
-
+		m_uiSystem->handleMouseMotionEvent(e);
 		m_gameWorld->handleMouseMotionEvent(e);
 		m_demo->handleMouseMotionEvent(e);
 	}
@@ -334,8 +316,7 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
 	{
-		m_imguiInput.scroll = -static_cast<int>(clamp<float>(-100, e.y, +100) / 5);
-
+		m_uiSystem->handleMouseWheelEvent(e);
 		m_gameWorld->handleMouseWheelEvent(e);
 		m_demo->handleMouseWheelEvent(e);
 	}
@@ -343,28 +324,35 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::handleKeyboardEvent(const SDL_KeyboardEvent& e)
 	{
-		if (e.keysym.sym == SDLK_BACKQUOTE && e.state == SDL_PRESSED)
-		{
-			m_console->visible(!m_console->visible());
-			return;
-		}
-		else if (e.keysym.sym == SDLK_F1 && e.state == SDL_PRESSED)
-		{
-			m_watchersPanel->visible(!m_watchersPanel->visible());
-			return;
-		}
-		else if (e.keysym.sym == SDLK_F2 && e.state == SDL_PRESSED)
-		{
-			m_timingPanel->visible(!m_timingPanel->visible());
-			return;
-		}
+		//if (e.keysym.sym == SDLK_BACKQUOTE && e.state == SDL_PRESSED)
+		//{
+		//	m_console->visible(!m_console->visible());
+		//	return;
+		//}
+		//else if (e.keysym.sym == SDLK_F1 && e.state == SDL_PRESSED)
+		//{
+		//	m_watchersPanel->visible(!m_watchersPanel->visible());
+		//	return;
+		//}
+		//else if (e.keysym.sym == SDLK_F2 && e.state == SDL_PRESSED)
+		//{
+		//	m_timingPanel->visible(!m_timingPanel->visible());
+		//	return;
+		//}
 
 		//-- ToDo: will be substituted with new imgui library
 		//if (m_console->visible() && m_console->handleKey(ke.keyCode, ke.state, ke.text))
 		//	return;
 
+		m_uiSystem->handleKeyboardEvent(e);
 		m_gameWorld->handleKeyboardEvent(e);
 		m_demo->handleKeyboardEvent(e);
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	void Engine::handleTextInputEvent(const SDL_TextInputEvent& e)
+	{
+		m_uiSystem->handleTextInputEvent(e);
 	}
 
 	//--------------------------------------------------------------------------------------------------
@@ -379,28 +367,13 @@ namespace brUGE
 	void Engine::drawFrame(float dt)
 	{
 		m_demo->render(dt);
-		m_console->draw();
-	}
-	
-	//--------------------------------------------------------------------------------------------------
-	void Engine::_fps()
-	{
-		//-- ToDo: fix it.
-		m_fps = 0.0f;
 	}
 
 	//--------------------------------------------------------------------------------------------------
 	int Engine::_exit()
 	{
 		ConPrint("Bye!");
-		m_isRunning = false;
-		return 0;
-	}
-
-	//--------------------------------------------------------------------------------------------------
-	int Engine::_setMaxFPS(int fps)
-	{
-		m_maxFPS = fps;
+		isRunning = false;
 		return 0;
 	}
 	

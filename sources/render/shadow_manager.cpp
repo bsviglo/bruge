@@ -7,8 +7,6 @@
 #include "math/math_all.hpp"
 #include "Camera.h"
 #include "console/WatchersPanel.h"
-#include "console/Console.h"
-#include "gui/imgui.h"
 
 //-- ToDo:
 #include "Engine/Engine.h"
@@ -584,47 +582,47 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void ShadowManager::UI::update()
 	{
-		uint width	= rs().screenRes().width;
-		uint height = rs().screenRes().height;
-		
-		imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
-		{
-			imguiCheck("enable shadows",	   &g_enableShadows);
-			imguiCheck("adjust shadow volume", &g_adjustShadowVolume);
-			imguiCheck("use culling matrix",   &g_useCullingMatrix);
-			imguiCheck("fit light to texels",  &g_fitLightToTexels);
-			imguiCheck("blur shadows",		   &g_blurShadows);
-
-			imguiSeparatorLine();
-			imguiLabel("split sheme:");
-			{
-				imguiIndent();
-				imguiCheck("auto split sheme", &m_self.m_autoSplitSheme);
-				imguiSlider("split sheme lambda", &m_self.m_splitShemeLambda, 0.0f, 1.0f, 0.01f);
-
-				imguiLabel("split planes:");
-				for (uint i = 1; i <= m_self.m_splitCount; ++i)
-				{
-					imguiSlider(
-						"split", &m_self.m_splitPlanes[i],
-						m_self.m_cameraFarNearDist.x, m_self.m_cameraFarNearDist.y, 0.1f,
-						!m_self.m_autoSplitSheme
-						);
-				}
-
-				imguiUnindent();
-			}
-
-			imguiSeparatorLine();
-			imguiLabel("biasing:");
-			{
-				imguiIndent();
-				imguiSlider("depth bias factor", &m_self.m_bias, 0.0f, 5.0f, 0.01f);
-				imguiSlider("depth slope scale bias units", &m_self.m_slopeScaleBias, 0.0f, 20.0f, 0.01f);
-				imguiUnindent();
-			}
-		}
-		imguiEndScrollArea();
+		//uint width	= rs().screenRes().width;
+		//uint height = rs().screenRes().height;
+		//
+		//imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
+		//{
+		//	imguiCheck("enable shadows",	   &g_enableShadows);
+		//	imguiCheck("adjust shadow volume", &g_adjustShadowVolume);
+		//	imguiCheck("use culling matrix",   &g_useCullingMatrix);
+		//	imguiCheck("fit light to texels",  &g_fitLightToTexels);
+		//	imguiCheck("blur shadows",		   &g_blurShadows);
+		//
+		//	imguiSeparatorLine();
+		//	imguiLabel("split sheme:");
+		//	{
+		//		imguiIndent();
+		//		imguiCheck("auto split sheme", &m_self.m_autoSplitSheme);
+		//		imguiSlider("split sheme lambda", &m_self.m_splitShemeLambda, 0.0f, 1.0f, 0.01f);
+		//
+		//		imguiLabel("split planes:");
+		//		for (uint i = 1; i <= m_self.m_splitCount; ++i)
+		//		{
+		//			imguiSlider(
+		//				"split", &m_self.m_splitPlanes[i],
+		//				m_self.m_cameraFarNearDist.x, m_self.m_cameraFarNearDist.y, 0.1f,
+		//				!m_self.m_autoSplitSheme
+		//				);
+		//		}
+		//
+		//		imguiUnindent();
+		//	}
+		//
+		//	imguiSeparatorLine();
+		//	imguiLabel("biasing:");
+		//	{
+		//		imguiIndent();
+		//		imguiSlider("depth bias factor", &m_self.m_bias, 0.0f, 5.0f, 0.01f);
+		//		imguiSlider("depth slope scale bias units", &m_self.m_slopeScaleBias, 0.0f, 20.0f, 0.01f);
+		//		imguiUnindent();
+		//	}
+		//}
+		//imguiEndScrollArea();
 	}
 
 

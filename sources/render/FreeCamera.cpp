@@ -1,5 +1,4 @@
 #include "FreeCamera.h"
-#include "console/Console.h"
 #include "console/WatchersPanel.h"
 #include "SDL/SDL_keyboard.h"
 
@@ -72,8 +71,6 @@ namespace brUGE
 	//------------------------------------------
 	void FreeCamera::moveByKey(float dt)
 	{
-		if (Console::instance().visible()) return;
-
 		//-- calculate multiplier and adjust it by time.
 		float multiplier = (SDL_GetModState() & KMOD_SHIFT) ? 2.0f : 1.0f;
 		multiplier *= dt;

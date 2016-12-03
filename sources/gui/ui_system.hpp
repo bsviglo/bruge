@@ -2,6 +2,7 @@
 
 #include "prerequisites.hpp"
 #include "imgui/imgui.h"
+#include "render/render_common.h"
 #include "SDL/SDL_events.h"
 
 namespace brUGE
@@ -28,16 +29,19 @@ namespace ui
 		bool	handleTextInputEvent(const SDL_TextInputEvent& e);
 
 	private:
-		Ptr<IBuffer>		m_vb;
-		Ptr<IBuffer>		m_ib;
-		Ptr<Material>		m_material;
-		RenderOps			m_geomROPs;
+		void	setupRender();
 
-		DepthStencilStateID m_stateDS;
-		BlendStateID		m_stateB;
-		RasterizerStateID	m_stateR;
-		RasterizerStateID	m_stateR_scissor;
-		SamplerStateID		m_stateS;
+	private:
+		Ptr<render::ITexture>		m_texture;
+		Ptr<render::IBuffer>		m_vb;
+		Ptr<render::IBuffer>		m_ib;
+		Ptr<render::IShader>		m_shader;
+
+		render::VertexLayoutID		m_vl;
+		render::DepthStencilStateID m_stateDS;
+		render::BlendStateID		m_stateB;
+		render::RasterizerStateID	m_stateR;
+		render::SamplerStateID		m_stateS;
 	};
 
 } // ui
