@@ -89,25 +89,25 @@ bool Demo::init()
 		//-- add plane.
 		gameWorld.addGameObj("resources/models/plane.xml", &mat);
 
-		for (uint i = 0; i < 5; ++i)
+		for (uint i = 0; i < 3; ++i)
 		{
-			for (uint j = 0; j < 5; ++j)
+			for (uint j = 0; j < 3; ++j)
 			{
-				for (uint k = 0; k < 5; ++k)
+				for (uint k = 0; k < 3; ++k)
 				{
 					mat.setTranslation(i * 3.f, k * 3.f, j * 3.f);
-					mat.postTranslation(-5, 50, -5);
+					mat.postTranslation(-5, 25, -5);
 					gameWorld.addGameObj("resources/models/barrel.xml", &mat);
 				}
 			}
 		}
 
 		//-- test
-		for (uint i = 0; i < 5; ++i)
+		for (uint i = 0; i < 3; ++i)
 		{
-			for (uint j = 0; j < 5; ++j)
+			for (uint j = 0; j < 3; ++j)
 			{
-				for (uint k = 0; k < 5; ++k)
+				for (uint k = 0; k < 3; ++k)
 				{
 					mat.setTranslation(i * 5.f, k * 5.f, j * 5.f);
 					mat.postTranslation(-15, 25, -15);
@@ -116,13 +116,22 @@ bool Demo::init()
 			}
 		}
 
-		for (uint i = 0; i < 100; ++i)
+		for (uint i = 0; i < 80; ++i)
 		{
 			mat.setIdentity();
 			mat.setRotateY(random() * 6.24f);
 			mat.postTranslation(-random(100), 0.0f, -random(100));
 			mat.postTranslation(random(100), 0, random(100));
 			gameWorld.addGameObj("resources/models/palm.xml", &mat);
+		}
+
+		for (uint i = 0; i < 30; ++i)
+		{
+			mat.setIdentity();
+			mat.setRotateY(random() * 6.24f);
+			mat.postTranslation(-random(100), 0.0f, -random(100));
+			mat.postTranslation(random(100), 0, random(100));
+			gameWorld.addGameObj("resources/models/pole.xml", &mat);
 		}
 
 /*
@@ -135,14 +144,6 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
 		}
 
-		for (uint i = 0; i < 55; ++i)
-		{
-			mat.setIdentity();
-			mat.setRotateY(random() * 6.24f);
-			mat.postTranslation(-random(100), 0.0f, -random(100));
-			mat.postTranslation(random(100), 0, random(100));
-			gameWorld.addGameObj("resources/models/pole.xml", &mat);
-		}
 
 		for (uint i = 0; i < 55; ++i)
 		{
@@ -154,7 +155,7 @@ bool Demo::init()
 		}
 */
 
-		for (uint i = 0; i < 250; ++i)
+		for (uint i = 0; i < 100; ++i)
 		{
 			mat.setIdentity();
 			//mat.postRotateX(degToRad(-90.0f));
