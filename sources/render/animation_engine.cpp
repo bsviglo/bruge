@@ -189,7 +189,7 @@ namespace render
 		AnimationData* data = m_animCtrls[id];
 		assert(data);
 
-		Ptr<Animation> anim = getAnim(name);
+		auto anim = getAnim(name);
 		if (!anim)
 		{
 			WARNING_MSG("Can't load animation '%s'.", name);
@@ -299,7 +299,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Animation> AnimationEngine::getAnim(const char* name)
+	std::shared_ptr<Animation> AnimationEngine::getAnim(const char* name)
 	{
 		AnimationsMap::iterator iter = m_animations.find(name);
 		if (iter != m_animations.end())
@@ -308,13 +308,13 @@ namespace render
 		}
 		else
 		{
-			RODataPtr data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".animation");
-			if (!data.get())
+			auto data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".animation");
+			if (!data)
 			{
 				return NULL;
 			}
 
-			Ptr<Animation> result = new Animation();
+			auto result = std::make_shared<Animation>();
 			if (result->load(*data))
 			{
 				m_animations[name] = result;

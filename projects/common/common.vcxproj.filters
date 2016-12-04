@@ -12,9 +12,6 @@
     <ClCompile Include="..\..\sources\utils\ArgParser.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\utils\BSPTree.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\utils\LogManager.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -29,9 +26,6 @@
     <ClInclude Include="..\..\sources\utils\ArgParser.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\utils\BSPTree.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\utils\ComPtr.h">
       <Filter>utils</Filter>
     </ClInclude>
@@ -42,9 +36,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\os\os_utils.hpp">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\utils\Ptr.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\utils\Singleton.h">

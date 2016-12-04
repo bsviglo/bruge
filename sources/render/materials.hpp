@@ -51,15 +51,15 @@ namespace render
 		Materials();
 		~Materials();
 
-		bool					init();
+		bool								init();
 
-		Ptr<Material>			createMaterial			(const utils::ROData& data);
-		Ptr<Material>			createMaterial			(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
-		bool					createMaterials			(std::vector<Ptr<Material>>& out, const utils::ROData& data);
+		std::shared_ptr<Material>			createMaterial			(const utils::ROData& data);
+		std::shared_ptr<Material>			createMaterial			(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
+		bool								createMaterials			(std::vector<std::shared_ptr<Material>>& out, const utils::ROData& data);
 
-		Ptr<PipelineMaterial>	createPipelineMaterial	(const utils::ROData& data);
-		Ptr<PipelineMaterial>	createPipelineMaterial	(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
-		bool					createPipelineMaterials	(std::vector<Ptr<PipelineMaterial>>& out, const utils::ROData& data);
+		std::shared_ptr<PipelineMaterial>	createPipelineMaterial	(const utils::ROData& data);
+		std::shared_ptr<PipelineMaterial>	createPipelineMaterial	(const pugi::xml_node& section, MaterialUI* oUI = nullptr);
+		bool								createPipelineMaterials	(std::vector<std::shared_ptr<PipelineMaterial>>& out, const utils::ROData& data);
 
 	private:
 		bool loadProps(
@@ -112,7 +112,7 @@ namespace render
 
 
 	//----------------------------------------------------------------------------------------------
-	class PipelineMaterial : public RefCount, public NonCopyable
+	class PipelineMaterial : public NonCopyable
 	{
 		friend class Materials;
 		
@@ -147,7 +147,7 @@ namespace render
 	//-- Presents render system vision about the material. I.e. it manages the all things
 	//-- related to the resources management and loading.
 	//----------------------------------------------------------------------------------------------
-	class Material : public RefCount, public NonCopyable
+	class Material : public NonCopyable
 	{
 		friend class Materials;
 

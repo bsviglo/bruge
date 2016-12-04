@@ -1,7 +1,7 @@
 <game_object>
 
   <render file="models\barrel\barrel.mesh"/>
-  <physics/>
+  <physics file="models\barrel\barrel.phys"/>
   <audio/>
 
 </game_object>

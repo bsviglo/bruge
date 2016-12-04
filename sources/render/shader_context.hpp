@@ -10,8 +10,6 @@
 
 namespace brUGE
 {
-	typedef utils::Ptr<utils::ROData> RODataPtr;
-
 namespace render
 {
 
@@ -107,7 +105,7 @@ namespace render
 	class TextureProperty : public IProperty
 	{
 	public:
-		TextureProperty(const Ptr<ITexture>& texture, SamplerStateID state)
+		TextureProperty(const std::shared_ptr<ITexture>& texture, SamplerStateID state)
 			:	m_texture(texture), m_stateS(state) { }
 
 		virtual bool operator() (Handle handle, IShader& shader) const
@@ -120,15 +118,15 @@ namespace render
 			return shader.getHandleTexture(name);
 		}
 
-		void set(const Ptr<ITexture>& value = nullptr, SamplerStateID state = CONST_INVALID_HANDLE)
+		void set(const std::shared_ptr<ITexture>& value = nullptr, SamplerStateID state = CONST_INVALID_HANDLE)
 		{
-			if (value.isValid())				m_texture = value;
+			if (value)							m_texture = value;
 			if (state != CONST_INVALID_HANDLE)	m_stateS  = state;
 		}
 
 	private:
-		SamplerStateID	m_stateS;
-		Ptr<ITexture>	m_texture;
+		SamplerStateID				m_stateS;
+		std::shared_ptr<ITexture>	m_texture;
 	};
 
 
@@ -144,8 +142,8 @@ namespace render
 		virtual bool close(const void*& data);
 
 	private:
-		typedef std::pair<const void*, RODataPtr>	Include;
-		typedef std::vector<Include>				Includes;
+		typedef std::pair<const void*, std::shared_ptr<utils::ROData>>	Include;
+		typedef std::vector<Include>									Includes;
 
 		Includes    m_includes;
 		std::string m_path;
@@ -201,12 +199,12 @@ namespace render
 		Handle loadShader(const char* name, const std::vector<std::string>* pins);
 
 	private:
-		typedef std::pair<Ptr<IShader>, Properties>	ShaderPair;
-		typedef std::vector<ShaderPair>				ShaderAutoProperties;
-		typedef std::map<std::string, IProperty*>	AutoProperties;
-		typedef std::map<std::string, Handle>		ShaderSearchMap;
-		typedef std::auto_ptr<ShaderIncludeImpl>	ShaderIncludeImplPtr;
-		typedef std::auto_ptr<VertexDeclarations>	VertexDeclarationsPtr;
+		typedef std::pair<std::shared_ptr<IShader>, Properties>	ShaderPair;
+		typedef std::vector<ShaderPair>							ShaderAutoProperties;
+		typedef std::map<std::string, IProperty*>				AutoProperties;
+		typedef std::map<std::string, Handle>					ShaderSearchMap;
+		typedef std::unique_ptr<ShaderIncludeImpl>				ShaderIncludeImplPtr;
+		typedef std::unique_ptr<VertexDeclarations>				VertexDeclarationsPtr;
 
 		ShaderSearchMap		  m_searchMap;
 		ShaderAutoProperties  m_shaderCache;
@@ -241,10 +239,10 @@ namespace render
 			mat4f m_envTransform;
 		};
 
-		Ptr<IBuffer>		m_globalCB;
-		Ptr<IBuffer>		m_perframeCB;
-		GlobalConstants		m_globalConstants;
-		PerFrameConstants	m_perframeConstants;
+		std::shared_ptr<IBuffer>	m_globalCB;
+		std::shared_ptr<IBuffer>	m_perframeCB;
+		GlobalConstants				m_globalConstants;
+		PerFrameConstants			m_perframeConstants;
 	};
 
 } // render

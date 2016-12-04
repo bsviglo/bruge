@@ -1,7 +1,6 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include "Ptr.h"
 #include <vector>
 #include <string>
 #include <cassert>
@@ -13,7 +12,7 @@ namespace utils
 	
 	//-- Fixed sized, read only, non-copyable buffer with optionally memory control. 
 	//---------------------------------------------------------------------------------------------
-	class ROData : public RefCount
+	class ROData
 	{
 	public:
 		//-- Note: isOwner - interprets assigned pointer to need memory deallocation in the destructor.
@@ -139,7 +138,7 @@ namespace utils
 	//-- Variable sized, write only, non-copyable buffer with the own memory control.
 	//-- Note: This class based on the std::vector STL container.
 	//---------------------------------------------------------------------------------------------
-	class WOData : public RefCount
+	class WOData
 	{
 	public:
 		WOData() : m_pos(0)	{ }

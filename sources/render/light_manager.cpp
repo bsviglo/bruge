@@ -81,7 +81,7 @@ namespace render
 		{
 			m_unitCube = ResourcesManager::instance().loadMesh("system/meshes/box.mesh");
 
-			if (!m_unitCube.isValid())
+			if (!m_unitCube)
 			{
 				ERROR_MSG("Can't load system unit cube mesh.");
 				return false;
@@ -90,7 +90,7 @@ namespace render
 
 		//-- load material.
 		{
-			std::vector<Ptr<Material>> mtllib;
+			std::vector<std::shared_ptr<Material>> mtllib;
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/lights.mtl");
 			if (!file || !rs().materials().createMaterials(mtllib, *file))
 			{

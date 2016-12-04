@@ -92,7 +92,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool VertexDeclarations::init()
 	{
-		RODataPtr data = FileSystem::instance().readFile(cfg);
+		auto data = FileSystem::instance().readFile(cfg);
 		if (!data.get())
 		{
 			ERROR_MSG("Can't load vertex formats cfg file.");

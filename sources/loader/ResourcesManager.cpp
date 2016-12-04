@@ -39,10 +39,10 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<ITexture> ResourcesManager::loadTexture(const char* name)
+	std::shared_ptr<ITexture> ResourcesManager::loadTexture(const char* name)
 	{
-		Ptr<ITexture> result = m_texturesCache.find(name);
-		if (!result.isValid())
+		auto result = m_texturesCache.find(name);
+		if (!result)
 		{
 			FileSystem& fs = os::FileSystem::instance();
 
@@ -53,7 +53,7 @@ namespace brUGE
 			}
 
 			result = m_texLoader.loadTex2D(*data);
-			if (result.isValid())
+			if (result)
 			{
 				m_texturesCache.add(name, result);
 			}
@@ -62,10 +62,10 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<IShader> ResourcesManager::loadShader(const char* name, const ShaderMacro* macros, uint macrosCount)
+	std::shared_ptr<IShader> ResourcesManager::loadShader(const char* name, const ShaderMacro* macros, uint macrosCount)
 	{
-		Ptr<IShader> result = m_shadersCache.find(name);
-		if (!result.isValid())
+		auto result = m_shadersCache.find(name);
+		if (!result)
 		{
 			FileSystem&   fs = FileSystem::instance();
 			RenderSystem& rs = RenderSystem::instance();
@@ -93,12 +93,12 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Mesh> ResourcesManager::loadMesh(const char* name, bool /*simpleMaterial*/)
+	std::shared_ptr<Mesh> ResourcesManager::loadMesh(const char* name, bool /*simpleMaterial*/)
 	{
 		std::string meshName = FileSystem::getFileWithoutExt(name);
 
-		Ptr<Mesh> result = m_meshesCache.find(meshName.c_str());
-		if (!result.isValid())
+		auto result = m_meshesCache.find(meshName.c_str());
+		if (!result)
 		{
 			RODataPtr data = FileSystem::instance().readFile(m_resPath + name);
 			if (!data.get())
@@ -106,7 +106,7 @@ namespace brUGE
 				return NULL;
 			}
 		
-			result = new Mesh();
+			result = std::make_shared<Mesh>();
 			if (result->load(*data, meshName))
 			{
 				m_meshesCache.add(meshName.c_str(), result);
@@ -120,12 +120,12 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<SkinnedMesh> ResourcesManager::loadSkinnedMesh(const char* name)
+	std::shared_ptr<SkinnedMesh> ResourcesManager::loadSkinnedMesh(const char* name)
 	{
 		std::string meshName = FileSystem::getFileWithoutExt(name);
 
-		Ptr<SkinnedMesh> result = m_skinnedMeshesCache.find(meshName.c_str());
-		if (!result.isValid())
+		auto result = m_skinnedMeshesCache.find(meshName.c_str());
+		if (!result)
 		{
 			RODataPtr data = FileSystem::instance().readFile(m_resPath + name);
 			if (!data.get())
@@ -133,7 +133,7 @@ namespace brUGE
 				return NULL;
 			}
 
-			result = new SkinnedMesh();
+			result = std::make_shared<SkinnedMesh>();
 			if (!result->load(*data, meshName))
 			{
 				m_skinnedMeshesCache.add(meshName.c_str(), result);
@@ -218,14 +218,13 @@ namespace brUGE
 */
 
 	//----------------------------------------------------------------------------------------------
-	bool ResourcesManager::makeSharedShaderConstants(const char* name, const Ptr<IBuffer>& newBuffer)
+	bool ResourcesManager::makeSharedShaderConstants(const char* name, const std::shared_ptr<IBuffer>& newBuffer)
 	{
 		bool result = false;
 
-		for (Cache<IShader>::ResMap::iterator iter = m_shadersCache.begin();
-			 iter != m_shadersCache.end(); ++iter)
+		for (const auto& item : m_shadersCache)
 		{
-			result |= iter->second->changeUniformBuffer(name, newBuffer);
+			result |= item.second->changeUniformBuffer(name, newBuffer);
 		}
 
 		return result;

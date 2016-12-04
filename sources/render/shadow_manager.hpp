@@ -34,19 +34,19 @@ namespace render
 		void receiveShadows(const RenderCamera* rCam);
 
 	private:
-		uint			m_shadowMapRes;
-		Ptr<IBuffer>	m_fsQuadVB;
-		IBuffer*		m_pVB;
-		Ptr<Material>	m_shadowResolveMaterial;
-		Ptr<Material>	m_shadowBlurMaterial;
-		SamplerStateID  m_shadowMapSml;
-		Ptr<ITexture>	m_noiseMap;
-		SamplerStateID  m_noiseMapSml;
-		Ptr<ITexture>	m_blurMap;
-		SamplerStateID	m_blurMapSml;
-		RenderOps		m_receiveROPs;
-		RenderOps		m_castROPs;
-		RenderOps		m_blurROPs;
+		uint						m_shadowMapRes;
+		std::shared_ptr<IBuffer>	m_fsQuadVB;
+		IBuffer*					m_pVB;
+		std::shared_ptr<Material>	m_shadowResolveMaterial;
+		std::shared_ptr<Material>	m_shadowBlurMaterial;
+		SamplerStateID				m_shadowMapSml;
+		std::shared_ptr<ITexture>	m_noiseMap;
+		SamplerStateID				m_noiseMapSml;
+		std::shared_ptr<ITexture>	m_blurMap;
+		SamplerStateID				m_blurMapSml;
+		RenderOps					m_receiveROPs;
+		RenderOps					m_castROPs;
+		RenderOps					m_blurROPs;
 
 		//-- bias parameters.
 		float m_bias;
@@ -57,7 +57,7 @@ namespace render
 		float						m_splitShemeLambda;
 		vec2f						m_cameraFarNearDist;
 		uint						m_splitCount;
-		Ptr<ITexture>				m_shadowMaps;
+		std::shared_ptr<ITexture>	m_shadowMaps;
 		std::vector<RenderCamera>	m_shadowCameras;
 		std::vector<vec4ui>			m_shadowViewPorts;
 		std::vector<float>			m_splitPlanes;

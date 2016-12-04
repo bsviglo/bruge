@@ -61,22 +61,22 @@ private:
 
 private:
 	//-- anim
-	bool				m_activeSkinModel;
-	bool				m_looped;
-	bool				m_stepped;
-	float				m_curFrame;
-	float				m_numFrames;
-	std::string			m_objName;
-	std::string			m_animName;
-	Handle				m_animCtrl;
+	bool							m_activeSkinModel;
+	bool							m_looped;
+	bool							m_stepped;
+	float							m_curFrame;
+	float							m_numFrames;
+	std::string						m_objName;
+	std::string						m_animName;
+	Handle							m_animCtrl;
 
-	bool				m_guiActive;
-	UIPtr				m_ui;
-	Handle				m_gameObj;
-	Handle				m_sunLight;
-	vec2f				m_sunAngles;
-	vec3f				m_xyz;
-	mat4f				m_target;
-	mat4f				m_source;
-	Ptr<CursorCamera>	m_camera;
+	bool							m_guiActive;
+	UIPtr							m_ui;
+	Handle							m_gameObj;
+	Handle							m_sunLight;
+	vec2f							m_sunAngles;
+	vec3f							m_xyz;
+	mat4f							m_target;
+	mat4f							m_source;
+	std::shared_ptr<CursorCamera>	m_camera;
 };

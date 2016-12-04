@@ -129,16 +129,16 @@ namespace render
 		std::vector<GPUPointLight>	m_gpuPointLights;
 		std::vector<GPUSpotLight>	m_gpuSpotLights;
 
-		Ptr<IBuffer>	m_dirLightsTB;
-		Ptr<IBuffer>	m_pointLightsTB;
-		Ptr<IBuffer>	m_spotLightsTB;
-		Ptr<Mesh>		m_unitCube;
-		Ptr<IBuffer>	m_fsQuadVB;
-		IBuffer*		m_pVB;
-		Ptr<Material>	m_dirLightMaterial;
-		Ptr<Material>	m_spotLightMaterial;
-		Ptr<Material>	m_pointLightMaterial;
-		RenderOps		m_ROPs;
+		std::shared_ptr<IBuffer>	m_dirLightsTB;
+		std::shared_ptr<IBuffer>	m_pointLightsTB;
+		std::shared_ptr<IBuffer>	m_spotLightsTB;
+		std::shared_ptr<Mesh>		m_unitCube;
+		std::shared_ptr<IBuffer>	m_fsQuadVB;
+		IBuffer*					m_pVB;
+		std::shared_ptr<Material>	m_dirLightMaterial;
+		std::shared_ptr<Material>	m_spotLightMaterial;
+		std::shared_ptr<Material>	m_pointLightMaterial;
+		RenderOps					m_ROPs;
 	};
 
 } //-- render

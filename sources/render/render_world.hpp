@@ -6,7 +6,6 @@
 #include "Mesh.hpp"
 #include "render_system.hpp"
 #include "Camera.h"
-#include <memory>
 
 namespace brUGE
 {
@@ -36,7 +35,7 @@ namespace render
 
 		//-- resolve visibility.
 		void			update(float dt);
-		void			setCamera(const Ptr<Camera>& cam);
+		void			setCamera(const std::shared_ptr<Camera>& cam);
 		void			draw();
 
 		DecalManager&	decalManager()   { return *m_decalManager.get(); }
@@ -46,24 +45,15 @@ namespace render
 		PostProcessing& postProcessing() { return *m_postProcessing.get(); }
 	
 	private:
-		typedef std::unique_ptr<DebugDrawer>    DebugDrawerPtr;
-		typedef std::unique_ptr<DecalManager>   DecalManagerPtr;
-		typedef std::unique_ptr<LightsManager>  LightsManagerPtr;
-		typedef std::unique_ptr<MeshManager>    MeshManagerPtr;
-		typedef std::unique_ptr<ShadowManager>  ShadowManagerPtr;
-		typedef std::unique_ptr<PostProcessing> PostProcessingPtr;
-		//typedef std::unique_ptr<SkyBox>			SkyBoxPtr;
-		typedef std::unique_ptr<TerrainSystem>  TerrainSystemPtr;
-		
-		Ptr<Camera>		  m_camera;
-		DebugDrawerPtr	  m_debugDrawer;
-		DecalManagerPtr   m_decalManager;
-		LightsManagerPtr  m_lightsManager;
-		MeshManagerPtr	  m_meshManager;
-		ShadowManagerPtr  m_shadowManager;
-		PostProcessingPtr m_postProcessing;
-		//SkyBoxPtr		  m_skyBox;
-		TerrainSystemPtr  m_terrainSystem;
+		std::shared_ptr<Camera>			m_camera;
+		std::unique_ptr<DebugDrawer>	m_debugDrawer;
+		std::unique_ptr<DecalManager>   m_decalManager;
+		std::unique_ptr<LightsManager>  m_lightsManager;
+		std::unique_ptr<MeshManager>	m_meshManager;
+		std::unique_ptr<ShadowManager>  m_shadowManager;
+		std::unique_ptr<PostProcessing> m_postProcessing;
+		//std::unique_ptr<SkyBox>		  m_skyBox;
+		std::unique_ptr<TerrainSystem>  m_terrainSystem;
 	};
 
 } //-- render

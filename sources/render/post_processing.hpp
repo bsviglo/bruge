@@ -32,14 +32,14 @@ namespace render
 		void disable();
 
 		//-- find post-processing's render targets.
-		Ptr<ITexture> find(const char* rtName);
+		std::shared_ptr<ITexture> find(const char* rtName);
 
 	private:
 		//-- render target description.
 		struct RTDesc
 		{
-			Ptr<ITexture> m_rt;
-			vec2ui		  m_dims;
+			std::shared_ptr<ITexture>	m_rt;
+			vec2ui						m_dims;
 		};
 		typedef std::map<std::string, RTDesc> RenderTargetMap;
 
@@ -50,13 +50,13 @@ namespace render
 			{
 				Pass() : m_copyBB(false), m_enabled(false), m_clearRT(false), m_rt(nullptr) { }
 
-				bool		  m_copyBB;
-				bool		  m_enabled;
-				bool		  m_clearRT;
-				std::string   m_name;
-				ITexture*	  m_rt;
-				vec2ui		  m_dims;
-				Ptr<Material> m_material;
+				bool						m_copyBB;
+				bool						m_enabled;
+				bool						m_clearRT;
+				std::string					m_name;
+				ITexture*					m_rt;
+				vec2ui						m_dims;
+				std::shared_ptr<Material>	m_material;
 			};
 			typedef std::vector<Pass> Passes;
 
@@ -146,19 +146,19 @@ namespace render
 			);
 
 	private:
-		std::string		m_dir;
-		RenderTargetMap	m_rts;
-		RenderOps		m_rops;
-		Ptr<IBuffer>	m_fsQuad;
-		IBuffer*		m_pVB;
-		PostEffects		m_effects;
-		int				m_curEffectID;
+		std::string					m_dir;
+		RenderTargetMap				m_rts;
+		RenderOps					m_rops;
+		std::shared_ptr<IBuffer>	m_fsQuad;
+		IBuffer*					m_pVB;
+		PostEffects					m_effects;
+		int							m_curEffectID;
 
 		//-- optional UI interface.
 		//-- ToDo: Maybe it will be better to create a separate post-processing editor.
 		//--	   But for now it's very expensive in terms of time.
-		bool			m_uiEnabled;
-		UIPtr			m_ui;
+		bool						m_uiEnabled;
+		UIPtr						m_ui;
 	};
 
 } //-- render

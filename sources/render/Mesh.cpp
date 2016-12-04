@@ -114,7 +114,7 @@ namespace render
 			//-- create index buffer.
 			sm.m_numIndices = desc.m_indices.size();
 			sm.m_IB	= rd()->createBuffer(IBuffer::TYPE_INDEX,  &desc.m_indices[0], desc.m_indices.size(), sizeof(uint16));
-			success &= sm.m_IB;
+			success &= sm.m_IB.get() != nullptr;
 
 			//-- iterate over the whole set of streams and create of all them appropriate vertex buffers.
 			sm.m_VBs.resize(desc.m_streams.size());
@@ -127,7 +127,7 @@ namespace render
 					IBuffer::TYPE_VERTEX, &stream.m_vertices[0], desc.m_numVertices, stream.m_elemSize
 					);
 				sm.m_pVBs[j] = sm.m_VBs[j].get();
-				success &= sm.m_VBs[j];
+				success &= sm.m_VBs[j].get() != nullptr;
 			}
 		}
 
@@ -137,7 +137,7 @@ namespace render
 			//-- Note: materials lib may contain more then one material one for each model
 			//--	   submesh. Appropriate material selected by sequential number of the mesh.
 			std::string material = name + ".material";
-			std::vector<Ptr<PipelineMaterial>> mtllib;
+			std::vector<std::shared_ptr<PipelineMaterial>> mtllib;
 			RODataPtr mData = FileSystem::instance().readFile("resources/" + material);
 			if (!mData.get() || !rs().materials().createPipelineMaterials(mtllib, *mData.get()))
 			{
@@ -295,26 +295,26 @@ namespace render
 		m_submeshes.resize(descs.size());
 		for (uint i = 0; i < descs.size(); ++i)
 		{
-			const SubMesh::Desc& desc = descs[i];
-			SubMesh&			 sm   = m_submeshes[i];
+			const auto& desc = descs[i];
+			auto&		sm   = m_submeshes[i];
 
 			//-- create index buffer.
 			sm.m_numIndices = desc.m_indices.size();
 			sm.m_IB	= rd()->createBuffer(IBuffer::TYPE_INDEX,  &desc.m_indices[0], desc.m_indices.size(), sizeof(uint16));
-			success &= sm.m_IB;
+			success &= sm.m_IB.get() != nullptr;
 
 			//-- iterate over the whole set of streams and create of all them appropriate vertex buffers.
 			sm.m_VBs.resize(desc.m_streams.size());
 			sm.m_pVBs.resize(desc.m_streams.size());
 			for (uint j = 0; j < desc.m_streams.size(); ++j)
 			{
-				const SubMesh::Desc::Stream& stream = desc.m_streams[j];
+				const auto& stream = desc.m_streams[j];
 
 				sm.m_VBs[j] = rd()->createBuffer(
 					IBuffer::TYPE_VERTEX, &stream.m_vertices[0], desc.m_numVertices, stream.m_elemSize
 					);
 				sm.m_pVBs[j] = sm.m_VBs[j].get();
-				success &= sm.m_VBs[j];
+				success &= sm.m_VBs[j].get() != nullptr;
 			}
 		}
 
@@ -324,7 +324,7 @@ namespace render
 			//-- Note: materials lib may contain more then one material one for each model
 			//--	   submesh. Appropriate material selected by sequential number of the mesh.
 			std::string material = name + ".material";
-			std::vector<Ptr<PipelineMaterial>> mtllib;
+			std::vector<std::shared_ptr<PipelineMaterial>> mtllib;
 			RODataPtr mData = FileSystem::instance().readFile("resources/" + material);
 			if (!mData.get() || !rs().materials().createPipelineMaterials(mtllib, *mData.get()))
 			{

@@ -100,7 +100,7 @@ namespace
 
 	//-- The same as createSingleStripGrid but creates triangles list.
 	//----------------------------------------------------------------------------------------------
-	Ptr<IBuffer> createSingleListGrid(
+	std::shared_ptr<IBuffer> createSingleListGrid(
 		uint16 xVerts, uint16 yVerts, uint16 xStep, uint16 yStep, uint16 stride, uint8 bridges)
 	{
 		//-- the total number of indices is equal to the grid nodes count i.e. (xVerts - 1) * (yVerts - 1)
@@ -272,7 +272,7 @@ namespace
 	//-- Warning: trimmer currenly not implemented.
 	//-- ToDo: implement LOD trimmer.
 	//----------------------------------------------------------------------------------------------
-	Ptr<IBuffer> createSingleStripGrid(
+	std::shared_ptr<IBuffer> createSingleStripGrid(
 		uint16 xVerts, uint16 yVerts, uint16 xStep, uint16 yStep, uint16 stride, uint8 /*bridges*/)
 	{
 		uint16 totalStrips		  = yVerts - 1;
@@ -704,7 +704,7 @@ namespace render
 			IBuffer::TYPE_VERTEX, &vertices[0], vertices.size(),  sizeof(VertexXZUV)
 			);
 
-		return m_sharedVB.isValid();
+		return m_sharedVB.get() != nullptr;
 	}
 
 	//-- create the unique vertex buffer for the desired sector.
@@ -759,7 +759,7 @@ namespace render
 		//-- add a new sector to the sectors list.
 		m_sectors[index] = tSector;
 
-		return m_uniqueVBs[index].isValid();
+		return m_uniqueVBs[index].get() != nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -783,7 +783,7 @@ namespace render
 				m_primTopology = PRIM_TOPOLOGY_TRIANGLE_LIST;
 				m_IBLODs[i][j] = createSingleListGrid(verts, verts, step, step, m_sectorVerts, j);
 #endif
-				if (!m_IBLODs[i][j].isValid())
+				if (!m_IBLODs[i][j])
 					return false;
 			}
 		}

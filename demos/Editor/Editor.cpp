@@ -86,7 +86,7 @@ bool Editor::init()
 	proj.nearDist = 0.1f;
 	proj.farDist  = 100.0f;
 
-	m_camera = new CursorCamera(proj);
+	m_camera = std::make_shared<CursorCamera>(proj);
 	m_camera->source(&m_source);
 	m_camera->target(&m_target);
 	m_camera->update(true, 0.0f);

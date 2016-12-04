@@ -287,7 +287,7 @@ namespace render
 
 		//-- load material.
 		{
-			std::vector<Ptr<Material>> mtllib;
+			std::vector<std::shared_ptr<Material>> mtllib;
 			RODataPtr file = FileSystem::instance().readFile("resources/materials/shadows.mtl");
 			if (!file || !rs().materials().createMaterials(mtllib, *file))
 			{

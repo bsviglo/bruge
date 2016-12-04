@@ -209,12 +209,12 @@ namespace brUGE
 
 			//-- 5. create a new uniform buffer.
 			{
-				Ptr<IBuffer> buffer = m_device.createBuffer(IBuffer::TYPE_UNIFORM, NULL, 1, size,
+				auto buffer = m_device.createBuffer(IBuffer::TYPE_UNIFORM, NULL, 1, size,
 					//IBuffer::USAGE_DEFAULT, IBuffer::CPU_ACCESS_NONE
 					IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 				);
 
-				ubuffer.m_buffer = buffer.downCast<DXBuffer>();
+				ubuffer.m_buffer = std::static_pointer_cast<DXBuffer>(buffer);
 			}
 
 			//-- 6. set currently created buffer as shader resource.
@@ -405,13 +405,13 @@ namespace brUGE
 		}
 
 		//----------------------------------------------------------------------------------------------
-		bool DXShader::doChangeUniformBuffer(Handle handle, const Ptr<IBuffer>& newBuffer)
+		bool DXShader::doChangeUniformBuffer(Handle handle, const std::shared_ptr<IBuffer>& newBuffer)
 		{
-			if (handle == CONST_INVALID_HANDLE || !newBuffer.isValid())
+			if (handle == CONST_INVALID_HANDLE || !newBuffer)
 				return false;
 
 			UBuffer& ub = m_ubuffers[handle];
-			ub.m_buffer = newBuffer.downCast<DXBuffer>();
+			ub.m_buffer = std::static_pointer_cast<DXBuffer>(newBuffer);
 			ub.m_isDirty = false;
 
 			for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
@@ -480,33 +480,25 @@ namespace brUGE
 			ID3D11DeviceContext* c = dxDevice().immediateContext();
 
 			//-- ToDo: reconsider.
-			static bool isInited = false;
-			static ID3D11ShaderResourceView* resources[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
-			static ID3D11SamplerState*		 samplers[D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT];
-			static ID3D11Buffer*			 buffers[D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT];
-			if (!isInited)
-			{
-				memset(resources, NULL, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT);
-				memset(samplers, NULL, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT);
-				memset(buffers, NULL, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT);
-				isInited = true;
-			}
+			static std::array<ID3D11ShaderResourceView*, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT>	resources	= { nullptr };
+			static std::array<ID3D11SamplerState*, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT>				samplers	= { nullptr };
+			static std::array<ID3D11Buffer*, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT>			buffers		= { nullptr };
 
 			c->VSSetShader(NULL, NULL, 0);
 			c->GSSetShader(NULL, NULL, 0);
 			c->PSSetShader(NULL, NULL, 0);
 
-			c->VSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, resources);
-			c->VSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, samplers);
-			c->VSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, buffers);
+			c->VSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, &resources[0]);
+			c->VSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, &samplers[0]);
+			c->VSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, &buffers[0]);
 
-			c->GSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, resources);
-			c->GSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, samplers);
-			c->GSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, buffers);
+			c->GSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, &resources[0]);
+			c->GSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, &samplers[0]);
+			c->GSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, &buffers[0]);
 
-			c->PSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, resources);
-			c->PSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, samplers);
-			c->PSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, buffers);
+			c->PSSetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, &resources[0]);
+			c->PSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, &samplers[0]);
+			c->PSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, &buffers[0]);
 		}
 
 		//------------------------------------------

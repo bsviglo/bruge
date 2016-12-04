@@ -96,34 +96,34 @@ namespace render
 			IBuffer*				m_VBs[2];
 		};
 
-		std::vector<TerrainSector> m_sectors;
-		uint16					   m_sectorsCount;  //-- count per dimension. I.e. row and column size is equal.
-		uint8					   m_sectorSize;	//-- size in cells of the sector 1-128
-		uint8					   m_sectorVerts;   //-- size in vertex's count per sector = m_sectorSize + 1
-		float					   m_unitsPerCell;  //-- units per sector cell in meters.
-		float					   m_heightUnits;   //-- units for height value.
-		float					   m_LODDistances[CHUNK_LODS_COUNT];
-		float					   m_sectorRadius;  //-- radius of the circumsphere around sector.
-		AABB					   m_aabb;			//-- the whole terrain AABB.
+		std::vector<TerrainSector>				m_sectors;
+		uint16									m_sectorsCount;  //-- count per dimension. I.e. row and column size is equal.
+		uint8									m_sectorSize;	//-- size in cells of the sector 1-128
+		uint8									m_sectorVerts;   //-- size in vertex's count per sector = m_sectorSize + 1
+		float									m_unitsPerCell;  //-- units per sector cell in meters.
+		float									m_heightUnits;   //-- units for height value.
+		float									m_LODDistances[CHUNK_LODS_COUNT];
+		float									m_sectorRadius;  //-- radius of the circumsphere around sector.
+		AABB									m_aabb;			//-- the whole terrain AABB.
 		
 		//-- rendering data.
-		EPrimitiveTopology			m_primTopology;
-		Ptr<IBuffer>				m_IBLODs[CHUNK_LODS_COUNT][CHUNK_LODS_BRIDGES];
-		Ptr<IBuffer>				m_sharedVB;
-		std::vector<Ptr<IBuffer>>	m_uniqueVBs;
-		std::vector<TerrainSector*> m_visibleSectors;
+		EPrimitiveTopology						m_primTopology;
+		std::shared_ptr<IBuffer>				m_IBLODs[CHUNK_LODS_COUNT][CHUNK_LODS_BRIDGES];
+		std::shared_ptr<IBuffer>				m_sharedVB;
+		std::vector<std::shared_ptr<IBuffer>>	m_uniqueVBs;
+		std::vector<TerrainSector*>				m_visibleSectors;
 
 		//-- ToDo: terrain data. May be it will be needed for physics.
-		uint16						m_tableSize;   //-- size of the table in horizontal and vertical dims.
-		std::vector<float>			m_heightTable;
-		std::vector<vec3f>			m_normalTable;
+		uint16									m_tableSize;   //-- size of the table in horizontal and vertical dims.
+		std::vector<float>						m_heightTable;
+		std::vector<vec3f>						m_normalTable;
 
 		//-- Terrain materials.
-		Ptr<PipelineMaterial>		m_material;
-		RenderOps					m_ROPs;
+		std::shared_ptr<PipelineMaterial>		m_material;
+		RenderOps								m_ROPs;
 
 		//-- ToDo:
-		bool						m_loaded;
+		bool									m_loaded;
 	};
 
 } //-- render

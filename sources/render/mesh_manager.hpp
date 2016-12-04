@@ -24,10 +24,10 @@ namespace render
 			const char* fileName;
 		};
 
-		Ptr<Mesh>		 m_mesh;
-		Ptr<SkinnedMesh> m_skinnedMesh;
-		MatrixPalette	 m_worldPalette;
-		Transform*		 m_transform;
+		std::shared_ptr<Mesh>			m_mesh;
+		std::shared_ptr<SkinnedMesh>	m_skinnedMesh;
+		MatrixPalette					m_worldPalette;
+		Transform*						m_transform;
 	};
 
 
@@ -48,11 +48,8 @@ namespace render
 		MeshInstance&		getMesh(Handle handle);
 
 	private:
-		typedef std::unique_ptr<MeshCollector> MeshCollectorPtr;
-		typedef std::vector<MeshInstance*> MeshInstances;
-
-		MeshInstances    m_meshInstances;
-		MeshCollectorPtr m_meshCollector;
+		std::vector<MeshInstance*>		m_meshInstances;
+		std::unique_ptr<MeshCollector>	m_meshCollector;
 	};
 
 } //-- render

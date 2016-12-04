@@ -98,8 +98,8 @@ namespace
 		}
 
 	private:
-		Ptr<IBuffer>   m_matrixPaletteTB;
-		ShaderContext& m_sc;
+		std::shared_ptr<IBuffer>	m_matrixPaletteTB;
+		ShaderContext&				m_sc;
 	};
 
 
@@ -365,7 +365,7 @@ namespace render
 	{
 		FileSystem& fs = FileSystem::instance();
 
-		RODataPtr data = fs.readFile(makeStr("resources/shaders/%s.%s",
+		auto data = fs.readFile(makeStr("resources/shaders/%s.%s",
 			name, (rs().gapi() == RENDER_API_GL3 ? "glsl" : "hlsl"))
 			);
 		if (!data.get())
@@ -392,7 +392,7 @@ namespace render
 
 		uint64 startTime = SDL_GetPerformanceCounter();
 
-		Ptr<IShader> shader = rd()->createShader(
+		auto shader = rd()->createShader(
 			src.c_str(), macroses.empty() ? nullptr : &macroses[0], macroses.size()
 			);
 
@@ -535,7 +535,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool ShaderIncludeImpl::open(const char* name, const void*& data, uint& size)
 	{
-		RODataPtr file = FileSystem::instance().readFile(m_path + std::string(name));
+		auto file = FileSystem::instance().readFile(m_path + std::string(name));
 		if (file.get())
 		{
 			data = file->ptr();

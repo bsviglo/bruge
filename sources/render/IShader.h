@@ -36,7 +36,7 @@ namespace render
 	//--	   If you want to make the different uniform blocks or to update it independently You have
 	//--	   to make their with the different names. 		
 	//----------------------------------------------------------------------------------------------
-	class IShader : public utils::RefCount, public NonCopyable
+	class IShader :  public NonCopyable
 	{
 	public:
 		enum EShaderType
@@ -89,8 +89,8 @@ namespace render
 
 		//-- the main usage of this function is to make this uniform block shared
 		//-- between other shaders.
-		bool	changeUniformBuffer		(Handle id, const Ptr<IBuffer>& newBuffer)					{ return doChangeUniformBuffer(id, newBuffer); }
-		bool	changeUniformBuffer		(const char* name, const Ptr<IBuffer>& newBuffer)			{ Handle id = doGetHandleUniformBlock(name); return doChangeUniformBuffer(id, newBuffer); }
+		bool	changeUniformBuffer		(Handle id, const std::shared_ptr<IBuffer>& newBuffer)				{ return doChangeUniformBuffer(id, newBuffer); }
+		bool	changeUniformBuffer		(const char* name, const std::shared_ptr<IBuffer>& newBuffer)		{ Handle id = doGetHandleUniformBlock(name); return doChangeUniformBuffer(id, newBuffer); }
 
 	protected:
 		IShader() { }
@@ -122,7 +122,7 @@ namespace render
 		virtual bool	doSetUniformBlock		(Handle id, const void* data, uint size) = 0;
 		virtual bool	doSetTextureBuffer		(Handle id, IBuffer* buffer) = 0;
 
-		virtual bool	doChangeUniformBuffer	(Handle id, const Ptr<IBuffer>& newBuffer) = 0;
+		virtual bool	doChangeUniformBuffer	(Handle id, const std::shared_ptr<IBuffer>& newBuffer) = 0;
 	};
 
 } // render

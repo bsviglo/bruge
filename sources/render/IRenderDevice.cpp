@@ -200,7 +200,7 @@ namespace render
 	}
 
 	//------------------------------------------
-	Ptr<IShader> IRenderDevice::createShader(
+	std::shared_ptr<IShader> IRenderDevice::createShader(
 		const char *src, const ShaderMacro *macros, uint count)
 	{
 		std::string strSrc(src);

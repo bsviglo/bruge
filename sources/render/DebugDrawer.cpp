@@ -84,7 +84,7 @@ namespace render
 			//-- check result.
 			for (uint i = 0; i < MT_COUNT; ++i)
 			{
-				if (!m_meshes[i].isValid())
+				if (!m_meshes[i])
 				{
 					ERROR_MSG("Failed to load one of the system models.");
 					return false;

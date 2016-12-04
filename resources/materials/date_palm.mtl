@@ -1,26 +1,46 @@
-<materials>
-  <material use="bump_alpha_test">
-    <properties>
-      <property name="diffuseMap" type="texture" value="textures/date_palm/DatePalmFrond.dds">
-        <sampler filter="ANISO" wrapping="WRAP"/>
-      </property>
-      <property name="bumpMap" type="texture" value="textures/date_palm/DatePalmFrond_Normal.dds">
-        <sampler filter="ANISO" wrapping="WRAP"/>
-      </property>
-      <property name="g_alphaRef" type="byte" value="128"/>
-    </properties>
-    <render_states>
-      <state name="doubleSided" value="true"/>
-    </render_states>
-  </material>
-	<material use="bump">
-		<properties>
-			<property name="diffuseMap" type="texture" value="textures/date_palm/DatePalmBark.dds">
-        <sampler filter="ANISO" wrapping="WRAP"/>
-      </property>
-      <property name="bumpMap" type="texture" value="textures/date_palm/DatePalmBark_Normal.dds">
-        <sampler filter="ANISO" wrapping="WRAP"/>
-      </property>
-		</properties>
-	</material>
-</materials>
+{
+  "materials" : [
+    {
+      "type" : "bump_alpha_test",
+      "properties" : [
+        {
+          "type" : "texture",
+          "name" : "diffuseMap",
+          "value" : "textures/date_palm/DatePalmFrond.dds",
+          "sampler" : { "filter" : "ANISO", "wrapping" : "WRAP"}
+        },
+        {
+          "type" : "texture",
+          "name" : "normalMap",
+          "value" : "textures/date_palm/DatePalmFrond_Normal.dds",
+          "sampler" : { "filter" : "ANISO", "wrapping" : "WRAP"}
+        },
+        {
+          "type" : "byte",
+          "name" : "g_alphaRef",
+          "value" : 128,          
+        }
+      ],
+      "render_state" : [
+        { "name" : "doubleSided", "value" : true }
+      ]
+    },
+    {
+      "type" : "bump",
+      "properties" : [
+        {
+          "type" : "texture",
+          "name" : "diffuseMap",
+          "value" : "textures/date_palm/DatePalmFrond.dds",
+          "sampler" : { "filter" : "ANISO", "wrapping" : "WRAP"}
+        },
+        {
+          "type" : "texture",
+          "name" : "normalMap",
+          "value" : "textures/date_palm/DatePalmFrond_Normal.dds",
+          "sampler" : { "filter" : "ANISO", "wrapping" : "WRAP"}
+        }
+      ]
+    }
+  ]
+}
