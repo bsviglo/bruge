@@ -220,7 +220,7 @@ namespace render
 				compareFunc(COMPARE_FUNC_NEVER),
 				borderColour(Color(0.0f, 0.0f, 0.0f, 0.0f)),
 				minLoad(0.0f),
-				maxLoad(1000000.0f/*FLT_MAX*/) {} // TODO: продумать откуда взять константу FLT_MAX.
+				maxLoad(FLT_MAX) {}
 
 		ETexFilter		minMagFilter;
 		ETexAddressMode	wrapS;

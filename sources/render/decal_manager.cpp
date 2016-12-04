@@ -50,7 +50,7 @@ namespace render
 		//-- load decals textures.
 		std::unique_ptr<TextureProperty> prop;
 		{
-			Ptr<ITexture> tex = ResourcesManager::instance().loadTexture("textures/decal.dds");
+			auto tex = ResourcesManager::instance().loadTexture("textures/decal.dds");
 
 			SamplerStateDesc sDesc;
 			sDesc.minMagFilter	= SamplerStateDesc::FILTER_TRILINEAR_ANISO;
@@ -80,7 +80,7 @@ namespace render
 		{
 			m_unitCube = ResourcesManager::instance().loadMesh("system/meshes/box.mesh");
 
-			if (!m_unitCube.isValid())
+			if (!m_unitCube)
 			{
 				ERROR_MSG("Can't load system unit cube mesh.");
 				return false;

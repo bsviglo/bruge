@@ -33,13 +33,13 @@ namespace render
 		//------------------------------------------------------------------------------------------
 		struct Instance
 		{
-			Ptr<Mesh>		   m_mesh;
-			std::vector<mat4f> m_buffer;
+			std::shared_ptr<Mesh>	m_mesh;
+			std::vector<mat4f>		m_buffer;
 		};
 
-		std::vector<Instance>   m_instances;
-		RenderSystem::EPassType m_pass;
-		Ptr<IBuffer>			m_instanceTB;
+		std::vector<Instance>		m_instances;
+		RenderSystem::EPassType		m_pass;
+		std::shared_ptr<IBuffer>	m_instanceTB;
 	};
 
 } //-- render

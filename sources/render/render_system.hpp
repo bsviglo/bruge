@@ -8,7 +8,6 @@
 #include "render/state_objects.h"
 #include "render/shader_context.hpp"
 
-#include <memory>
 #include <vector>
 #include <map>
 
@@ -85,12 +84,12 @@ namespace render
 
 		struct PassDesc
 		{
-			Ptr<ITexture>		m_rt;
-			DepthStencilStateID m_stateDS;
-			RasterizerStateID	m_stateR;
-			RasterizerStateID	m_stateR_doubleSided;
-			RasterizerStateID	m_stateR_wireframe;
-			BlendStateID		m_stateB;
+			std::shared_ptr<ITexture>	m_rt;
+			DepthStencilStateID			m_stateDS;
+			RasterizerStateID			m_stateR;
+			RasterizerStateID			m_stateR_doubleSided;
+			RasterizerStateID			m_stateR_wireframe;
+			BlendStateID				m_stateB;
 		};
 
 	public:
@@ -144,28 +143,25 @@ namespace render
 		void _doDraw(RenderOps& ops);
 
 	private:
-		typedef std::unique_ptr<ShaderContext>  ShaderContextPtr;
-		typedef std::unique_ptr<Materials>		MaterialsPtr;
+		VideoMode							m_videoMode;
+		ScreenResolution					m_screenRes;
+		ERenderAPIType						m_renderAPI;
+		void*								m_renderModuleDLL;
+		std::unique_ptr<ShaderContext>		m_shaderContext;
+		std::unique_ptr<Materials>			m_materials;
 
-		VideoMode			m_videoMode;
-		ScreenResolution	m_screenRes;
-		ERenderAPIType		m_renderAPI;
-		void*				m_renderModuleDLL;
-		ShaderContextPtr	m_shaderContext;
-		MaterialsPtr		m_materials;
-
-		const RenderCamera*	m_camera;
-		EPassType			m_pass;
-		RenderOps			m_renderOps;
+		const RenderCamera*					m_camera;
+		EPassType							m_pass;
+		RenderOps							m_renderOps;
 
 		//-- last view projection matrix.
-		mat4f				m_lastViewProjMat;
-		mat4f				m_invLastViewProjMat;
+		mat4f								m_lastViewProjMat;
+		mat4f								m_invLastViewProjMat;
 
 		//-- some addition resources for different render passes.
-		PassDesc			m_passes[PASS_COUNT];
+		std::array<PassDesc, PASS_COUNT>	m_passes;
 
-		IRenderDevice* 		m_device; // deleting performed after closing library *Render.dll
+		IRenderDevice* 						m_device; // deleting performed after closing library *Render.dll
 	};
 
 	inline IRenderDevice* rd() { return RenderSystem::instance().device(); }

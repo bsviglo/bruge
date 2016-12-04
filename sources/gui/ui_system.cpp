@@ -226,7 +226,7 @@ namespace ui
 
 		//-- shader and vertex layout.
 		{
-			success &= (m_shader = ResourcesManager::instance().loadShader("ui"));
+			success &= !!(m_shader = ResourcesManager::instance().loadShader("ui"));
 
 			VertexDesc desc[] =
 			{
@@ -266,11 +266,11 @@ namespace ui
 
 		//-- buffers 
 		{
-			success &= (m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, (2 << 15), sizeof(ImDrawVert),
+			success &= !!(m_vb = rd()->createBuffer(IBuffer::TYPE_VERTEX, NULL, (2 << 15), sizeof(ImDrawVert),
 				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 			));
 
-			success &= (m_ib = rd()->createBuffer(IBuffer::TYPE_INDEX, NULL, (2 << 15), sizeof(ImDrawIdx),
+			success &= !!(m_ib = rd()->createBuffer(IBuffer::TYPE_INDEX, NULL, (2 << 15), sizeof(ImDrawIdx),
 				IBuffer::USAGE_DYNAMIC, IBuffer::CPU_ACCESS_WRITE
 			));
 		}
@@ -290,7 +290,7 @@ namespace ui
 			fontTexDesc.height = height;
 
 			ITexture::Data data = { pixels, static_cast<uint>(width * 4), 0 };
-			success &= (m_texture = rd()->createTexture(fontTexDesc, &data, 1));
+			success &= !!(m_texture = rd()->createTexture(fontTexDesc, &data, 1));
 
 			// Store our identifier
 			ImGui::GetIO().Fonts->TexID = m_texture.get();

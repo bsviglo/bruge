@@ -6,7 +6,6 @@
 #include "render/render_system.hpp"
 #include "render/materials.hpp"
 #include "math/math_all.hpp"
-#include "utils/BSPTree.h"
 #include "utils/Data.hpp"
 #include <vector>
 
@@ -17,7 +16,7 @@ namespace render
 
 	// 
 	//----------------------------------------------------------------------------------------------
-	class Mesh : public utils::RefCount
+	class Mesh
 	{
 	public:
 		//------------------------------------------------------------------------------------------
@@ -37,12 +36,12 @@ namespace render
 				std::vector<Stream>		m_streams;
 			};
 
-			uint16							m_numIndices;
-			Ptr<IBuffer>					m_IB;
-			std::vector<Ptr<IBuffer>>		m_VBs;
-			mutable std::vector<IBuffer*>	m_pVBs;
-			Ptr<PipelineMaterial>			m_pMaterial;
-			Ptr<Material>					m_sMaterial;
+			uint16									m_numIndices;
+			std::shared_ptr<IBuffer>				m_IB;
+			std::vector<std::shared_ptr<IBuffer>>	m_VBs;
+			mutable std::vector<IBuffer*>			m_pVBs;
+			std::shared_ptr<PipelineMaterial>		m_pMaterial;
+			std::shared_ptr<Material>				m_sMaterial;
 		};
 		typedef std::vector<SubMesh> SubMeshes; 
 
@@ -85,7 +84,7 @@ namespace render
 
 	//--
 	//----------------------------------------------------------------------------------------------
-	class SkinnedMesh : public utils::RefCount
+	class SkinnedMesh
 	{
 	public:
 		//------------------------------------------------------------------------------------------
@@ -105,12 +104,12 @@ namespace render
 				std::vector<Stream>		m_streams;
 			};
 
-			uint16							m_numIndices;
-			Ptr<IBuffer>					m_IB;
-			std::vector<Ptr<IBuffer>>		m_VBs;
-			mutable std::vector<IBuffer*>	m_pVBs;
-			Ptr<PipelineMaterial>			m_pMaterial;
-			Ptr<Material>					m_sMaterial;
+			uint16									m_numIndices;
+			std::shared_ptr<IBuffer>				m_IB;
+			std::vector<std::shared_ptr<IBuffer>>	m_VBs;
+			mutable std::vector<IBuffer*>			m_pVBs;
+			std::shared_ptr<PipelineMaterial>		m_pMaterial;
+			std::shared_ptr<Material>				m_sMaterial;
 		};
 		typedef std::vector<SubMesh> SubMeshes; 
 

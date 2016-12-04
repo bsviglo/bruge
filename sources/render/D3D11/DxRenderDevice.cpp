@@ -10,9 +10,14 @@ using namespace brUGE::render;
 namespace
 {
 	//-- helper function, give us short write of often used conversion.
-	inline DXTexture* toDxTex(const Ptr<ITexture>& iTex)
+	inline DXTexture* toDxTex(const std::shared_ptr<ITexture>& iTex)
 	{
 		return static_cast<DXTexture*>(iTex.get());
+	}
+
+	inline DXTexture* toDxTex(ITexture* iTex)
+	{
+		return static_cast<DXTexture*>(iTex);
 	}
 
 	//--
@@ -172,7 +177,7 @@ namespace render
 			desc.format    		= ITexture::FORMAT_RGBA8;
 			desc.bindFalgs 		= ITexture::BIND_RENDER_TARGET | ITexture::BIND_SHADER_RESOURCE;
 			
-			Ptr<DXTexture> texture = new DXTexture(desc);
+			auto texture = std::make_shared<DXTexture>(desc);
 			if (!texture->init(pBackBuffer))
 			{
 				return false;
@@ -202,8 +207,7 @@ namespace render
 				desc.bindFalgs = ITexture::BIND_DEPTH_STENCIL | ITexture::BIND_SHADER_RESOURCE;
 			}
 			
-
-			Ptr<DXTexture> texture = new DXTexture(desc);
+			auto texture = std::make_shared<DXTexture>(desc);
 			if (!texture->init())
 			{
 				return false;
@@ -341,7 +345,7 @@ namespace render
 			for (uint i = 0; i < MAX_MRTS; ++i)
 				m_dxCurColorRTs[i] = m_curRTs.colors[i] ? toDxTex(m_curRTs.colors[i])->getRTView() : NULL;
 
-			c->OMSetRenderTargets(MAX_MRTS, m_dxCurColorRTs, m_dxCurDepthRT);
+			c->OMSetRenderTargets(MAX_MRTS, &m_dxCurColorRTs[0], m_dxCurDepthRT);
 			m_isRTsChangeStateDirty = false;
 		}
 		
@@ -349,7 +353,7 @@ namespace render
 		{
 			c->RSSetState(m_dxRasterStates[m_curRasterState]);
 			c->OMSetDepthStencilState(m_dxDepthStates[m_curDepthState.id], m_curDepthState.stencilRef);
-			c->OMSetBlendState(m_dxBlendStates[m_curBlendState.id], m_curBlendState.factor, m_curBlendState.sampleMask);
+			c->OMSetBlendState(m_dxBlendStates[m_curBlendState.id], &m_curBlendState.factor[0], m_curBlendState.sampleMask);
 		}
 		
 		//-- 3. set input layout, primitive topology, index- and vertex-buffers.
@@ -373,8 +377,8 @@ namespace render
 					m_dxCurVBStreamsStrides[i] = vbs.buffer->getElemSize();
 				}
 			}
-			c->IASetVertexBuffers(0, m_curVBStreamsCount, m_dxCurVBStreams,
-				m_dxCurVBStreamsStrides, m_dxCurVBStreamsOffsets);
+			c->IASetVertexBuffers(0, m_curVBStreamsCount, &m_dxCurVBStreams[0],
+				&m_dxCurVBStreamsStrides[0], &m_dxCurVBStreamsOffsets[0]);
 		}
 	
 		//-- 4. set shader program.
@@ -447,22 +451,22 @@ namespace render
 	}
 
 	//------------------------------------------
-	Ptr<IBuffer> DXRenderDevice::doCreateBuffer(
+	std::shared_ptr<IBuffer> DXRenderDevice::doCreateBuffer(
 		IBuffer::EType type, const void* data, uint elemCount, uint elemSize,
 		IBuffer::EUsage usage, IBuffer::ECPUAccess cpuAccess)
 	{
-		Ptr<DXBuffer> dxBuffer = new DXBuffer(type, usage, cpuAccess);
-		if (dxBuffer->init(data, elemCount, elemSize))
-			return dxBuffer;
+		auto buffer = std::make_shared<DXBuffer>(type, usage, cpuAccess);
+		if (buffer->init(data, elemCount, elemSize))
+			return buffer;
 
 		return NULL;
 	}
 
 	//------------------------------------------
-	Ptr<ITexture> DXRenderDevice::doCreateTexture(
+	std::shared_ptr<ITexture> DXRenderDevice::doCreateTexture(
 		const ITexture::Desc& desc, const ITexture::Data* data, uint size)
 	{
-		Ptr<DXTexture> texture = new DXTexture(desc);
+		auto texture = std::make_shared<DXTexture>(desc);
 		if (texture->init(data, size))
 			return texture;
 
@@ -470,10 +474,10 @@ namespace render
 	}
 
 	//------------------------------------------
-	Ptr<IShader> DXRenderDevice::doCreateShader(const char* vs, const char* gs, const char* fs,
+	std::shared_ptr<IShader> DXRenderDevice::doCreateShader(const char* vs, const char* gs, const char* fs,
 		const ShaderMacro* macros, uint mCount)
 	{
-		Ptr<DXShader> shader = new DXShader(*this);
+		auto shader = std::make_shared<DXShader>(*this);
 		if (shader->init(vs, gs, fs, macros, mCount))
 			return shader;
 

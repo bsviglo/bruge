@@ -133,19 +133,20 @@ namespace render
 
 		//-- shader.
 		void			setShader(IShader* shader) { m_curShader = shader; }
-		Ptr<IShader>	createShader(const char* src, const ShaderMacro* macros = NULL, uint count = 0);
 		void			setShaderIncludes(IShaderInclude* si) { doSetShaderIncludes(si); }
+
+		std::shared_ptr<IShader> createShader(const char* src, const ShaderMacro* macros = NULL, uint count = 0);
 
 		//-- vertex layout.
 		VertexLayoutID createVertexLayout(const VertexDesc* vd, uint count, const IShader& shader)
 			{ return doCreateVertexLayout(vd, count, shader); }
 
 		//-- textures.
-		Ptr<ITexture> createTexture(const ITexture::Desc& desc, const ITexture::Data* data = NULL, uint size = 0)
+		std::shared_ptr<ITexture> createTexture(const ITexture::Desc& desc, const ITexture::Data* data = NULL, uint size = 0)
 			{ return doCreateTexture(desc, data, size);	}
 
 		//-- buffers.
-		Ptr<IBuffer> createBuffer(
+		std::shared_ptr<IBuffer> createBuffer(
 			IBuffer::EType type, const void* data = NULL, uint elemCount = 0, uint elemSize = 1,
 			IBuffer::EUsage usage = IBuffer::USAGE_DEFAULT,
 			IBuffer::ECPUAccess	cpuAccess = IBuffer::CPU_ACCESS_NONE)
@@ -159,39 +160,39 @@ namespace render
 		
 	protected:
 		IRenderDevice()
-			: m_curShader(NULL), m_curIB(NULL), m_useMainRTs(true), m_curVBStreamsCount(0),
+			: m_curShader(nullptr), m_curIB(nullptr), m_useMainRTs(true), m_curVBStreamsCount(0),
 			  m_curVertLayout(-1), m_curRasterState(-1), m_isRTsChangeStateDirty(true) { }
 		virtual ~IRenderDevice() {}
 	
-		virtual bool				doInit(HWND hWindow, const VideoMode& videoMode) = 0;
-		virtual void				doShutDown() = 0; 
+		virtual bool						doInit(HWND hWindow, const VideoMode& videoMode) = 0;
+		virtual void						doShutDown() = 0; 
 
-		virtual void				doSetViewPort(uint x, uint y, uint width, uint height) = 0;
-		virtual void				doSetScissorRect(uint x, uint y, uint width, uint height) = 0;
-		virtual void				doSwapBuffers() = 0;
-		virtual void				doResetToDefaults() = 0;
+		virtual void						doSetViewPort(uint x, uint y, uint width, uint height) = 0;
+		virtual void						doSetScissorRect(uint x, uint y, uint width, uint height) = 0;
+		virtual void						doSwapBuffers() = 0;
+		virtual void						doResetToDefaults() = 0;
 
-		virtual void				doCopyTexture(ITexture* src, ITexture* dst) = 0;
+		virtual void						doCopyTexture(ITexture* src, ITexture* dst) = 0;
 
-		virtual void				doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
-		virtual void				doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count) = 0;
-		virtual void				doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
-		virtual void				doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount) = 0;
+		virtual void						doDraw(EPrimitiveTopology topology, uint first, uint count) = 0;
+		virtual void						doDrawIndexed(EPrimitiveTopology topology, uint first, uint baseVertex, uint count) = 0;
+		virtual void						doDrawInstanced(EPrimitiveTopology topology, uint first, uint count, uint instanceCount) = 0;
+		virtual void						doDrawIndexedInstanced(EPrimitiveTopology topology, uint first, uint baseVertex, uint count, uint instanceCount) = 0;
 
-		virtual void				doClear(uint clearFlags, const Color& color, float depth, uint8 stencil) = 0;
-		virtual void				doClearColorRT(ITexture* crt, const Color& color) = 0;
-		virtual void				doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil) = 0;
+		virtual void						doClear(uint clearFlags, const Color& color, float depth, uint8 stencil) = 0;
+		virtual void						doClearColorRT(ITexture* crt, const Color& color) = 0;
+		virtual void						doClearDepthStencilRT(uint clearFlags, ITexture* dsrt, float depth, uint8 stencil) = 0;
 
-		virtual Ptr<IBuffer>		doCreateBuffer(IBuffer::EType type, const void* data, uint elemCount, uint elemSize, IBuffer::EUsage usage, IBuffer::ECPUAccess access) = 0;
-		virtual Ptr<ITexture>		doCreateTexture(const ITexture::Desc& desc, const ITexture::Data* data, uint size) = 0;
-		virtual Ptr<IShader>		doCreateShader(const char* vs, const char* gs, const char* fs, const ShaderMacro* macros, uint count) = 0;
-		virtual void				doSetShaderIncludes(IShaderInclude* si) = 0;
+		virtual std::shared_ptr<IBuffer>	doCreateBuffer(IBuffer::EType type, const void* data, uint elemCount, uint elemSize, IBuffer::EUsage usage, IBuffer::ECPUAccess access) = 0;
+		virtual std::shared_ptr<ITexture>	doCreateTexture(const ITexture::Desc& desc, const ITexture::Data* data, uint size) = 0;
+		virtual std::shared_ptr<IShader>	doCreateShader(const char* vs, const char* gs, const char* fs, const ShaderMacro* macros, uint count) = 0;
+		virtual void						doSetShaderIncludes(IShaderInclude* si) = 0;
 
-		virtual DepthStencilStateID doCreateDepthStencilState(const DepthStencilStateDesc& desc) = 0;
-		virtual RasterizerStateID	doCreateRasterizedState(const RasterizerStateDesc& desc) = 0;
-		virtual BlendStateID		doCreateBlendState(const BlendStateDesc& desc) = 0;
-		virtual SamplerStateID		doCreateSamplerState(const SamplerStateDesc& desc) = 0;
-		virtual VertexLayoutID		doCreateVertexLayout(const VertexDesc* vd, uint count, const IShader& shader) = 0;
+		virtual DepthStencilStateID			doCreateDepthStencilState(const DepthStencilStateDesc& desc) = 0;
+		virtual RasterizerStateID			doCreateRasterizedState(const RasterizerStateDesc& desc) = 0;
+		virtual BlendStateID				doCreateBlendState(const BlendStateDesc& desc) = 0;
+		virtual SamplerStateID				doCreateSamplerState(const SamplerStateDesc& desc) = 0;
+		virtual VertexLayoutID				doCreateVertexLayout(const VertexDesc* vd, uint count, const IShader& shader) = 0;
 				
 		struct DepthStencilStateEx
 		{
@@ -203,12 +204,11 @@ namespace render
 
 		struct BlendStateEx
 		{
-			BlendStateEx() : id(-1), sampleMask(0xffffffff)
-				{ factor[0] = factor[1] = factor[2] = factor[3] = 0.0f; }
+			BlendStateEx() : id(-1), sampleMask(0xffffffff), factor{0} {}
 
-			BlendStateID id;
-			float		 factor[4];
-			uint		 sampleMask;
+			BlendStateID			id;
+			std::array<float, 4>	factor;
+			uint					sampleMask;
 		};
 
 		//-- cur states.
@@ -220,7 +220,7 @@ namespace render
 		//-- vertex buffer stream.
 		struct VertexBufferStream
 		{
-			VertexBufferStream() : buffer(NULL), offset(0) {}
+			VertexBufferStream() : buffer(nullptr), offset(0) {}
 
 			IBuffer* buffer;
 			uint	 offset;
@@ -229,41 +229,37 @@ namespace render
 		//-- render targets.
 		struct RenderTarget
 		{
-			RenderTarget() : num(0), depth(NULL)
+			RenderTarget() : num(0), depth(nullptr), colors{nullptr}
 			{
-				reset();
 			}
 
 			void reset()
 			{
-				for (uint i = 0; i < MAX_MRTS; ++i)
-				{
-					colors[i] = NULL;
-				}
+				colors.fill(nullptr);
 			}
 
-			ITexture* colors[MAX_MRTS];
-			uint	  num;
-			ITexture* depth;
+			std::array<ITexture*, MAX_MRTS> colors;
+			uint							num;
+			ITexture*						depth;
 		};
 	
-		VertexBufferStream  m_curVBStreams[MAX_VERTEX_STREAMS];
-		uint				m_curVBStreamsCount;
+		std::array<VertexBufferStream, MAX_VERTEX_STREAMS>	m_curVBStreams;
+		uint												m_curVBStreamsCount;
 		
-		bool				m_isRTsChangeStateDirty;
-		bool				m_useMainRTs;
-		RenderTarget		m_curRTs;
-		IBuffer*			m_curIB;
-		IShader*			m_curShader;
+		bool												m_isRTsChangeStateDirty;
+		bool												m_useMainRTs;
+		RenderTarget										m_curRTs;
+		IBuffer*											m_curIB;
+		IShader*											m_curShader;
 		
 		//-- main frame buffer textures.
-		Ptr<ITexture>		m_mainColorRT;
-		Ptr<ITexture>		m_mainDepthRT;
+		std::shared_ptr<ITexture>							m_mainColorRT;
+		std::shared_ptr<ITexture>							m_mainDepthRT;
 
-		HWND				m_hWnd;
-		VideoMode			m_videoMode;
+		HWND												m_hWnd;
+		VideoMode											m_videoMode;
 
-		RenderStatistics	m_statistics;		
+		RenderStatistics									m_statistics;
 	};
 
 } // render

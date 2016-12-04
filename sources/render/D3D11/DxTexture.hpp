@@ -15,7 +15,7 @@ namespace render
 		DXTexture(const Desc& desc);
 		virtual ~DXTexture();
 
-		bool init(const ITexture::Data* data = NULL, uint size = 0);
+		bool init(const ITexture::Data* data = nullptr, uint size = 0);
 		bool init(const ComPtr<ID3D11Texture2D>& tex2D);
 		
 		ID3D11Texture1D*		  getTex1D()  const { return m_tex1D.get(); }

@@ -44,13 +44,13 @@ private:
 	brUGE::mat4f m_localMat;
 
 	//-- camera matrices.
-	brUGE::Ptr<brUGE::CursorCamera>	m_camera;
-	brUGE::mat4f					m_source;
-	brUGE::mat4f					m_target;
+	std::shared_ptr<brUGE::CursorCamera>	m_camera;
+	brUGE::mat4f							m_source;
+	brUGE::mat4f							m_target;
 };
 
 
-//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------o------------------------------------------------
 class Bot : public brUGE::IGameObj
 {
 

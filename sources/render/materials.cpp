@@ -175,7 +175,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Material> Materials::createMaterial(const utils::ROData& data)
+	std::shared_ptr<Material> Materials::createMaterial(const utils::ROData& data)
 	{
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
@@ -186,7 +186,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool Materials::createMaterials(std::vector<Ptr<Material>>& out, const utils::ROData& data)
+	bool Materials::createMaterials(std::vector<std::shared_ptr<Material>>& out, const utils::ROData& data)
 	{
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
@@ -201,7 +201,7 @@ namespace render
 		{
 			for (auto mat = root.child("material"); mat; mat = mat.next_sibling("material"))
 			{
-				if (Ptr<Material> m = createMaterial(mat, nullptr))
+				if (auto m = createMaterial(mat, nullptr))
 				{
 					out.push_back(m);
 				}
@@ -213,7 +213,7 @@ namespace render
 		}
 		else if (name == "material")
 		{
-			if (Ptr<Material> m = createMaterial(root, nullptr))
+			if (auto m = createMaterial(root, nullptr))
 			{
 				out.push_back(m);
 			}
@@ -232,9 +232,9 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<Material> Materials::createMaterial(const pugi::xml_node& section, MaterialUI* oUI)
+	std::shared_ptr<Material> Materials::createMaterial(const pugi::xml_node& section, MaterialUI* oUI)
 	{
-		Ptr<Material> out(new Material());
+		auto out = std::make_shared<Material>();
 
 		ShaderContext& sc = rs().shaderContext();
 
@@ -289,7 +289,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<PipelineMaterial> Materials::createPipelineMaterial(const utils::ROData& data)
+	std::shared_ptr<PipelineMaterial> Materials::createPipelineMaterial(const utils::ROData& data)
 	{
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
@@ -300,9 +300,9 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<PipelineMaterial> Materials::createPipelineMaterial(const pugi::xml_node& section, MaterialUI* oUI)
+	std::shared_ptr<PipelineMaterial> Materials::createPipelineMaterial(const pugi::xml_node& section, MaterialUI* oUI)
 	{
-		Ptr<PipelineMaterial> out(new PipelineMaterial());
+		auto out = std::make_shared<PipelineMaterial>();
 
 		ShaderContext& sc = rs().shaderContext();
 
@@ -384,7 +384,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool Materials::createPipelineMaterials(std::vector<Ptr<PipelineMaterial>>& out, const utils::ROData& data)
+	bool Materials::createPipelineMaterials(std::vector<std::shared_ptr<PipelineMaterial>>& out, const utils::ROData& data)
 	{
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
@@ -399,7 +399,7 @@ namespace render
 		{
 			for (auto mat = root.child("material"); mat; mat = mat.next_sibling("material"))
 			{
-				if (Ptr<PipelineMaterial> m = createPipelineMaterial(mat, nullptr))
+				if (auto m = createPipelineMaterial(mat, nullptr))
 				{
 					out.push_back(m);
 				}
@@ -411,7 +411,7 @@ namespace render
 		}
 		else if (name == "material")
 		{
-			if (Ptr<PipelineMaterial> m = createPipelineMaterial(root, nullptr))
+			if (auto m = createPipelineMaterial(root, nullptr))
 			{
 				out.push_back(m);
 			}
@@ -448,7 +448,7 @@ namespace render
 				//--	   opportunities to interpret render targets from post-processing
 				//--	   framework as well as another common textures, which are implicitly
 				//--	   loaded from the hard disk.
-				Ptr<ITexture> tex;
+				std::shared_ptr<ITexture> tex;
 				{
 					//-- 1. first search texture among post-processing's render targets.
 					tex = Engine::instance().renderWorld().postProcessing().find(texName);

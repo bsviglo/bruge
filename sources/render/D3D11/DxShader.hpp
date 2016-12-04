@@ -74,7 +74,7 @@ namespace render
 		virtual bool	doSetUniformBlock		(Handle id, const void* data, uint size);
 		virtual bool	doSetTextureBuffer		(Handle id, IBuffer* buffer);
 
-		virtual bool	doChangeUniformBuffer	(Handle id, const Ptr<IBuffer>& newBuffer);
+		virtual bool	doChangeUniformBuffer	(Handle id, const std::shared_ptr<IBuffer>& newBuffer);
 
 	private:
 		typedef utils::TernaryTree<char, Handle> FastSearch;
@@ -100,23 +100,19 @@ namespace render
 		typedef std::vector<ID3D11Buffer*>				DXBuffers;
 
 		// resources per shader type.
-		DXResources	m_dxResources[SHADER_TYPES_COUNT];
-		DXSamplers 	m_dxSamplers [SHADER_TYPES_COUNT];
-		DXBuffers	m_dxUBuffers [SHADER_TYPES_COUNT];
+		std::array<DXResources, SHADER_TYPES_COUNT>	m_dxResources;
+		std::array<DXSamplers, SHADER_TYPES_COUNT>	m_dxSamplers;
+		std::array<DXBuffers, SHADER_TYPES_COUNT>	m_dxUBuffers;
 
 		//------------------------------------------------------------------------------------------
 		struct Index
 		{
-			Index()
-			{
-				for (uint i = 0; i < SHADER_TYPES_COUNT; ++i)
-					m_shaders[i] = 0;
-			}
+			Index() : m_shaders{0} {}
 
 			const uint& operator[] (uint i) const { return m_shaders[i]; }
 			uint&		operator[] (uint i) { return m_shaders[i]; }
 
-			uint m_shaders[SHADER_TYPES_COUNT];
+			std::array<uint, SHADER_TYPES_COUNT>  m_shaders;
 		};
 
 		//------------------------------------------------------------------------------------------
@@ -124,11 +120,11 @@ namespace render
 		{
 			UBuffer() : m_size(0), m_isDirty(false) { }
 
-			bool			  m_isDirty;
-			uint			  m_size;
-			std::vector<byte> m_data;
-			Ptr<DXBuffer>	  m_buffer;
-			Index			  m_index;
+			bool						m_isDirty;
+			uint						m_size;
+			std::vector<byte>			m_data;
+			std::shared_ptr<DXBuffer>	m_buffer;
+			Index						m_index;
 		};
 
 		//------------------------------------------------------------------------------------------

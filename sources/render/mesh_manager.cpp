@@ -128,7 +128,7 @@ namespace render
 		//-- 1. load skinned mesh.
 		if (getFileExt(desc.fileName) == "skinnedmesh")
 		{
-			Ptr<SkinnedMesh> mesh = rm.loadSkinnedMesh(desc.fileName);
+			auto mesh = rm.loadSkinnedMesh(desc.fileName);
 			if (!mesh)
 			{
 				return CONST_INVALID_HANDLE;
@@ -143,7 +143,7 @@ namespace render
 		//-- 2. load static mesh.
 		else
 		{
-			Ptr<Mesh> mesh = rm.loadMesh(desc.fileName);
+			auto mesh = rm.loadMesh(desc.fileName);
 			if (!mesh)
 			{
 				return CONST_INVALID_HANDLE;

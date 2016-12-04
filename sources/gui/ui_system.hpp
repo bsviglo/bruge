@@ -32,16 +32,16 @@ namespace ui
 		void	setupRender();
 
 	private:
-		Ptr<render::ITexture>		m_texture;
-		Ptr<render::IBuffer>		m_vb;
-		Ptr<render::IBuffer>		m_ib;
-		Ptr<render::IShader>		m_shader;
+		std::shared_ptr<render::ITexture>	m_texture;
+		std::shared_ptr<render::IBuffer>	m_vb;
+		std::shared_ptr<render::IBuffer>	m_ib;
+		std::shared_ptr<render::IShader>	m_shader;
 
-		render::VertexLayoutID		m_vl;
-		render::DepthStencilStateID m_stateDS;
-		render::BlendStateID		m_stateB;
-		render::RasterizerStateID	m_stateR;
-		render::SamplerStateID		m_stateS;
+		render::VertexLayoutID				m_vl;
+		render::DepthStencilStateID			m_stateDS;
+		render::BlendStateID				m_stateB;
+		render::RasterizerStateID			m_stateR;
+		render::SamplerStateID				m_stateS;
 	};
 
 } // ui

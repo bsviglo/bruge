@@ -68,7 +68,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void RenderWorld::setCamera(const Ptr<Camera>& cam)
+	void RenderWorld::setCamera(const std::shared_ptr<Camera>& cam)
 	{
 		m_camera = cam;
 	}

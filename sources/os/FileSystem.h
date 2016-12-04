@@ -7,13 +7,9 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace brUGE
 {
-
-	typedef utils::Ptr<utils::ROData> RODataPtr;
-
 namespace os
 {
 
@@ -31,7 +27,7 @@ namespace os
 		//-- convert relative path to absolute.
 		bool getFileFullPath(const std::string& shortName, std::string& fullName) const;
 
-		RODataPtr readFile (const std::string& fileName) const;
+		std::shared_ptr<utils::ROData> readFile (const std::string& fileName) const;
 		bool	writeFile(const std::string& fileName, const utils::ROData& data) const;
 
 		static std::string getLastNameInPath(const std::string& fileName);

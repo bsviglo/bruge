@@ -198,7 +198,7 @@ namespace brUGE
 	}
 	
 	//------------------------------------------
-	Ptr<ITexture> TextureLoader::loadTex2D(const ROData& data)
+	std::shared_ptr<ITexture> TextureLoader::loadTex2D(const ROData& data)
 	{
 		DDSHeader ddsDesc;
 		char      filecode[4];
@@ -294,7 +294,7 @@ namespace brUGE
 		}
 
 		//-- 6. now all data are prepared lets create texture.
-		Ptr<ITexture> texture = render::rd()->createTexture(
+		auto texture = render::rd()->createTexture(
 			desc, &texDataVec[0], texDataVec.size()
 			);
 		

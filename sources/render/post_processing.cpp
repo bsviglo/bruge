@@ -179,7 +179,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Ptr<ITexture> PostProcessing::find(const char* rtName)
+	std::shared_ptr<ITexture> PostProcessing::find(const char* rtName)
 	{
 		auto res = m_rts.find(rtName);
 		if (res != m_rts.end())
@@ -195,11 +195,11 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool PostProcessing::loadPostEffect(const char* ppName)
 	{
-		RODataPtr data = FileSystem::instance().readFile(
+		auto data = FileSystem::instance().readFile(
 			makeStr("resources/post_processing/%s", ppName).c_str()
 			);
 
-		if (!data.get())
+		if (!data)
 		{
 			ERROR_MSG("Can't load post processing effect %s.", ppName);
 			return false;
@@ -329,8 +329,8 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	bool PostProcessing::loadCfg()
 	{
-		RODataPtr data = FileSystem::instance().readFile(cfg);
-		if (!data.get())
+		auto data = FileSystem::instance().readFile(cfg);
+		if (!data)
 		{
 			ERROR_MSG("Can't load post processing cfg file.");
 			return false;

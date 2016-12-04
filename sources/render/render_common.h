@@ -3,6 +3,8 @@
 #include "prerequisites.hpp"
 #include "math/Matrix4x4.hpp"
 #include "utils/LogManager.h"
+#include <memory>
+#include <array>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
@@ -14,7 +16,6 @@
 
 namespace brUGE
 {
-	using utils::Ptr;
 
 namespace render
 {

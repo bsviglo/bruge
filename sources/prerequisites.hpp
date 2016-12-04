@@ -1,13 +1,11 @@
 #pragma once
 
 #include "math/math_types.hpp"
-#include "utils/Ptr.h"
 #include "utils/NonCopyable.hpp"
+#include <memory>
 
 namespace brUGE
 {
-	using utils::RefCount;
-	using utils::Ptr;
 	using utils::NonCopyable;
 }
 

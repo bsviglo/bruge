@@ -260,14 +260,14 @@ namespace os
 	*/
 
 	//------------------------------------------
-	RODataPtr FileSystem::readFile(const std::string& fileName) const
+	std::shared_ptr<ROData> FileSystem::readFile(const std::string& fileName) const
 	{
 		std::string fullName;
 
 		if (!getFileFullPath(fileName, fullName))
 		{
 			ERROR_MSG("File '%s'.", fileName.c_str());
-			return RODataPtr(NULL);
+			return nullptr;
 		}
 
 		HANDLE hFile = CreateFile(
@@ -283,14 +283,14 @@ namespace os
 		if (hFile == INVALID_HANDLE_VALUE)
 		{
 			ERROR_MSG("Could not open file '%s' (error %d).", fullName.c_str(), GetLastError());
-			return RODataPtr(NULL);
+			return nullptr;
 		}
 
 		DWORD fileSize = GetFileSize(hFile, NULL);
 		if (fileSize == INVALID_FILE_SIZE)
 		{
 			ERROR_MSG("Could not retrieve file size from '%s' (error %d).", fullName.c_str(), GetLastError());
-			return RODataPtr(NULL);
+			return nullptr;
 		}
 
 		DWORD readedBytes = 0;
@@ -300,7 +300,7 @@ namespace os
 		{
 			delete [] buffer;
 			ERROR_MSG("Could not read data from file '%s' (error %d).", fullName.c_str(), GetLastError());
-			return RODataPtr(NULL);
+			return nullptr;
 		}
 		
 		//-- if the initial size of the buffer is greater then the readed bytes, then adjust the
@@ -317,14 +317,14 @@ namespace os
 		if (!CloseHandle(hFile))
 		{
 			ERROR_MSG("Could not close the file '%s' (error %d).", fullName.c_str(), GetLastError());
-			return RODataPtr(NULL);
+			return nullptr;
 		}
 
-		return RODataPtr(new utils::ROData(buffer, readedBytes));
+		return std::make_shared<ROData>(buffer, readedBytes);
 	}
 
 	//------------------------------------------
-	bool FileSystem::writeFile(const std::string& fileName, const utils::ROData& data) const
+	bool FileSystem::writeFile(const std::string& fileName, const ROData& data) const
 	{
 		std::string fullName = dirList[0] + "/" + fileName;
 

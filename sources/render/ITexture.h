@@ -8,7 +8,7 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	class ITexture : public utils::RefCount
+	class ITexture
 	{
 	public:
 

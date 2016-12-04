@@ -161,10 +161,10 @@ namespace physic
 		}
 		else
 		{
-			RODataPtr data = FileSystem::instance().readFile("resources/" + std::string(desc));	
+			auto data = FileSystem::instance().readFile("resources/" + std::string(desc));	
 
 			std::unique_ptr<PhysObjDesc> physDesc(new PhysObjDesc());
-			if (!data.isValid() || !physDesc->load(*data.get(), m_dynamicsWorld.get(), transform))
+			if (!data || !physDesc->load(*data.get(), m_dynamicsWorld.get(), transform))
 			{
 				return nullptr;
 			}

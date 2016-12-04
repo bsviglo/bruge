@@ -9,7 +9,7 @@ namespace brUGE
 
 	//-- Base camera.
 	//----------------------------------------------------------------------------------------------
-	class Camera : public utils::RefCount
+	class Camera
 	{
 	public:
 

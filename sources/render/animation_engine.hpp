@@ -19,7 +19,7 @@ namespace render
 	//-- For each particular animation we have only one instance of this class. It contains only
 	//-- static information of animation.
 	//----------------------------------------------------------------------------------------------
-	class Animation : public RefCount
+	class Animation
 	{
 	public:
 
@@ -54,18 +54,14 @@ namespace render
 		void buildAbsoluteTransforms(TransformPalette& palette, const Skeleton& skeleton);
 
 	private:
-		typedef std::vector<float> BlendAlphaMask;
-		typedef std::vector<AABB>  Bounds;
-		typedef std::vector<TransformPalette> AnimationFrames;
-
-		uint			 m_numJoints;
-		uint			 m_numFrames;
-		uint			 m_frameRate;
-		BlendAlphaMask	 m_blendAlphaMask;
-		AnimationFrames	 m_frames;
-		Bounds			 m_bounds;
-		AABB			 m_tempBound;
-		TransformPalette m_tempPalette;
+		uint							m_numJoints;
+		uint							m_numFrames;
+		uint							m_frameRate;
+		std::vector<float>				m_blendAlphaMask;
+		std::vector<TransformPalette>	m_frames;
+		std::vector<AABB>				m_bounds;
+		AABB							m_tempBound;
+		TransformPalette				m_tempPalette;
 	};
 
 	//-- Represents one particular layer of the animation.
@@ -74,11 +70,11 @@ namespace render
 	{
 		AnimLayer() : m_looped(false), m_paused(false), m_blend(0.0f) { }
 
-		bool			m_looped;
-		bool			m_paused;
-		float			m_blend;
-		Animation::Time	m_time;
-		Ptr<Animation>	m_anim;
+		bool						m_looped;
+		bool						m_paused;
+		float						m_blend;
+		Animation::Time				m_time;
+		std::shared_ptr<Animation>	m_anim;
 	};
 	typedef std::vector<AnimLayer> AnimLayers;
 
@@ -158,15 +154,15 @@ namespace render
 		void			stopAnim	(Handle id);
 		void			blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name);
 
-		Ptr<Animation>	getAnim		(const char* name);
+		std::shared_ptr<Animation>	getAnim		(const char* name);
 
 	private:
 		void		   addToActive	(AnimationData* data);
 		void		   delFromActive(AnimationData* data);
 
 	private:
-		typedef std::vector<AnimationData*>				AnimationInsts;
-		typedef std::map<std::string, Ptr<Animation>>	AnimationsMap;
+		typedef std::vector<AnimationData*>							AnimationInsts;
+		typedef std::map<std::string, std::shared_ptr<Animation>>	AnimationsMap;
 
 		AnimationInsts	 m_animCtrls;
 		AnimationsMap	 m_animations;

@@ -8,7 +8,7 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	class IBuffer : public utils::RefCount
+	class IBuffer
 	{
 	public:
 		

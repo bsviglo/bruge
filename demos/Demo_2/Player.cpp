@@ -26,7 +26,6 @@ Player::Player() : m_speed(8.f), m_yawDiff(0.0f), m_posDiff(0,0,0), m_cameraZoom
 	proj.nearDist = 0.5f;
 	proj.farDist  = 50.0f;
 
-	m_camera = new CursorCamera(proj);
 
 	m_camera->source(&m_source);
 	m_camera->target(&m_target);

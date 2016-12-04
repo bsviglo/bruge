@@ -1,7 +1,6 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include "utils/Ptr.h"
 #include "utils/Singleton.h"
 #include "render/render_common.h"
 #include "render/Mesh.hpp"
@@ -11,7 +10,6 @@
 #include <map>
 #include <vector>
 
-
 namespace SoundSys
 {
 	class SRManager;
@@ -20,10 +18,10 @@ namespace SoundSys
 namespace brUGE
 {
 
-	typedef Ptr<utils::ROData> RODataPtr;
+	typedef std::shared_ptr<utils::ROData> RODataPtr;
 
 	//----------------------------------------------------------------------------------------------
-	class ResourcesManager : public utils::Singleton<ResourcesManager>, public NonCopyable
+	class ResourcesManager : public utils::Singleton<ResourcesManager>
 	{
 	public:
 		ResourcesManager();
@@ -32,15 +30,15 @@ namespace brUGE
 		bool init();
 
 		//-- ToDo:
-		//Ptr<render::Model>		loadModel  		(const char* name, bool loadCollision = true);
-		Ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
-		Ptr<render::ITexture>		loadTexture		(const char* name);
-		Ptr<render::Mesh>			loadMesh   		(const char* name, bool simpleMaterial = false);
-		Ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
-		//Ptr<render::Animation>	loadAnimation	(const char* name);
-		//Ptr<Sound>				loadSound  (const char* name);
+		//std::shared_ptr<render::Model>		loadModel  		(const char* name, bool loadCollision = true);
+		std::shared_ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
+		std::shared_ptr<render::ITexture>		loadTexture		(const char* name);
+		std::shared_ptr<render::Mesh>			loadMesh   		(const char* name, bool simpleMaterial = false);
+		std::shared_ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
+		//std::shared_ptr<render::Animation>	loadAnimation	(const char* name);
+		//std::shared_ptr<Sound>				loadSound  (const char* name);
 
-		bool makeSharedShaderConstants(const char* name, const Ptr<render::IBuffer>& newBuffer);
+		bool makeSharedShaderConstants(const char* name, const std::shared_ptr<render::IBuffer>& newBuffer);
 
 	private:
 
@@ -48,31 +46,31 @@ namespace brUGE
 		class Cache
 		{
 		public:
-			typedef std::map<std::string, Ptr<RES> > ResMap;
+			typedef std::map<std::string, std::shared_ptr<RES> > ResMap;
 
 		public:
-			void add(const char* name, const Ptr<RES>& res)
+			void add(const char* name, const std::shared_ptr<RES>& res)
 			{
 				m_searchMap[name] = res;
 			}
 			void remove(const char* name)
 			{
-				ResMap::iterator iter = m_searchMap.find(name);
+				auto iter = m_searchMap.find(name);
 				if (iter != m_searchMap.end())
 				{
 					m_searchMap.erase(iter)
 				}
 			}
-			Ptr<RES> find(const char* name)
+			std::shared_ptr<RES> find(const char* name)
 			{
-				ResMap::iterator iter = m_searchMap.find(name);
+				auto iter = m_searchMap.find(name);
 				if (iter != m_searchMap.end())
 				{
 					return iter->second;
 				}
 				else
 				{
-					return NULL;
+					return nullptr;
 				}
 			}
 			void clear()

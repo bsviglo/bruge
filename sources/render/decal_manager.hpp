@@ -50,25 +50,23 @@ namespace render
 			vec4f m_scale;
 		};
 
-		typedef std::vector<GPUDecal>				GPUDecals;
 		typedef std::pair<DecalDesc, const Node*>	DynamicDecalDesc;
-		typedef std::vector<DynamicDecalDesc>		DynamicDecalDescs;
-		typedef std::vector<DecalDesc>				StaticDecalDescs;
 
-		bool				m_updateStatic;
-		bool				m_updateDynamic;
 
-		GPUDecals			m_staticDecalsGPU;
-		GPUDecals			m_dynamicDecalsGPU;
+		bool							m_updateStatic;
+		bool							m_updateDynamic;
 
-		StaticDecalDescs	m_staticDecalDescs;
-		DynamicDecalDescs	m_dynamicDecalDescs;
+		std::vector<GPUDecal>			m_staticDecalsGPU;
+		std::vector<GPUDecal>			m_dynamicDecalsGPU;
 
-		Ptr<IBuffer>		m_staticTB;
-		Ptr<IBuffer>		m_dynamicTB;
-		Ptr<Mesh>			m_unitCube;
-		Ptr<Material>		m_material;
-		RenderOps			m_ROPs;
+		std::vector<DecalDesc>			m_staticDecalDescs;
+		std::vector<DynamicDecalDesc>	m_dynamicDecalDescs;
+
+		std::shared_ptr<IBuffer>		m_staticTB;
+		std::shared_ptr<IBuffer>		m_dynamicTB;
+		std::shared_ptr<Mesh>			m_unitCube;
+		std::shared_ptr<Material>		m_material;
+		RenderOps						m_ROPs;
 	};
 
 } //-- render

@@ -83,9 +83,9 @@ namespace render
 		};
 
 		std::vector<VertDesc>		m_vertices;
-		Ptr<IBuffer>				m_VB;
+		std::shared_ptr<IBuffer>	m_VB;
 		IBuffer*					m_pVB;
-		Ptr<Material>				m_wireMaterial;
+		std::shared_ptr<Material>	m_wireMaterial;
 		RenderOps					m_wireROPs;
 
 		//-- text drawing
@@ -117,10 +117,10 @@ namespace render
 		};
 		typedef std::vector<MeshInstance> MeshesCache;
 
-		MeshesCache		m_meshCaches[MT_COUNT][DT_COUNT];
-		Ptr<Mesh>		m_meshes[MT_COUNT];
-		Ptr<Material>	m_solidMaterial;
-		Ptr<IBuffer>	m_instancingTB;
+		MeshesCache					m_meshCaches[MT_COUNT][DT_COUNT];
+		std::shared_ptr<Mesh>		m_meshes[MT_COUNT];
+		std::shared_ptr<Material>	m_solidMaterial;
+		std::shared_ptr<IBuffer>	m_instancingTB;
 	};
 
 } // render
