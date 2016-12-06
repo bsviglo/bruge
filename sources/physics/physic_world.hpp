@@ -19,7 +19,7 @@ namespace brUGE
 	class  Node;
 	struct Transform;
 
-namespace physic
+namespace physics
 {
 	struct PhysObj;
 

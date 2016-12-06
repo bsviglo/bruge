@@ -7,15 +7,15 @@
 #include "render/render_system.hpp"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/game_world.hpp"
-#include "render/physic_world.hpp"
+#include "scene/game_world.hpp"
+#include "physics/physic_world.hpp"
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_syswm.h"
 
 using namespace brUGE;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 using namespace brUGE::utils;
 using namespace brUGE::os;
 using namespace brUGE::math;

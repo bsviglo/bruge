@@ -19,9 +19,6 @@
     <Filter Include="render\core">
       <UniqueIdentifier>{ec27bc08-babc-4d0e-858a-d8afddfbd37e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="render\worlds">
-      <UniqueIdentifier>{486fca96-6a2f-439b-bbdc-0894b72284dd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="render\framework">
       <UniqueIdentifier>{a9a07619-6458-4208-809c-295c47946504}</UniqueIdentifier>
     </Filter>
@@ -64,6 +61,12 @@
     <Filter Include="ui\imgui">
       <UniqueIdentifier>{eb770bcc-c240-432e-a8fd-83e5273ea9ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{71ca4064-ae7d-492b-be20-a885c72ac778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{e05ca580-0d26-4cf7-b05a-0e6e002fa69a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp">
@@ -96,9 +99,6 @@
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp">
       <Filter>render\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\render\game_world.cpp">
-      <Filter>render\worlds</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\Camera.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
@@ -113,9 +113,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\animation_engine.cpp">
       <Filter>render\framework\animation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\physic_world.cpp">
-      <Filter>render\worlds</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\decal_manager.cpp">
       <Filter>render\framework\decals</Filter>
@@ -171,6 +168,12 @@
     <ClCompile Include="..\..\sources\gui\imgui\imgui_draw.cpp">
       <Filter>ui\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\scene\game_world.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\physics\physic_world.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h">
@@ -220,12 +223,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\state_objects.h">
       <Filter>render\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\game_world.hpp">
-      <Filter>render\worlds</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\physic_world.hpp">
-      <Filter>render\worlds</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\Camera.h">
       <Filter>render\framework</Filter>
@@ -322,6 +319,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\gui\imgui\stb_truetype.h">
       <Filter>ui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\scene\game_world.hpp">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\physics\physic_world.hpp">
+      <Filter>physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

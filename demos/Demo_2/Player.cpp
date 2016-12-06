@@ -5,14 +5,14 @@
 #include "engine/Engine.h"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/physic_world.hpp"
+#include "physics/physic_world.hpp"
 #include "render/DebugDrawer.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
 using namespace brUGE::utils;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 
 //--------------------------------------------------------------------------------------------------
 Player::Player() : m_speed(8.f), m_yawDiff(0.0f), m_posDiff(0,0,0), m_cameraZoom(15.0f), m_walking(false)

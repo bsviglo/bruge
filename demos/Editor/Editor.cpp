@@ -5,10 +5,10 @@
 #include "engine/Engine.h"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/physic_world.hpp"
 #include "render/DebugDrawer.h"
 #include "render/light_manager.hpp"
-#include "render/game_world.hpp"
+#include "scene/game_world.hpp"
+#include "physics/physic_world.hpp"
 #include "os/FileSystem.h"
 #include "gui/imgui/imgui.h"
 

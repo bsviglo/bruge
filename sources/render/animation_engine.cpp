@@ -1,7 +1,7 @@
 #include "animation_engine.hpp"
 #include "os/FileSystem.h"
 #include "math/math_all.hpp"
-#include "game_world.hpp"
+#include "scene/game_world.hpp"
 #include "render_world.hpp"
 #include "mesh_manager.hpp"
 #include "mesh_formats.hpp"

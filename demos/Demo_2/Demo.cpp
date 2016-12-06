@@ -1,11 +1,11 @@
 #include "engine/Engine.h"
-#include "render/game_world.hpp"
+#include "scene/game_world.hpp"
+#include "physics/physic_world.hpp"
 #include "render/decal_manager.hpp"
 #include "render/DebugDrawer.h"
 #include "render/light_manager.hpp"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/physic_world.hpp"
 #include "render/post_processing.hpp"
 #include "render/terrain_system.hpp"
 #include "Player.hpp"
@@ -16,7 +16,7 @@
 #include "Demo.h"
 
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 using namespace brUGE::utils;
 
 // start unnamed namespace
@@ -125,36 +125,6 @@ bool Demo::init()
 			gameWorld.addGameObj("resources/models/palm.xml", &mat);
 		}
 
-		for (uint i = 0; i < 30; ++i)
-		{
-			mat.setIdentity();
-			mat.setRotateY(random() * 6.24f);
-			mat.postTranslation(-random(100), 0.0f, -random(100));
-			mat.postTranslation(random(100), 0, random(100));
-			gameWorld.addGameObj("resources/models/pole.xml", &mat);
-		}
-
-/*
-		for (uint i = 0; i < 85; ++i)
-		{
-			mat.setIdentity();
-			mat.setRotateY(random() * 6.24f);
-			mat.postTranslation(-random(100), 0.0f, -random(100));
-			mat.postTranslation(random(100), 0, random(100));
-			gameWorld.addGameObj("resources/models/date_palm.xml", &mat);
-		}
-
-
-		for (uint i = 0; i < 55; ++i)
-		{
-			mat.setIdentity();
-			mat.setRotateY(random() * 6.24f);
-			mat.postTranslation(-random(100), 0.0f, -random(100));
-			mat.postTranslation(random(100), 0, random(100));
-			gameWorld.addGameObj("resources/models/woodGate.xml", &mat);
-		}
-*/
-
 		for (uint i = 0; i < 100; ++i)
 		{
 			mat.setIdentity();
@@ -181,9 +151,7 @@ void Demo::shutdown()
 //-------------------------------------------------------------------------------------------------
 void Demo::update(float /*dt*/)
 {
-	//-- ToDo:
-	m_imguiActive = false;
-	//SDL_GetKeyboardState()[SDL_SCANCODE_LCTRL];
+	m_imguiActive = SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_LCTRL];
 
 	//-- draw gui.
 	//gui();
@@ -224,8 +192,7 @@ void Demo::gui()
 	static bool showTools = false;
 	static float slider[20] = {3.5f, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-	//-- ToDo:
-	m_imguiActive = false;// InputManager::instance().isKeyDown(DIK_LCONTROL);
+	m_imguiActive = SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_LCTRL];
 
 	//if (imguiBeginScrollArea("Properties", width-250-10, height-10-450, 250, 450, &propScroll))
 	//	m_imguiActive = true;

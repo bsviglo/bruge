@@ -9,7 +9,7 @@ using namespace brUGE;
 using namespace brUGE::math;
 using namespace brUGE::utils;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 
 //--------------------------------------------------------------------------------------------------
 EditorGameObj::EditorGameObj() : m_showDebugNormals(false)

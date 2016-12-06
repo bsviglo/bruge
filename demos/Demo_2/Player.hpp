@@ -3,7 +3,7 @@
 #include "prerequisites.hpp"
 #include "math/Vector3.hpp"
 #include "utils/Data.hpp"
-#include "render/game_world.hpp"
+#include "scene/game_world.hpp"
 #include "render/CursorCamera.hpp"
 
 //--------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #include "mesh_collector.hpp"
 #include "mesh_manager.hpp"
-#include "game_world.hpp"
+#include "scene/game_world.hpp"
 
 namespace brUGE
 {

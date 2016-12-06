@@ -1,5 +1,5 @@
 #include "decal_manager.hpp"
-#include "game_world.hpp"
+#include "scene/game_world.hpp"
 #include "os/FileSystem.h"
 #include "loader/ResourcesManager.h"
 

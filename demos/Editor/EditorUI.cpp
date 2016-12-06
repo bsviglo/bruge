@@ -10,7 +10,7 @@ using namespace brUGE::os;
 using namespace brUGE::math;
 using namespace brUGE::utils;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 
 //--------------------------------------------------------------------------------------------------
 EditorUI::EditorUI(Editor& editor) : m_self(editor), m_scroll(0)

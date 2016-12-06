@@ -5,14 +5,14 @@
 #include "engine/Engine.h"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/physic_world.hpp"
+#include "physics/physic_world.hpp"
 #include "render/DebugDrawer.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
 using namespace brUGE::utils;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 
 
 //-- start unnamed namespace.

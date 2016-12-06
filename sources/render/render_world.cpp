@@ -1,5 +1,5 @@
 #include "render_world.hpp"
-#include "game_world.hpp"
+#include "scene/game_world.hpp"
 #include "Camera.h"
 #include "loader/ResourcesManager.h"
 #include "utils/string_utils.h"
