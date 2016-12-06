@@ -27,7 +27,7 @@ namespace brUGE
 
 	namespace physics
 	{
-		class PhysicWorld;
+		class PhysicsWorld;
 	}
 
 	//-- Entry point of the brUGE.
@@ -53,7 +53,7 @@ namespace brUGE
 		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
 		render::RenderWorld&		renderWorld()		{ return *m_renderWorld.get();	}
 		render::RenderSystem&		renderSystem()		{ return m_renderSys;			}
-		physics::PhysicWorld&		physicWorld()		{ return *m_physicWorld.get();	}
+		physics::PhysicsWorld&		physicWorld()		{ return *m_physicWorld.get();	}
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
 	private:
@@ -85,7 +85,7 @@ namespace brUGE
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;
 		std::unique_ptr<render::RenderWorld>		m_renderWorld;
-		std::unique_ptr<physics::PhysicWorld>		m_physicWorld;
+		std::unique_ptr<physics::PhysicsWorld>		m_physicWorld;
 		std::unique_ptr<render::AnimationEngine>	m_animEngine;
 	};
 

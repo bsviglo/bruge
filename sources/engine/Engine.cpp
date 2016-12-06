@@ -41,7 +41,7 @@ namespace brUGE
 		m_animEngine(new AnimationEngine()),
 		m_renderWorld(new RenderWorld()),
 		m_resManager(new ResourcesManager()),
-		m_physicWorld(new PhysicWorld()),
+		m_physicWorld(new PhysicsWorld()),
 		m_uiSystem(new ui::System())
 	{
 		//-- register console commands.
@@ -256,7 +256,7 @@ namespace brUGE
 					//-- simulate physics.
 					{
 						SCOPED_TIME_MEASURER_EX("physic")
-						m_physicWorld->simulateDynamics(dt);
+						m_physicWorld->simulate(dt);
 					}
 
 					{

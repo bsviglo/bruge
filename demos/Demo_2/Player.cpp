@@ -138,7 +138,7 @@ bool Player::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 {
 	if (e.button == SDL_BUTTON_LEFT && e.state == SDL_PRESSED)
 	{
-		const PhysicWorld& physWorld = Engine::instance().physicWorld();
+		const PhysicsWorld& physWorld = Engine::instance().physicWorld();
 
 		//-- prepare collision ray.
 		vec3f dir   = m_transform.m_worldMat.applyToUnitAxis(mat4f::X_AXIS).getNormalized();

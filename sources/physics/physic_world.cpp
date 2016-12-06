@@ -10,6 +10,7 @@
 #include "render/Mesh.hpp"
 #include <algorithm>
 
+using namespace physx;
 using namespace brUGE;
 using namespace brUGE::os;
 using namespace brUGE::utils;
@@ -102,55 +103,62 @@ namespace physics
 {
 
 	//----------------------------------------------------------------------------------------------
-	PhysicWorld::PhysicWorld()
+	PhysicsWorld::PhysicsWorld() : m_foundation(nullptr), m_physics(nullptr), m_scene(nullptr), m_dispatcher(nullptr), m_debuggerConnection(nullptr)
 	{
 		//-- register console funcs.
-		REGISTER_CONSOLE_METHOD("phys_drawWire", _drawWire, PhysicWorld);
-		REGISTER_CONSOLE_METHOD("phys_drawAABB", _drawAABB, PhysicWorld);
+		REGISTER_CONSOLE_METHOD("phys_drawWire", _drawWire, PhysicsWorld);
+		REGISTER_CONSOLE_METHOD("phys_drawAABB", _drawAABB, PhysicsWorld);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysicWorld::~PhysicWorld()
+	PhysicsWorld::~PhysicsWorld()
 	{
 		//-- ToDo:
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 			delete i->second;
 		
-		//-- ToDo: to guaranty the right calling sequence of destructors.
-		m_dynamicsWorld.reset();
+		m_scene->release();
+		m_dispatcher->release();
+		if (m_debuggerConnection)
+			m_debuggerConnection->release();
+		m_physics->release();
+		m_physics->getProfileZoneManager()->release();
+		m_foundation->release();
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::init()
+	bool PhysicsWorld::init()
 	{
-		//-- 1. create configuration contains default setup for memory, collision setup.
-		m_collisionCfg.reset(new btDefaultCollisionConfiguration());
+		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
+		auto* profileZoneManager = &PxProfileZoneManager::createProfileZoneManager(m_foundation);
 
-		//-- 2. use the default collision dispatcher.
-		m_dispatcher.reset(new btCollisionDispatcher(m_collisionCfg.get()));
+		m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, PxTolerancesScale(), true, profileZoneManager);
 
-		//-- 3. create broad phase. 
-		m_broadphase.reset(new btDbvtBroadphase());
+		if (m_physics->getPvdConnectionManager())
+		{
+			m_physics->getVisualDebugger()->setVisualizeConstraints(true);
+			m_physics->getVisualDebugger()->setVisualDebuggerFlag(PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
+			m_physics->getVisualDebugger()->setVisualDebuggerFlag(PxVisualDebuggerFlag::eTRANSMIT_SCENEQUERIES, true);
+			m_debuggerConnection = PxVisualDebuggerExt::createConnection(m_physics->getPvdConnectionManager(), "127.0.0.1", 5425, 10);
+		}
 
-		//-- 4. use the default constraint solver.
-		m_solver.reset(new btSequentialImpulseConstraintSolver);
+		{
+			//-- ToDo: for now we don't create any worker threads
+			m_dispatcher = PxDefaultCpuDispatcherCreate(0);
 
-		//-- 5. create dynamic world.
-		m_dynamicsWorld.reset(new btDiscreteDynamicsWorld(
-			m_dispatcher.get(), m_broadphase.get(), m_solver.get(), m_collisionCfg.get()
-			));
+			PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
+			sceneDesc.gravity		= PxVec3(0.0f, -9.81f, 0.0f);
+			sceneDesc.cpuDispatcher = m_dispatcher;
+			sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
 
-		//-- 6. set default gravity.
-		m_dynamicsWorld->setGravity(btVector3(0.0f, -10.0f, 0.0f));
-
-		//-- 7. set debug drawer.
-		m_dynamicsWorld->setDebugDrawer(&m_debugDrawer);
+			m_scene = m_physics->createScene(sceneDesc);
+		}
 
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObj* PhysicWorld::addPhysicDef(const char* desc, Transform* transform, Handle owner)
+	PhysObj* PhysicsWorld::addPhysicDef(const char* desc, Transform* transform, Handle owner)
 	{
 		auto result = m_physObjDescs.find(desc);
 		if (result != m_physObjDescs.end())
@@ -180,7 +188,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::delPhysicDef(PhysObj* physObj)		
+	bool PhysicsWorld::delPhysicDef(PhysObj* physObj)		
 	{
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 		{
@@ -191,23 +199,16 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysicWorld::detectCollisions(float /*dt*/)
+	void PhysicsWorld::simulate(float dt)
 	{
-
+		m_scene->simulate(dt);
+		m_scene->fetchResults(true);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysicWorld::simulateDynamics(float dt)
+	bool PhysicsWorld::addTerrain(uint, float, float*, float, float, float)
 	{
-		m_dynamicsWorld->stepSimulation(dt);
-		m_dynamicsWorld->debugDrawWorld();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::addTerrain(
-		uint gridSize, float unitsPerCell, float* heights,
-		float heightScale, float minHeight, float maxHeight)
-	{
+#if 0
 		//-- create heightfield shape.
 		m_terrain.m_shape = new btHeightfieldTerrainShape(
 			gridSize, gridSize, heights, heightScale, minHeight, maxHeight,	1, PHY_FLOAT, false
@@ -238,13 +239,15 @@ namespace physics
 		m_terrain.m_rigidBody->setWorldTransform(tr);
 		m_terrain.m_rigidBody->setContactProcessingThreshold(0.0f);
 		m_dynamicsWorld->addRigidBody(m_terrain.m_rigidBody);
+#endif
 
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::delTerrain()
+	bool PhysicsWorld::delTerrain()
 	{
+#if 0
 		if (!m_terrain.m_shape || !m_terrain.m_rigidBody)
 			return true;
 
@@ -254,12 +257,12 @@ namespace physics
 		//-- delete.
 		delete m_terrain.m_rigidBody;
 		delete m_terrain.m_shape;
-
+#endif
 		return true;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(const vec3f& origin, const vec3f& dir) const
+	bool PhysicsWorld::collide(const vec3f& origin, const vec3f& dir) const
 	{
 		btVector3 start = bruge2bullet(origin);
 		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
@@ -271,7 +274,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(vec3f& out, const vec3f& start, const vec3f& end) const
+	bool PhysicsWorld::collide(vec3f& out, const vec3f& start, const vec3f& end) const
 	{
 		btVector3 btStart = bruge2bullet(start);
 		btVector3 btEnd   = bruge2bullet(end);
@@ -289,14 +292,14 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const
+	bool PhysicsWorld::collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const
 	{
 		Handle objID = CONST_INVALID_HANDLE;
 		return collide(localMat, node, objID, start, end);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicWorld::collide(
+	bool PhysicsWorld::collide(
 		mat4f& localMat, Node*& node, Handle& objID, const vec3f& start, const vec3f& end) const
 	{
 		btVector3 btStart = bruge2bullet(start);
@@ -669,7 +672,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	int PhysicWorld::_drawWire(bool flag)
+	int PhysicsWorld::_drawWire(bool flag)
 	{
 		m_debugDrawer.setDebugMode(
 			flag ? btIDebugDraw::DBG_DrawWireframe : !btIDebugDraw::DBG_DrawWireframe
@@ -678,7 +681,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	int PhysicWorld::_drawAABB(bool flag)
+	int PhysicsWorld::_drawAABB(bool flag)
 	{
 		m_debugDrawer.setDebugMode(
 			flag ? btIDebugDraw::DBG_DrawAabb : !btIDebugDraw::DBG_DrawAabb

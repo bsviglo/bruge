@@ -4,15 +4,10 @@
 #include "utils/Data.hpp"
 #include "math/Vector3.hpp"
 
-//-- ToDo: reconsider.
-#pragma warning(push, 3)
-#include "bullet/btBulletDynamicsCommon.h"
-#include "bullet/btBulletCollisionCommon.h"
-#pragma warning(pop)
+#include "PhysX/PxPhysicsAPI.h"
 
 #include <vector>
 #include <map>
-#include <memory>
 
 namespace brUGE
 {
@@ -32,7 +27,7 @@ namespace physics
 
 		//-- rigid body.
 		//------------------------------------------------------------------------------------------
-		class RigidBody : public btMotionState
+		class RigidBody
 		{
 		public:
 			struct Desc
@@ -89,15 +84,10 @@ namespace physics
 		bool destroy(PhysObj* obj);
 
 	private:
-		typedef btAlignedObjectArray<btCollisionShape*> Shapes;
-		typedef std::vector<RigidBody::Desc>			RigidBodyDescs;
-		typedef std::vector<Constraint::Desc>			ConstraintDescs;
-
-		RigidBodyDescs			m_rigidBodyDescs;
-		ConstraintDescs			m_constraintDescs;
-		Shapes					m_shapes;
-		std::vector<PhysObj*>	m_physObjs;
-		btDynamicsWorld*		m_dynamicsWorld;  //-- pointed at the managed object. No needed explicit deletion.
+		std::vector<physx::PxShape*>		m_shapes;
+		std::vector<physx::PxRigidDynamic*>	m_rigidBodies;
+		std::vector<PhysObj*>				m_physObjs;
+		physx::PxScene*						m_scene;
 	};
 
 
@@ -108,52 +98,29 @@ namespace physics
 		PhysObj();
 		~PhysObj();
 
-		void addToWorld  (btDynamicsWorld* world);
-		void delFromWorld(btDynamicsWorld* world);
+		void addToScene  (physx::PxScene* scene);
+		void delFromScene(physx::PxScene* scene);
 
 		void addImpulse(const vec3f& dir, const vec3f& relPos);
 
 		Handle					 m_objectID;
 		Transform*				 m_transform;
 		PhysObjDesc::RigidBodies m_bodies;
-		PhysObjDesc::Constraints m_constraints;
 	};
 
 
-	//-- Debug drawer.
+	//--
 	//----------------------------------------------------------------------------------------------
-	class PhysDebugDrawer : public btIDebugDraw
+	class PhysicsWorld : public NonCopyable
 	{
 	public:
-		PhysDebugDrawer() : m_modes(DBG_NoDebug) { }
-
-		virtual void drawLine			(const btVector3& from, const btVector3& to, const btVector3& color);
-		virtual void drawContactPoint	(const btVector3& /*PointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) { }
-		virtual void reportErrorWarning	(const char* warningString);
-		virtual void draw3dText			(const btVector3& /*location*/, const char* /*textString*/) { }
-		virtual void setDebugMode		(int debugMode) { m_modes |= debugMode; }
-		virtual int	 getDebugMode		() const { return m_modes;}
-
-	private:
-		int m_modes;
-	};
-
-
-	//-- Manages of all physical instances in the game, and updates dynamics simulation and
-	//-- collision detection.
-	//----------------------------------------------------------------------------------------------
-	class PhysicWorld : public NonCopyable
-	{
-	public:
-		PhysicWorld();
-		~PhysicWorld();
+		PhysicsWorld();
+		~PhysicsWorld();
 
 		bool		init();
 
-		//-- detect collisions. Called once per frame to update the whole game world.
-		void		detectCollisions(float dt);
 		//-- simulate rigid body dynamics.
-		void		simulateDynamics(float dt);
+		void		simulate(float dt);
 
 		//-- add new object to the collision world.
 		PhysObj*	addPhysicDef(const char* desc, Transform* transform, Handle owner);
@@ -174,24 +141,15 @@ namespace physics
 		int _drawAABB(bool flag);
 
 	private:
-		std::unique_ptr<btDynamicsWorld>					m_dynamicsWorld;
-		std::unique_ptr<btBroadphaseInterface>				m_broadphase;
-		std::unique_ptr<btCollisionDispatcher>				m_dispatcher;
-		std::unique_ptr<btConstraintSolver>					m_solver;
-		std::unique_ptr<btDefaultCollisionConfiguration>	m_collisionCfg;
-		PhysDebugDrawer										m_debugDrawer;
+		physx::PxFoundation*					m_foundation;
+		physx::PxPhysics*						m_physics;
+		physx::PxScene*							m_scene;
+		physx::PxDefaultCpuDispatcher*			m_dispatcher;
+		physx::PxDefaultAllocator				m_allocator;
+		physx::PxDefaultErrorCallback			m_errorCallback;
+		physx::PxVisualDebuggerConnection*		m_debuggerConnection;
 
-		std::map<std::string, PhysObjDesc*>					m_physObjDescs;
-
-		//-- terrain mesh.
-		struct TerrainPhysics
-		{
-			TerrainPhysics() : m_shape(nullptr), m_rigidBody(nullptr) { }
-
-			btHeightfieldTerrainShape*	m_shape;
-			btRigidBody*				m_rigidBody;
-		};
-		TerrainPhysics										m_terrain;
+		std::map<std::string, PhysObjDesc*>		m_physObjDescs;
 	};
 
 } //-- physic
