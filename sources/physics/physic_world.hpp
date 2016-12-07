@@ -18,8 +18,7 @@ namespace physics
 {
 	struct PhysObj;
 
-	//-- Manages the range of instances of one particular physical object type loaded
-	//-- from *.phys file.
+	//-- Manages the range of instances of one particular physical object type loaded from *.phys file.
 	//----------------------------------------------------------------------------------------------
 	class PhysObjDesc
 	{
@@ -32,76 +31,49 @@ namespace physics
 		public:
 			struct Desc
 			{
+				Desc() : m_isKinematic(false), m_mass(0.0f), m_shapeIdx(0) { }
+
 				std::string m_name;
 				std::string m_node;
 				bool		m_isKinematic;
 				float		m_mass;
 				vec3f		m_localInertia;
 				vec3f		m_offset;
-				uint		m_shape;
+				uint		m_shapeIdx;
 			};
 
 		public:
 			RigidBody();
 			virtual ~RigidBody();
 
-			virtual void getWorldTransform(btTransform& worldTrans) const;
-			virtual void setWorldTransform(const btTransform& worldTrans);
-
-			const char*	 m_name; //-- pointed at the managed object. No needed explicit deletion.
-			Node*		 m_node;
-			vec3f*	 	 m_offset;
-			PhysObj*	 m_owner;
-			btRigidBody* m_body;
+			const char*				m_name; //-- pointed at the managed object. No needed explicit deletion.
+			Node*					m_node;
+			PhysObj*				m_owner;
+			physx::PxRigidDynamic*	m_actor;
 		};
 		typedef std::vector<RigidBody*>	RigidBodies;
-
-		//-- constraint.
-		//------------------------------------------------------------------------------------------
-		class Constraint
-		{
-		public:
-			struct Desc
-			{
-				std::string m_name;
-			};
-
-		public:
-			Constraint()  {}
-			~Constraint() { delete m_constraint; m_constraint = nullptr; }
-
-			const char*		   m_name; //-- pointed at the managed object. No needed explicit deletion.
-			btTypedConstraint* m_constraint;
-		};
-		typedef std::vector<Constraint*> Constraints;
 
 	public:
 		PhysObjDesc();
 		~PhysObjDesc();
 
-		bool load	(const utils::ROData& desc, btDynamicsWorld* dynamicsWorld, Transform* transform);
-		bool create	(PhysObj*& obj, Transform* transform, Handle owner);
-		bool destroy(PhysObj* obj);
+		bool load			(const utils::ROData& desc, physx::PxScene* scene, Transform* transform);
+		bool createInstance	(PhysObj*& obj, Transform* transform, Handle owner);
+		bool removeInstance (PhysObj* obj);
 
 	private:
-		std::vector<physx::PxShape*>		m_shapes;
-		std::vector<physx::PxRigidDynamic*>	m_rigidBodies;
-		std::vector<PhysObj*>				m_physObjs;
-		physx::PxScene*						m_scene;
+		std::vector<physx::PxShape*>	m_shapes;
+		std::vector<PhysObj*>			m_physObjs;
 	};
 
 
 	//-- Represent the minimum logical unit of the physic system.
+	//-- ToDo: substitute with Handle
 	//----------------------------------------------------------------------------------------------
 	struct PhysObj
 	{
 		PhysObj();
 		~PhysObj();
-
-		void addToScene  (physx::PxScene* scene);
-		void delFromScene(physx::PxScene* scene);
-
-		void addImpulse(const vec3f& dir, const vec3f& relPos);
 
 		Handle					 m_objectID;
 		Transform*				 m_transform;
@@ -123,18 +95,19 @@ namespace physics
 		void		simulate(float dt);
 
 		//-- add new object to the collision world.
-		PhysObj*	addPhysicDef(const char* desc, Transform* transform, Handle owner);
-		bool		delPhysicDef(PhysObj* physObj);
+		Handle		createPhysicsObject(const char* desc, Transform* transform, Handle gameObj);
+		void		removePhysicsObject(Handle handle);
 
 		//-- add terrain mesh to the physics world.
-		bool		addTerrain(uint gridSize, float unitsPerCell, float* heights, float heightScale, float minHeight, float maxHeight);
-		bool		delTerrain();
+		bool		createTerrainPhysicsObject(uint gridSize, float unitsPerCell, float* heights, float heightScale, float minHeight, float maxHeight);
+		bool		removeTerrainPhysicsObject();
+
+		void		addImpulse(Handle physObj, const vec3f& dir, const vec3f& relPos);
 
 		bool		collide(const vec3f& origin, const vec3f& dir) const;
 		bool		collide(vec3f& out, const vec3f& start, const vec3f& end) const;
 		bool		collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const;
 		bool		collide(mat4f& localMat, Node*& node, Handle& objID, const vec3f& start, const vec3f& end) const;
-
 	private:
 		//-- console functions.
 		int _drawWire(bool flag);

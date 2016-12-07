@@ -164,7 +164,7 @@ namespace physics
 		if (result != m_physObjDescs.end())
 		{
 			PhysObj* obj = nullptr;
-			result->second->create(obj, transform, owner);
+			result->second->createInstance(obj, transform, owner);
 			return obj;
 		}
 		else
@@ -181,7 +181,7 @@ namespace physics
 			m_physObjDescs[desc] = physDesc.release();
 
 			PhysObj* obj = nullptr;
-			m_physObjDescs[desc]->create(obj, transform, owner);
+			m_physObjDescs[desc]->createInstance(obj, transform, owner);
 
 			return obj;
 		}
@@ -192,7 +192,7 @@ namespace physics
 	{
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 		{
-			if (i->second->destroy(physObj))
+			if (i->second->removeInstance(physObj))
 				return true;
 		}
 		return false;
@@ -206,7 +206,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::addTerrain(uint, float, float*, float, float, float)
+	bool PhysicsWorld::createTerrainPhysicsObject(uint, float, float*, float, float, float)
 	{
 #if 0
 		//-- create heightfield shape.
@@ -245,7 +245,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::delTerrain()
+	bool PhysicsWorld::removeTerrainPhysicsObject()
 	{
 #if 0
 		if (!m_terrain.m_shape || !m_terrain.m_rigidBody)
@@ -357,17 +357,16 @@ namespace physics
 	{
 		assert(m_physObjs.size() == 0);
 
-		for (auto i = 0; i < m_shapes.size(); ++i)
-		{
-			delete m_shapes[i];
-		}
+		for (auto& shape : m_shapes)
+			shape->release();
+
 		m_shapes.clear();
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::load(const ROData& data, btDynamicsWorld* world, Transform*)
+	bool PhysObjDesc::load(const ROData& data, physx::PxScene* scene, Transform*)
 	{
-		m_dynamicsWorld = world;
+		m_scene = world;
 
 		//-- 1. try to create DOM model from the input buffer.
 		pugi::xml_document doc;
@@ -405,14 +404,14 @@ namespace physics
 					if (params.empty())
 						return false;
 
-					btCollisionShape* btShape = nullptr;
+					PxShape* shape = nullptr;
 
 					//-- create desired collision shape.
 					if (type == "box")
 					{
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
-						btShape = new btBoxShape(btVector3(size.x, size.y, size.z));
+						shape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z));
 					}
 					else if (type == "cylinder" || type == "cylinderX" || type == "cylinderZ")
 					{
@@ -477,7 +476,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::create(PhysObj*& obj, Transform* transform, Handle objectID)
+	bool PhysObjDesc::createInstance(PhysObj*& obj, Transform* transform, Handle objectID)
 	{
 		std::unique_ptr<PhysObj> physObj(new PhysObj);
 
@@ -535,7 +534,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::destroy(PhysObj* obj)
+	bool PhysObjDesc::removeInstance(PhysObj* obj)
 	{
 		for (uint i = 0; i < m_physObjs.size(); ++i)
 		{
