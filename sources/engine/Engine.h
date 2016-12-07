@@ -53,7 +53,7 @@ namespace brUGE
 		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
 		render::RenderWorld&		renderWorld()		{ return *m_renderWorld.get();	}
 		render::RenderSystem&		renderSystem()		{ return m_renderSys;			}
-		physics::PhysicsWorld&		physicWorld()		{ return *m_physicWorld.get();	}
+		physics::PhysicsWorld&		physicsWorld()		{ return *m_physicWorld.get();	}
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
 	private:

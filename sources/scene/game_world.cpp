@@ -203,7 +203,7 @@ namespace brUGE
 
 		if (m_physObj)
 		{
-			Engine::instance().physicWorld().delPhysicDef(m_physObj);
+			Engine::instance().physicsWorld().delPhysicDef(m_physObj);
 			m_physObj = nullptr;
 		}
 	}
@@ -256,7 +256,7 @@ namespace brUGE
 			{
 				if (auto desc = physicsNode.attribute("file"))
 				{
-					m_physObj = Engine::instance().physicWorld().addPhysicDef(
+					m_physObj = Engine::instance().physicsWorld().createPhysicsObject(
 						desc.value(), &m_transform, objID
 						);
 				}
@@ -285,53 +285,6 @@ namespace brUGE
 		m_self = objID;
 
 		return true;
-
-		//-- 3. setup animation data.
-		/*
-		if (mInst->m_skinnedMesh)
-		{
-			AnimationData* aInst = new AnimationData;
-			aInst->m_meshInst = mInst;
-			aInst->m_transform = &m_transform;
-		}
-		else
-		{
-			m_animCtrl = CONST_INVALID_HANDLE;
-
-			m_animCtrl = Engine()::instance().animationEngine().addAnimDef(aInst);
-		}
-
-		//-- 4. setup transform of the game object.
-
-		//-- 4.1. setup root matrix.
-		if (orient)	m_transform.m_worldMat = *orient;
-		else		m_transform.m_worldMat.setIdentity();
-		
-		//-- 4.2. setup initial bounds.
-		m_transform.m_localBounds = mInst->m_skinnedMesh->bounds();
-
-		//-- 4.3. setup nodes bucket.
-		m_transform.m_nodes.push_back(new Node("root", m_transform.m_worldMat));
-		
-		//-- 4.4. if model is animated, then gather all the skeleton bones as nodes.
-		if (mInst->m_skinnedMesh)
-		{
-			//-- 4.4.1. resize mesh world palette to match the bones count in the skinned mesh.
-			mInst->m_worldPalette.resize(mInst->m_skinnedMesh->skeleton().size());
-
-			//-- 4.4.2. initialize nodes. 
-			for (uint i = 0; i < mInst->m_worldPalette.size(); ++i)
-			{
-				const Joint& joint   = mInst->m_skinnedMesh->skeleton()[i];
-				const mat4f& nodeMat = mInst->m_worldPalette[i];
-
-				m_transform.m_nodes.push_back(new Node(joint.m_name.c_str(), nodeMat));
-			}
-		}
-
-		//-- 5. final setup.
-		m_meshInst = Engine()::instance().renderWorld().addMeshDef(mInst);
-		*/
 	}
 
 	//----------------------------------------------------------------------------------------------

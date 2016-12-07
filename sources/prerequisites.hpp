@@ -24,11 +24,6 @@ namespace brUGE
 #pragma warning(disable : 4458)
 #pragma warning(disable : 4459)
 
-//-- ToDo: reconsider it. Bullet library integration
-#pragma warning(disable : 4359) //-- warning C4359: 'btContactConstraint': Alignment specifier is less than actual alignment (128), and will be ignored.
-#pragma warning(disable : 4316) //-- warning C4316: 'btCollisionDispatcher': object allocated on the heap may not be aligned 16
-#pragma warning(disable : 4305) //-- warning C4305: 'argument': truncation from 'double' to 'const btScalar'
-
 typedef int					Handle;
 typedef unsigned char		uchar;
 typedef uchar				byte;

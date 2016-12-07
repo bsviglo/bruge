@@ -79,19 +79,19 @@ namespace brUGE
 		virtual void endUpdate() { }
 
 		//-- ToDo: remove.
-		Handle				animCtrl() { return m_animCtrl; }
-		physics::PhysObj*	physObj()  { return m_physObj; }
-		const mat4f&		worldPos() { return m_transform.m_worldMat; }
+		Handle			animCtrl() { return m_animCtrl; }
+		Handle			physObj()  { return m_physObj; }
+		const mat4f&	worldPos() { return m_transform.m_worldMat; }
 
 	protected:
-		Handle				m_self;
-		Handle				m_meshInst;
-		Handle				m_animCtrl;
-		physics::PhysObj*	m_physObj;
-		//SoundData*		m_soundData;
-		//ScriptData*		m_scriptData;
-		//AIData*			m_aiData;
-		Transform			m_transform;
+		Handle			m_self;
+		Handle			m_meshInst;
+		Handle			m_animCtrl;
+		Handle			m_physObj;
+		//SoundData*	m_soundData;
+		//ScriptData*	m_scriptData;
+		//AIData*		m_aiData;
+		Transform		m_transform;
 	};
 
 

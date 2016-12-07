@@ -346,14 +346,13 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObjDesc::PhysObjDesc()
-		: m_dynamicsWorld(nullptr)
+	PhysicsObjectType::PhysicsObjectType(PxPhysics* physics) : m_physics(physics)
 	{
 
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObjDesc::~PhysObjDesc()
+	PhysicsObjectType::~PhysicsObjectType()
 	{
 		assert(m_physObjs.size() == 0);
 
@@ -364,15 +363,11 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::load(const ROData& data, physx::PxScene* scene, Transform*)
+	bool PhysicsObjectType::load(const ROData& data)
 	{
-		m_scene = world;
-
 		//-- 1. try to create DOM model from the input buffer.
 		pugi::xml_document doc;
-		auto result = doc.load_buffer(data.ptr(), data.length());
-
-		if (!result)
+		if (!doc.load_buffer(data.ptr(), data.length()))
 			return false;
 
 		//-- 2. check root element.
@@ -411,7 +406,7 @@ namespace physics
 					{
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
-						shape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z));
+						shape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z), );
 					}
 					else if (type == "cylinder" || type == "cylinderX" || type == "cylinderZ")
 					{
@@ -476,25 +471,30 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::createInstance(PhysObj*& obj, Transform* transform, Handle objectID)
+	Handle PhysicsObjectType::createInstance(Transform* transform, Handle gameObj)
 	{
-		std::unique_ptr<PhysObj> physObj(new PhysObj);
+		auto instance = std::make_unique<Instance>();
 
 		//-- 1. set transform.
-		physObj->m_objectID  = objectID;
-		physObj->m_transform = transform;
+		instance->m_gameObj   = gameObj;
+		instance->m_transform = transform;
 			
 		//-- 2. create all rigid bodies.
-		for (auto i = m_rigidBodyDescs.begin(); i != m_rigidBodyDescs.end(); ++i)
+		for (const auto& desc : m_rigidBodyDescs)
 		{
-			RigidBody* body = new RigidBody();
+			auto body = std::make_unique<RigidBody>();
 
-			body->m_name   = i->m_name.c_str();
-			body->m_owner  = physObj.get();
-			body->m_offset = &i->m_offset;
+			body->m_name	= desc.m_name.c_str();
+			body->m_node	= findNode(i->m_node, transform->m_nodes);
+			body->m_owner	= this;
+			body->m_actor	= m_physics->createRigidDynamic(PxTransform(PxMat44(transform->m_worldMat.data)));
+			body->m_actor->userData = &body;
 
-			//-- find anchor joint.
-			body->m_node = findNode(i->m_node, transform->m_nodes);
+			body->m_actor->attachShape(*m_shapes[desc.m_shapeIdx]);
+
+			PxRigidBodyExt::updateMassAndInertia(*body->m_actor, 10.0f);
+
+			m_scene->addActor(*body->m_actor);
 
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(
 				i->m_mass, body, m_shapes[i->m_shape],

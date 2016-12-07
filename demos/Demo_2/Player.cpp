@@ -98,7 +98,7 @@ void Player::beginUpdate(float dt)
 		vec3f end   = start + dir.scale(50.0f);
 
 		vec3f collision;
-		if (Engine::instance().physicWorld().collide(collision, start, end))
+		if (Engine::instance().physicsWorld().collide(collision, start, end))
 		{
 			DebugDrawer::instance().drawLine(start, collision, Color(0,0,1,1));
 			DebugDrawer::instance().drawLine(collision, end, Color(0,1,0,1));
@@ -138,7 +138,7 @@ bool Player::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 {
 	if (e.button == SDL_BUTTON_LEFT && e.state == SDL_PRESSED)
 	{
-		const PhysicsWorld& physWorld = Engine::instance().physicWorld();
+		const PhysicsWorld& physWorld = Engine::instance().physicsWorld();
 
 		//-- prepare collision ray.
 		vec3f dir   = m_transform.m_worldMat.applyToUnitAxis(mat4f::X_AXIS).getNormalized();

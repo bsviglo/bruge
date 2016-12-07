@@ -367,7 +367,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	TerrainSystem::~TerrainSystem()
 	{
-		Engine::instance().physicWorld().removeTerrainPhysicsObject();
+		Engine::instance().physicsWorld().removeTerrainPhysicsObject();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -442,7 +442,7 @@ namespace render
 			return false;
 
 		//-- ToDo: reconsider much more generalized form of terrain<->physics comunication.
-		bool success = Engine::instance().physicWorld().createTerrainPhysicsObject(
+		bool success = Engine::instance().physicsWorld().createTerrainPhysicsObject(
 			m_tableSize, m_unitsPerCell, &m_heightTable[0], 1.0f,
 			m_aabb.m_min.y, m_aabb.m_max.y
 			);
