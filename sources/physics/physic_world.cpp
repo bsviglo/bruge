@@ -158,37 +158,34 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObj* PhysicsWorld::addPhysicDef(const char* desc, Transform* transform, Handle owner)
+	Handle PhysicsWorld::createPhysicsObject(const char* desc, Transform* transform, Handle gameObj)
 	{
-		auto result = m_physObjDescs.find(desc);
-		if (result != m_physObjDescs.end())
+		PhysicsObjectType* factory = nullptr;
+
+		auto result = m_physObjTypes.find(desc);
+		if (result != m_physObjTypes.end())
 		{
-			PhysObj* obj = nullptr;
-			result->second->createInstance(obj, transform, owner);
-			return obj;
+			factory = result->second.get();
 		}
 		else
 		{
 			auto data = FileSystem::instance().readFile("resources/" + std::string(desc));	
 
-			std::unique_ptr<PhysObjDesc> physDesc(new PhysObjDesc());
-			if (!data || !physDesc->load(*data.get(), m_dynamicsWorld.get(), transform))
+			auto newType = std::make_unique<PhysicsObjectType>();
+			if (!data || !newType->load(*data.get()))
 			{
-				return nullptr;
+				return CONST_INVALID_HANDLE;
 			}
 
 			//-- add new phys descriptor.
-			m_physObjDescs[desc] = physDesc.release();
-
-			PhysObj* obj = nullptr;
-			m_physObjDescs[desc]->createInstance(obj, transform, owner);
-
-			return obj;
+			m_physObjTypes[desc] = std::move(newType);
 		}
+
+		return factory->createInstance(transform, gameObj);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::delPhysicDef(PhysObj* physObj)		
+	void PhysicsWorld::removePhysicsObject(Handle physObj)		
 	{
 		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
 		{
@@ -354,26 +351,34 @@ namespace physics
 	//----------------------------------------------------------------------------------------------
 	PhysicsObjectType::~PhysicsObjectType()
 	{
-		assert(m_physObjs.size() == 0);
+		assert(m_instances.size() == 0);
 
 		for (auto& shape : m_shapes)
 			shape->release();
 
+		for (auto& material : m_materials)
+			material->release();
+
+		m_materials.clear();
 		m_shapes.clear();
+		m_physics = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	bool PhysicsObjectType::load(const ROData& data)
 	{
-		//-- 1. try to create DOM model from the input buffer.
+		//-- try to create DOM model from the input buffer.
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
 			return false;
 
-		//-- 2. check root element.
+		//-- check root element.
 		auto root = doc.document_element();
 
-		//-- 3. try to read <rigidBodies> section.
+		//-- ToDo: default material
+		m_materials.emplace_back(m_physics->createMaterial(0.5f, 0.5f, 0.5f));
+
+		//-- try to read <rigidBodies> section.
 		{
 			auto elems = root.child("rigidBodies");
 
@@ -399,50 +404,45 @@ namespace physics
 					if (params.empty())
 						return false;
 
-					PxShape* shape = nullptr;
+					PxTransform localTransform(bodyDesc.m_offset.x, bodyDesc.m_offset.y, bodyDesc.m_offset.z);
+					PxShape* pxShape = nullptr;
 
 					//-- create desired collision shape.
 					if (type == "box")
 					{
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
-						shape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z), );
-					}
-					else if (type == "cylinder" || type == "cylinderX" || type == "cylinderZ")
-					{
-						auto radius = params.attribute("radius").as_float();
-						auto height = params.attribute("height").as_float() * 0.5f;
-
-						if (type == "cylinder")			btShape = new btCylinderShape(btVector3(radius, height, radius));
-						else if (type == "cylinderX")	btShape = new btCylinderShapeX(btVector3(height, radius, radius));
-						else							btShape = new btCylinderShapeZ(btVector3(radius, radius, height));
+						pxShape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z), *m_materials[0]);
 					}
 					else if (type == "capsule" || type == "capsuleX" || type == "capsuleZ")
 					{
 						auto radius		= params.attribute("radius").as_float();
 						auto halfHeight = params.attribute("halfHeight").as_float();
 
-						if (type == "capsule")			btShape = new btCapsuleShape(radius, halfHeight * 2.0f);
-						else if (type == "capsuleX")	btShape = new btCapsuleShapeX(radius, halfHeight * 2.0f);
-						else							btShape = new btCapsuleShapeZ(radius, halfHeight * 2.0f);
-						;
+						if (type == "capsule")
+							localTransform = PxTransform(PxQuat(PxHalfPi, PxVec3(0, 0, 1))) * localTransform;
+						else if (type == "capsuleZ")
+							localTransform = PxTransform(PxQuat(PxHalfPi, PxVec3(0, 1, 0))) * localTransform;
+
+						pxShape = m_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *m_materials[0]);
+					}
+					else if (type == "sphere")
+					{
+						auto radius = params.attribute("radius").as_float();
+
+						pxShape = m_physics->createShape(PxSphereGeometry(radius), *m_materials[0]);
 					}
 					else
 					{
-						assert(!"type is not yet implemented.");
+						assert(!"Undefined rigid body type.");
 					}
 
-					//-- calculate local inertia.
-					btVector3 lInertia(0,0,0);
-					if (bodyDesc.m_mass != 0.0f)
-						btShape->calculateLocalInertia(bodyDesc.m_mass, lInertia);
-
-					bodyDesc.m_localInertia = vec3f(lInertia);
+					pxShape->setLocalPose(localTransform);
 
 					//-- add new shape to cache.
-					m_shapes.push_back(btShape);
+					m_shapes.push_back(pxShape);
 
-					bodyDesc.m_shape = m_shapes.size() - 1;
+					bodyDesc.m_shapeIdx = m_shapes.size() - 1;
 
 					//-- add new rigid body descriptor.
 					m_rigidBodyDescs.push_back(bodyDesc);
@@ -485,70 +485,35 @@ namespace physics
 			auto body = std::make_unique<RigidBody>();
 
 			body->m_name	= desc.m_name.c_str();
-			body->m_node	= findNode(i->m_node, transform->m_nodes);
-			body->m_owner	= this;
+			body->m_node	= findNode(desc.m_node, transform->m_nodes);
+			body->m_owner	= instance.get();
 			body->m_actor	= m_physics->createRigidDynamic(PxTransform(PxMat44(transform->m_worldMat.data)));
-			body->m_actor->userData = &body;
 
+			body->m_actor->userData = &body;
 			body->m_actor->attachShape(*m_shapes[desc.m_shapeIdx]);
+			body->m_actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, desc.m_isKinematic);
 
 			PxRigidBodyExt::updateMassAndInertia(*body->m_actor, 10.0f);
 
-			m_scene->addActor(*body->m_actor);
-
-			btRigidBody::btRigidBodyConstructionInfo rbInfo(
-				i->m_mass, body, m_shapes[i->m_shape],
-				btVector3(i->m_localInertia.x, i->m_localInertia.y, i->m_localInertia.z)
-				);
-
-			body->m_body = new btRigidBody(rbInfo);
-
-			//-- set user pointer as a pointer to the PhysObj object.
-			body->m_body->setUserPointer(body);
-
-			//-- make it kinematic if needed.
-			if (i->m_isKinematic)
-			{
-				body->m_body->setCollisionFlags(
-					body->m_body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT
-					);  
-				body->m_body->setActivationState(DISABLE_DEACTIVATION); 
-			}
-
-			physObj->m_bodies.push_back(body);
+			instance->m_bodies.push_back(body);
 		}
 
 		//-- 3. create all constraints.
-		for (auto i = m_constraintDescs.begin(); i != m_constraintDescs.end(); ++i)
-		{
-
-		}
-
-		//-- 4. add to physic world.
-		physObj->addToWorld(m_dynamicsWorld);
+		//for (const auto& desc : m_constraintDescs)
+		//{
+		//
+		//}
 	
-		//-- 5. return result.
-		obj = physObj.release();
-		m_physObjs.push_back(obj);
-		return true;
+		m_instances.push_back(instance);
+		return m_instances.size() - 1;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysObjDesc::removeInstance(PhysObj* obj)
+	void PhysicsObjectType::removeInstance(Handle instance)
 	{
-		for (uint i = 0; i < m_physObjs.size(); ++i)
-		{
-			if (m_physObjs[i] == obj)
-			{
-				m_physObjs[i]->delFromWorld(m_dynamicsWorld);
+		assert(instance != INVALID_HANDLE_VALUE && instance < m_instances.size());
 
-				delete m_physObjs[i];
-				m_physObjs[i] = m_physObjs.back();
-				m_physObjs.pop_back();
-				return true;
-			}
-		}
-		return false;
+		m_instances[instance].reset();
 	}
 	
 	//----------------------------------------------------------------------------------------------
@@ -604,21 +569,24 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObjDesc::RigidBody::RigidBody()
-		: m_name(nullptr), m_node(nullptr), m_owner(nullptr)
+	PhysicsObjectType::RigidBody::RigidBody()
+		: m_name(nullptr), m_node(nullptr), m_owner(nullptr), m_actor(nullptr)
 	{
 
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysObjDesc::RigidBody::~RigidBody()
+	PhysicsObjectType::RigidBody::~RigidBody()
 	{
-		delete m_body;
-		m_body = nullptr;
+		m_actor->release();
+		m_actor = nullptr;
+		m_name = nullptr;
+		m_node = nullptr;
+		m_owner = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysObjDesc::RigidBody::getWorldTransform(btTransform& worldTrans) const
+	void PhysicsObjectType::RigidBody::getWorldTransform(btTransform& worldTrans) const
 	{
 		//-- apply offset.
 		mat4f transform(m_node->matrix());
@@ -629,7 +597,7 @@ namespace physics
 
 
 	//----------------------------------------------------------------------------------------------
-	void PhysObjDesc::RigidBody::setWorldTransform(const btTransform& worldTrans)
+	void PhysicsObjectType::RigidBody::setWorldTransform(const btTransform& worldTrans)
 	{
 		//-- apply transform
 		mat4f transform = bullet2bruge(worldTrans);
@@ -652,22 +620,6 @@ namespace physics
 		
 		//-- update root node matrix.
 		m_node->matrix(transform);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void PhysDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
-	{
-		DebugDrawer::instance().drawLine(
-			bullet2bruge(from), bullet2bruge(to),
-			Color(color.x(), color.y(), color.z())
-			);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void PhysDebugDrawer::reportErrorWarning(const char* warningString)
-	{
-		ConWarning (warningString);
-		WARNING_MSG(warningString);
 	}
 
 	//----------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 #include "PhysX/PxPhysicsAPI.h"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace brUGE
 {
@@ -36,7 +36,7 @@ namespace physics
 
 				struct Material
 				{
-					Material() : m_dynamicFriction(0.0f), m_staticFriction(0.0f), m_restitution(0.0f) { }
+					Material() : m_dynamicFriction(0.5f), m_staticFriction(0.5f), m_restitution(0.5f) { }
 
 					float m_dynamicFriction;
 					float m_staticFriction;
@@ -81,8 +81,9 @@ namespace physics
 	private:
 		physx::PxPhysics*						m_physics;
 		std::vector<RigidBody::Desc>			m_rigidBodyDescs;
-		//std::vector<Constraints::Desc>			m_constrainDescs;
+		//std::vector<Constraints::Desc>		m_constrainDescs;
 		std::vector<physx::PxShape*>			m_shapes;
+		std::vector<physx::PxMaterial*>			m_materials;
 		std::vector<std::unique_ptr<Instance>>	m_instances;
 	};
 
@@ -131,7 +132,7 @@ namespace physics
 		physx::PxDefaultErrorCallback			m_errorCallback;
 		physx::PxVisualDebuggerConnection*		m_debuggerConnection;
 
-		std::map<std::string, PhysObjDesc*>		m_physObjDescs;
+		std::unordered_map<std::string, std::unique_ptr<PhysicsObjectType>>	m_physObjTypes;
 	};
 
 } //-- physic
