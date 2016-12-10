@@ -1,8 +1,8 @@
 <phys>
   <rigidBodies>
     <rigidBody name="root" node="root" mass="5" offset="vec3f(0,0,0)" kinematic="0">
-      <shape type="cylinder">
-        <params radius="0.3666" height="1" />
+      <shape type="capsule">
+        <params radius="0.3666" halfHeight="0.3167" />
       </shape>      
     </rigidBody>
   </rigidBodies>

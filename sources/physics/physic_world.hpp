@@ -55,7 +55,7 @@ namespace physics
 
 		public:
 			RigidBody();
-			virtual ~RigidBody();
+			~RigidBody();
 
 			const char*				m_name; //-- pointed at the managed object. No needed explicit deletion.
 			Node*					m_node;
@@ -65,26 +65,30 @@ namespace physics
 
 		struct Instance
 		{
+			Instance() : m_gameObj(CONST_INVALID_HANDLE), m_physObj(CONST_INVALID_HANDLE), m_transform(nullptr) { }
+			~Instance() { }
+
+			void enterScene(physx::PxScene* scene);
+			void leaveScene(physx::PxScene* scene);
+
+			Handle									m_physObj;
 			Handle									m_gameObj;
 			Transform*								m_transform;
 			std::vector<std::unique_ptr<RigidBody>>	m_bodies;
 		};
 
 	public:
-		PhysicsObjectType(physx::PxPhysics* physics);
+		PhysicsObjectType();
 		~PhysicsObjectType();
 
-		bool	load(const utils::ROData& desc);
-		Handle	createInstance(Transform* transform, Handle gameObj);
-		void	removeInstance(Handle instance);
+		bool						load(const utils::ROData& desc);
+		std::unique_ptr<Instance>	createInstance(Transform* transform, Handle gameObj);
 
 	private:
-		physx::PxPhysics*						m_physics;
 		std::vector<RigidBody::Desc>			m_rigidBodyDescs;
 		//std::vector<Constraints::Desc>		m_constrainDescs;
 		std::vector<physx::PxShape*>			m_shapes;
 		std::vector<physx::PxMaterial*>			m_materials;
-		std::vector<std::unique_ptr<Instance>>	m_instances;
 	};
 
 
@@ -92,6 +96,19 @@ namespace physics
 	//----------------------------------------------------------------------------------------------
 	class PhysicsWorld : public NonCopyable
 	{
+	public:
+		struct CollisionCallback
+		{
+			CollisionCallback() : m_distance(0.0f), m_gameObj(CONST_INVALID_HANDLE), m_physObj(CONST_INVALID_HANDLE), m_node(nullptr) { }
+
+			vec3f	m_wPos;
+			vec3f	m_wNormal;
+			float	m_distance;
+			Handle	m_gameObj;
+			Handle	m_physObj;
+			Node*	m_node;
+		};
+
 	public:
 		PhysicsWorld();
 		~PhysicsWorld();
@@ -109,19 +126,13 @@ namespace physics
 		bool		createTerrainPhysicsObject(uint gridSize, float unitsPerCell, float* heights, float heightScale, float minHeight, float maxHeight);
 		bool		removeTerrainPhysicsObject();
 
-		void		addImpulse(Handle physObj, const vec3f& dir, const vec3f& relPos);
+		void		addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
 
-		bool		collide(const vec3f& origin, const vec3f& dir) const;
-		bool		collide(vec3f& out, const vec3f& start, const vec3f& end) const;
-		bool		collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const;
-		bool		collide(mat4f& localMat, Node*& node, Handle& gameObj, const vec3f& start, const vec3f& end) const;
+		bool		collide(CollisionCallback& cc, const vec3f& start, const vec3f& end) const;
 
-
-		physx::PxPhysics* physics() { return m_physics; }
 	private:
-		//-- console functions.
-		int _drawWire(bool flag);
-		int _drawAABB(bool flag);
+		void		updateGraphicsTransforms();
+		void		updatePhysicsTransforms();
 
 	private:
 		physx::PxFoundation*					m_foundation;
@@ -132,6 +143,7 @@ namespace physics
 		physx::PxDefaultErrorCallback			m_errorCallback;
 		physx::PxVisualDebuggerConnection*		m_debuggerConnection;
 
+		std::vector<std::unique_ptr<PhysicsObjectType::Instance>>			m_physObjs;
 		std::unordered_map<std::string, std::unique_ptr<PhysicsObjectType>>	m_physObjTypes;
 	};
 

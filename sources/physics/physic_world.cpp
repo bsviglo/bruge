@@ -21,66 +21,6 @@ using namespace brUGE::render;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-
-	//----------------------------------------------------------------------------------------------
-	inline mat4f bullet2bruge(const btTransform& transform)
-	{
-		mat4f ret;
-
-		const btVector3& orgn = transform.getOrigin();
-		const btVector3& row1 = transform.getBasis()[0];
-		const btVector3& row2 = transform.getBasis()[1];
-		const btVector3& row3 = transform.getBasis()[2];
-
-		//-- from the right-handed coordinate system to left-handed with additional respect to
-		//-- conversion from column-major matrix layout to row-major.
-		ret.m00 = -row1.x(); ret.m01 = +row2.x(); ret.m02 = -row3.x(); ret.m03 = 0.0f;
-		ret.m10 = -row1.y(); ret.m11 = +row2.y(); ret.m12 = -row3.y(); ret.m13 = 0.0f;
-		ret.m20 = -row1.z(); ret.m21 = +row2.z(); ret.m22 = -row3.z(); ret.m23 = 0.0f;
-		ret.m30 = -orgn.x(); ret.m31 = +orgn.y(); ret.m32 = -orgn.z(); ret.m33 = 1.0f;
-
-		return ret;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	inline btTransform bruge2bullet(const mat4f& t)
-	{
-		btTransform ret;
-
-		btMatrix3x3 basis(
-			-t.m00, -t.m10, -t.m20,
-			+t.m01, +t.m11, +t.m21,
-			-t.m02, -t.m12, -t.m22
-			);
-
-		btVector3 origin(
-			-t.m30, t.m31, -t.m32
-			);
-
-		ret.setOrigin(origin);
-		ret.setBasis(basis);
-
-		return ret;
-	}
-
-	//----------------------------------------------------------------------------------------------
-	inline btVector3 bruge2bullet(const vec3f& v3)
-	{
-		return btVector3(-v3.x, v3.y, -v3.z);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	inline vec3f bullet2bruge(const btVector3& v3)
-	{
-		return vec3f(-v3.x(), v3.y(), -v3.z());
-	}
-
-	//----------------------------------------------------------------------------------------------
-	inline vec3f bullet2vec3f(const btVector3& v3)
-	{
-		return vec3f(v3.x(), v3.y(), v3.z());
-	}
-
 	//----------------------------------------------------------------------------------------------
 	Node* findNode(const std::string& name, Nodes& nodes)
 	{
@@ -113,16 +53,16 @@ namespace physics
 	//----------------------------------------------------------------------------------------------
 	PhysicsWorld::~PhysicsWorld()
 	{
-		//-- ToDo:
-		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
-			delete i->second;
+		m_physObjs.clear();
+		m_physObjTypes.clear();
 		
 		m_scene->release();
 		m_dispatcher->release();
+		auto* profileZoneManager = m_physics->getProfileZoneManager();
 		if (m_debuggerConnection)
 			m_debuggerConnection->release();
 		m_physics->release();
-		m_physics->getProfileZoneManager()->release();
+		profileZoneManager->release();
 		m_foundation->release();
 	}
 
@@ -150,6 +90,7 @@ namespace physics
 			sceneDesc.gravity		= PxVec3(0.0f, -9.81f, 0.0f);
 			sceneDesc.cpuDispatcher = m_dispatcher;
 			sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
+			sceneDesc.flags			= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;
 
 			m_scene = m_physics->createScene(sceneDesc);
 		}
@@ -179,27 +120,39 @@ namespace physics
 
 			//-- add new phys descriptor.
 			m_physObjTypes[desc] = std::move(newType);
+			factory = m_physObjTypes[desc].get();
 		}
 
-		return factory->createInstance(transform, gameObj);
+		//-- instantiate phys obj of the particular type
+		if (auto instance = factory->createInstance(transform, gameObj))
+		{
+			instance->m_physObj = m_physObjs.size();
+			instance->enterScene(m_scene);
+			m_physObjs.push_back(std::move(instance));
+			return m_physObjs.size() - 1;
+		}
+
+		return CONST_INVALID_HANDLE;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PhysicsWorld::removePhysicsObject(Handle physObj)		
 	{
-		for (auto i = m_physObjDescs.begin(); i != m_physObjDescs.end(); ++i)
-		{
-			if (i->second->removeInstance(physObj))
-				return true;
-		}
-		return false;
+		assert(static_cast<uint32>(physObj) < m_physObjs.size() && m_physObjs[physObj]);
+
+		m_physObjs[physObj]->leaveScene(m_scene);
+		m_physObjs[physObj].reset();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	void PhysicsWorld::simulate(float dt)
 	{
+		updatePhysicsTransforms();
+
 		m_scene->simulate(dt);
 		m_scene->fetchResults(true);
+
+		updateGraphicsTransforms();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -259,83 +212,46 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::collide(const vec3f& origin, const vec3f& dir) const
+	void PhysicsWorld::addImpulse(Handle physObj, const vec3f& impulse, const vec3f& wPos)
 	{
-		btVector3 start = bruge2bullet(origin);
-		btVector3 end   = bruge2bullet(origin + dir.scale(1000.0f));
+		const auto& instance = m_physObjs[physObj];
+		auto&		body	 = *instance->m_bodies[0]->m_actor;
 
-		btCollisionWorld::ClosestRayResultCallback cb(start, end);
-		m_dynamicsWorld->rayTest(start, end, cb);
+		if (body.getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
+			return;
 
-		return cb.hasHit();
+		PxRigidBodyExt::addForceAtPos(
+			body, PxVec3(impulse.x, impulse.y, impulse.z), PxVec3(wPos.x, wPos.y, wPos.z), PxForceMode::eIMPULSE
+		);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::collide(vec3f& out, const vec3f& start, const vec3f& end) const
+	bool PhysicsWorld::collide(CollisionCallback& cc, const vec3f& start, const vec3f& end) const
 	{
-		btVector3 btStart = bruge2bullet(start);
-		btVector3 btEnd   = bruge2bullet(end);
+		PxVec3 pxStart(start.x, start.y, start.z);
+		PxVec3 pxEnd(end.x, end.y, end.z);
+		PxVec3 pxUnitDir = (pxEnd - pxStart); 
+		PxReal pxMaxDistance = pxUnitDir.normalize(); 
+		PxRaycastBuffer pxHit;
 
-		btCollisionWorld::ClosestRayResultCallback cb(btStart, btEnd);
-		m_dynamicsWorld->rayTest(btStart, btEnd, cb);
+		bool status = m_scene->raycast(pxStart, pxUnitDir, pxMaxDistance, pxHit);
 
-		if (cb.hasHit())
+		if (status)
 		{
-			out = bullet2bruge(cb.m_hitPointWorld);
-			return true;
-		}
+			auto& block = pxHit.block;
+			auto body	= static_cast<PhysicsObjectType::RigidBody*>(block.actor->userData);
 
-		return false;
-	}
+			cc.m_wPos		= vec3f(&block.position[0]);
+			cc.m_wNormal	= vec3f(&block.normal[0]);
+			cc.m_distance	= block.distance;
 
-	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::collide(mat4f& localMat, Node*& node, const vec3f& start, const vec3f& end) const
-	{
-		Handle objID = CONST_INVALID_HANDLE;
-		return collide(localMat, node, objID, start, end);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool PhysicsWorld::collide(
-		mat4f& localMat, Node*& node, Handle& objID, const vec3f& start, const vec3f& end) const
-	{
-		btVector3 btStart = bruge2bullet(start);
-		btVector3 btEnd   = bruge2bullet(end);
-
-		btCollisionWorld::ClosestRayResultCallback cb(btStart, btEnd);
-		m_dynamicsWorld->rayTest(btStart, btEnd, cb);
-
-		if (cb.hasHit())
-		{
-			//-- ToDo: terrain is not suit for this current collision system
-			//--	   We need some reworking here. Reconsider.
-			if (!cb.m_collisionObject->getUserPointer())
-				return false;
-
-			auto body  = static_cast<PhysObjDesc::RigidBody*>(cb.m_collisionObject->getUserPointer());
-			auto world = cb.m_collisionObject->getWorldTransform();
-
-			//vec3f localPoint = bullet2bruge(world.invXform(cb.m_hitPointWorld));
-			vec3f localPoint  = bullet2vec3f(world.invXform(cb.m_hitPointWorld));
-			vec3f localNormal = bullet2bruge(world.getBasis().inverse() * cb.m_hitNormalWorld);
-
-			mat4f mat;
-			vec3f up(0,1,0);
-
-			if (almostZero(fabs(localNormal.dot(up)) - 1.0f))
+			if (body)
 			{
-				up = vec3f(0,0,1);
+				cc.m_node	 = body->m_node;
+				cc.m_gameObj = body->m_owner->m_gameObj;
+				cc.m_physObj = body->m_owner->m_physObj;
 			}
 
-			//-- apply offset to local point.
-			localPoint += *body->m_offset;
-
-			localMat.setLookAt(localPoint, localNormal, up);
-			localMat.invert();
-
-			node  = body->m_node;
-			objID = body->m_owner->m_objectID;
-
 			return true;
 		}
 
@@ -343,7 +259,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	PhysicsObjectType::PhysicsObjectType(PxPhysics* physics) : m_physics(physics)
+	PhysicsObjectType::PhysicsObjectType()
 	{
 
 	}
@@ -351,8 +267,6 @@ namespace physics
 	//----------------------------------------------------------------------------------------------
 	PhysicsObjectType::~PhysicsObjectType()
 	{
-		assert(m_instances.size() == 0);
-
 		for (auto& shape : m_shapes)
 			shape->release();
 
@@ -361,7 +275,6 @@ namespace physics
 
 		m_materials.clear();
 		m_shapes.clear();
-		m_physics = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -376,7 +289,7 @@ namespace physics
 		auto root = doc.document_element();
 
 		//-- ToDo: default material
-		m_materials.emplace_back(m_physics->createMaterial(0.5f, 0.5f, 0.5f));
+		m_materials.emplace_back(PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f));
 
 		//-- try to read <rigidBodies> section.
 		{
@@ -412,7 +325,7 @@ namespace physics
 					{
 						auto size = parseTo<vec3f>(params.attribute("size").value());
 
-						pxShape = m_physics->createShape(PxBoxGeometry(size.x, size.y, size.z), *m_materials[0]);
+						pxShape = PxGetPhysics().createShape(PxBoxGeometry(size.x, size.y, size.z), *m_materials[0]);
 					}
 					else if (type == "capsule" || type == "capsuleX" || type == "capsuleZ")
 					{
@@ -424,13 +337,13 @@ namespace physics
 						else if (type == "capsuleZ")
 							localTransform = PxTransform(PxQuat(PxHalfPi, PxVec3(0, 1, 0))) * localTransform;
 
-						pxShape = m_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *m_materials[0]);
+						pxShape = PxGetPhysics().createShape(PxCapsuleGeometry(radius, halfHeight), *m_materials[0]);
 					}
 					else if (type == "sphere")
 					{
 						auto radius = params.attribute("radius").as_float();
 
-						pxShape = m_physics->createShape(PxSphereGeometry(radius), *m_materials[0]);
+						pxShape = PxGetPhysics().createShape(PxSphereGeometry(radius), *m_materials[0]);
 					}
 					else
 					{
@@ -471,7 +384,7 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle PhysicsObjectType::createInstance(Transform* transform, Handle gameObj)
+	std::unique_ptr<PhysicsObjectType::Instance> PhysicsObjectType::createInstance(Transform* transform, Handle gameObj)
 	{
 		auto instance = std::make_unique<Instance>();
 
@@ -487,15 +400,15 @@ namespace physics
 			body->m_name	= desc.m_name.c_str();
 			body->m_node	= findNode(desc.m_node, transform->m_nodes);
 			body->m_owner	= instance.get();
-			body->m_actor	= m_physics->createRigidDynamic(PxTransform(PxMat44(transform->m_worldMat.data)));
+			body->m_actor	= PxGetPhysics().createRigidDynamic(PxTransform(PxMat44(transform->m_worldMat.data)));
 
-			body->m_actor->userData = &body;
+			body->m_actor->userData = body.get();
 			body->m_actor->attachShape(*m_shapes[desc.m_shapeIdx]);
 			body->m_actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, desc.m_isKinematic);
 
 			PxRigidBodyExt::updateMassAndInertia(*body->m_actor, 10.0f);
 
-			instance->m_bodies.push_back(body);
+			instance->m_bodies.push_back(std::move(body));
 		}
 
 		//-- 3. create all constraints.
@@ -504,68 +417,25 @@ namespace physics
 		//
 		//}
 	
-		m_instances.push_back(instance);
-		return m_instances.size() - 1;
+		return instance;
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysicsObjectType::removeInstance(Handle instance)
+	void PhysicsObjectType::Instance::enterScene(physx::PxScene* scene)
 	{
-		assert(instance != INVALID_HANDLE_VALUE && instance < m_instances.size());
-
-		m_instances[instance].reset();
-	}
-	
-	//----------------------------------------------------------------------------------------------
-	PhysObj::PhysObj() : m_transform(nullptr), m_objectID(CONST_INVALID_HANDLE)
-	{
-
-	}
-
-	//----------------------------------------------------------------------------------------------
-	PhysObj::~PhysObj()
-	{
-		m_transform = nullptr;
-
-		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
-			delete *i;
-
-		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			delete *i;
-
-		m_bodies.clear();
-		m_constraints.clear();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void PhysObj::addToWorld(btDynamicsWorld* world)
-	{
-		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
+		for (const auto& body : m_bodies)
 		{
-			world->addRigidBody((*i)->m_body);
+			scene->addActor(*body->m_actor);
 		}
-
-		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->addConstraint((*i)->m_constraint, true);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysObj::delFromWorld(btDynamicsWorld* world)
+	void PhysicsObjectType::Instance::leaveScene(physx::PxScene* scene)
 	{
-		for (auto i = m_bodies.begin(); i != m_bodies.end(); ++i)
-			world->removeRigidBody((*i)->m_body);
-
-		for (auto i = m_constraints.begin(); i != m_constraints.end(); ++i)
-			world->removeConstraint((*i)->m_constraint);
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void PhysObj::addImpulse(const vec3f& dir, const vec3f& relPos)
-	{
-		m_bodies[0]->m_body->activate(true);
-		m_bodies[0]->m_body->applyImpulse(
-			bruge2bullet(dir), bruge2bullet(relPos)
-			);
+		for (const auto& body : m_bodies)
+		{
+			scene->removeActor(*body->m_actor);
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -586,58 +456,52 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void PhysicsObjectType::RigidBody::getWorldTransform(btTransform& worldTrans) const
+	void PhysicsWorld::updateGraphicsTransforms()
 	{
-		//-- apply offset.
-		mat4f transform(m_node->matrix());
-		transform.preTranslation(*m_offset);
+		// retrieve array of actors that moved
+		PxU32 nbActiveTransforms = 0;
+		auto* activeTransforms = m_scene->getActiveTransforms(nbActiveTransforms);
 
-		worldTrans = bruge2bullet(transform);
-	}
-
-
-	//----------------------------------------------------------------------------------------------
-	void PhysicsObjectType::RigidBody::setWorldTransform(const btTransform& worldTrans)
-	{
-		//-- apply transform
-		mat4f transform = bullet2bruge(worldTrans);
-		transform.postTranslation(m_offset->scale(-1));
-
-		//-- update AABB.
-		//-- ToDo: optimize.
+		// update each render object with the new transform
+		for (PxU32 i = 0; i < nbActiveTransforms; ++i)
 		{
-			btVector3 aabbMin, aabbMax;
-			btTransform identityTransform;
-			identityTransform.setIdentity();
-			m_body->getCollisionShape()->getAabb(
-				identityTransform, aabbMin, aabbMax
-				);
-			
-			Transform& tr = *m_owner->m_transform;
-			tr.m_localBounds = AABB(bullet2bruge(aabbMin), bullet2bruge(aabbMax));
-			tr.m_worldBounds = tr.m_localBounds.getTranformed(transform);
+			auto& entry = activeTransforms[i];
+			auto* body  = static_cast<PhysicsObjectType::RigidBody*>(entry.userData);
+			body->m_node->matrix(mat4f(PxMat44(entry.actor2World).front()));
+
+			//-- update AABB.
+			//-- ToDo: optimize.
+			{
+				const auto& aabb = entry.actor->getWorldBounds();
+				body->m_owner->m_transform->m_worldBounds = AABB(vec3f(&aabb.minimum[0]), vec3f(&aabb.maximum[0]));
+			}
 		}
-		
-		//-- update root node matrix.
-		m_node->matrix(transform);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	int PhysicsWorld::_drawWire(bool flag)
+	void PhysicsWorld::updatePhysicsTransforms()
 	{
-		m_debugDrawer.setDebugMode(
-			flag ? btIDebugDraw::DBG_DrawWireframe : !btIDebugDraw::DBG_DrawWireframe
-			);
-		return 0;
-	}
+		PxU32 nbActors = m_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC);
+		if (nbActors)
+		{
+			std::vector<PxRigidActor*> actors(nbActors);
+			m_scene->getActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC, (PxActor**)&actors[0], nbActors);
 
-	//----------------------------------------------------------------------------------------------
-	int PhysicsWorld::_drawAABB(bool flag)
-	{
-		m_debugDrawer.setDebugMode(
-			flag ? btIDebugDraw::DBG_DrawAabb : !btIDebugDraw::DBG_DrawAabb
-			);
-		return 0;
+			for (const auto& actor : actors)
+			{
+				if (auto* rigidDynamic = actor->isRigidDynamic())
+				{
+					if (rigidDynamic->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
+					{
+						auto* body    = static_cast<PhysicsObjectType::RigidBody*>(actor->userData);
+						auto& nodeMat = const_cast<mat4f&>(body->m_node->matrix());
+
+						PxTransform transform(PxMat44(nodeMat.data));
+						rigidDynamic->setKinematicTarget(transform);
+					}
+				}
+			}
+		}
 	}
 
 } //-- physic

@@ -181,7 +181,7 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	IGameObj::IGameObj()
 		:	m_self(CONST_INVALID_HANDLE), m_animCtrl(CONST_INVALID_HANDLE),
-			m_meshInst(CONST_INVALID_HANDLE), m_physObj(nullptr)
+			m_meshInst(CONST_INVALID_HANDLE), m_physObj(CONST_INVALID_HANDLE)
 	{
 
 	}
@@ -201,10 +201,10 @@ namespace brUGE
 			m_animCtrl = CONST_INVALID_HANDLE;
 		}
 
-		if (m_physObj)
+		if (m_physObj != CONST_INVALID_HANDLE)
 		{
-			Engine::instance().physicsWorld().delPhysicDef(m_physObj);
-			m_physObj = nullptr;
+			Engine::instance().physicsWorld().removePhysicsObject(m_physObj);
+			m_physObj = CONST_INVALID_HANDLE;
 		}
 	}
 
@@ -250,7 +250,7 @@ namespace brUGE
 			pugi::xml_node physicsNode = objectDesc.child("physics");
 			if (physicsNode.empty())
 			{
-				m_physObj = nullptr;
+				m_physObj = CONST_INVALID_HANDLE;
 			}
 			else
 			{

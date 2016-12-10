@@ -1,6 +1,6 @@
 <phys>
   <rigidBodies>
-    <rigidBody name="root" node="root" mass="0.0" offset="vec3f(0,0,0)" kinematic="0">
+    <rigidBody name="root" node="root" mass="0.0" offset="vec3f(0,0,0)" kinematic="1">
       <shape type="box">
         <params size="vec3f(100.0,0.2,100.0)" />
       </shape>      

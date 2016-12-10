@@ -9,50 +9,50 @@
 	
 	<!-- arms -->
 	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="l_up_arm" bone2="l_elbo" radius="0.35" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="l_low_arm" node="l_elbo" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="l_elbo" bone2="l_index_03" radius="0.35" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="r_up_arm" bone2="r_elbo" radius="0.35" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="r_low_arm" node="r_elbo" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="r_elbo" bone2="r_index_03" radius="0.35" />
 		</shape>    
 	</rigidBody>
 	
 	<!-- legs -->
 	<rigidBody name="l_up_leg" node="l_upleg" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="l_upleg" bone2="l_loleg" radius="0.45" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="l_low_leg" node="l_loleg" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="l_loleg" bone2="l_ankle" radius="0.45" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="r_up_leg" node="r_upleg" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="r_upleg" bone2="r_loleg" radius="0.45" />
 		</shape>    
 	</rigidBody>
 	
 	<rigidBody name="r_low_leg" node="r_loleg" mass="0" offset="vec3f(0,0,0)" kinematic="1">
-		<shape type="cylinderX">
+		<shape type="capsuleX">
 			<params bone1="r_loleg" bone2="r_ankle" radius="0.45" />
 		</shape>    
 	</rigidBody>

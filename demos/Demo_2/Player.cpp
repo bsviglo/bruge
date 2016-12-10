@@ -97,11 +97,11 @@ void Player::beginUpdate(float dt)
 		vec3f start = world.applyToOrigin() + vec3f(0.0f, 0.25f, 0.0f) + dir.scale(1.0f);
 		vec3f end   = start + dir.scale(50.0f);
 
-		vec3f collision;
-		if (Engine::instance().physicsWorld().collide(collision, start, end))
+		PhysicsWorld::CollisionCallback cc;
+		if (Engine::instance().physicsWorld().collide(cc, start, end))
 		{
-			DebugDrawer::instance().drawLine(start, collision, Color(0,0,1,1));
-			DebugDrawer::instance().drawLine(collision, end, Color(0,1,0,1));
+			DebugDrawer::instance().drawLine(start, cc.m_wPos, Color(0,0,1,1));
+			DebugDrawer::instance().drawLine(cc.m_wPos, end, Color(0,1,0,1));
 		}
 		else
 		{
@@ -138,23 +138,21 @@ bool Player::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 {
 	if (e.button == SDL_BUTTON_LEFT && e.state == SDL_PRESSED)
 	{
-		const PhysicsWorld& physWorld = Engine::instance().physicsWorld();
+		auto& physWorld = Engine::instance().physicsWorld();
+		auto& gameWorld = Engine::instance().gameWorld();
 
 		//-- prepare collision ray.
 		vec3f dir   = m_transform.m_worldMat.applyToUnitAxis(mat4f::X_AXIS).getNormalized();
 		vec3f start = m_transform.m_worldMat.applyToOrigin() + vec3f(0.0f, 0.25f, 0.0f) + dir.scale(1.0f);
 		vec3f end   = start + dir.scale(50.0f);
 
-		mat4f localMat;
-		Node* node   = nullptr;
-		Handle objID = CONST_INVALID_HANDLE;
+		PhysicsWorld::CollisionCallback cc;
 
-		if (physWorld.collide(localMat, node, objID, start, end))
+		if (physWorld.collide(cc, start, end))
 		{
-			IGameObj* obj = Engine::instance().gameWorld().getGameObj(objID);
-			if (obj && obj->physObj())
+			if (cc.m_gameObj != CONST_INVALID_HANDLE)
 			{
-				obj->physObj()->addImpulse(dir.scale(5.0f), localMat.applyToOrigin());
+				physWorld.addImpulse(cc.m_physObj, dir.scale(5.0f), cc.m_wPos);
 
 				//-- send event about damage.
 				//-- send event about attack.
@@ -165,7 +163,7 @@ bool Player::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 					event.m_name = "hit";
 					event.m_data = &damage;
 
-					obj->receiveEvent(event);
+					gameWorld.getGameObj(cc.m_gameObj)->receiveEvent(event);
 				}
 			}
 		}
