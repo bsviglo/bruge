@@ -1,0 +1,62 @@
+<materials>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>	
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>
+	<material use="bump">
+		<properties>
+			<property name="diffuseMap" type="texture" value="models/zfat_splited/fatty_d.dds"/>
+			<property name="bumpMap" type="texture" value="models/zfat_splited/fatty_n.dds"/>
+		</properties>
+	</material>	
+</materials>

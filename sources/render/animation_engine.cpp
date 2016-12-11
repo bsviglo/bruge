@@ -18,8 +18,8 @@ namespace
 {
 
 	//----------------------------------------------------------------------------------------------
-	bool g_drawSkeletons = true;
-	bool g_drawNodeNames = true;
+	bool g_drawSkeletons = false;
+	bool g_drawNodeNames = false;
 	bool g_drawJoints    = false;
 
 }
@@ -106,7 +106,8 @@ namespace render
 
 					if (g_drawJoints)
 					{
-						DebugDrawer::instance().drawSphere(0.025f, palette[k], Color(1,0,0,1), DebugDrawer::DRAW_OVERRIDE);
+						//DebugDrawer::instance().drawSphere(0.025f, palette[k], Color(1,0,0,1), DebugDrawer::DRAW_OVERRIDE);
+						DebugDrawer::instance().drawCoordAxis(palette[k], 0.1f);
 					}
 
 					if (g_drawNodeNames)
