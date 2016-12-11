@@ -60,7 +60,7 @@ bool Editor::init()
 	//-- add plane
 	{
 		mat4f mat;
-		mat.setScale(1.0f, 10.0f, 1.0f);
+		mat.setIdentity();
 
 		//-- add plane.
 		gameWorld.addGameObj("resources/models/plane.xml", &mat);
@@ -312,7 +312,7 @@ Editor::UI::~UI()
 void Editor::UI::update()
 {
 #if 0
-	displayImguiDemo()
+	displayImguiDemo();
 #endif
 
 	auto& animEngine = Engine::instance().animationEngine();
