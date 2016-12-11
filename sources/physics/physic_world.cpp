@@ -504,5 +504,52 @@ namespace physics
 		}
 	}
 
+	//----------------------------------------------------------------------------------------------
+	void PhysicsWorld::debugDraw()
+	{
+		PxU32 nbActors = m_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC);
+		if (nbActors)
+		{
+			std::vector<PxRigidActor*> actors(nbActors);
+			m_scene->getActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC, (PxActor**)&actors[0], nbActors);
+
+			for (auto actor : actors)
+			{
+				auto shapeCount = actor->getNbShapes();
+				std::vector<PxShape*> shapes(shapeCount);
+				actor->getShapes((PxShape**)&shapes[0], shapeCount);
+
+				for (auto shape : shapes)
+				{
+					const PxMat44 shapePose(PxShapeExt::getGlobalPose(*shape, *actor));
+
+					PxGeometryHolder h = shape->getGeometry();
+
+					switch (h.getType())
+					{
+					case PxGeometryType::eBOX:
+					case PxGeometryType::eCAPSULE:
+					case PxGeometryType::eSPHERE:
+					default:
+						break;
+					}
+				}
+
+				if (auto* rigidDynamic = actor->isRigidDynamic())
+				{
+					if (rigidDynamic->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
+					{
+						auto* body = static_cast<PhysicsObjectType::RigidBody*>(actor->userData);
+						auto& nodeMat = const_cast<mat4f&>(body->m_node->matrix());
+
+						PxTransform transform(PxMat44(nodeMat.data));
+						rigidDynamic->setKinematicTarget(transform);
+					}
+				}
+			}
+		}
+	}
+
+
 } //-- physic
 } //-- brUGE
