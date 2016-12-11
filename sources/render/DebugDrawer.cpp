@@ -7,6 +7,7 @@
 #include "os/FileSystem.h"
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
+#include "gui/imgui/imgui.h"
 
 using namespace brUGE::os;
 using namespace brUGE::math;
@@ -554,6 +555,36 @@ namespace render
 		//-- ToDo: reconsider.
 		//-- 3. do text drawing.
 		{
+			if (!m_textDataVec.empty())
+			{
+				ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0));
+				ImGui::Begin("Debug Drawer", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
+				ImGui::GetWindowDrawList()->PushClipRectFullScreen();
+
+				for (const auto& data : m_textDataVec)
+				{
+					vec4f projPos = rs().camera()->m_viewProj.applyToPoint(data.m_pos.toVec4());
+					if (!almostZero(projPos.w) && projPos.w > 0)
+					{
+						vec2f clipPos(projPos.x / projPos.w, projPos.y / projPos.w);
+						vec2f curPos(
+							(0.5f * (1.0f + clipPos.x)) * rs().screenRes().width,
+							(0.5f * (1.0f - clipPos.y)) * rs().screenRes().height
+						);
+
+						ImGui::GetWindowDrawList()->AddText(
+							ImVec2(curPos.x, curPos.y),
+							ImGui::ColorConvertFloat4ToU32(ImVec4(data.m_color.r, data.m_color.g, data.m_color.b, data.m_color.a)),
+							data.m_text.c_str()
+							);
+					}
+				}
+
+				ImGui::GetWindowDrawList()->PopClipRect();
+				ImGui::End();
+				ImGui::PopStyleColor();
+			}
+
 			//-- clear text data list.
 			m_textDataVec.clear();
 		}

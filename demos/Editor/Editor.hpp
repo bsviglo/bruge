@@ -3,6 +3,7 @@
 #include "prerequisites.hpp"
 #include "engine/IDemo.h"
 #include "render/CursorCamera.hpp"
+#include "render/FreeCamera.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
@@ -26,6 +27,9 @@ public:
 	virtual bool	handleMouseMotionEvent(const SDL_MouseMotionEvent& e) override;
 	virtual bool	handleMouseWheelEvent(const SDL_MouseWheelEvent& e) override;
 	virtual bool	handleKeyboardEvent(const SDL_KeyboardEvent& e) override;
+
+private:
+	void switchCamera();
 
 private:
 	//-- UI represents visual access to the many configuration parameters.
@@ -75,5 +79,9 @@ private:
 	vec3f							m_xyz;
 	mat4f							m_target;
 	mat4f							m_source;
-	std::shared_ptr<CursorCamera>	m_camera;
+
+	//--
+	std::shared_ptr<CursorCamera>	m_cursorCamera;
+	std::shared_ptr<FreeCamera>		m_freeCamera;
+	std::shared_ptr<Camera>			m_activeCamera;
 };

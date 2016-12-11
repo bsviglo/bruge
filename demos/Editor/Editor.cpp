@@ -86,12 +86,17 @@ bool Editor::init()
 	proj.nearDist = 0.1f;
 	proj.farDist  = 100.0f;
 
-	m_camera = std::make_shared<CursorCamera>(proj);
-	m_camera->source(&m_source);
-	m_camera->target(&m_target);
-	m_camera->update(true, 0.0f);
+	m_cursorCamera = std::make_shared<CursorCamera>(proj);
+	m_cursorCamera->source(&m_source);
+	m_cursorCamera->target(&m_target);
+	m_cursorCamera->update(true, 0.0f);
 
-	engine.renderWorld().setCamera(m_camera);
+	m_freeCamera = std::make_shared<FreeCamera>(proj);
+	m_freeCamera->init(m_source.applyToOrigin());
+	m_freeCamera->update(true, 0.0f);
+
+	//-- set active camera.
+	switchCamera();
 
 	//-- create UI.
 	m_ui.reset(new UI(*this));
@@ -163,7 +168,7 @@ void Editor::update(float dt)
 		m_source.setTranslation(vec3f(0.0f, 0.0f, -m_xyz.z));
 		m_source.postMultiply(m_target);
 
-		m_camera->update(true, dt);
+		m_activeCamera->update(true, dt);
 	}
 
 	//-- update UI.
@@ -241,6 +246,8 @@ bool Editor::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 	if (m_guiActive)
 		return true;
 
+	m_activeCamera->updateMouse(e.xrel, e.yrel, 0);
+
 	float mouseAccel = 5.0f;
 	float mouseSens  = 0.0125f;
 
@@ -272,6 +279,21 @@ bool Editor::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
 bool Editor::handleKeyboardEvent(const SDL_KeyboardEvent& /*e*/)
 {
 	return false;
+}
+
+//--------------------------------------------------------------------------------------------------
+void Editor::switchCamera()
+{
+	if (m_activeCamera == m_cursorCamera)
+	{
+		m_activeCamera = m_freeCamera;
+	}
+	else
+	{
+		m_activeCamera = m_cursorCamera;
+	}
+
+	Engine::instance().renderWorld().setCamera(m_activeCamera);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -352,6 +374,14 @@ void Editor::UI::update()
 		{
 			ImGui::SliderAngle("sun yaw angle", &m_self.m_sunAngles.x, 0.0f, 360.0f);
 			ImGui::SliderAngle("sun pitch angle", &m_self.m_sunAngles.y, 0.0f, 90.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Camera"))
+		{
+			if (ImGui::Button("switch camera"))
+			{
+				m_self.switchCamera();
+			}
 		}
 
 		if (ImGui::CollapsingHeader("Material"))
