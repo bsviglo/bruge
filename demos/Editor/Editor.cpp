@@ -44,11 +44,11 @@ bool Editor::init()
 
 	//-- add light.
 	{
-		m_sunAngles.set(0.0f, 60.0f);
+		m_sunAngles.set(0.0f, degToRad(60.0f));
 
 		mat4f sunCam;
-		sunCam.setRotateX(degToRad(m_sunAngles.y));
-		sunCam.postRotateY(degToRad(m_sunAngles.x));
+		sunCam.setRotateX(m_sunAngles.y);
+		sunCam.postRotateY(m_sunAngles.x);
 
 		DirectionLight light;
 		light.m_dir   = sunCam.applyToUnitAxis(mat4f::Z_AXIS);
@@ -173,8 +173,8 @@ void Editor::update(float dt)
 		LightsManager& lm = Engine::instance().renderWorld().lightsManager();
 
 		mat4f sunCam;
-		sunCam.setRotateX(degToRad(m_sunAngles.y));
-		sunCam.postRotateY(degToRad(m_sunAngles.x));
+		sunCam.setRotateX(m_sunAngles.y);
+		sunCam.postRotateY(m_sunAngles.x);
 
 		DirectionLight l = lm.getDirLight(m_sunLight);
 		l.m_dir = sunCam.applyToUnitAxis(mat4f::Z_AXIS);
@@ -275,7 +275,7 @@ bool Editor::handleKeyboardEvent(const SDL_KeyboardEvent& /*e*/)
 }
 
 //--------------------------------------------------------------------------------------------------
-Editor::UI::UI(Editor& editor) : m_self(editor), m_scroll(0)
+Editor::UI::UI(Editor& editor) : m_self(editor)
 {
 
 }
@@ -289,181 +289,149 @@ Editor::UI::~UI()
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::update()
 {
-	//static bool show_test_window = true;
-	//static bool show_another_window = false;
-	//static ImVec4 clear_col = ImColor(114, 144, 154);
-	//
-	//// 1. Show a simple window
-	//// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-	//{
-	//	static float f = 0.0f;
-	//	ImGui::Text("Hello, world!");
-	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-	//	ImGui::ColorEdit3("clear color", (float*)&clear_col);
-	//	if (ImGui::Button("Test Window")) show_test_window ^= 1;
-	//	if (ImGui::Button("Another Window")) show_another_window ^= 1;
-	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	//}
-	//
-	//// 2. Show another simple window, this time using an explicit Begin/End pair
-	//if (show_another_window)
-	//{
-	//	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-	//	ImGui::Begin("Another Window", &show_another_window);
-	//	ImGui::Text("Hello");
-	//	ImGui::End();
-	//}
-	//
-	//// 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-	//if (show_test_window)
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);     // Normally user code doesn't need/want to call it because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
-	//	ImGui::ShowTestWindow(&show_test_window);
-	//}
+#if 0
+	displayImguiDemo()
+#endif
 
-	//AnimationEngine& animEngine = Engine::instance().animationEngine();
-	//
-	//uint width	= rs().screenRes().width;
-	//uint height = rs().screenRes().height;
-	//
-	//imguiBeginScrollArea("Shadows", width-300-10, 10, 300, height-20, &m_scroll);
-	//{
-	//	imguiSeparatorLine();
-	//	imguiLabel("Models:");
-	//	{
-	//		imguiIndent();
-	//		if (imguiButton("Load"))
-	//		{
-	//			m_gameObjsList.m_enabled = !m_gameObjsList.m_enabled;
-	//			if (m_gameObjsList.m_enabled)
-	//			{
-	//				m_gameObjsList.m_list.clear();
-	//				FileSystem::instance().getFilesInDir(
-	//					"..\\resources\\models", m_gameObjsList.m_list, "xml", true
-	//					);
-	//			}
-	//		}
-	//		imguiUnindent();
-	//	}
-	//
-	//	imguiSeparatorLine();
-	//	imguiLabel("Animations:");
-	//	{
-	//		imguiIndent();
-	//		if (imguiButton("Load", m_self.m_activeSkinModel))
-	//		{
-	//			m_animList.m_enabled = !m_animList.m_enabled;
-	//			if (m_animList.m_enabled)
-	//			{
-	//				m_animList.m_list.clear();
-	//				FileSystem::instance().getFilesInDir(
-	//					"..\\resources\\models\\" + m_self.m_objName, m_animList.m_list, "animation", true
-	//					);
-	//			}
-	//		}
-	//		if (imguiCheck("looped", &m_self.m_looped, m_self.m_activeSkinModel))
-	//		{
-	//			animEngine.stopAnim(m_self.m_animCtrl);
-	//			animEngine.playAnim(m_self.m_animCtrl, m_self.m_animName.c_str(), m_self.m_looped);
-	//		}
-	//
-	//		if (imguiCheck("stepped", &m_self.m_stepped, m_self.m_activeSkinModel))
-	//		{
-	//			if (m_self.m_stepped)
-	//				animEngine.pauseAnim(m_self.m_animCtrl);
-	//			else
-	//				animEngine.continueAnim(m_self.m_animCtrl);
-	//		}
-	//
-	//		if (imguiSlider("frames", &m_self.m_curFrame, 0.0f, m_self.m_numFrames, 1.0f, m_self.m_activeSkinModel && m_self.m_stepped))
-	//		{
-	//			animEngine.goToAnim(m_self.m_animCtrl, m_self.m_curFrame);
-	//		}
-	//
-	//		imguiUnindent();
-	//	}
-	//
-	//	imguiSeparatorLine();
-	//	imguiLabel("Sun:");
-	//	{
-	//		imguiIndent();
-	//		imguiSlider("sun yaw angle", &m_self.m_sunAngles.x, 0.0f, 360.0f, 0.5f);
-	//		imguiSlider("sun pitch angle", &m_self.m_sunAngles.y, 0.0f, 90.0f, 0.5f);
-	//		imguiUnindent();
-	//	}
-	//
-	//	imguiLabel("Material:");
-	//	{
-	//		imguiIndent();
-	//		imguiUnindent();
-	//	}
-	//	imguiLabel("Physics:");
-	//	{
-	//		static float mass = 0.0f;
-	//
-	//		imguiIndent();
-	//		imguiButton("choose node...");
-	//		imguiSlider("mass, kg", &mass, 0.0f, 500.0f, 0.1f);
-	//		imguiButton("choose shape type...");
-	//		{
-	//			imguiIndent();
-	//			imguiUnindent();
-	//		}
-	//		imguiUnindent();
-	//	}
-	//}
-	//imguiEndScrollArea();
+	auto& animEngine = Engine::instance().animationEngine();
 
-	//-- display combo box.
-	displayGameObjs();
-	displayAnimation();
+	ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiSetCond_FirstUseEver);
+
+	if (!ImGui::Begin("Editor", &m_self.m_guiActive))
+	{
+		ImGui::End();
+	}
+	else
+	{
+		if (ImGui::CollapsingHeader("Models"))
+		{
+			if (ImGui::Button("Load Model..."))
+			{
+				ImGui::OpenPopup("Load Model");
+
+				m_gameObjsList.m_list.clear();
+				FileSystem::instance().getFilesInDir("..\\resources\\models", m_gameObjsList.m_list, "xml", true);
+			}
+
+			displayGameObjs();
+		}
+
+		if (ImGui::CollapsingHeader("Animations"))
+		{
+			if (ImGui::Button("Load Animation...") && m_self.m_activeSkinModel)
+			{
+				ImGui::OpenPopup("Load Animation");
+
+				m_animList.m_list.clear();
+				FileSystem::instance().getFilesInDir("..\\resources\\models\\" + m_self.m_objName, m_animList.m_list, "animation", true);
+			}
+
+			displayAnimation();
+
+			if (ImGui::Checkbox("looped", &m_self.m_looped) && m_self.m_activeSkinModel)
+			{
+				animEngine.stopAnim(m_self.m_animCtrl);
+				animEngine.playAnim(m_self.m_animCtrl, m_self.m_animName.c_str(), m_self.m_looped);
+			}
+
+			if (ImGui::Checkbox("stepped", &m_self.m_stepped) && m_self.m_activeSkinModel)
+			{
+				if (m_self.m_stepped)
+					animEngine.pauseAnim(m_self.m_animCtrl);
+				else
+					animEngine.continueAnim(m_self.m_animCtrl);
+			}
+
+			if (ImGui::SliderInt("frames", &m_self.m_curFrame, 0, m_self.m_numFrames) && m_self.m_activeSkinModel && m_self.m_stepped)
+			{
+				animEngine.goToAnim(m_self.m_animCtrl, m_self.m_curFrame);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Sun"))
+		{
+			ImGui::SliderAngle("sun yaw angle", &m_self.m_sunAngles.x, 0.0f, 360.0f);
+			ImGui::SliderAngle("sun pitch angle", &m_self.m_sunAngles.y, 0.0f, 90.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Material"))
+		{
+		}
+
+		if (ImGui::CollapsingHeader("Physics"))
+		{
+		}
+
+		ImGui::End();
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::displayGameObjs()
 {
-	//if (m_gameObjsList.m_enabled)
-	//{
-	//	uint width	= rs().screenRes().width;
-	//	uint height = rs().screenRes().height;
-	//
-	//	imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_gameObjsList.m_scroll);
-	//
-	//	for (uint i = 0; i < m_gameObjsList.m_list.size(); ++i)
-	//	{
-	//		const char* name = m_gameObjsList.m_list[i].c_str();
-	//
-	//		if (imguiItem(name))
-	//		{
-	//			m_self.loadGameObj(name);
-	//			m_gameObjsList.m_enabled = false;
-	//		}
-	//	}
-	//	imguiEndScrollArea();
-	//}
+	if (ImGui::BeginPopup("Load Model"))
+	{
+		for (const auto& modelName : m_gameObjsList.m_list)
+		{
+			if (ImGui::Selectable(modelName.c_str()))
+			{
+				m_self.loadGameObj(modelName);
+			}
+		}
+
+		ImGui::EndPopup();
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
 void Editor::UI::displayAnimation()
 {
-	//if (m_animList.m_enabled)
-	//{
-	//	uint width	= rs().screenRes().width;
-	//	uint height = rs().screenRes().height;
-	//
-	//	imguiBeginScrollArea("Effects", width-520, height-10-250, 200, 250, &m_animList.m_scroll);
-	//
-	//	for (uint i = 0; i < m_animList.m_list.size(); ++i)
-	//	{
-	//		const char* name = m_animList.m_list[i].c_str();
-	//
-	//		if (imguiItem(name))
-	//		{
-	//			m_self.loadAnimation(name);
-	//			m_animList.m_enabled = false;
-	//		}
-	//	}
-	//	imguiEndScrollArea();
-	//}
+	if (ImGui::BeginPopup("Load Animation"))
+	{
+		for (const auto& animName : m_animList.m_list)
+		{
+			if (ImGui::Selectable(animName.c_str()))
+			{
+				m_self.loadAnimation(animName);
+			}
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void Editor::UI::displayImguiDemo()
+{
+	static bool show_test_window = true;
+	static bool show_another_window = false;
+	static ImVec4 clear_col = ImColor(114, 144, 154);
+
+	// 1. Show a simple window
+	// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+	{
+		static float f = 0.0f;
+		ImGui::Text("Hello, world!");
+		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+		ImGui::ColorEdit3("clear color", (float*)&clear_col);
+		if (ImGui::Button("Test Window")) show_test_window ^= 1;
+		if (ImGui::Button("Another Window")) show_another_window ^= 1;
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	}
+
+	// 2. Show another simple window, this time using an explicit Begin/End pair
+	if (show_another_window)
+	{
+		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+		ImGui::Begin("Another Window", &show_another_window);
+		ImGui::Text("Hello");
+		ImGui::End();
+	}
+
+	// 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+	if (show_test_window)
+	{
+		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);     // Normally user code doesn't need/want to call it because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
+		ImGui::ShowTestWindow(&show_test_window);
+	}
 }
 

@@ -3,7 +3,6 @@
 #include "prerequisites.hpp"
 #include "engine/IDemo.h"
 #include "render/CursorCamera.hpp"
-#include <memory>
 
 using namespace brUGE;
 using namespace brUGE::math;
@@ -40,20 +39,18 @@ private:
 		void update();
 		void displayGameObjs();
 		void displayAnimation();
+		void displayImguiDemo();
 
 	private:
 		struct UIList
 		{
-			UIList() : m_enabled(false), m_scroll(0) { }
+			UIList() { }
 
-			bool					 m_enabled;
-			int						 m_scroll;
 			std::vector<std::string> m_list;
 		};
 
 		UIList			m_gameObjsList;
 		UIList			m_animList;
-		int				m_scroll;
 		Editor&			m_self;
 	};
 	typedef std::unique_ptr<UI> UIPtr;
@@ -64,8 +61,8 @@ private:
 	bool							m_activeSkinModel;
 	bool							m_looped;
 	bool							m_stepped;
-	float							m_curFrame;
-	float							m_numFrames;
+	int								m_curFrame;
+	int								m_numFrames;
 	std::string						m_objName;
 	std::string						m_animName;
 	Handle							m_animCtrl;

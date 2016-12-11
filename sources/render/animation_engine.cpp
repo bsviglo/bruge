@@ -18,7 +18,7 @@ namespace
 {
 
 	//----------------------------------------------------------------------------------------------
-	bool g_drawSkeletons = false;
+	bool g_drawSkeletons = true;
 	bool g_drawNodeNames = false;
 	bool g_drawJoints    = false;
 

@@ -15,7 +15,8 @@ namespace brUGE
 #pragma warning(disable : 4312) //-- 'operation' : conversion from 'type1' to 'type2' of greater size
 #pragma warning(disable : 4201) //-- nonstandard extension used : nameless struct/union 
 #pragma warning(disable : 4996) //-- 'function': was declared deprecated
-#pragma warning(disable : 4800) //-- forcing value to bool 'true' or 'false' (performance warning)s
+#pragma warning(disable : 4800) //-- forcing value to bool 'true' or 'false' (performance warning)
+#pragma warning(disable:  4706) //-- assignment within conditional expression
 
 //-- ToDo: reconsider it
 //-- https://connect.microsoft.com/VisualStudio/feedback/details/1355600/c4458-c4459-declaration-hides-other-declaration-are-overeager-to-the-point-of-being-completely-useless
