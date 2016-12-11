@@ -433,7 +433,7 @@ namespace render
 	void DebugDrawer::drawCapsuleY(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
-		if (radius * 2.0f >= height) return;
+		//if (radius * 2.0f >= height) return;
 
 		//-- top sphere
 		mat4f topSphereMat = world;

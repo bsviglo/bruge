@@ -12,19 +12,14 @@ using namespace brUGE::os;
 using namespace brUGE::utils;
 using namespace brUGE::math;
 
-//-- start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-
-	//----------------------------------------------------------------------------------------------
 	bool g_drawSkeletons = true;
 	bool g_drawNodeNames = true;
 	bool g_drawJoints    = true;
-
 }
-//--------------------------------------------------------------------------------------------------
-//-- end unnamed namespace.
+
 
 namespace brUGE
 {

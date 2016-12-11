@@ -17,7 +17,7 @@ using namespace brUGE::utils;
 using namespace brUGE::math;
 using namespace brUGE::render;
 
-//-- start unnamed namespace.
+
 //--------------------------------------------------------------------------------------------------
 namespace
 {
@@ -32,9 +32,10 @@ namespace
 
 		return *iter;
 	}
+
+	//--
+	bool g_debugDrawEnabled = true;
 }
-//--------------------------------------------------------------------------------------------------
-//-- end unnamed namespace.
 
 
 namespace brUGE
@@ -153,6 +154,12 @@ namespace physics
 		m_scene->fetchResults(true);
 
 		updateGraphicsTransforms();
+
+		//-- debug draw
+		if (g_debugDrawEnabled)
+		{
+			debugDraw();
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -528,22 +535,21 @@ namespace physics
 					switch (h.getType())
 					{
 					case PxGeometryType::eBOX:
+						DebugDrawer::instance().drawBox(
+							vec3f(&h.box().halfExtents[0]).scale(2.0f), mat4f(shapePose.front()), Color(0, 1, 0, 0));
+						break;
 					case PxGeometryType::eCAPSULE:
+						DebugDrawer::instance().drawCapsuleY(
+							h.capsule().radius, h.capsule().halfHeight * 2.0f, mat4f(shapePose.front()), Color(0, 0, 1, 0));
+						break;
 					case PxGeometryType::eSPHERE:
+						DebugDrawer::instance().drawSphere(h.sphere().radius, mat4f(shapePose.front()), Color(1, 0, 0, 0));
+						break;
+					case PxGeometryType::eCONVEXMESH:
+					case PxGeometryType::eTRIANGLEMESH:
+						break;
 					default:
 						break;
-					}
-				}
-
-				if (auto* rigidDynamic = actor->isRigidDynamic())
-				{
-					if (rigidDynamic->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
-					{
-						auto* body = static_cast<PhysicsObjectType::RigidBody*>(actor->userData);
-						auto& nodeMat = const_cast<mat4f&>(body->m_node->matrix());
-
-						PxTransform transform(PxMat44(nodeMat.data));
-						rigidDynamic->setKinematicTarget(transform);
 					}
 				}
 			}

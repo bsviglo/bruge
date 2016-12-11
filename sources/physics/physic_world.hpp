@@ -133,6 +133,7 @@ namespace physics
 	private:
 		void		updateGraphicsTransforms();
 		void		updatePhysicsTransforms();
+		void		debugDraw();
 
 	private:
 		physx::PxFoundation*					m_foundation;
