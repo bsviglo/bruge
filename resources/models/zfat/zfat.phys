@@ -1,6 +1,6 @@
 <phys>
   <rigidBodies>
-    <rigidBody name="root" node="root" mass="0.0" offset="vec3f(0,3.0,0)" kinematic="1">
+    <rigidBody name="root" node="root" mass="0.0" offset="vec3f(0,1.5,0)" kinematic="1">
       <shape type="capsule">
         <params radius="0.6" halfHeight="0.9" />
       </shape>        

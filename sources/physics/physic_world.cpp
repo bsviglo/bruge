@@ -333,9 +333,9 @@ namespace physics
 						auto halfHeight = params.attribute("halfHeight").as_float();
 
 						if (type == "capsule")
-							localTransform = PxTransform(PxQuat(PxHalfPi, PxVec3(0, 0, 1))) * localTransform;
+							localTransform = localTransform * PxTransform(PxQuat(PxHalfPi, PxVec3(0, 0, 1)));
 						else if (type == "capsuleZ")
-							localTransform = PxTransform(PxQuat(PxHalfPi, PxVec3(0, 1, 0))) * localTransform;
+							localTransform = localTransform * PxTransform(PxQuat(PxHalfPi, PxVec3(0, 1, 0)));
 
 						pxShape = PxGetPhysics().createShape(PxCapsuleGeometry(radius, halfHeight), *m_materials[0]);
 					}

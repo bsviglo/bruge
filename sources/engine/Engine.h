@@ -45,8 +45,6 @@ namespace brUGE
 		int							run();
 		void						stop();
 		
-		void						updateFrame(float dt);
-		
 		render::VideoMode&			getVideoMode()    { return m_videoMode; }
 		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
 
