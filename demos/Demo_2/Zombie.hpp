@@ -1,7 +1,7 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include "render/game_world.hpp"
+#include "scene/game_world.hpp"
 #include "utils/Data.hpp"
 #include "math/Matrix4x4.hpp"
 #include "math/Vector3.hpp"

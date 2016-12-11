@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "watchdog/Watchdog.h"
+
 using namespace std;
 using namespace brUGE::utils;
 

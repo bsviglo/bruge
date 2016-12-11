@@ -1,0 +1,9 @@
+<phys>
+  <rigidBodies>
+    <rigidBody name="root" node="root" mass="0.0" offset="vec3f(0,2.8,0)" kinematic="1">
+      <shape type="capsule">
+        <params radius="0.8" halfHeight="2.0" />
+      </shape>        
+    </rigidBody>
+  </rigidBodies>
+</phys>

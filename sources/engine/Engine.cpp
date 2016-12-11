@@ -7,25 +7,25 @@
 #include "render/render_system.hpp"
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
-#include "render/game_world.hpp"
-#include "render/physic_world.hpp"
+#include "scene/game_world.hpp"
+#include "physics/physic_world.hpp"
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_syswm.h"
 
 using namespace brUGE;
 using namespace brUGE::render;
-using namespace brUGE::physic;
+using namespace brUGE::physics;
 using namespace brUGE::utils;
 using namespace brUGE::os;
 using namespace brUGE::math;
 
 namespace
 {
-	bool isRunning = true;
-	bool g_needToStartApp = true;
-	brUGE::render::ERenderAPIType g_renderAPI = RENDER_API_D3D11;
-	const char* const g_engineName = "black and red Unicorn Graphics Engine";
+	bool				isRunning			= true;
+	bool				g_needToStartApp	= true;
+	ERenderAPIType		g_renderAPI			= RENDER_API_D3D11;
+	const char* const	g_engineName		= "black and red Unicorn Graphics Engine";
 }
 
 namespace brUGE
@@ -41,7 +41,7 @@ namespace brUGE
 		m_animEngine(new AnimationEngine()),
 		m_renderWorld(new RenderWorld()),
 		m_resManager(new ResourcesManager()),
-		m_physicWorld(new PhysicWorld()),
+		m_physicWorld(new PhysicsWorld()),
 		m_uiSystem(new ui::System())
 	{
 		//-- register console commands.
@@ -175,15 +175,12 @@ namespace brUGE
 		uint64 newTime = SDL_GetPerformanceCounter();
 		uint64 prevTime = SDL_GetPerformanceCounter();
 
-		float dt = 0;
-		MSG msg = { 0 };
-
 		//-- do main cycle.
 		while (isRunning)
 		{
 			// calculate engine tick time.
 			newTime = SDL_GetPerformanceCounter();
-			dt = (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency());
+			float dt = (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency());
 			prevTime = newTime;
 
 			SDL_Event event;
@@ -256,7 +253,7 @@ namespace brUGE
 					//-- simulate physics.
 					{
 						SCOPED_TIME_MEASURER_EX("physic")
-						m_physicWorld->simulateDynamics(dt);
+						m_physicWorld->simulate(dt);
 					}
 
 					{
@@ -266,10 +263,8 @@ namespace brUGE
 
 					m_renderWorld->update(dt);
 
-					//-- ToDo: some old stuff.
-					updateFrame(dt);
-
-					//m_collisionWorld.update(dt);
+					m_demo->update(dt);
+					m_watchersPanel->update(dt);
 
 					m_gameWorld->endUpdate();
 				}
@@ -357,13 +352,6 @@ namespace brUGE
 	}
 
 	//--------------------------------------------------------------------------------------------------
-	void Engine::updateFrame(float dt)
-	{
-		m_demo->update(dt);
-		m_watchersPanel->update(dt);
-	}
-
-	//--------------------------------------------------------------------------------------------------
 	int Engine::_exit()
 	{
 		ConPrint("Bye!");
@@ -377,7 +365,7 @@ namespace brUGE
 		bool enabled = true;
 
 		ImGui::SetNextWindowPos(ImVec2(10, 10));
-		if (!ImGui::Begin("Example: Fixed Overlay", &enabled, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		if (!ImGui::Begin("Overlay", &enabled, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::End();
 			return;

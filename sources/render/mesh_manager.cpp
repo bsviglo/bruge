@@ -1,6 +1,6 @@
 #include "mesh_manager.hpp"
 #include "mesh_collector.hpp"
-#include "game_world.hpp"
+#include "scene/game_world.hpp"
 #include "DebugDrawer.h"
 #include "utils/string_utils.h"
 #include "loader/ResourcesManager.h"

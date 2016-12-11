@@ -12,7 +12,7 @@
 	
 	<rigidBody name="body_up" node="shoulders" mass="0" offset="vec3f(0.3,0,0)" kinematic="1">
 		<shape type="capsuleX">
-			<params radius="0.3" halfHeight="0.1" />
+			<params radius="0.15" halfHeight="0.1" />
 		</shape> 
 	</rigidBody>
 	
@@ -22,7 +22,7 @@
 		</shape>      
 	</rigidBody>
 	
-	<rigidBody name="body_low" node="hips" mass="0" offset="vec3f(0.2,0,0)" kinematic="1">
+	<rigidBody name="body_low" node="hips" mass="0" offset="vec3f(0.0,0,0)" kinematic="1">
 		<shape type="capsuleX">
 			<params radius="0.2" halfHeight="0.1" />
 		</shape>      
@@ -30,8 +30,8 @@
 
 	<!-- arms -->
 	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
-		<shape type="cylinderX">
-			 <params radius="0.125" height="0.5" />
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.25" />
 		</shape>
 	</rigidBody>
 	
@@ -42,8 +42,8 @@
 	</rigidBody>
 	
 	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
-		<shape type="cylinderX">
-			 <params radius="0.125" height="0.5" />
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.25" />
 		</shape>    
 	</rigidBody>
 	

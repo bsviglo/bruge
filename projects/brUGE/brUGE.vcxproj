@@ -123,9 +123,9 @@
 /NODEFAULTLIB:msvcrt.lib
 /NODEFAULTLIB:libcd.lib
 /NODEFAULTLIB:libcmtd.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype27MT_d.lib;pugixml_d.lib;BulletDynamics_d.lib;BulletCollision_d.lib;LinearMath_d.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PhysX3DEBUG_x86.lib;PhysX3CommonDEBUG_x86.lib;PhysX3ExtensionsDEBUG.lib;PhysXProfileSDKDEBUG.lib;PhysXVisualDebuggerSDKDEBUG.lib;PvdRuntimeDEBUG.lib;pugixml_d.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\PhysX;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
       <SubSystem>Windows</SubSystem>
@@ -148,8 +148,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype27MT.lib;pugixml.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\bullet;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>PhysX3_x86.lib;PhysX3Common_x86.lib;PhysX3Extensions.lib;PhysXProfileSDK.lib;PhysXVisualDebuggerSDK.lib;PvdRuntime.lib;pugixml.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\external\libs;..\..\external\libs\SDL\x86;..\..\external\libs\PhysX;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <TargetMachine>MachineX86</TargetMachine>
     </Lib>
@@ -213,11 +213,11 @@
     <ClCompile Include="..\..\sources\loader\ResourcesManager.cpp" />
     <ClCompile Include="..\..\sources\loader\TextureLoader.cpp" />
     <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
+    <ClCompile Include="..\..\sources\physics\physic_world.cpp" />
     <ClCompile Include="..\..\sources\render\CursorCamera.cpp" />
     <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
     <ClCompile Include="..\..\sources\render\IRenderDevice.cpp" />
-    <ClCompile Include="..\..\sources\render\game_world.cpp" />
     <ClCompile Include="..\..\sources\render\Camera.cpp" />
     <ClCompile Include="..\..\sources\render\DebugDrawer.cpp" />
     <ClCompile Include="..\..\sources\render\light_manager.cpp" />
@@ -225,7 +225,6 @@
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
     <ClCompile Include="..\..\sources\render\mesh_collector.cpp" />
     <ClCompile Include="..\..\sources\render\mesh_manager.cpp" />
-    <ClCompile Include="..\..\sources\render\physic_world.cpp" />
     <ClCompile Include="..\..\sources\render\post_processing.cpp" />
     <ClCompile Include="..\..\sources\render\render_system.cpp" />
     <ClCompile Include="..\..\sources\render\render_world.cpp" />
@@ -238,6 +237,7 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\terrain_system.cpp" />
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
+    <ClCompile Include="..\..\sources\scene\game_world.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h" />
@@ -245,6 +245,8 @@
     <ClInclude Include="..\..\sources\console\WatchersPanel.h" />
     <ClInclude Include="..\..\sources\engine\Engine.h" />
     <ClInclude Include="..\..\sources\engine\IDemo.h" />
+    <ClInclude Include="..\..\sources\physics\physic_world.hpp" />
+    <ClInclude Include="..\..\sources\scene\game_world.hpp" />
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -285,8 +287,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\sources\render\state_objects.h" />
-    <ClInclude Include="..\..\sources\render\game_world.hpp" />
-    <ClInclude Include="..\..\sources\render\physic_world.hpp" />
     <ClInclude Include="..\..\sources\render\Camera.h" />
     <ClInclude Include="..\..\sources\render\DebugDrawer.h" />
     <ClInclude Include="..\..\sources\render\Mesh.hpp" />

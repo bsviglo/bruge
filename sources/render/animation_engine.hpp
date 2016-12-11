@@ -4,7 +4,7 @@
 #include "utils/Data.hpp"
 #include "render/Mesh.hpp"
 
-#include <memory>
+#include <unordered_map>
 #include <vector>
 
 namespace brUGE
@@ -161,8 +161,8 @@ namespace render
 		void		   delFromActive(AnimationData* data);
 
 	private:
-		typedef std::vector<AnimationData*>							AnimationInsts;
-		typedef std::map<std::string, std::shared_ptr<Animation>>	AnimationsMap;
+		typedef std::vector<AnimationData*>									AnimationInsts;
+		typedef std::unordered_map<std::string, std::shared_ptr<Animation>>	AnimationsMap;
 
 		AnimationInsts	 m_animCtrls;
 		AnimationsMap	 m_animations;

@@ -79,6 +79,7 @@ float4 main(vs_out i) : SV_TARGET
 	float4 decalColor  = sample2D(t_auto_decalsMask,  ssc);
 	float4 lightsMask  = sample2D(t_auto_lightsMask,  ssc);
 	float4 shadowsMask = sample2D(t_auto_shadowsMask, ssc);
+	float4 ambient	   = 0.4f;
 		
 	//-- calculate decals factor.
 	float3 colorRGB = lerp(srcColor.xyz, decalColor.xyz, decalColor.w);
@@ -87,10 +88,7 @@ float4 main(vs_out i) : SV_TARGET
 	float3 chrom = lightsMask.rgb / (G_EPS + luminance(lightsMask.rgb));
 	float3 spec  = chrom * lightsMask.a;
 
-	colorRGB = lightsMask.rgb * colorRGB + 0.1f * spec;
-
-	//-- calculate shadows factor.
-	colorRGB *= max(0.25f, 1.0f - shadowsMask.x);
+	colorRGB = (lightsMask.rgb * (1.0f - shadowsMask.x) + ambient.rgb) * colorRGB + 0.1f * spec;
 	
 	return float4(colorRGB, 1.0f);
 }

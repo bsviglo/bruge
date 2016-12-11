@@ -3,7 +3,7 @@
 #include "prerequisites.hpp"
 #include "engine/IDemo.h"
 #include "render/CursorCamera.hpp"
-#include <memory>
+#include "render/FreeCamera.h"
 
 using namespace brUGE;
 using namespace brUGE::math;
@@ -29,6 +29,9 @@ public:
 	virtual bool	handleKeyboardEvent(const SDL_KeyboardEvent& e) override;
 
 private:
+	void switchCamera();
+
+private:
 	//-- UI represents visual access to the many configuration parameters.
 	//------------------------------------------------------------------------------------------
 	class UI : public NonCopyable
@@ -40,20 +43,18 @@ private:
 		void update();
 		void displayGameObjs();
 		void displayAnimation();
+		void displayImguiDemo();
 
 	private:
 		struct UIList
 		{
-			UIList() : m_enabled(false), m_scroll(0) { }
+			UIList() { }
 
-			bool					 m_enabled;
-			int						 m_scroll;
 			std::vector<std::string> m_list;
 		};
 
 		UIList			m_gameObjsList;
 		UIList			m_animList;
-		int				m_scroll;
 		Editor&			m_self;
 	};
 	typedef std::unique_ptr<UI> UIPtr;
@@ -64,8 +65,8 @@ private:
 	bool							m_activeSkinModel;
 	bool							m_looped;
 	bool							m_stepped;
-	float							m_curFrame;
-	float							m_numFrames;
+	int								m_curFrame;
+	int								m_numFrames;
 	std::string						m_objName;
 	std::string						m_animName;
 	Handle							m_animCtrl;
@@ -78,5 +79,9 @@ private:
 	vec3f							m_xyz;
 	mat4f							m_target;
 	mat4f							m_source;
-	std::shared_ptr<CursorCamera>	m_camera;
+
+	//--
+	std::shared_ptr<CursorCamera>	m_cursorCamera;
+	std::shared_ptr<FreeCamera>		m_freeCamera;
+	std::shared_ptr<Camera>			m_activeCamera;
 };

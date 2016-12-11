@@ -1,0 +1,5 @@
+<material use="diffuse_skinned">
+    <properties>
+        <property name="diffuseMap" type="texture" value="models/hellknight/hellknight_d.dds"/>
+    </properties>
+</material>
