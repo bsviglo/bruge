@@ -528,7 +528,7 @@ namespace physics
 
 				for (auto shape : shapes)
 				{
-					const PxMat44 shapePose(PxShapeExt::getGlobalPose(*shape, *actor));
+					auto transform = PxMat44(PxShapeExt::getGlobalPose(*shape, *actor));
 
 					PxGeometryHolder h = shape->getGeometry();
 
@@ -536,14 +536,15 @@ namespace physics
 					{
 					case PxGeometryType::eBOX:
 						DebugDrawer::instance().drawBox(
-							vec3f(&h.box().halfExtents[0]).scale(2.0f), mat4f(shapePose.front()), Color(0, 1, 0, 0));
-						break;
+							vec3f(&h.box().halfExtents[0]).scale(2.0f), mat4f(transform.front()), Color(0, 1, 0, 0));
+					break;
 					case PxGeometryType::eCAPSULE:
-						DebugDrawer::instance().drawCapsuleY(
-							h.capsule().radius, h.capsule().halfHeight * 2.0f, mat4f(shapePose.front()), Color(0, 0, 1, 0));
+						//-- PhysX uses OX axis as an up vector and we use OY.
+						DebugDrawer::instance().drawCapsule(
+							h.capsule().radius, h.capsule().halfHeight, mat4f(transform.front()).preRotateZ(degToRad(90.0f)), Color(0, 0, 1, 0));
 						break;
 					case PxGeometryType::eSPHERE:
-						DebugDrawer::instance().drawSphere(h.sphere().radius, mat4f(shapePose.front()), Color(1, 0, 0, 0));
+						DebugDrawer::instance().drawSphere(h.sphere().radius, mat4f(transform.front()), Color(1, 0, 0, 0));
 						break;
 					case PxGeometryType::eCONVEXMESH:
 					case PxGeometryType::eTRIANGLEMESH:

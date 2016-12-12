@@ -16,7 +16,7 @@ using namespace brUGE::math;
 namespace
 {
 	bool g_drawSkeletons = true;
-	bool g_drawNodeNames = true;
+	bool g_drawNodeNames = false;
 	bool g_drawJoints    = true;
 }
 

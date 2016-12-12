@@ -359,36 +359,12 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderY(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
+	void DebugDrawer::drawCylinder(float radius, float halfHeight, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
 		MeshInstance instance(world, color);
-		instance.m_world.preScale(radius, height, radius);
-
-		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
-	}
-
-	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderX(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
-	{
-		if (!m_isEnabled) return;
-
-		MeshInstance instance(world, color);
-		instance.m_world.postRotateZ(degToRad(90.0f));
-		instance.m_world.preScale(radius, height, radius);
-
-		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
-	}
-
-	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCylinderZ(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
-	{
-		if (!m_isEnabled) return;
-
-		MeshInstance instance(world, color);
-		instance.m_world.postRotateX(degToRad(90.0f));
-		instance.m_world.preScale(radius, height, radius);
+		instance.m_world.preScale(radius, halfHeight * 2.0f, radius);
 
 		m_meshCaches[MT_CYLINDER][drawType].push_back(instance);
 	}
@@ -405,7 +381,7 @@ namespace render
 	}
 
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawHemiSphereY(float radius, const mat4f& world, const Color& color, EDrawType drawType)
+	void DebugDrawer::drawHemiSphere(float radius, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
 
@@ -415,49 +391,24 @@ namespace render
 		m_meshCaches[MT_HEMISPHERE][drawType].push_back(instance);
 	}
 
-	/*
 	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCapsuleX(float radius, float height, const mat4f& world, const Color& color)
+	void DebugDrawer::drawCapsule(float radius, float halfHeight, const mat4f& world, const Color& color, EDrawType drawType)
 	{
 		if (!m_isEnabled) return;
-
-		MeshInstance instance(world, color);
-		instance.m_world.preScale(radius, radius, radius);
-
-		m_meshCaches[MT_CYLINDER].push_back(instance);
-	}
-	*/
-
-
-	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCapsuleY(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType)
-	{
-		if (!m_isEnabled) return;
-		//if (radius * 2.0f >= height) return;
 
 		//-- top sphere
 		mat4f topSphereMat = world;
-		topSphereMat.preTranslation(vec3f(0.0f, 0.5f * height - radius, 0.0f));
-		drawHemiSphereY(radius, topSphereMat, color, drawType);
+		topSphereMat.preTranslation(vec3f(0.0f, halfHeight, 0.0f));
+		drawSphere(radius, topSphereMat, color, drawType);
 
 		//-- bottom sphere
 		mat4f bottomSphere = world;
-		bottomSphere.preTranslation(vec3f(0.0f, -0.5f * height + radius, 0.0f));
-		bottomSphere.preRotateX(degToRad(180.0f));
-		drawHemiSphereY(radius, bottomSphere, color, drawType);
+		bottomSphere.preTranslation(vec3f(0.0f, -halfHeight, 0.0f));
+		drawSphere(radius, bottomSphere, color, drawType);
 
 		//-- cylinder
-		drawCylinderY(radius, height - 2.0f * radius, world, color, drawType);
+		drawCylinder(radius, halfHeight, world, color, drawType);
 	}
-
-/*
-	//---------------------------------------------------------------------------------------------
-	void DebugDrawer::drawCapsuleZ(float radius, float height, const mat4f& world, const Color& color)
-	{
-
-	}
-*/
-
 
 	//---------------------------------------------------------------------------------------------
 	void DebugDrawer::_swapBuffers()

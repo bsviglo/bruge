@@ -51,15 +51,9 @@ namespace render
 		//-- solid meshes.
 		void drawBox		(const vec3f& size, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
 		void drawSphere		(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawHemiSphereX(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawHemiSphereY(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawHemiSphereZ(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCylinderX	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCylinderY	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCylinderZ	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCapsuleX	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCapsuleY	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
-		void drawCapsuleZ	(float radius, float height, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawHemiSphere	(float radius, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCylinder	(float radius, float halfHeight, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
+		void drawCapsule	(float radius, float halfHeight, const mat4f& world, const Color& color, EDrawType drawType = DRAW_SOLID);
 
 		//-- text drawing.
 		void drawText2D		(const char* text, const vec3f& pos, const Color& color);

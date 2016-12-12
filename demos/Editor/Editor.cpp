@@ -201,25 +201,25 @@ void Editor::render(float dt)
 	DebugDrawer::instance().drawBox(vec3f(0.2f, 2.0f, 0.2f), origin, Color(0,1,0,1));
 
 	origin.setTranslation(0.5f, 0.5f, 2.0f);
-	DebugDrawer::instance().drawCylinderY(0.1f, 1.0f, origin, Color(1,0,0,1));
+	DebugDrawer::instance().drawCylinder(0.1f, 0.5f, origin, Color(1,0,0,1));
 
 	origin.setTranslation(0.5f, 1.0f, 2.5f);
-	DebugDrawer::instance().drawCylinderY(0.1f, 2.0f, origin, Color(0,1,0,1));
+	DebugDrawer::instance().drawCylinder(0.1f, 1.0f, origin, Color(0,1,0,1));
 
 	origin.setTranslation(1.5f, 0.5f, 2.0f);
-	DebugDrawer::instance().drawCapsuleY(0.1f, 1.0f, origin, Color(1,0,0,1));
+	DebugDrawer::instance().drawCapsule(0.1f, 0.5f, origin, Color(1,0,0,1));
 
 	static float angle = 0.0f;
 	angle += dt;
 	origin.setTranslation(1.5f, 1.0f, 2.5f);
 	origin.preRotateZ(angle);
-	DebugDrawer::instance().drawCapsuleY(0.1f, 2.0f, origin, Color(0,1,0,1));
+	DebugDrawer::instance().drawCapsule(0.1f, 1.0f, origin, Color(0,1,0,1));
 
 	origin.setTranslation(2.5f, 0.5f, 2.0f);
-	DebugDrawer::instance().drawCapsuleY(0.1f, 1.0f, origin, Color(1,0,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
+	DebugDrawer::instance().drawCapsule(0.1f, 0.5f, origin, Color(1,0,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
 
 	origin.setTranslation(2.5f, 1.0f, 2.5f);
-	DebugDrawer::instance().drawCapsuleY(0.1f, 2.0f, origin, Color(0,1,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
+	DebugDrawer::instance().drawCapsule(0.1f, 1.0f, origin, Color(0,1,0,0.5f), DebugDrawer::DRAW_TRANSPARENT);
 
 	DebugDrawer::instance().drawLine(vec3f(1.0f, 0.0f, 2.0f), vec3f(1.0f, 1.0f, 2.0f), Color(1,0,0,1));
 	DebugDrawer::instance().drawLine(vec3f(1.0f, 0.0f, 2.5f), vec3f(1.0f, 2.0f, 2.5f), Color(0,1,0,1));
