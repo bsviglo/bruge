@@ -148,9 +148,9 @@ namespace render
 		
 		//-- some animation controlling functions.
 		void			playAnim	(Handle id, const char* name, bool looped = false);
-		void			pauseAnim	(Handle id, int layer = -1);
-		void			continueAnim(Handle id, int layer = -1);
-		void			goToAnim	(Handle id, uint frame, int layer = -1);
+		void			pauseAnim	(Handle id, int layerIdx = -1);
+		void			continueAnim(Handle id, int layerIdx = -1);
+		void			goToAnim	(Handle id, uint frame, int layerIdx = -1);
 		void			stopAnim	(Handle id);
 		void			blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name);
 
@@ -161,13 +161,10 @@ namespace render
 		void		   delFromActive(AnimationData* data);
 
 	private:
-		typedef std::vector<AnimationData*>									AnimationInsts;
-		typedef std::unordered_map<std::string, std::shared_ptr<Animation>>	AnimationsMap;
-
-		AnimationInsts	 m_animCtrls;
-		AnimationsMap	 m_animations;
-		AnimationInsts	 m_activeAnimCtrls;
-		AnimationBlender m_animBlender;
+		std::vector<std::unique_ptr<AnimationData>>						m_animCtrls;
+		std::unordered_map<std::string, std::shared_ptr<Animation>>		m_animations;
+		std::vector<AnimationData*>										m_activeAnimCtrls;
+		AnimationBlender												m_animBlender;
 	};
 
 } //-- render

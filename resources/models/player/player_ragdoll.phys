@@ -1,0 +1,90 @@
+<phys>
+	<rigidBodies>
+	
+	<!-- body -->
+	<!--
+    <rigidBody name="body" node="chest" mass="0" offset="vec3f(0,0.0,0.0)" kinematic="1">
+		<shape type="box">
+			<params size="vec3f(0.3,0.18,0.2)" />
+		</shape>      
+	</rigidBody>
+	-->
+	
+	<rigidBody name="body_up" node="shoulders" mass="0" offset="vec3f(0.3,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			<params radius="0.15" halfHeight="0.1" />
+		</shape> 
+	</rigidBody>
+	
+	<rigidBody name="body_middle" node="chest" mass="0" offset="vec3f(0.25,0.0,0)" kinematic="1">
+		<shape type="capsuleX">
+			<params radius="0.25" halfHeight="0.1" />
+		</shape>      
+	</rigidBody>
+	
+	<rigidBody name="body_low" node="hips" mass="0" offset="vec3f(0.0,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			<params radius="0.2" halfHeight="0.1" />
+		</shape>      
+	</rigidBody>
+
+	<!-- arms -->
+	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.25" />
+		</shape>
+	</rigidBody>
+	
+	<rigidBody name="l_low_arm" node="l_elbo" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			<params radius="0.1" halfHeight="0.15" />
+		</shape>
+	</rigidBody>
+	
+	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.25" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="r_low_arm" node="r_elbo" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			<params radius="0.1" halfHeight="0.15" />
+		</shape>
+	</rigidBody>
+	
+	<!-- legs -->
+	<rigidBody name="l_up_leg" node="l_upleg" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			 <params radius="0.15" halfHeight="0.25" />
+		</shape>    
+	</rigidBody>
+	
+	<rigidBody name="l_low_leg" node="l_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.4" />
+		</shape>      
+	</rigidBody>
+	
+	<rigidBody name="r_up_leg" node="r_upleg" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+			<shape type="capsuleX">
+			 <params radius="0.15" halfHeight="0.25" />
+		</shape>     
+	</rigidBody>
+	
+	<rigidBody name="r_low_leg" node="r_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+		<shape type="capsuleX">
+			 <params radius="0.125" halfHeight="0.4" />
+		</shape>     
+	</rigidBody>
+	
+	</rigidBodies>
+  
+	<!--
+	<constraints>
+		<constraint name="simple" type="p2p" objA="root" objB="root">
+		<params strength="0.67" />
+		</constraint>
+	</constraints>
+	-->
+</phys>

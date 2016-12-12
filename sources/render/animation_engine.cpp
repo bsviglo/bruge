@@ -34,10 +34,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	AnimationEngine::~AnimationEngine()
 	{
-		for (uint i = 0; i < m_animCtrls.size(); ++i)
-			delete m_animCtrls[i];
 
-		m_animCtrls.clear();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -54,16 +51,15 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::preAnimate(float dt)
 	{
-		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
+		for (auto animCtrl : m_activeAnimCtrls)
 		{
-			AnimationData& data		 = *m_activeAnimCtrls[i];
-			Transform&	   transform = *data.m_meshInst->m_transform;
+			auto& transform = *animCtrl->m_meshInst->m_transform;
 
 			//-- tick animation.
-			m_animBlender.tick(dt, data.m_animLayers);
+			m_animBlender.tick(dt, animCtrl->m_animLayers);
 
 			//-- calculate local bound.
-			m_animBlender.blendBounds(data.m_animLayers, transform.m_localBounds);
+			m_animBlender.blendBounds(animCtrl->m_animLayers, transform.m_localBounds);
 
 			//-- calculate world bound.
 			transform.m_worldBounds = transform.m_localBounds.getTranformed(transform.m_worldMat);
@@ -147,19 +143,19 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	Handle AnimationEngine::addAnimDef(AnimationData::Desc& desc)
 	{
-		std::unique_ptr<AnimationData> animData(new AnimationData(desc));
+		auto animData = std::make_unique<AnimationData>(desc);
 		
 		//-- try to find free slot.
 		for (uint i = 0; i < m_animCtrls.size(); ++i)
 		{
 			if (!m_animCtrls[i])
 			{
-				m_animCtrls[i] = animData.release();
+				m_animCtrls[i] = std::move(animData);
 				return i;
 			}
 		}
 
-		m_animCtrls.push_back(animData.release());
+		m_animCtrls.push_back(std::move(animData));
 		return m_animCtrls.size() - 1;
 	}
 
@@ -168,11 +164,10 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		delFromActive(m_animCtrls[id]);
+		delFromActive(m_animCtrls[id].get());
 
 		//-- reset to empty.
-		delete m_animCtrls[id];
-		m_animCtrls[id] = nullptr;
+		m_animCtrls[id].reset();
 
 		return true;
 	}
@@ -182,7 +177,7 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		
-		AnimationData* data = m_animCtrls[id];
+		const auto& data = m_animCtrls[id];
 		assert(data);
 
 		auto anim = getAnim(name);
@@ -200,73 +195,71 @@ namespace render
 
 		data->m_animLayers.push_back(layer);
 
-		addToActive(data);
+		addToActive(data.get());
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::pauseAnim(Handle id, int layer)
+	void AnimationEngine::pauseAnim(Handle id, int layerIdx)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		AnimationData* data = m_animCtrls[id];
+		const auto& data = m_animCtrls[id];
 		if (data && !data->m_animLayers.empty())
 		{
-			if (layer == -1)
+			if (layerIdx == -1)
 			{
-				for (uint i = 0; i < data->m_animLayers.size(); ++i)
-					data->m_animLayers[i].m_paused = true;
+				for (auto& layer : data->m_animLayers)
+					layer.m_paused = false;
 			}
 			else
 			{
-				data->m_animLayers[layer].m_paused = true;
+				data->m_animLayers[layerIdx].m_paused = true;
 			}
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::continueAnim(Handle id, int layer)
+	void AnimationEngine::continueAnim(Handle id, int layerIdx)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		AnimationData* data = m_animCtrls[id];
+		const auto& data = m_animCtrls[id];
 		if (data && !data->m_animLayers.empty())
 		{
-			if (layer == -1)
+			if (layerIdx == -1)
 			{
-				for (uint i = 0; i < data->m_animLayers.size(); ++i)
-					data->m_animLayers[i].m_paused = false;
+				for (auto& layer : data->m_animLayers)
+					layer.m_paused = false;
 			}
 			else
 			{
-				data->m_animLayers[layer].m_paused = false;
+				data->m_animLayers[layerIdx].m_paused = false;
 			}
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::goToAnim(Handle id, uint frame, int layer)
+	void AnimationEngine::goToAnim(Handle id, uint frame, int layerIdx)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		AnimationData* data = m_animCtrls[id];
+		const auto& data = m_animCtrls[id];
 		if (data && !data->m_animLayers.empty())
 		{
-			if (layer == -1)
+			if (layerIdx == -1)
 			{
-				for (uint i = 0; i < data->m_animLayers.size(); ++i)
+				for (auto& layer : data->m_animLayers)
 				{
-					AnimLayer& animLayer = data->m_animLayers[i];
-
-					animLayer.m_paused = true;
-					animLayer.m_anim->goTo(frame, animLayer.m_time);
+					layer.m_paused = true;
+					layer.m_anim->goTo(frame, layer.m_time);
 				}
 			}
 			else
 			{
-				AnimLayer& animLayer = data->m_animLayers[layer];
+				auto& layer = data->m_animLayers[layerIdx];
 
-				animLayer.m_paused = true;
-				animLayer.m_anim->goTo(frame, animLayer.m_time);
+				layer.m_paused = true;
+				layer.m_anim->goTo(frame, layer.m_time);
 			}
 		}
 	}
@@ -277,11 +270,10 @@ namespace render
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
-		AnimationData* data = m_animCtrls[id];
-		if (data)
+		if (const auto& data = m_animCtrls[id])
 		{
 			data->m_animLayers.clear();
-			delFromActive(data);
+			delFromActive(data.get());
 		}
 	}
 
@@ -297,7 +289,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	std::shared_ptr<Animation> AnimationEngine::getAnim(const char* name)
 	{
-		AnimationsMap::iterator iter = m_animations.find(name);
+		auto iter = m_animations.find(name);
 		if (iter != m_animations.end())
 		{
 			return iter->second;
@@ -307,7 +299,7 @@ namespace render
 			auto data = FileSystem::instance().readFile("resources/models/" + std::string(name) + ".animation");
 			if (!data)
 			{
-				return NULL;
+				return nullptr;
 			}
 
 			auto result = std::make_shared<Animation>();
@@ -317,7 +309,7 @@ namespace render
 			}
 			else
 			{
-				result = NULL;
+				result = nullptr;
 			}
 			return result;
 		}
@@ -541,12 +533,12 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationBlender::tick(float dt, AnimLayers& layers)
 	{
-		for (auto layer = layers.begin(); layer != layers.end(); ++layer)
+		for (auto& layer : layers)
 		{
-			if (layer->m_paused)
+			if (layer.m_paused)
 				continue;
 
-			layer->m_anim->tick(dt, layer->m_time, layer->m_looped);
+			layer.m_anim->tick(dt, layer.m_time, layer.m_looped);
 		}
 	}
 

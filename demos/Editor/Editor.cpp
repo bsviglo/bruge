@@ -117,7 +117,6 @@ bool Editor::loadGameObj(const std::string& name)
 	}
 
 	m_objName = name;
-	//transform.postRotateX(degToRad(-90.0f));
 
 	std::string objName = "resources/models/" + name + ".xml";
 	m_gameObj = Engine::instance().gameWorld().addGameObj(objName.c_str(), &transform);
