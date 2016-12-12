@@ -43,9 +43,9 @@ namespace render
 		uint				gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& rops, const mat4f& viewPort, AABB* aabb = nullptr);
 
 		//-- models.
-		Handle				addMesh(const MeshInstance::Desc& desc, Transform* transform);
-		void				delMesh(Handle handle);
-		MeshInstance&		getMesh(Handle handle);
+		Handle				createMeshInstance(const MeshInstance::Desc& desc, Transform* transform);
+		void				removeMeshInstance(Handle handle);
+		MeshInstance&		getMeshInstance(Handle handle);
 
 	private:
 		std::vector<std::unique_ptr<MeshInstance>>	m_meshInstances;

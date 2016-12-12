@@ -24,13 +24,13 @@ namespace
 	//----------------------------------------------------------------------------------------------
 	Node* findNode(const std::string& name, Nodes& nodes)
 	{
-		auto iter = std::find_if(nodes.begin(), nodes.end(), [name](Node* node) {
+		auto iter = std::find_if(nodes.begin(), nodes.end(), [name](const auto& node) {
 			return (name == node->name());
 		});
 
 		assert(iter != nodes.end());
 
-		return *iter;
+		return iter->get();
 	}
 
 	//--

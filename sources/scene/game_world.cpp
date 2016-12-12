@@ -191,7 +191,7 @@ namespace brUGE
 	{
 		if (m_meshInst != CONST_INVALID_HANDLE)
 		{
-			Engine::instance().renderWorld().meshManager().delMesh(m_meshInst);
+			Engine::instance().renderWorld().meshManager().removeMeshInstance(m_meshInst);
 			m_meshInst = CONST_INVALID_HANDLE;
 		}
 
@@ -226,7 +226,7 @@ namespace brUGE
 			if (orient)	m_transform.m_worldMat = *orient;
 			else		m_transform.m_worldMat.setIdentity();
 
-			m_transform.m_nodes.push_back(new Node("root", m_transform.m_worldMat));
+			m_transform.m_nodes.emplace_back(std::make_unique<Node>("root", m_transform.m_worldMat));
 		}
 
 		//-- 2. load render part of the game object.
@@ -241,7 +241,7 @@ namespace brUGE
 				MeshInstance::Desc desc;
 				desc.fileName = renderNode.attribute("file").value();
 
-				m_meshInst = meshManager.addMesh(desc, &m_transform);
+				m_meshInst = meshManager.createMeshInstance(desc, &m_transform);
 			}
 		}
 
@@ -265,7 +265,7 @@ namespace brUGE
 
 		//-- 4. setup animation part.
 		{
-			MeshInstance& meshInst = meshManager.getMesh(m_meshInst);
+			MeshInstance& meshInst = meshManager.getMeshInstance(m_meshInst);
 
 			if (meshInst.m_skinnedMesh)
 			{
@@ -303,10 +303,7 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	Transform::~Transform()
 	{
-		for (uint i = 0; i < m_nodes.size(); ++i)
-			delete m_nodes[i];
 
-		m_nodes.clear();
 	}
 
 } //-- brUGE

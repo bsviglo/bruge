@@ -115,7 +115,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle MeshManager::addMesh(const MeshInstance::Desc& desc, Transform* transform)
+	Handle MeshManager::createMeshInstance(const MeshInstance::Desc& desc, Transform* transform)
 	{
 		ResourcesManager& rm = ResourcesManager::instance();
 		auto mInst = std::make_unique<MeshInstance>();
@@ -165,7 +165,7 @@ namespace render
 
 				//-- set default initial value.
 				nodeMat.setIdentity();
-				transform->m_nodes.push_back(new Node(joint.m_name, nodeMat));
+				transform->m_nodes.push_back(std::make_unique<Node>(joint.m_name, nodeMat));
 			}
 		}
 
@@ -174,13 +174,13 @@ namespace render
 	}
 	
 	//----------------------------------------------------------------------------------------------
-	void MeshManager::delMesh(Handle handle)
+	void MeshManager::removeMeshInstance(Handle handle)
 	{
 		m_meshInstances[handle].reset();
 	}
 
 	//----------------------------------------------------------------------------------------------
-	MeshInstance& MeshManager::getMesh(Handle handle)
+	MeshInstance& MeshManager::getMeshInstance(Handle handle)
 	{
 		return *m_meshInstances[handle].get();
 	}

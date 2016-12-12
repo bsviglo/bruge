@@ -32,7 +32,7 @@ namespace brUGE
 		const char* m_name;
 		mat4f&		m_matrix;
 	};
-	typedef std::vector<Node*> Nodes;
+	typedef std::vector<std::unique_ptr<Node>> Nodes;
 
 
 	//----------------------------------------------------------------------------------------------
