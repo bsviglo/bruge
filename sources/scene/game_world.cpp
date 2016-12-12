@@ -197,7 +197,7 @@ namespace brUGE
 
 		if (m_animCtrl != CONST_INVALID_HANDLE)
 		{
-			Engine::instance().animationEngine().delAnimDef(m_animCtrl);
+			Engine::instance().animationEngine().removeAnimationController(m_animCtrl);
 			m_animCtrl = CONST_INVALID_HANDLE;
 		}
 
@@ -273,7 +273,7 @@ namespace brUGE
 				desc.m_meshInst  = &meshInst;
 				desc.m_transform = &m_transform;
 
-				m_animCtrl = Engine::instance().animationEngine().addAnimDef(desc);
+				m_animCtrl = Engine::instance().animationEngine().createAnimationController(desc);
 			}
 			else
 			{

@@ -48,8 +48,8 @@ namespace render
 		MeshInstance&		getMesh(Handle handle);
 
 	private:
-		std::vector<MeshInstance*>		m_meshInstances;
-		std::unique_ptr<MeshCollector>	m_meshCollector;
+		std::vector<std::unique_ptr<MeshInstance>>	m_meshInstances;
+		std::unique_ptr<MeshCollector>				m_meshCollector;
 	};
 
 } //-- render

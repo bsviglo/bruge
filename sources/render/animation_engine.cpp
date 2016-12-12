@@ -69,18 +69,17 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::animate()
 	{
-		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
+		for (auto animCtrl : m_activeAnimCtrls)
 		{
-			if (!m_activeAnimCtrls[i]->m_wantsWorldPalette)
+			if (!animCtrl->m_wantsWorldPalette)
 				continue;
 
-			AnimationData&  data	 = *m_activeAnimCtrls[i];
-			const mat4f&    world    = data.m_transform->m_worldMat;
-			const Skeleton& skeleton = data.m_meshInst->m_skinnedMesh->skeleton();
-			MatrixPalette&	palette  = data.m_meshInst->m_worldPalette;
+			const mat4f&    world    = animCtrl->m_transform->m_worldMat;
+			const Skeleton& skeleton = animCtrl->m_meshInst->m_skinnedMesh->skeleton();
+			MatrixPalette&	palette  = animCtrl->m_meshInst->m_worldPalette;
 
 			//-- calculate local matrix palette.
-			m_animBlender.blendPalette(data.m_animLayers, skeleton, palette);
+			m_animBlender.blendPalette(animCtrl->m_animLayers, skeleton, palette);
 
 			//-- calculate world space palette.
 			for (uint j = 0; j < palette.size(); ++j)
@@ -123,14 +122,13 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	void AnimationEngine::postAnimate()
 	{
-		for (uint i = 0; i < m_activeAnimCtrls.size(); ++i)
+		for (auto animCtrl : m_activeAnimCtrls)
 		{
-			if (!m_activeAnimCtrls[i]->m_wantsWorldPalette)
+			if (!animCtrl->m_wantsWorldPalette)
 				continue;
 
-			AnimationData&		 data	     = *m_activeAnimCtrls[i];
-			const MatrixPalette& invBindPose = data.m_meshInst->m_skinnedMesh->invBindPose();
-			MatrixPalette&		 palette     = data.m_meshInst->m_worldPalette;
+			const auto& invBindPose	= animCtrl->m_meshInst->m_skinnedMesh->invBindPose();
+			auto&		palette		= animCtrl->m_meshInst->m_worldPalette;
 
 			//-- calculate world space palette.
 			for (uint j = 0; j < palette.size(); ++j)
@@ -141,7 +139,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle AnimationEngine::addAnimDef(AnimationData::Desc& desc)
+	Handle AnimationEngine::createAnimationController(AnimationData::Desc& desc)
 	{
 		auto animData = std::make_unique<AnimationData>(desc);
 		
@@ -160,7 +158,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	bool AnimationEngine::delAnimDef(Handle id)
+	bool AnimationEngine::removeAnimationController(Handle id)
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
@@ -335,6 +333,12 @@ namespace render
 		{
 			m_activeAnimCtrls.erase(item);
 		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void AnimationEngine::debugDraw()
+	{
+
 	}
 
 	//----------------------------------------------------------------------------------------------

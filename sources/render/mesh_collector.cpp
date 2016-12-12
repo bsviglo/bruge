@@ -84,20 +84,20 @@ namespace render
 	{
 		uint totalCount = 0;
 
-		for (auto iter = m_instances.begin(); iter != m_instances.end(); ++iter)
+		for (const auto& instance : m_instances)
 		{
-			if (!iter->m_buffer.empty())
+			if (!instance.m_buffer.empty())
 			{
-				uint count = iter->m_mesh->gatherROPs(m_pass, true, rops);
+				uint count = instance.m_mesh->gatherROPs(m_pass, true, rops);
 
 				for (uint i = rops.size() - count; i < rops.size(); ++i)
 				{
 					RenderOp& rop = rops[i];
 					rop.m_worldMat		= nullptr;
 					rop.m_instanceTB    = m_instanceTB.get();
-					rop.m_instanceData	= &iter->m_buffer[0];
+					rop.m_instanceData	= &instance.m_buffer[0];
 					rop.m_instanceSize  = sizeof(mat4f);
-					rop.m_instanceCount = iter->m_buffer.size();
+					rop.m_instanceCount = instance.m_buffer.size();
 				}
 
 				totalCount += count;

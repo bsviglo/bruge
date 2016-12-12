@@ -38,16 +38,16 @@ namespace render
 		Animation();
 		virtual ~Animation();
 
-		bool					load			(const utils::ROData& data);
-		void					tick			(float dt, Time& oTime, bool looped);
-		void					goTo			(uint frame, Time& oTime);
+		bool					load(const utils::ROData& data);
+		void					tick(float dt, Time& oTime, bool looped);
+		void					goTo(uint frame, Time& oTime);
 
 		//-- update bounds and matrix palette.
-		const AABB&				updateBounds	(const Time& time);
-		const TransformPalette&	updatePalette	(const Time& time, const Skeleton& skeleton);
+		const AABB&				updateBounds(const Time& time);
+		const TransformPalette&	updatePalette(const Time& time, const Skeleton& skeleton);
 
-		uint					numJoints		() const { return m_numJoints; }
-		uint					numFrames		() const { return m_numFrames; }
+		uint					numJoints() const { return m_numJoints; }
+		uint					numFrames() const { return m_numFrames; }
 
 	private:
 		void updateJoints(TransformPalette& palette, uint _1st, uint _2nd, float blend);
@@ -112,9 +112,9 @@ namespace render
 		AnimationBlender();
 		~AnimationBlender();
 
-		void tick			(float dt, AnimLayers& layers);
-		void blendBounds	(AnimLayers& layers, AABB& bound);
-		void blendPalette	(AnimLayers& layers, const Skeleton& skeleton, MatrixPalette& localPalette);
+		void tick(float dt, AnimLayers& layers);
+		void blendBounds(AnimLayers& layers, AABB& bound);
+		void blendPalette(AnimLayers& layers, const Skeleton& skeleton, MatrixPalette& localPalette);
 
 	private:
 		AABB			 m_blendBound;
@@ -135,30 +135,31 @@ namespace render
 		bool			init();
 
 		//-- calculate only bounds for the animated model, but not matrix local palette.
-		void			preAnimate	(float dt);
+		void			preAnimate(float dt);
 		//-- calculate matrix world palette only for visible or desired models.
-		void			animate		();
+		void			animate();
 		//-- pre-multiply each joint matrix for correct skinning. This method called after physics 
 		//-- update step.
-		void			postAnimate	();
+		void			postAnimate();
 
 		//-- animation controllers.
-		Handle			addAnimDef	(AnimationData::Desc& desc);
-		bool			delAnimDef	(Handle handle);
+		Handle			createAnimationController(AnimationData::Desc& desc);
+		bool			removeAnimationController(Handle handle);
 		
 		//-- some animation controlling functions.
-		void			playAnim	(Handle id, const char* name, bool looped = false);
-		void			pauseAnim	(Handle id, int layerIdx = -1);
+		void			playAnim(Handle id, const char* name, bool looped = false);
+		void			pauseAnim(Handle id, int layerIdx = -1);
 		void			continueAnim(Handle id, int layerIdx = -1);
-		void			goToAnim	(Handle id, uint frame, int layerIdx = -1);
-		void			stopAnim	(Handle id);
-		void			blendAnim	(Handle id, float srcBlend, float dstBlend, const char* name);
+		void			goToAnim(Handle id, uint frame, int layerIdx = -1);
+		void			stopAnim(Handle id);
+		void			blendAnim(Handle id, float srcBlend, float dstBlend, const char* name);
 
-		std::shared_ptr<Animation>	getAnim		(const char* name);
+		std::shared_ptr<Animation>	getAnim(const char* name);
 
 	private:
-		void		   addToActive	(AnimationData* data);
+		void		   addToActive(AnimationData* data);
 		void		   delFromActive(AnimationData* data);
+		void		   debugDraw();
 
 	private:
 		std::vector<std::unique_ptr<AnimationData>>						m_animCtrls;

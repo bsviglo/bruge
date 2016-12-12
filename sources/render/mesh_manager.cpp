@@ -34,10 +34,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	MeshManager::~MeshManager()
 	{
-		for (uint i = 0; i < m_meshInstances.size(); ++i)
-			delete m_meshInstances[i];
 
-		m_meshInstances.clear();
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -63,52 +60,50 @@ namespace render
 	{
 		m_meshCollector->begin(pass);
 
-		for (uint i = 0; i < m_meshInstances.size(); ++i)
+		for (const auto& inst : m_meshInstances)
 		{
-			if (!m_meshInstances[i])
+			if (!inst)
 				continue;
 
-			const MeshInstance& inst = *m_meshInstances[i];
-
 			//-- 1. cull frustum against AABB.
-			if (g_enableCulling && inst.m_transform->m_worldBounds.calculateOutcode(viewPort) != 0)
+			if (g_enableCulling && inst->m_transform->m_worldBounds.calculateOutcode(viewPort) != 0)
 			{
 				continue;
 			}
 			else if (g_showVisibilityBoxes)
 			{
-				DebugDrawer::instance().drawAABB(inst.m_transform->m_worldBounds, Color(1,0,0,0));
+				DebugDrawer::instance().drawAABB(inst->m_transform->m_worldBounds, Color(1,0,0,0));
 			}
 			
 			if (aabb)
 			{
-				aabb->combine(inst.m_transform->m_worldBounds);
+				aabb->combine(inst->m_transform->m_worldBounds);
 			}
 
 			//-- 2. gather render operations.
-			if (inst.m_mesh)
+			if (inst->m_mesh)
 			{
 				//-- if mesh collector doesn't want to get this instance then process it as usual.
-				if (!g_enableInstancing || (g_enableInstancing && !m_meshCollector->addMeshInstance(inst)))
+				if (!g_enableInstancing || (g_enableInstancing && !m_meshCollector->addMeshInstance(*inst.get())))
 				{
-					uint count = inst.m_mesh->gatherROPs(pass, instanced, rops);
+					uint count = inst->m_mesh->gatherROPs(pass, instanced, rops);
 					for (uint i = rops.size() - count; i < rops.size(); ++i)
 					{
 						RenderOp& rop = rops[i];
-						rop.m_worldMat = &inst.m_transform->m_worldMat;
+						rop.m_worldMat = &inst->m_transform->m_worldMat;
 					}
 				}
 			}
-			else if (inst.m_skinnedMesh)
+			else if (inst->m_skinnedMesh)
 			{
-				uint count = inst.m_skinnedMesh->gatherROPs(pass, instanced, rops);
+				uint count = inst->m_skinnedMesh->gatherROPs(pass, instanced, rops);
 				for (uint i = rops.size() - count; i < rops.size(); ++i)
 				{
 					RenderOp& rop = rops[i];
 
-					rop.m_worldMat			 = &inst.m_transform->m_worldMat;
-					rop.m_matrixPalette		 = &inst.m_worldPalette[0];
-					rop.m_matrixPaletteCount = inst.m_worldPalette.size();
+					rop.m_worldMat			 = &inst->m_transform->m_worldMat;
+					rop.m_matrixPalette		 = &inst->m_worldPalette[0];
+					rop.m_matrixPaletteCount = inst->m_worldPalette.size();
 				}
 			}
 		}
@@ -123,7 +118,7 @@ namespace render
 	Handle MeshManager::addMesh(const MeshInstance::Desc& desc, Transform* transform)
 	{
 		ResourcesManager& rm = ResourcesManager::instance();
-		std::unique_ptr<MeshInstance> mInst(new MeshInstance);
+		auto mInst = std::make_unique<MeshInstance>();
 
 		//-- 1. load skinned mesh.
 		if (getFileExt(desc.fileName) == "skinnedmesh")
@@ -174,21 +169,20 @@ namespace render
 			}
 		}
 
-		m_meshInstances.push_back(mInst.release());
+		m_meshInstances.push_back(std::move(mInst));
 		return m_meshInstances.size() - 1;
 	}
 	
 	//----------------------------------------------------------------------------------------------
 	void MeshManager::delMesh(Handle handle)
 	{
-		delete m_meshInstances[handle];
-		m_meshInstances[handle] = NULL;
+		m_meshInstances[handle].reset();
 	}
 
 	//----------------------------------------------------------------------------------------------
 	MeshInstance& MeshManager::getMesh(Handle handle)
 	{
-		return *m_meshInstances[handle];
+		return *m_meshInstances[handle].get();
 	}
 
 } //-- render
