@@ -180,7 +180,7 @@ namespace brUGE
 		{
 			// calculate engine tick time.
 			newTime = SDL_GetPerformanceCounter();
-			float dt = (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency());
+			float dt = max<float>(0.0001f, (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency()));
 			prevTime = newTime;
 
 			SDL_Event event;
@@ -237,6 +237,9 @@ namespace brUGE
 					//-- update timing panel.
 					m_timingPanel->update(dt);
 
+					//-- update demo module first
+					m_demo->update(dt);
+
 					m_gameWorld->beginUpdate(dt);
 
 					//-- do pre-animation.
@@ -262,10 +265,7 @@ namespace brUGE
 					}
 
 					m_renderWorld->update(dt);
-
-					m_demo->update(dt);
 					m_watchersPanel->update(dt);
-
 					m_gameWorld->endUpdate();
 				}
 

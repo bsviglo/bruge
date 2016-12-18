@@ -25,11 +25,11 @@ namespace physics
 
 		struct Instance;
 
-		//-- rigid body.
 		//------------------------------------------------------------------------------------------
 		class RigidBody
 		{
 		public:
+
 			struct Desc
 			{
 				Desc() : m_isKinematic(false), m_mass(0.0f), m_shapeIdx(0) { }
@@ -63,18 +63,44 @@ namespace physics
 			physx::PxRigidDynamic*	m_actor;
 		};
 
+		//------------------------------------------------------------------------------------------
+		class Joint
+		{
+		public:
+			struct Desc
+			{
+				std::string m_name;
+				std::string m_type;
+				std::string m_objA;
+				std::string m_objB;
+				vec3f		m_offsetA;
+				vec3f		m_offsetB;
+			};
+
+		public:
+			Joint();
+			~Joint();
+
+			const char*		m_name; //-- pointed at the managed object. No needed explicit deletion.
+			physx::PxJoint*	m_pxJoint;
+		};
+
+		//------------------------------------------------------------------------------------------
 		struct Instance
 		{
 			Instance() : m_gameObj(CONST_INVALID_HANDLE), m_physObj(CONST_INVALID_HANDLE), m_transform(nullptr) { }
 			~Instance() { }
 
-			void enterScene(physx::PxScene* scene);
-			void leaveScene(physx::PxScene* scene);
+			void		enterScene(physx::PxScene* scene);
+			void		leaveScene(physx::PxScene* scene);
+			RigidBody*	findBody(const std::string& name);
+			Joint*		findJoint(const std::string& name);
 
 			Handle									m_physObj;
 			Handle									m_gameObj;
 			Transform*								m_transform;
 			std::vector<std::unique_ptr<RigidBody>>	m_bodies;
+			std::vector<std::unique_ptr<Joint>>		m_joints;
 		};
 
 	public:
@@ -86,7 +112,7 @@ namespace physics
 
 	private:
 		std::vector<RigidBody::Desc>			m_rigidBodyDescs;
-		//std::vector<Constraints::Desc>		m_constrainDescs;
+		std::vector<Joint::Desc>				m_jointDescs;
 		std::vector<physx::PxShape*>			m_shapes;
 		std::vector<physx::PxMaterial*>			m_materials;
 	};
@@ -125,6 +151,9 @@ namespace physics
 		//-- add terrain mesh to the physics world.
 		bool		createTerrainPhysicsObject(uint gridSize, float unitsPerCell, float* heights, float heightScale, float minHeight, float maxHeight);
 		bool		removeTerrainPhysicsObject();
+
+		//-- ToDo: for testing only
+		void		makeKinematic(Handle physObj, bool flag);
 
 		void		addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
 

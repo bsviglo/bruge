@@ -9,29 +9,34 @@
 		</shape>      
 	</rigidBody>
 	-->
-	
-	<rigidBody name="body_up" node="shoulders" mass="0" offset="vec3f(0.3,0,0)" kinematic="1">
-		<shape type="capsuleX">
-			<params radius="0.15" halfHeight="0.1" />
+	<rigidBody name="head" node="head_channel" mass="0" offset="vec3f(0,0,0)" kinematic="1">
+		<shape type="sphere">
+			<params radius="0.15"/>
 		</shape> 
 	</rigidBody>
 	
-	<rigidBody name="body_middle" node="chest" mass="0" offset="vec3f(0.25,0.0,0)" kinematic="1">
-		<shape type="capsuleX">
-			<params radius="0.25" halfHeight="0.1" />
+	<rigidBody name="body_up" node="shoulders" mass="0" offset="vec3f(0.0,0,0)" kinematic="1">
+		<shape type="capsuleZ">
+			<params radius="0.15" halfHeight="0.15" />
+		</shape>     
+	</rigidBody>
+	
+	<rigidBody name="body_middle" node="chest" mass="0" offset="vec3f(0,0,0)" kinematic="1">
+		<shape type="capsuleZ">
+			<params radius="0.15" halfHeight="0.15" />
 		</shape>      
 	</rigidBody>
 	
-	<rigidBody name="body_low" node="hips" mass="0" offset="vec3f(0.0,0,0)" kinematic="1">
-		<shape type="capsuleX">
-			<params radius="0.2" halfHeight="0.1" />
+	<rigidBody name="body_low" node="waist" mass="0" offset="vec3f(-0.05,0,0)" kinematic="1">
+		<shape type="capsuleZ">
+			<params radius="0.15" halfHeight="0.15" />
 		</shape>      
 	</rigidBody>
 
 	<!-- arms -->
-	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+	<rigidBody name="l_up_arm" node="l_up_arm" mass="0" offset="vec3f(0.32,0,0)" kinematic="1">
 		<shape type="capsuleX">
-			 <params radius="0.125" halfHeight="0.25" />
+			 <params radius="0.12" halfHeight="0.2" />
 		</shape>
 	</rigidBody>
 	
@@ -41,9 +46,9 @@
 		</shape>
 	</rigidBody>
 	
-	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+	<rigidBody name="r_up_arm" node="r_up_arm" mass="0" offset="vec3f(0.32,0,0)" kinematic="1">
 		<shape type="capsuleX">
-			 <params radius="0.125" halfHeight="0.25" />
+			 <params radius="0.12" halfHeight="0.2" />
 		</shape>    
 	</rigidBody>
 	
@@ -54,37 +59,49 @@
 	</rigidBody>
 	
 	<!-- legs -->
-	<rigidBody name="l_up_leg" node="l_upleg" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+	<rigidBody name="l_up_leg" node="l_upleg" mass="0" offset="vec3f(0.35,0,0)" kinematic="1">
 		<shape type="capsuleX">
 			 <params radius="0.15" halfHeight="0.25" />
 		</shape>    
 	</rigidBody>
 	
-	<rigidBody name="l_low_leg" node="l_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+	<rigidBody name="l_low_leg" node="l_loleg" mass="0" offset="vec3f(0.42,0,0)" kinematic="1">
 		<shape type="capsuleX">
-			 <params radius="0.125" halfHeight="0.4" />
+			 <params radius="0.12" halfHeight="0.3" />
 		</shape>      
 	</rigidBody>
 	
-	<rigidBody name="r_up_leg" node="r_upleg" mass="0" offset="vec3f(0.25,0,0)" kinematic="1">
+	<rigidBody name="r_up_leg" node="r_upleg" mass="0" offset="vec3f(0.35,0,0)" kinematic="1">
 			<shape type="capsuleX">
 			 <params radius="0.15" halfHeight="0.25" />
 		</shape>     
 	</rigidBody>
 	
-	<rigidBody name="r_low_leg" node="r_loleg" mass="0" offset="vec3f(0.4,0,0)" kinematic="1">
+	<rigidBody name="r_low_leg" node="r_loleg" mass="0" offset="vec3f(0.42,0,0)" kinematic="1">
 		<shape type="capsuleX">
-			 <params radius="0.125" halfHeight="0.4" />
+			 <params radius="0.12" halfHeight="0.3" />
 		</shape>     
 	</rigidBody>
 	
 	</rigidBodies>
   
-	<!--
-	<constraints>
-		<constraint name="simple" type="p2p" objA="root" objB="root">
-		<params strength="0.67" />
-		</constraint>
-	</constraints>
-	-->
+	<joints>
+		<!-- head -->
+		<joint name="head" type="spheric" objA="head" objB="body_up" offsetA="vec3f(0,0,0)" offsetB="vec3f(0.1,0,0)"/>
+		<!-- arms -->
+		<joint name="r_arm" type="spheric" objA="r_low_arm" objB="r_up_arm" offsetA="vec3f(0,0,0)" offsetB="vec3f(0.64,0,0)"/>
+		<joint name="l_arm" type="spheric" objA="l_low_arm" objB="l_up_arm" offsetA="vec3f(0,0,0)" offsetB="vec3f(0.64,0,0)"/>
+		<!-- legs -->
+		<joint name="r_leg" type="spheric" objA="r_low_leg" objB="r_up_leg" offsetA="vec3f(0,0,0)" offsetB="vec3f(0.7,0,0)"/>
+		<joint name="l_leg" type="spheric" objA="l_low_leg" objB="l_up_leg" offsetA="vec3f(0,0,0)" offsetB="vec3f(0.7,0,0)"/>
+		<!-- lower body -->
+		<joint name="r_body_low" type="spheric" objA="r_up_leg" objB="body_low" offsetA="vec3f(-0.35,0,0)" offsetB="vec3f(-0.15,0,+0.2)"/>
+		<joint name="l_body_low" type="spheric" objA="l_up_leg" objB="body_low" offsetA="vec3f(-0.35,0,0)" offsetB="vec3f(-0.15,0,-0.2)"/>
+		<!-- middle body -->
+		<joint name="r_body_med_low" type="revolute" objA="body_low" objB="body_middle" offsetA="vec3f(0,0,0)" offsetB="vec3f(0,0,0)"/>
+		<joint name="r_body_med_up" type="revolute" objA="body_up" objB="body_middle" offsetA="vec3f(0,0,0)" offsetB="vec3f(0,0,0)"/>
+		<!-- upper body -->
+		<joint name="r_body_up" type="spheric" objA="r_up_arm" objB="body_middle" offsetA="vec3f(-0.35,0,0)" offsetB="vec3f(0.2,-0.15,0)"/>
+		<joint name="l_body_up" type="spheric" objA="l_up_arm" objB="body_middle" offsetA="vec3f(-0.35,0,0)" offsetB="vec3f(-0.2,-0.15,0)"/>
+	</joints>
 </phys>

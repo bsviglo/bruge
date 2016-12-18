@@ -64,7 +64,7 @@ namespace render
 		TransformPalette				m_tempPalette;
 	};
 
-	//-- Represents one particular layer of the animation.
+	//-- Represents one particular layer of an animation.
 	//------------------------------------------------------------------------------------------
 	struct AnimLayer
 	{
@@ -78,8 +78,8 @@ namespace render
 	};
 	typedef std::vector<AnimLayer> AnimLayers;
 
-	//-- Consists of the arbitrary number of the animation layers. The all layers is blended 
-	//-- together and makes the final animation of the mesh. Each layer may be configured with the
+	//-- Consists of the arbitrary number of the animation layers. The all layers are blended 
+	//-- together and make the final animation of the mesh. Each layer may be configured with the
 	//-- own list of options.
 	//----------------------------------------------------------------------------------------------
 	struct AnimationData

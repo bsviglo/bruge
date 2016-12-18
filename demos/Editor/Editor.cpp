@@ -389,6 +389,15 @@ void Editor::UI::update()
 
 		if (ImGui::CollapsingHeader("Physics"))
 		{
+			if (ImGui::Button("enable ragdoll"))
+			{
+				auto physObj = Engine::instance().gameWorld().getGameObj(m_self.m_gameObj)->physObj();
+				if (physObj != CONST_INVALID_HANDLE)
+				{
+					Engine::instance().physicsWorld().makeKinematic(physObj, false);
+					//animEngine.stopAnim(m_self.m_animCtrl);
+				}
+			}
 		}
 
 		ImGui::End();

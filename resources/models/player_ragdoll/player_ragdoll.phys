@@ -3,7 +3,7 @@
 	
 	<!-- body -->
 	<!--
-    <rigidBody name="body" node="chest" mass="0" offset="vec3f(0,0.0,0.0)" kinematic="1">
+    <rigidBody name="body" node="chest" mass="0" offset="vec3f(0,0.0,0.0)" kinematic="0">
 		<shape type="box">
 			<params size="vec3f(0.3,0.18,0.2)" />
 		</shape>      
@@ -80,11 +80,12 @@
 	
 	</rigidBodies>
   
-	<!--
-	<constraints>
-		<constraint name="simple" type="p2p" objA="root" objB="root">
-		<params strength="0.67" />
-		</constraint>
-	</constraints>
-	-->
+	<joints>
+		<joint name="r_arm" type="spheric" objA="r_up_arm" objB="r_low_arm" offsetA="vec3f(0.25,0,0)" offsetB="vec3f(0.25,0,0)">
+			<params/>
+		</joint>
+		<joint name="l_arm" type="spheric" objA="l_up_arm" objB="l_low_arm" offsetA="vec3f(0.25,0,0)" offsetB="vec3f(0.25,0,0)">
+			<params/>
+		</joint>
+	</joints>
 </phys>

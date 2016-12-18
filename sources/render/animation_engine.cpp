@@ -9,14 +9,14 @@
 #include <algorithm>
 
 using namespace brUGE::os;
-using namespace brUGE::utils;
+using namespace brUGE::utils;	
 using namespace brUGE::math;
 
 //--------------------------------------------------------------------------------------------------
 namespace
 {
 	bool g_drawSkeletons = true;
-	bool g_drawNodeNames = false;
+	bool g_drawNodeNames = true;
 	bool g_drawJoints    = true;
 }
 
@@ -82,39 +82,9 @@ namespace render
 			m_animBlender.blendPalette(animCtrl->m_animLayers, skeleton, palette);
 
 			//-- calculate world space palette.
-			for (uint j = 0; j < palette.size(); ++j)
+			for (auto& mat : palette)
 			{
-				palette[j].postMultiply(world);
-			}
-
-			//-- draw skeleton.
-			if (g_drawNodeNames || g_drawSkeletons || g_drawJoints)
-			{
-				for (uint k = 0; k < skeleton.size(); ++k)
-				{
-					const vec3f& startPos = palette[k].applyToOrigin();
-
-					if (g_drawJoints)
-					{
-						//DebugDrawer::instance().drawSphere(0.025f, palette[k], Color(1,0,0,1), DebugDrawer::DRAW_OVERRIDE);
-						DebugDrawer::instance().drawCoordAxis(palette[k], 0.1f);
-					}
-
-					if (g_drawNodeNames)
-					{
-						DebugDrawer::instance().drawText2D(skeleton[k].m_name, startPos, Color(1,1,0,1));
-					}
-
-					if (g_drawSkeletons)
-					{
-						if (skeleton[k].m_parent != -1)
-						{
-							const vec3f& endPos = palette[skeleton[k].m_parent].applyToOrigin();
-
-							DebugDrawer::instance().drawLine(startPos, endPos, Color(1,1,1,1));
-						}
-					}
-				}
+				mat.postMultiply(world);
 			}
 		}
 	}
@@ -128,7 +98,38 @@ namespace render
 				continue;
 
 			const auto& invBindPose	= animCtrl->m_meshInst->m_skinnedMesh->invBindPose();
+			const auto& skeleton	= animCtrl->m_meshInst->m_skinnedMesh->skeleton();
 			auto&		palette		= animCtrl->m_meshInst->m_worldPalette;
+
+			//-- draw skeleton.
+			if (g_drawNodeNames || g_drawSkeletons || g_drawJoints)
+			{
+				for (uint k = 0; k < skeleton.size(); ++k)
+				{
+					const vec3f& startPos = palette[k].applyToOrigin();
+
+					if (g_drawJoints)
+					{
+						//DebugDrawer::instance().drawSphere(0.025f, palette[k], Color(1,0,0,1), DebugDrawer::DRAW_OVERRIDE);
+						DebugDrawer::instance().drawCoordAxis(palette[k], 0.01f);
+					}
+
+					if (g_drawNodeNames)
+					{
+						DebugDrawer::instance().drawText2D(skeleton[k].m_name, startPos, Color(1, 1, 0, 1));
+					}
+
+					if (g_drawSkeletons)
+					{
+						if (skeleton[k].m_parent != -1)
+						{
+							const vec3f& endPos = palette[skeleton[k].m_parent].applyToOrigin();
+
+							DebugDrawer::instance().drawLine(startPos, endPos, Color(1, 1, 1, 1));
+						}
+					}
+				}
+			}
 
 			//-- calculate world space palette.
 			for (uint j = 0; j < palette.size(); ++j)
