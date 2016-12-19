@@ -269,7 +269,7 @@ namespace brUGE
 
 			if (meshInst.m_skinnedMesh)
 			{
-				AnimationData::Desc desc;
+				AnimationController::Desc desc;
 				desc.m_meshInst  = &meshInst;
 				desc.m_transform = &m_transform;
 

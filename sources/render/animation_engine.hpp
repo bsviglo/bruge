@@ -17,7 +17,7 @@ namespace render
 	
 
 	//-- For each particular animation we have only one instance of this class. It contains only
-	//-- static information of animation.
+	//-- static information of animation (multi threading friendly)
 	//----------------------------------------------------------------------------------------------
 	class Animation
 	{
@@ -38,20 +38,20 @@ namespace render
 		Animation();
 		virtual ~Animation();
 
-		bool					load(const utils::ROData& data);
-		void					tick(float dt, Time& oTime, bool looped);
-		void					goTo(uint frame, Time& oTime);
+		bool	load(const utils::ROData& data);
+		void	tick(float dt, Time& oTime, bool looped) const;
+		void	goTo(uint frame, Time& oTime) const;
 
 		//-- update bounds and matrix palette.
-		const AABB&				updateBounds(const Time& time);
-		const TransformPalette&	updatePalette(const Time& time, const Skeleton& skeleton);
+		void	updateBounds(AABB& oBound, const Time& time) const;
+		void	updatePalette(TransformPalette& oPalette, const Time& time, const Skeleton& skeleton) const;
 
-		uint					numJoints() const { return m_numJoints; }
-		uint					numFrames() const { return m_numFrames; }
+		uint	numJoints() const { return m_numJoints; }
+		uint	numFrames() const { return m_numFrames; }
 
 	private:
-		void updateJoints(TransformPalette& palette, uint _1st, uint _2nd, float blend);
-		void buildAbsoluteTransforms(TransformPalette& palette, const Skeleton& skeleton);
+		void updateJoints(TransformPalette& oPalette, uint _1st, uint _2nd, float blend) const;
+		void buildAbsoluteTransforms(TransformPalette& oPalette, const Skeleton& skeleton) const;
 
 	private:
 		uint							m_numJoints;
@@ -60,8 +60,6 @@ namespace render
 		std::vector<float>				m_blendAlphaMask;
 		std::vector<TransformPalette>	m_frames;
 		std::vector<AABB>				m_bounds;
-		AABB							m_tempBound;
-		TransformPalette				m_tempPalette;
 	};
 
 	//-- Represents one particular layer of an animation.
@@ -82,7 +80,7 @@ namespace render
 	//-- together and make the final animation of the mesh. Each layer may be configured with the
 	//-- own list of options.
 	//----------------------------------------------------------------------------------------------
-	struct AnimationData
+	struct AnimationController
 	{
 		struct Desc
 		{
@@ -92,14 +90,18 @@ namespace render
 			MeshInstance*  m_meshInst;
 		};
 
-		AnimationData(Desc& desc)
-			:	m_transform(desc.m_transform), m_meshInst(desc.m_meshInst),	m_wantsWorldPalette(true) { }
+		AnimationController(Desc& desc)
+			:	m_transform(desc.m_transform), m_meshInst(desc.m_meshInst),	m_wantsWorldPalette(true), m_physicsDriven(false) { }
 
 	public:
-		bool			m_wantsWorldPalette;
-		AnimLayers		m_animLayers;
-		Transform*		m_transform;
-		MeshInstance*	m_meshInst;
+		//-- do we need to calculate world space pallete.
+		bool				m_wantsWorldPalette;
+		//-- do this controller driven by physics. In this case stop animating it and use world transform given by the physics.
+		bool				m_physicsDriven;
+		AnimLayers			m_animLayers;
+		Transform*			m_transform;
+		MeshInstance*		m_meshInst;
+		TransformPalette	m_tranformPalette;
 	};
 
 
@@ -113,8 +115,8 @@ namespace render
 		~AnimationBlender();
 
 		void tick(float dt, AnimLayers& layers);
-		void blendBounds(AnimLayers& layers, AABB& bound);
-		void blendPalette(AnimLayers& layers, const Skeleton& skeleton, MatrixPalette& localPalette);
+		void blendBounds(const AnimLayers& layers, AABB& bound);
+		void blendPalette(const AnimLayers& layers, const Skeleton& skeleton, TransformPalette& localPalette);
 
 	private:
 		AABB			 m_blendBound;
@@ -143,7 +145,7 @@ namespace render
 		void			postAnimate();
 
 		//-- animation controllers.
-		Handle			createAnimationController(AnimationData::Desc& desc);
+		Handle			createAnimationController(AnimationController::Desc& desc);
 		bool			removeAnimationController(Handle handle);
 		
 		//-- some animation controlling functions.
@@ -153,18 +155,19 @@ namespace render
 		void			goToAnim(Handle id, uint frame, int layerIdx = -1);
 		void			stopAnim(Handle id);
 		void			blendAnim(Handle id, float srcBlend, float dstBlend, const char* name);
+		void			physicsDriven(Handle id, bool flag);
 
 		std::shared_ptr<Animation>	getAnim(const char* name);
 
 	private:
-		void		   addToActive(AnimationData* data);
-		void		   delFromActive(AnimationData* data);
+		void		   addToActive(AnimationController* data);
+		void		   delFromActive(AnimationController* data);
 		void		   debugDraw();
 
 	private:
-		std::vector<std::unique_ptr<AnimationData>>						m_animCtrls;
+		std::vector<std::unique_ptr<AnimationController>>				m_animCtrls;
 		std::unordered_map<std::string, std::shared_ptr<Animation>>		m_animations;
-		std::vector<AnimationData*>										m_activeAnimCtrls;
+		std::vector<AnimationController*>								m_activeAnimCtrls;
 		AnimationBlender												m_animBlender;
 	};
 

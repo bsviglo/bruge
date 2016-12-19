@@ -10,11 +10,6 @@
 
 namespace brUGE
 {
-	//-- forward declaration.
-	namespace physics
-	{
-		struct PhysObj;
-	}
 
 	//-- Exists for every node of every model.
 	//----------------------------------------------------------------------------------------------

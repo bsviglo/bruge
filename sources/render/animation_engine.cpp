@@ -15,9 +15,9 @@ using namespace brUGE::math;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-	bool g_drawSkeletons = true;
-	bool g_drawNodeNames = true;
-	bool g_drawJoints    = true;
+	bool g_drawSkeletons = false;
+	bool g_drawNodeNames = false;
+	bool g_drawJoints    = false;
 }
 
 
@@ -53,6 +53,10 @@ namespace render
 	{
 		for (auto animCtrl : m_activeAnimCtrls)
 		{
+			//-- stop ticking and calculating world transforms for physics driven controllers.
+			if (animCtrl->m_physicsDriven)
+				continue;
+
 			auto& transform = *animCtrl->m_meshInst->m_transform;
 
 			//-- tick animation.
@@ -74,16 +78,20 @@ namespace render
 			if (!animCtrl->m_wantsWorldPalette)
 				continue;
 
-			const mat4f&    world    = animCtrl->m_transform->m_worldMat;
-			const Skeleton& skeleton = animCtrl->m_meshInst->m_skinnedMesh->skeleton();
-			MatrixPalette&	palette  = animCtrl->m_meshInst->m_worldPalette;
+			const auto& world			= animCtrl->m_transform->m_worldMat;
+			const auto& skeleton		= animCtrl->m_meshInst->m_skinnedMesh->skeleton();
+			auto&		worldPalette	= animCtrl->m_meshInst->m_worldPalette;
 
 			//-- calculate local matrix palette.
-			m_animBlender.blendPalette(animCtrl->m_animLayers, skeleton, palette);
+			m_animBlender.blendPalette(animCtrl->m_animLayers, skeleton, animCtrl->m_tranformPalette);
 
-			//-- calculate world space palette.
-			for (auto& mat : palette)
+			//-- transform (quat, pos) -> mat4f and calculate world space palette.
+			for (uint i = 0; i < animCtrl->m_tranformPalette.size(); ++i)
 			{
+				auto&		mat = worldPalette[i];
+				const auto& tp  = animCtrl->m_tranformPalette[i];
+ 
+				mat = combineMatrix(tp.m_orient, tp.m_pos);
 				mat.postMultiply(world);
 			}
 		}
@@ -140,21 +148,21 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	Handle AnimationEngine::createAnimationController(AnimationData::Desc& desc)
+	Handle AnimationEngine::createAnimationController(AnimationController::Desc& desc)
 	{
-		auto animData = std::make_unique<AnimationData>(desc);
+		auto animCtrl = std::make_unique<AnimationController>(desc);
 		
 		//-- try to find free slot.
 		for (uint i = 0; i < m_animCtrls.size(); ++i)
 		{
 			if (!m_animCtrls[i])
 			{
-				m_animCtrls[i] = std::move(animData);
+				m_animCtrls[i] = std::move(animCtrl);
 				return i;
 			}
 		}
 
-		m_animCtrls.push_back(std::move(animData));
+		m_animCtrls.push_back(std::move(animCtrl));
 		return m_animCtrls.size() - 1;
 	}
 
@@ -176,8 +184,8 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 		
-		const auto& data = m_animCtrls[id];
-		assert(data);
+		const auto& animCtrl = m_animCtrls[id];
+		assert(animCtrl);
 
 		auto anim = getAnim(name);
 		if (!anim)
@@ -187,14 +195,15 @@ namespace render
 		}
 		
 		AnimLayer layer;
-		layer.m_anim   = getAnim(name);
+		layer.m_anim   = anim;
 		layer.m_blend  = 1.0f;
 		layer.m_looped = looped;
 		layer.m_paused = false;
 
-		data->m_animLayers.push_back(layer);
+		animCtrl->m_tranformPalette.resize(anim->numJoints());
+		animCtrl->m_animLayers.push_back(layer);
 
-		addToActive(data.get());
+		addToActive(animCtrl.get());
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -202,17 +211,17 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		const auto& data = m_animCtrls[id];
-		if (data && !data->m_animLayers.empty())
+		const auto& animCtrl = m_animCtrls[id];
+		if (animCtrl && !animCtrl->m_animLayers.empty())
 		{
 			if (layerIdx == -1)
 			{
-				for (auto& layer : data->m_animLayers)
+				for (auto& layer : animCtrl->m_animLayers)
 					layer.m_paused = false;
 			}
 			else
 			{
-				data->m_animLayers[layerIdx].m_paused = true;
+				animCtrl->m_animLayers[layerIdx].m_paused = true;
 			}
 		}
 	}
@@ -222,17 +231,17 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		const auto& data = m_animCtrls[id];
-		if (data && !data->m_animLayers.empty())
+		const auto& animCtrl = m_animCtrls[id];
+		if (animCtrl && !animCtrl->m_animLayers.empty())
 		{
 			if (layerIdx == -1)
 			{
-				for (auto& layer : data->m_animLayers)
+				for (auto& layer : animCtrl->m_animLayers)
 					layer.m_paused = false;
 			}
 			else
 			{
-				data->m_animLayers[layerIdx].m_paused = false;
+				animCtrl->m_animLayers[layerIdx].m_paused = false;
 			}
 		}
 	}
@@ -242,12 +251,12 @@ namespace render
 	{
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
-		const auto& data = m_animCtrls[id];
-		if (data && !data->m_animLayers.empty())
+		const auto& animCtrl = m_animCtrls[id];
+		if (animCtrl && !animCtrl->m_animLayers.empty())
 		{
 			if (layerIdx == -1)
 			{
-				for (auto& layer : data->m_animLayers)
+				for (auto& layer : animCtrl->m_animLayers)
 				{
 					layer.m_paused = true;
 					layer.m_anim->goTo(frame, layer.m_time);
@@ -255,7 +264,7 @@ namespace render
 			}
 			else
 			{
-				auto& layer = data->m_animLayers[layerIdx];
+				auto& layer = animCtrl->m_animLayers[layerIdx];
 
 				layer.m_paused = true;
 				layer.m_anim->goTo(frame, layer.m_time);
@@ -269,10 +278,10 @@ namespace render
 		assert(id != CONST_INVALID_HANDLE && id < static_cast<int>(m_animCtrls.size()));
 
 		//-- reset to empty.
-		if (const auto& data = m_animCtrls[id])
+		if (const auto& animCtrl = m_animCtrls[id])
 		{
-			data->m_animLayers.clear();
-			delFromActive(data.get());
+			animCtrl->m_animLayers.clear();
+			delFromActive(animCtrl.get());
 		}
 	}
 
@@ -315,7 +324,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::addToActive(AnimationData* data)
+	void AnimationEngine::addToActive(AnimationController* data)
 	{
 		//-- add to active list.
 		auto item = std::find(m_activeAnimCtrls.begin(), m_activeAnimCtrls.end(), data);
@@ -326,7 +335,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationEngine::delFromActive(AnimationData* data)
+	void AnimationEngine::delFromActive(AnimationController* data)
 	{
 		//-- remove from active list.
 		auto item = std::find(m_activeAnimCtrls.begin(), m_activeAnimCtrls.end(), data);
@@ -393,7 +402,6 @@ namespace render
 		m_numFrames = info.m_numFrames;
 		m_frameRate = info.m_frameRate;
 		m_numJoints = skelInfo.m_numJoints;
-		m_tempPalette.resize(m_numJoints);
 
 		//-- read bounds.
 		m_bounds.resize(m_numFrames);
@@ -427,7 +435,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::goTo(uint frame, Time& oTime)
+	void Animation::goTo(uint frame, Time& oTime) const
 	{
 		//-- update blending parameters.
 		oTime.m_1st   = min(frame, m_numFrames - 1);
@@ -436,7 +444,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::tick(float dt, Time& oTime, bool looped)
+	void Animation::tick(float dt, Time& oTime, bool looped) const
 	{
 		//-- increment timing.
 		oTime.m_time += dt;
@@ -469,54 +477,50 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::updateJoints(TransformPalette& palette, uint _1st, uint _2nd, float blend)
+	void Animation::updateJoints(TransformPalette& oPalette, uint _1st, uint _2nd, float blend) const
 	{
 		for (uint i = 0; i < m_numJoints; ++i)
 		{
 			//-- find joint transformation at the fist and the second frames.
-			const Joint::Transform& first  = m_frames[_1st][i];
-			const Joint::Transform& second = m_frames[_2nd][i];
+			const auto& first  = m_frames[_1st][i];
+			const auto& second = m_frames[_2nd][i];
 
 			//-- blend results using blend factor.
-			palette[i].m_orient = slerp(first.m_orient, second.m_orient, blend);
-			palette[i].m_pos    = lerp (first.m_pos, second.m_pos, blend);
+			oPalette[i].m_orient = slerp(first.m_orient, second.m_orient, blend);
+			oPalette[i].m_pos    = lerp (first.m_pos, second.m_pos, blend);
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	const AABB& Animation::updateBounds(const Time& time)
+	void Animation::updateBounds(AABB& oBound, const Time& time) const
 	{
 		//-- smoothly change one AABB to another.
-		m_tempBound.m_min = lerp(m_bounds[time.m_1st].m_min, m_bounds[time.m_2nd].m_min, time.m_blend);
-		m_tempBound.m_max = lerp(m_bounds[time.m_1st].m_max, m_bounds[time.m_2nd].m_max, time.m_blend);
-
-		return m_tempBound;
+		oBound.m_min = lerp(m_bounds[time.m_1st].m_min, m_bounds[time.m_2nd].m_min, time.m_blend);
+		oBound.m_max = lerp(m_bounds[time.m_1st].m_max, m_bounds[time.m_2nd].m_max, time.m_blend);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	const TransformPalette& Animation::updatePalette(const Time& time, const Skeleton& skeleton)
+	void Animation::updatePalette(TransformPalette& oPalette, const Time& time, const Skeleton& skeleton) const
 	{
 		//-- calculate blended results.
-		updateJoints(m_tempPalette, time.m_1st, time.m_2nd, time.m_blend);
+		updateJoints(oPalette, time.m_1st, time.m_2nd, time.m_blend);
 
 		//-- reconstruct absolute transformation of the skeleton nodes.
-		buildAbsoluteTransforms(m_tempPalette, skeleton);
-
-		return m_tempPalette;
+		buildAbsoluteTransforms(oPalette, skeleton);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void Animation::buildAbsoluteTransforms(TransformPalette& palette, const Skeleton& skeleton)
+	void Animation::buildAbsoluteTransforms(TransformPalette& oPalette, const Skeleton& skeleton) const
 	{
 		//-- set position of the root node to zero if isLocal flag specified.
-		palette[0].m_pos.setZero();
+		oPalette[0].m_pos.setZero();
 		
 		//-- iterate over the all nodes and apply parent's transformation for every node.
 		for (uint i = 1; i < skeleton.size(); ++i)
 		{
-			int						idx			 = skeleton[i].m_parent;
-			Joint::Transform&		transf		 = palette[i];
-			const Joint::Transform& parentTransf = palette[idx];
+			int			idx			 = skeleton[i].m_parent;
+			auto&		transf		 = oPalette[i];
+			const auto& parentTransf = oPalette[idx];
 
 			transf.m_pos    = parentTransf.m_pos + parentTransf.m_orient.rotate(transf.m_pos);
 			transf.m_orient = parentTransf.m_orient * transf.m_orient;
@@ -548,7 +552,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationBlender::blendBounds(AnimLayers& layers, AABB& bound)
+	void AnimationBlender::blendBounds(const AnimLayers& layers, AABB& bound)
 	{
 		//-- if we doesn't have any layer.
 		if (layers.empty())
@@ -556,7 +560,7 @@ namespace render
 
 		if (layers.size() == 1)
 		{
-			bound = layers[0].m_anim->updateBounds(layers[0].m_time);
+			layers[0].m_anim->updateBounds(bound, layers[0].m_time);
 			return;
 		}
 
@@ -564,7 +568,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void AnimationBlender::blendPalette(AnimLayers& layers, const Skeleton& skeleton, MatrixPalette& palette)
+	void AnimationBlender::blendPalette(const AnimLayers& layers, const Skeleton& skeleton, TransformPalette& oPalette)
 	{
 		//-- if we doesn't have any layer.
 		if (layers.empty())
@@ -572,13 +576,7 @@ namespace render
 
 		if (layers.size() == 1)
 		{
-			const TransformPalette& tp = layers[0].m_anim->updatePalette(layers[0].m_time, skeleton);
-
-			//-- transform (quat, pos) -> mat4f.
-			for (uint i = 0; i < palette.size(); ++i)
-			{
-				palette[i] = combineMatrix(tp[i].m_orient, tp[i].m_pos);
-			}
+			layers[0].m_anim->updatePalette(oPalette, layers[0].m_time, skeleton);
 			return;
 		}
 
