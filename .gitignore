@@ -37,3 +37,7 @@
 *.opendb
 /demos/*/Debug
 /demos/*/Release
+/converter/*/Debug
+/converter/*/Release
+/converter/*/*/Debug
+/converter/*/*/Release

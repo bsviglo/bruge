@@ -34,6 +34,12 @@ namespace math
 		return (fabs(val) < epsilon) ? true : false;
 	}
 
+	//----------------------------------------------------------------------------------------------
+	inline bool almostEqual(float val0, float val1, float epsilon = 0.001f)
+	{
+		return (fabs(val0 - val1) < epsilon) ? true : false;
+	}
+
 	//-- clamp a generic value to the range [minVal, maxVal].
 	//----------------------------------------------------------------------------------------------
 	template<typename T>

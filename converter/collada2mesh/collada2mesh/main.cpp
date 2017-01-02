@@ -1,6 +1,6 @@
 #include "collada2mesh.hpp"
 #include "utils/Data.hpp"
-#include "utils/Timer.h"
+#include "SDL/SDL_timer.h"
 #include <iostream>
 #include <fstream>
 
@@ -132,9 +132,6 @@ int main(int argc, char* argv[])
 {
 	EConvertingType type = CONVERTING_TYPE_STATIC;
 
-	//-- initialize timer.
-	Timer g_timer;
-
 	//-- check initial arguments.
 	if (argc < 4)
 	{
@@ -189,7 +186,8 @@ int main(int argc, char* argv[])
 	{
 		try
 		{
-			Timer::instance().start();
+			// calculate engine tick time.
+			uint64 startTime = SDL_GetPerformanceCounter();
 
 			WOData oData;
 
@@ -204,8 +202,10 @@ int main(int argc, char* argv[])
 
 			writeFile(oFile, oData);
 
-			double elamsedTime = Timer::instance().timeInUS() / 1000000.0;
-			cout << "Input file '" << iFile << "' has been successfully converted for " << elamsedTime  << " seconds. \n";
+			uint64 endTime = SDL_GetPerformanceCounter();
+			double elapsedTime = static_cast<double>(endTime - startTime) / SDL_GetPerformanceFrequency();
+
+			cout << "Input file '" << iFile << "' has been successfully converted for " << elapsedTime << " seconds. \n";
 		}
 		catch(const char* e)
 		{

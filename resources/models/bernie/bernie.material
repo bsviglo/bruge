@@ -1,0 +1,4 @@
+    <properties>
+        <property name="diffuseMap" type="texture" value="models/bernie/bernie_d.dds"/>
+    </properties>
+</material>
