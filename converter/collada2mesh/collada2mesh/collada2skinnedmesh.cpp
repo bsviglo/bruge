@@ -16,9 +16,6 @@ using namespace brUGE::utils;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-	//-- convert units.
-	const float G_CONVERT_TO_METERS = 0.04f;
-
 	//----------------------------------------------------------------------------------------------
 	struct MeshInfo
 	{
@@ -252,10 +249,12 @@ namespace
 		}
 
 		//-- revert indexing order.
+#if 0
 		for (uint i = 0; i < oIndices.size(); i += 3)
 		{
 			std::swap(oIndices[i + 1], oIndices[i + 2]);
 		}
+#endif
 	}
 
 	//-- returns bone ID based on the sid name.
@@ -477,9 +476,6 @@ namespace
 						{
 							vec3f& v3 = oSource.m_posArray[i];
 							stm >> v3.x; stm >> v3.y; stm >> v3.z;
-
-							//-- convert to meters.
-							v3 = v3.scale(G_CONVERT_TO_METERS);
 						}
 					}
 					else if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_TANGENT]) != std::string::npos)
@@ -804,15 +800,6 @@ namespace
 			oSkeleton[i].m_parent		= skeletonSource[i].m_parent;
 			oSkeleton[i].m_invBindPose	= skinningSources[0].m_invBindPosArray[i];
 			oSkeleton[i].m_matrix		= skeletonSource[i].m_matrix;
-
-			//-- convert position component of matrices to meters.
-			oSkeleton[i].m_invBindPose.m30	*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_invBindPose.m31	*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_invBindPose.m32	*= G_CONVERT_TO_METERS;
-
-			oSkeleton[i].m_matrix.m30		*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_matrix.m31		*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_matrix.m32		*= G_CONVERT_TO_METERS;
 		}
 
 		//-- make OY as up axis and invert z direction to be left handed coordinate system.
@@ -871,11 +858,6 @@ namespace
 			{
 				Animation::Transform&   t = transforms[j];
 				mat4f&					m = animSource.m_jointMatrices[j][i];
-
-				//-- convert position component of matrices to meters.
-				m.m30 *= G_CONVERT_TO_METERS;
-				m.m31 *= G_CONVERT_TO_METERS;
-				m.m32 *= G_CONVERT_TO_METERS;
 
 				vec3f scale;
 				decomposeMatrix(t.m_quat, scale, t.m_pos, m);

@@ -22,15 +22,21 @@ namespace render
 		//------------------------------------------------------------------------------------------
 		struct SubMesh
 		{
+			SubMesh() : m_numIndices(0) { }
+
 			struct Desc
 			{
+				Desc() : m_name{0}, m_numVertices(0) { }
+
 				struct Stream
 				{
+					Stream() : m_elemSize(0) { }
+
 					uint8				m_elemSize;
 					std::vector<byte>	m_vertices;
 				};
 
-				char					m_name[20];
+				std::array<char, 20>	m_name;
 				uint16					m_numVertices;
 				std::vector<uint16>		m_indices;
 				std::vector<Stream>		m_streams;

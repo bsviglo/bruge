@@ -34,6 +34,7 @@ namespace math
 		return (fabs(val) < epsilon) ? true : false;
 	}
 
+	//-- check is a float values almost equal or not?
 	//----------------------------------------------------------------------------------------------
 	inline bool almostEqual(float val0, float val1, float epsilon = 0.001f)
 	{

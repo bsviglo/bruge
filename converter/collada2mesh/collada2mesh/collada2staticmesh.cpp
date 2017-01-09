@@ -159,6 +159,14 @@ namespace
 
 			oVertices[idx.second] = vert;
 		}
+
+		//-- revert indexing order.
+#if 1
+		for (uint i = 0; i < oIndices.size(); i += 3)
+		{
+			std::swap(oIndices[i + 1], oIndices[i + 2]);
+		}
+#endif
 	}
 
 	//----------------------------------------------------------------------------------------------

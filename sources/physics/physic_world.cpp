@@ -42,7 +42,7 @@ namespace
 	inline mat4f		physx2bruge(const PxTransform& t)	{ return mat4f(PxMat44(t).front()); }
 
 	//--
-	bool g_debugDrawEnabled = true;
+	bool g_debugDrawEnabled = false;
 }
 
 

@@ -51,7 +51,7 @@ namespace render
 		{
 			StaticMeshFormat::Header iHeader;
 			iData.read(iHeader);
-			if (std::string(iHeader.m_format) != "static_mesh")
+			if (std::string(iHeader.m_format.data()) != "static_mesh")
 			{
 				ERROR_MSG("Failed to load mesh. Most likely it's not a *.mesh format.");
 				return false;
@@ -80,7 +80,7 @@ namespace render
 			SubMesh::Desc& oDesc = descs[i];
 
 			oDesc.m_streams.resize(iSubInfo.m_numVertexStreams);
-			strcpy_s(oDesc.m_name, iSubInfo.m_name);
+			oDesc.m_name		= iSubInfo.m_name;
 			oDesc.m_numVertices = iSubInfo.m_numVertices;
 
 			//-- read each individual vertex stream.
