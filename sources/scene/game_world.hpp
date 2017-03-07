@@ -10,11 +10,6 @@
 
 namespace brUGE
 {
-	//-- forward declaration.
-	namespace physics
-	{
-		struct PhysObj;
-	}
 
 	//-- Exists for every node of every model.
 	//----------------------------------------------------------------------------------------------
@@ -32,7 +27,7 @@ namespace brUGE
 		const char* m_name;
 		mat4f&		m_matrix;
 	};
-	typedef std::vector<Node*> Nodes;
+	typedef std::vector<std::unique_ptr<Node>> Nodes;
 
 
 	//----------------------------------------------------------------------------------------------

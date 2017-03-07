@@ -1,6 +1,16 @@
 #ifndef _COMMON_HLSL_
 #define _COMMON_HLSL_
 
+#if defined(__INTELLISENSE__)
+	#define _VERTEX_SHADER_
+	#define _FRAGMENT_SHADER_
+
+	//-- pins
+	#define PIN_ALPHA_TEST
+	#define PIN_BUMP_MAP
+	#define PIN_INSTANCED
+#endif
+
 //-- some common defines.
 #define texture1D(type, name) 	 	\
 	sampler 		  name##_sml;	\

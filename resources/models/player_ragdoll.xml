@@ -1,0 +1,7 @@
+<game_object>
+
+  <render file="models\player_ragdoll\player_ragdoll.skinnedmesh"/>
+  <physics file="models\player_ragdoll\player_ragdoll.phys"/>
+  <audio/>
+  
+</game_object>

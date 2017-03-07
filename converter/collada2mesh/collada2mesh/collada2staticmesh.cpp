@@ -13,6 +13,18 @@ using namespace brUGE::utils;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
+	//----------------------------------------------------------------------------------------------
+	enum EColladaSourceStreamType
+	{
+		COLLADA_SOURCE_STREAM_TYPE_POSITION = 0,
+		COLLADA_SOURCE_STREAM_TYPE_TEXCOORD = 1,
+		COLLADA_SOURCE_STREAM_TYPE_NORMAL	= 2,
+		COLLADA_SOURCE_STREAM_TYPE_TANGENT	= 3,
+		COLLADA_SOURCE_STREAM_TYPE_BINORNAL = 4,
+		//COLLADA_SOURCE_STREAM_TYPE_COLOR	= 5,
+		COLLADA_SOURCE_STREAM_TYPE_COUNT
+	};
+
 	//-- Note: to guaranty compact one byte aligned packing.
 #pragma pack(push, 1)
 
@@ -135,19 +147,26 @@ namespace
 
 		//-- 2. For now indexator contains only unique vertices. What is left to do that is restore
 		//--    vertices by indices in appropriate arrays.
-		Vertex vert;
-		const Indexator<VertexIndex>::VertexSet& vertexSet = indexator.vertices();
-		oVertices.resize(vertexSet.size());
-		for (auto i = vertexSet.cbegin(); i != vertexSet.cend(); ++i)
+		oVertices.resize(indexator.vertices().size());
+		for (auto idx : indexator.vertices())
 		{
-			vert.m_common.m_pos	      = iSrc.m_posArray[i->first.m_pos];
-			vert.m_common.m_uv        = iSrc.m_uvArray[i->first.m_uv];
-			vert.m_common.m_normal    = iSrc.m_normalArray[i->first.m_normal];
-			vert.m_tangent.m_tangent  = iSrc.m_tangentArray[i->first.m_tangent];
-			vert.m_tangent.m_binormal = iSrc.m_binormalArray[i->first.m_binormal];
+			Vertex vert;
+			vert.m_common.m_pos	      = iSrc.m_posArray[idx.first.m_pos];
+			vert.m_common.m_uv        = iSrc.m_uvArray[idx.first.m_uv];
+			vert.m_common.m_normal    = iSrc.m_normalArray[idx.first.m_normal];
+			vert.m_tangent.m_tangent  = iSrc.m_tangentArray[idx.first.m_tangent];
+			vert.m_tangent.m_binormal = iSrc.m_binormalArray[idx.first.m_binormal];
 
-			oVertices[i->second] = vert;
+			oVertices[idx.second] = vert;
 		}
+
+		//-- revert indexing order.
+#if 1
+		for (uint i = 0; i < oIndices.size(); i += 3)
+		{
+			std::swap(oIndices[i + 1], oIndices[i + 2]);
+		}
+#endif
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -180,7 +199,7 @@ namespace
 
 		//-- try to find all geometry's urls.
 		std::vector<std::string> geometryURLs;
-		for (auto node = lib_scene.child("node"); node; node = node.next_sibling("node"))
+		for (auto node : lib_scene.children("node"))
 		{
 			if (auto instance_geometry = node.child("instance_geometry"))
 			{
@@ -202,75 +221,26 @@ namespace
 					MeshSource& meshSrc = oSources[i];
 					meshSrc.m_name = geom.attribute("name").value();
 
-					for (auto source = mesh.child("source"); source; source = source.next_sibling("source"))
+					//-- prepare source streams
+					std::string srcStreams[COLLADA_SOURCE_STREAM_TYPE_COUNT];
+					srcStreams[COLLADA_SOURCE_STREAM_TYPE_POSITION] = mesh.child("vertices").find_child_by_attribute("input", "semantic", "POSITION").attribute("source").value();
+					srcStreams[COLLADA_SOURCE_STREAM_TYPE_NORMAL]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "NORMAL").attribute("source").value();
+					srcStreams[COLLADA_SOURCE_STREAM_TYPE_TEXCOORD] = mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXCOORD").attribute("source").value();
+					srcStreams[COLLADA_SOURCE_STREAM_TYPE_TANGENT]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXTANGENT").attribute("source").value();
+					srcStreams[COLLADA_SOURCE_STREAM_TYPE_BINORNAL] = mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXBINORMAL").attribute("source").value();
+
+					for (auto& stream : srcStreams)
 					{
-						if (auto float_array = source.child("float_array"))
+						//-- remove # char
+						stream = stream.substr(1, stream.length());
+
+						if (stream.empty())
 						{
-							//-- set up a stringstream to read from the raw array.
-							std::stringstream stm(float_array.first_child().value());
-							std::string	 type  = float_array.attribute("id").value();
-							uint32		 count = float_array.attribute("count").as_uint();
-
-							if		(type.find("position") != std::string::npos)
-							{
-								meshSrc.m_posArray.resize(count / 3);
-								for (uint32 i = 0; i < meshSrc.m_posArray.size(); ++i)
-								{
-									vec3f& v3 = meshSrc.m_posArray[i];
-									stm >> v3.x; stm >> v3.z; stm >> v3.y;
-
-									//-- convert to meters.
-									v3 = v3.scale(0.01f);
-								}
-							}
-							else if (type.find("tangent") != std::string::npos)
-							{
-								meshSrc.m_tangentArray.resize(count / 3);
-								for (uint32 i = 0; i < meshSrc.m_tangentArray.size(); ++i)
-								{
-									vec3f& v3 = meshSrc.m_tangentArray[i];
-									stm >> v3.x; stm >> v3.z; stm >> v3.y;
-
-									v3.normalize();
-								}
-							}
-							else if (type.find("binormal") != std::string::npos)
-							{
-								meshSrc.m_binormalArray.resize(count / 3);
-								for (uint32 i = 0; i < meshSrc.m_binormalArray.size(); ++i)
-								{
-									vec3f& v3 = meshSrc.m_binormalArray[i];
-									stm >> v3.x; stm >> v3.z; stm >> v3.y;
-
-									v3.normalize();
-								}
-							}
-							else if (type.find("normal") != std::string::npos)
-							{
-								meshSrc.m_normalArray.resize(count / 3);
-								for (uint32 i = 0; i < meshSrc.m_normalArray.size(); ++i)
-								{
-									vec3f& v3 = meshSrc.m_normalArray[i];
-									stm >> v3.x; stm >> v3.z; stm >> v3.y;
-
-									v3.normalize();
-								}
-							}
-							else if (type.find("map1") != std::string::npos)
-							{
-								meshSrc.m_uvArray.resize(count / 3);
-								for (uint32 i = 0; i < meshSrc.m_uvArray.size(); ++i)
-								{
-									float temp = 0;
-									vec2f& v2 = meshSrc.m_uvArray[i];
-									stm >> v2.x; stm >> v2.y; stm >> temp;
-									v2.y = 1.0f - v2.y;
-								}
-							}
+							throw "COLLADA file doesn't contain all the needed source vertex streams (tangent and binormal most probably).";
 						}
 					}
 
-					//-- now read triangle indices.
+					//-- read triangle indices.
 					if (auto triangles = mesh.child("triangles"))
 					{
 						uint32 count = triangles.attribute("count").as_uint() * 3;
@@ -279,18 +249,94 @@ namespace
 						{
 							//-- set up a stringstream to read from the raw array.
 							std::stringstream stm(p.first_child().value());
-
-							VertexIndex v;
+							
 							meshSrc.m_indices.resize(count);
 							for (uint32 i = 0; i < count; ++i)
 							{
-								stm >> v.m_pos;
-								stm >> v.m_normal;
-								stm >> v.m_uv;
-								stm >> v.m_tangent;
-								v.m_binormal = v.m_tangent;
+								uint32 idx = 0;
+								stm >> idx;
+
+								//-- ToDo: for now we're assuming that all of the arrays have the same indices.
+								VertexIndex v;
+								v.m_pos = idx;
+								v.m_normal = idx;
+								v.m_uv = idx;
+								v.m_tangent = idx;
+								v.m_binormal = idx;
 
 								meshSrc.m_indices[i] = v;
+							}
+						}
+					}
+
+					//-- now read the sources
+					for (auto source : mesh.children("source"))
+					{
+						if (auto float_array = source.child("float_array"))
+						{
+							//-- set up a stringstream to read from the raw array.
+							std::stringstream stm(float_array.first_child().value());
+							std::string	 type		= float_array.attribute("id").value();
+							auto         accessor	= source.child("technique_common").child("accessor");
+							uint32		 count		= accessor.attribute("count").as_uint();
+							uint32		 stride		= accessor.attribute("stride").as_uint();
+
+							if (!accessor)
+							{
+								throw "COLLADA file has invalid source stream accessor.";
+							}
+
+							if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_POSITION]) != std::string::npos)
+							{
+								meshSrc.m_posArray.resize(count);
+								for (auto& v3 : meshSrc.m_posArray)
+								{
+									stm >> v3.x; stm >> v3.z; stm >> v3.y;
+								}
+							}
+							if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_TANGENT]) != std::string::npos)
+							{
+								meshSrc.m_tangentArray.resize(count);
+								for (auto& v3 : meshSrc.m_tangentArray)
+								{
+									stm >> v3.x; stm >> v3.z; stm >> v3.y;
+									v3.normalize();
+								}
+							}
+							if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_BINORNAL]) != std::string::npos)
+							{
+								meshSrc.m_binormalArray.resize(count);
+								for (auto& v3 : meshSrc.m_binormalArray)
+								{
+									stm >> v3.x; stm >> v3.z; stm >> v3.y;
+									v3.normalize();
+								}
+							}
+							if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_NORMAL]) != std::string::npos)
+							{
+								meshSrc.m_normalArray.resize(count);
+								for (auto& v3 : meshSrc.m_normalArray)
+								{
+									stm >> v3.x; stm >> v3.z; stm >> v3.y;
+									v3.normalize();
+								}
+							}
+							if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_TEXCOORD]) != std::string::npos)
+							{
+								meshSrc.m_uvArray.resize(count);
+								for (auto& v2 : meshSrc.m_uvArray)
+								{
+									stm >> v2.x; stm >> v2.y;
+									
+									//--
+									if (stride == 3)
+									{
+										float temp;
+										stm >> temp;
+									}
+
+									v2.y = 1.0f - v2.y;
+								}
 							}
 						}
 					}

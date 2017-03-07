@@ -57,9 +57,8 @@ namespace utils
 	template <>
 	vec2f parseTo<vec2f>(const std::string& str)
 	{
-		vec2f vec;
-		if (sscanf(str.c_str(), "vec2f(%f,%f)", &vec.x, &vec.y) != 2)
-			throw std::runtime_error("can't convert to vec2f.");
+		vec2f vec(0,0);
+		sscanf(str.c_str(), "vec2f(%f,%f)", &vec.x, &vec.y);
 		return vec;
 	}
 
@@ -67,9 +66,8 @@ namespace utils
 	template <>
 	vec3f parseTo<vec3f>(const std::string& str)
 	{
-		vec3f vec;
-		if (sscanf(str.c_str(), "vec3f(%f,%f,%f)", &vec.x, &vec.y, &vec.z) != 3)
-			throw std::runtime_error("can't convert to vec3f.");
+		vec3f vec(0,0,0);
+		sscanf(str.c_str(), "vec3f(%f,%f,%f)", &vec.x, &vec.y, &vec.z);
 		return vec;
 	}
 
@@ -77,9 +75,8 @@ namespace utils
 	template <>
 	vec4f parseTo<vec4f>(const std::string& str)
 	{
-		vec4f vec;
-		if (sscanf(str.c_str(), "vec4f(%f,%f,%f,%f)", &vec.x, &vec.y, &vec.z, &vec.w) != 4)
-			throw std::runtime_error("can't convert to vec4f.");
+		vec4f vec(0,0,0,0);
+		sscanf(str.c_str(), "vec4f(%f,%f,%f,%f)", &vec.x, &vec.y, &vec.z, &vec.w);
 		return vec;
 	}
 

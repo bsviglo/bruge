@@ -17,24 +17,33 @@ using namespace brUGE::utils;
 using namespace brUGE::math;
 using namespace brUGE::render;
 
-//-- start unnamed namespace.
+
 //--------------------------------------------------------------------------------------------------
 namespace
 {
 	//----------------------------------------------------------------------------------------------
 	Node* findNode(const std::string& name, Nodes& nodes)
 	{
-		auto iter = std::find_if(nodes.begin(), nodes.end(), [name](Node* node) {
+		auto iter = std::find_if(nodes.begin(), nodes.end(), [name](const auto& node) {
 			return (name == node->name());
 		});
 
 		assert(iter != nodes.end());
 
-		return *iter;
+		return iter->get();
 	}
+
+	//-- physx to\from bruge conversion functions
+	//----------------------------------------------------------------------------------------------
+	inline PxVec3		bruge2physx(const vec3f& v)			{ return PxVec3(v.x, v.y, v.z); }
+	inline vec3f		physx2bruge(const PxVec3& v)		{ return vec3f(v.x, v.y, v.z); }
+	inline PxTransform	bruge2physx(const mat4f& m)			{ return PxTransform(PxMat44(const_cast<mat4f&>(m).data)); }
+	inline mat4f		physx2bruge(const PxMat44& m)		{ return mat4f(m.front()); }
+	inline mat4f		physx2bruge(const PxTransform& t)	{ return mat4f(PxMat44(t).front()); }
+
+	//--
+	bool g_debugDrawEnabled = false;
 }
-//--------------------------------------------------------------------------------------------------
-//-- end unnamed namespace.
 
 
 namespace brUGE
@@ -61,6 +70,7 @@ namespace physics
 		auto* profileZoneManager = m_physics->getProfileZoneManager();
 		if (m_debuggerConnection)
 			m_debuggerConnection->release();
+		PxCloseExtensions();
 		m_physics->release();
 		profileZoneManager->release();
 		m_foundation->release();
@@ -73,12 +83,15 @@ namespace physics
 		auto* profileZoneManager = &PxProfileZoneManager::createProfileZoneManager(m_foundation);
 
 		m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, PxTolerancesScale(), true, profileZoneManager);
+		if (!PxInitExtensions(*m_physics))
+			return false;
 
 		if (m_physics->getPvdConnectionManager())
 		{
 			m_physics->getVisualDebugger()->setVisualizeConstraints(true);
 			m_physics->getVisualDebugger()->setVisualDebuggerFlag(PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
 			m_physics->getVisualDebugger()->setVisualDebuggerFlag(PxVisualDebuggerFlag::eTRANSMIT_SCENEQUERIES, true);
+			m_physics->getVisualDebugger()->setVisualDebuggerFlag(PxVisualDebuggerFlag::eTRANSMIT_CONSTRAINTS, true);
 			m_debuggerConnection = PxVisualDebuggerExt::createConnection(m_physics->getPvdConnectionManager(), "127.0.0.1", 5425, 10);
 		}
 
@@ -153,6 +166,12 @@ namespace physics
 		m_scene->fetchResults(true);
 
 		updateGraphicsTransforms();
+
+		//-- debug draw
+		if (g_debugDrawEnabled)
+		{
+			debugDraw();
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -209,6 +228,17 @@ namespace physics
 		delete m_terrain.m_shape;
 #endif
 		return true;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	void PhysicsWorld::makeKinematic(Handle physObj, bool flag)
+	{
+		const auto& instance = m_physObjs[physObj];
+
+		for (auto& body : instance->m_bodies)
+		{
+			body->m_actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, flag);
+		}
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -280,7 +310,6 @@ namespace physics
 	//----------------------------------------------------------------------------------------------
 	bool PhysicsObjectType::load(const ROData& data)
 	{
-		//-- try to create DOM model from the input buffer.
 		pugi::xml_document doc;
 		if (!doc.load_buffer(data.ptr(), data.length()))
 			return false;
@@ -291,7 +320,7 @@ namespace physics
 		//-- ToDo: default material
 		m_materials.emplace_back(PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f));
 
-		//-- try to read <rigidBodies> section.
+		//-- read <rigidBodies> section.
 		{
 			auto elems = root.child("rigidBodies");
 
@@ -317,7 +346,7 @@ namespace physics
 					if (params.empty())
 						return false;
 
-					PxTransform localTransform(bodyDesc.m_offset.x, bodyDesc.m_offset.y, bodyDesc.m_offset.z);
+					PxTransform localTransform(bruge2physx(bodyDesc.m_offset));
 					PxShape* pxShape = nullptr;
 
 					//-- create desired collision shape.
@@ -363,22 +392,24 @@ namespace physics
 			}
 		}
 
-		//-- 4. try to read <constraints> section.
-		/*
+		//-- read <joints> section.
 		{
-			auto elems = root.child("constraints");
+			auto elems = root.child("joints");
 
-			for (auto elem = elems.child("constraint"); elem; elem = elem.next_sibling("constraint"))
+			for (auto elem = elems.child("joint"); elem; elem = elem.next_sibling("joint"))
 			{
-				auto type = elems.attribute("type").value();
-				auto name = elems.attribute("name").value();
-				auto objA = elems.attribute("objA").value();
-				auto objB = elems.attribute("objB").value();
+				Joint::Desc jointDesc;
 
-				//-- ToDo:
+				jointDesc.m_name	= elem.attribute("name").value();
+				jointDesc.m_type	= elem.attribute("type").value();
+				jointDesc.m_objA	= elem.attribute("objA").value();
+				jointDesc.m_objB	= elem.attribute("objB").value();
+				jointDesc.m_offsetA = parseTo<vec3f>(elem.attribute("offsetA").value());
+				jointDesc.m_offsetB = parseTo<vec3f>(elem.attribute("offsetB").value());
+
+				m_jointDescs.push_back(jointDesc);
 			}
 		}
-		*/
 
 		return true;
 	}
@@ -400,7 +431,7 @@ namespace physics
 			body->m_name	= desc.m_name.c_str();
 			body->m_node	= findNode(desc.m_node, transform->m_nodes);
 			body->m_owner	= instance.get();
-			body->m_actor	= PxGetPhysics().createRigidDynamic(PxTransform(PxMat44(transform->m_worldMat.data)));
+			body->m_actor	= PxGetPhysics().createRigidDynamic(PxTransform(bruge2physx(body->m_node->matrix())));
 
 			body->m_actor->userData = body.get();
 			body->m_actor->attachShape(*m_shapes[desc.m_shapeIdx]);
@@ -411,11 +442,40 @@ namespace physics
 			instance->m_bodies.push_back(std::move(body));
 		}
 
-		//-- 3. create all constraints.
-		//for (const auto& desc : m_constraintDescs)
-		//{
-		//
-		//}
+		//-- 3. create all joints.
+		for (const auto& desc : m_jointDescs)
+		{
+			auto joint = std::make_unique<Joint>();
+
+			joint->m_name = desc.m_name.c_str();
+
+			auto b0 = instance->findBody(desc.m_objA);
+			auto b1 = instance->findBody(desc.m_objB);
+
+			PxTransform t0(bruge2physx(desc.m_offsetA));
+			PxTransform t1(bruge2physx(desc.m_offsetB));
+
+			if (desc.m_type == "spheric")
+			{
+				auto* pxJoint = PxSphericalJointCreate(PxGetPhysics(), b0->m_actor, t0, b1->m_actor, t1);
+				pxJoint->setLimitCone(PxJointLimitCone(PxPi / 4, PxPi / 4, 0.05f));
+				pxJoint->setSphericalJointFlag(PxSphericalJointFlag::eLIMIT_ENABLED, true);
+				pxJoint->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+
+				joint->m_pxJoint = pxJoint;
+			}
+			else if (desc.m_type == "revolute")
+			{
+				auto* pxJoint = PxRevoluteJointCreate(PxGetPhysics(), b0->m_actor, t0, b1->m_actor, t1);
+				pxJoint->setLimit(PxJointAngularLimitPair(-PxPi / 4, PxPi / 4, 0.01f));
+				pxJoint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
+				pxJoint->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+
+				joint->m_pxJoint = pxJoint;
+			}
+
+			instance->m_joints.push_back(std::move(joint));
+		}
 	
 		return instance;
 	}
@@ -437,6 +497,28 @@ namespace physics
 			scene->removeActor(*body->m_actor);
 		}
 	}
+	//----------------------------------------------------------------------------------------------
+	PhysicsObjectType::RigidBody* PhysicsObjectType::Instance::findBody(const std::string& name)
+	{
+		for (auto& body : m_bodies)
+		{
+			if (body->m_name == name)
+				return body.get();
+		}
+
+		return nullptr;
+	}
+
+	//----------------------------------------------------------------------------------------------
+	PhysicsObjectType::Joint* PhysicsObjectType::Instance::findJoint(const std::string& name)
+	{
+		for (auto& joint : m_joints)
+		{
+			if (joint->m_name == name)
+				return joint.get();
+		}
+		return nullptr;
+	}
 
 	//----------------------------------------------------------------------------------------------
 	PhysicsObjectType::RigidBody::RigidBody()
@@ -456,6 +538,18 @@ namespace physics
 	}
 
 	//----------------------------------------------------------------------------------------------
+	PhysicsObjectType::Joint::Joint() : m_name(nullptr), m_pxJoint(nullptr)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	PhysicsObjectType::Joint::~Joint()
+	{
+		m_pxJoint->release();
+	}
+
+	//----------------------------------------------------------------------------------------------
 	void PhysicsWorld::updateGraphicsTransforms()
 	{
 		// retrieve array of actors that moved
@@ -467,13 +561,13 @@ namespace physics
 		{
 			auto& entry = activeTransforms[i];
 			auto* body  = static_cast<PhysicsObjectType::RigidBody*>(entry.userData);
-			body->m_node->matrix(mat4f(PxMat44(entry.actor2World).front()));
+			body->m_node->matrix(physx2bruge(entry.actor2World));
 
 			//-- update AABB.
 			//-- ToDo: optimize.
 			{
 				const auto& aabb = entry.actor->getWorldBounds();
-				body->m_owner->m_transform->m_worldBounds = AABB(vec3f(&aabb.minimum[0]), vec3f(&aabb.maximum[0]));
+				body->m_owner->m_transform->m_worldBounds = AABB(physx2bruge(aabb.minimum), physx2bruge(aabb.maximum));
 			}
 		}
 	}
@@ -494,15 +588,62 @@ namespace physics
 					if (rigidDynamic->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
 					{
 						auto* body    = static_cast<PhysicsObjectType::RigidBody*>(actor->userData);
-						auto& nodeMat = const_cast<mat4f&>(body->m_node->matrix());
 
-						PxTransform transform(PxMat44(nodeMat.data));
-						rigidDynamic->setKinematicTarget(transform);
+						rigidDynamic->setKinematicTarget(bruge2physx(body->m_node->matrix()));
 					}
 				}
 			}
 		}
 	}
+
+	//----------------------------------------------------------------------------------------------
+	void PhysicsWorld::debugDraw()
+	{
+		PxU32 nbActors = m_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC);
+		if (nbActors)
+		{
+			std::vector<PxRigidActor*> actors(nbActors);
+			m_scene->getActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC, (PxActor**)&actors[0], nbActors);
+
+			for (auto actor : actors)
+			{
+				auto shapeCount = actor->getNbShapes();
+				std::vector<PxShape*> shapes(shapeCount);
+				actor->getShapes((PxShape**)&shapes[0], shapeCount);
+
+				for (auto shape : shapes)
+				{
+					auto transform = PxMat44(PxShapeExt::getGlobalPose(*shape, *actor));
+
+					PxGeometryHolder h = shape->getGeometry();
+
+					switch (h.getType())
+					{
+					case PxGeometryType::eBOX:
+						DebugDrawer::instance().drawBox(
+							physx2bruge(h.box().halfExtents).scale(2.0f), mat4f(transform.front()), Color(0, 1, 0, 0));
+					break;
+					case PxGeometryType::eCAPSULE:
+						//-- PhysX uses OX axis as an up vector and we use OY.
+						DebugDrawer::instance().drawCapsule(
+							h.capsule().radius, h.capsule().halfHeight, physx2bruge(transform).preRotateZ(degToRad(90.0f)), Color(0, 0, 1, 0));
+						break;
+					case PxGeometryType::eSPHERE:
+						DebugDrawer::instance().drawSphere(h.sphere().radius, physx2bruge(transform), Color(1, 0, 0, 0));
+						break;
+					case PxGeometryType::eCONVEXMESH:
+					case PxGeometryType::eTRIANGLEMESH:
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+
+		//-- wireframe draw
+	}
+
 
 } //-- physic
 } //-- brUGE

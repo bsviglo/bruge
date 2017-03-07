@@ -16,17 +16,26 @@ using namespace brUGE::utils;
 //--------------------------------------------------------------------------------------------------
 namespace
 {
-	//-- convert units.
-	const float G_CONVERT_TO_METERS = 0.04f;
-
 	//----------------------------------------------------------------------------------------------
 	struct MeshInfo
 	{
-		std::string m_geomURL;
-		std::string m_ctrlURL;
-		std::string m_skelURL;
+		pugi::xml_node m_geomURL;
+		pugi::xml_node m_ctrlURL;
+		pugi::xml_node m_skelURL;
 	};
 	typedef std::vector<MeshInfo> MeshesInfo;
+
+	//----------------------------------------------------------------------------------------------
+	enum EColladaSourceStreamType
+	{
+		COLLADA_SOURCE_STREAM_TYPE_POSITION	= 0,
+		COLLADA_SOURCE_STREAM_TYPE_TEXCOORD	= 1,
+		COLLADA_SOURCE_STREAM_TYPE_NORMAL	= 2,
+		COLLADA_SOURCE_STREAM_TYPE_TANGENT	= 3,
+		COLLADA_SOURCE_STREAM_TYPE_BINORNAL	= 4,
+		//COLLADA_SOURCE_STREAM_TYPE_COLOR	= 5,
+		COLLADA_SOURCE_STREAM_TYPE_COUNT
+	};
 
 	//-- Note: to guaranty compact one byte aligned packing.
 #pragma pack(push, 1)
@@ -224,27 +233,28 @@ namespace
 
 		//-- 2. For now indexator contains only unique vertices. What is left to do that is restore
 		//--    vertices by indices in appropriate arrays.
-		Vertex vert;
-		const Indexator<VertexIndex>::VertexSet& vertexSet = indexator.vertices();
-		oVertices.resize(vertexSet.size());
-		for (auto i = vertexSet.cbegin(); i != vertexSet.cend(); ++i)
+		oVertices.resize(indexator.vertices().size());
+		for (const auto& idx : indexator.vertices())
 		{
-			vert.m_common.m_pos	      = iMeshSrc.m_posArray[i->first.m_pos];
-			vert.m_common.m_uv        = iMeshSrc.m_uvArray[i->first.m_uv];
-			vert.m_common.m_normal    = iMeshSrc.m_normalArray[i->first.m_normal];
-			vert.m_common.m_joints	  = iSkinningSrc.m_indexedJointArray[i->first.m_pos];
-			vert.m_common.m_weights   = iSkinningSrc.m_indexedWeightArray[i->first.m_pos];
-			vert.m_tangent.m_tangent  = iMeshSrc.m_tangentArray[i->first.m_tangent];
-			vert.m_tangent.m_binormal = iMeshSrc.m_binormalArray[i->first.m_binormal];
+			Vertex vert;
+			vert.m_common.m_pos	      = iMeshSrc.m_posArray[idx.first.m_pos];
+			vert.m_common.m_uv        = iMeshSrc.m_uvArray[idx.first.m_uv];
+			vert.m_common.m_normal    = iMeshSrc.m_normalArray[idx.first.m_normal];
+			vert.m_common.m_joints	  = iSkinningSrc.m_indexedJointArray[idx.first.m_pos];
+			vert.m_common.m_weights   = iSkinningSrc.m_indexedWeightArray[idx.first.m_pos];
+			vert.m_tangent.m_tangent  = iMeshSrc.m_tangentArray[idx.first.m_tangent];
+			vert.m_tangent.m_binormal = iMeshSrc.m_binormalArray[idx.first.m_binormal];
 
-			oVertices[i->second] = vert;
+			oVertices[idx.second] = vert;
 		}
 
 		//-- revert indexing order.
+#if 0
 		for (uint i = 0; i < oIndices.size(); i += 3)
 		{
 			std::swap(oIndices[i + 1], oIndices[i + 2]);
 		}
+#endif
 	}
 
 	//-- returns bone ID based on the sid name.
@@ -313,43 +323,37 @@ namespace
 		auto lib_ctrls = doc.document_element().child("library_controllers");
 		auto lib_geoms = doc.document_element().child("library_geometries");
 
-		//-- gather all skinned meshes.
-		for (auto node = lib_scene.child("node"); node; node = node.next_sibling("node"))
+		//-- xpath query to find all the <instance_controller> nodes
+		auto instanceControllers = lib_scene.select_nodes("node/instance_controller | node/node/instance_controller");
+
+		//-- 1. check all the instance controllers
+		for (auto instCtrl : instanceControllers)
 		{
-			//-- skip all nodes with type "JOINT.
-			std::string type = node.attribute("type").value();
-			if (type != "JOINT")
+			MeshInfo info;
+
+			std::string url = instCtrl.node().attribute("url").value();
+			url = url.substr(1, url.length());
+
+			//-- 2. check is there some controller with desired URL.
+			if (info.m_ctrlURL = lib_ctrls.find_child_by_attribute("controller", "id", url.c_str()))
 			{
-				MeshInfo info;
-
-				//-- 1. check has this node instance_controller.
-				if (auto instance_controller = node.child("instance_controller"))
+				//-- 3. now get skin attribute and retrieve geometry URL.
+				if (auto skin = info.m_ctrlURL.child("skin"))
 				{
-					std::string url = instance_controller.attribute("url").value();
-					info.m_ctrlURL = url.substr(1, url.length());
+					std::string url = skin.attribute("source").value();
+					url = url.substr(1, url.length());
 
-					//-- 2. check is there some controller with desired URL.
-					if (auto ctrl = lib_ctrls.find_child_by_attribute("controller", "id", info.m_ctrlURL.c_str()))
+					//-- 4. check is there some geometry with desired URL.
+					if (info.m_geomURL = lib_geoms.find_child_by_attribute("geometry", "id", url.c_str()))
 					{
-						//-- 3. now get skin attribute and retrieve geometry URL.
-						if (auto skin = ctrl.child("skin"))
+						std::string url = instCtrl.node().child("skeleton").first_child().value();
+						url = url.substr(1, url.length());
+
+						//-- 5. check is there some skeleton with desired URL in the parent region of instance controller
+						if (info.m_skelURL = instCtrl.node().parent().parent().find_child_by_attribute("node", "id", url.c_str()))
 						{
-							std::string url = skin.attribute("source").value();
-							info.m_geomURL = url.substr(1, url.length());
-
-							//-- 4. check is there some geometry with desired URL.
-							if (auto geom = lib_geoms.find_child_by_attribute("geometry", "id", info.m_geomURL.c_str()))
-							{
-								std::string url = instance_controller.child("skeleton").first_child().value();
-								info.m_skelURL = url.substr(1, url.length());
-
-								//-- 5. check is there some skeleton with desired URL.
-								if (auto skeleton = lib_scene.find_child_by_attribute("node", "id", info.m_skelURL.c_str()))
-								{
-									//-- All is ok!
-									oInfo.push_back(info);
-								}
-							}
+							//-- All is ok!
+							oInfo.push_back(info);
 						}
 					}
 				}
@@ -364,9 +368,9 @@ namespace
 
 		//-- if we have more than one skinned mesh check that they all reference on the one skeleton
 		//-- otherwise report model as invalid.
-		for (auto info = oInfo.cbegin(); info != oInfo.cend(); ++info)
+		for (const auto& info : oInfo)
 		{
-			if (info->m_skelURL != oInfo[0].m_skelURL)
+			if (info.m_skelURL != oInfo[0].m_skelURL)
 			{
 				throw "COLLADA file contains skinned meshes with different skeletons.";
 			}
@@ -374,7 +378,7 @@ namespace
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void recursiveBuildSkeleton(xml_node& node, SkeletonSource& oSkeletonSource, int8 parent)
+	void recursiveBuildSkeleton(const xml_node& node, SkeletonSource& oSkeletonSource, int8 parent)
 	{
 		JointSource joint;
 		joint.m_name   = node.attribute("name").value();
@@ -386,97 +390,45 @@ namespace
 		oSkeletonSource.push_back(joint);
 		int8 curIndex = oSkeletonSource.size() - 1;
 
-		for (auto child = node.child("node"); child; child = child.next_sibling("node"))
+		for (auto child : node.children("node"))
 		{
 			recursiveBuildSkeleton(child, oSkeletonSource, curIndex);
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void gatherSkeletonSource(xml_document& doc, const MeshesInfo& info, SkeletonSource& oSkeletonSource)
+	void gatherSkeletonSource(const MeshesInfo& info, SkeletonSource& oSkeletonSource)
 	{
-		auto lib_scene = doc.document_element().child("library_visual_scenes").child("visual_scene");
-		auto root_node = lib_scene.find_child_by_attribute("node", "id", info[0].m_skelURL.c_str());
-
-		recursiveBuildSkeleton(root_node, oSkeletonSource, -1);
+		recursiveBuildSkeleton(info[0].m_skelURL, oSkeletonSource, -1);
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void loadGeometry(xml_node& node, MeshSource& oSource)
+	void loadGeometry(const xml_node& node, MeshSource& oSource)
 	{
 		if (auto mesh = node.child("mesh"))
 		{
 			oSource.m_name = node.attribute("name").value();
 
-			for (auto source = mesh.child("source"); source; source = source.next_sibling("source"))
+			//-- prepare source streams
+			std::string srcStreams[COLLADA_SOURCE_STREAM_TYPE_COUNT];
+			srcStreams[COLLADA_SOURCE_STREAM_TYPE_POSITION]	= mesh.child("vertices").find_child_by_attribute("input", "semantic", "POSITION").attribute("source").value();
+			srcStreams[COLLADA_SOURCE_STREAM_TYPE_NORMAL]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "NORMAL").attribute("source").value();
+			srcStreams[COLLADA_SOURCE_STREAM_TYPE_TEXCOORD]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXCOORD").attribute("source").value();
+			srcStreams[COLLADA_SOURCE_STREAM_TYPE_TANGENT]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXTANGENT").attribute("source").value();
+			srcStreams[COLLADA_SOURCE_STREAM_TYPE_BINORNAL]	= mesh.child("triangles").find_child_by_attribute("input", "semantic", "TEXBINORMAL").attribute("source").value();
+
+			for (auto& stream : srcStreams)
 			{
-				if (auto float_array = source.child("float_array"))
+				//-- remove # char
+				stream = stream.substr(1, stream.length());
+
+				if (stream.empty())
 				{
-					//-- set up a stringstream to read from the raw array.
-					std::stringstream stm(float_array.first_child().value());
-					std::string	 type  = float_array.attribute("id").value();
-					uint32		 count = float_array.attribute("count").as_uint();
-
-					if		(type.find("position") != std::string::npos)
-					{
-						oSource.m_posArray.resize(count / 3);
-						for (uint32 i = 0; i < oSource.m_posArray.size(); ++i)
-						{
-							vec3f& v3 = oSource.m_posArray[i];
-							stm >> v3.x; stm >> v3.y; stm >> v3.z;
-
-							//-- convert to meters.
-							v3 = v3.scale(G_CONVERT_TO_METERS);
-						}
-					}
-					else if (type.find("tangent") != std::string::npos)
-					{
-						oSource.m_tangentArray.resize(count / 3);
-						for (uint32 i = 0; i < oSource.m_tangentArray.size(); ++i)
-						{
-							vec3f& v3 = oSource.m_tangentArray[i];
-							stm >> v3.x; stm >> v3.y; stm >> v3.z;
-
-							v3.normalize();
-						}
-					}
-					else if (type.find("binormal") != std::string::npos)
-					{
-						oSource.m_binormalArray.resize(count / 3);
-						for (uint32 i = 0; i < oSource.m_binormalArray.size(); ++i)
-						{
-							vec3f& v3 = oSource.m_binormalArray[i];
-							stm >> v3.x; stm >> v3.y; stm >> v3.z;
-
-							v3.normalize();
-						}
-					}
-					else if (type.find("normal") != std::string::npos)
-					{
-						oSource.m_normalArray.resize(count / 3);
-						for (uint32 i = 0; i < oSource.m_normalArray.size(); ++i)
-						{
-							vec3f& v3 = oSource.m_normalArray[i];
-							stm >> v3.x; stm >> v3.y; stm >> v3.z;
-
-							v3.normalize();
-						}
-					}
-					else if (type.find("map1") != std::string::npos)
-					{
-						oSource.m_uvArray.resize(count / 3);
-						for (uint32 i = 0; i < oSource.m_uvArray.size(); ++i)
-						{
-							float temp = 0;
-							vec2f& v2 = oSource.m_uvArray[i];
-							stm >> v2.x; stm >> v2.y; stm >> temp;
-							v2.y = 1.0f - v2.y;
-						}
-					}
+					throw "COLLADA file doesn't contain all the needed source vertex streams (tangent and binormal most probably).";
 				}
 			}
 
-			//-- now read triangle indices.
+			//-- read triangle indices.
 			if (auto triangles = mesh.child("triangles"))
 			{
 				uint32 count = triangles.attribute("count").as_uint() * 3;
@@ -486,17 +438,89 @@ namespace
 					//-- set up a stringstream to read from the raw array.
 					std::stringstream stm(p.first_child().value());
 
-					VertexIndex v;
 					oSource.m_indices.resize(count);
 					for (uint32 i = 0; i < count; ++i)
 					{
-						stm >> v.m_pos;
-						stm >> v.m_normal;
-						stm >> v.m_uv;
-						stm >> v.m_tangent;
-						v.m_binormal = v.m_tangent;
+						uint32 idx = 0;
+						stm >> idx;
+
+						//-- ToDo: for now we're assuming that all of the arrays have the same indices.
+						VertexIndex v;
+						v.m_pos = idx;
+						v.m_normal = idx;
+						v.m_uv = idx;
+						v.m_tangent = idx;
+						v.m_binormal = idx;
 
 						oSource.m_indices[i] = v;
+					}
+				}
+			}
+
+			//-- now read the sources
+			for (auto source : mesh.children("source"))
+			{
+				if (auto float_array = source.child("float_array"))
+				{
+					//-- set up a stringstream to read from the raw array.
+					std::stringstream stm(float_array.first_child().value());
+					std::string	 type		= float_array.attribute("id").value();
+					auto         accessor	= source.child("technique_common").child("accessor");
+					uint32		 count		= accessor.attribute("count").as_uint();
+					uint32		 stride		= accessor.attribute("stride").as_uint();
+
+					if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_POSITION].substr()) != std::string::npos)
+					{
+						oSource.m_posArray.resize(count);
+						for (uint32 i = 0; i < oSource.m_posArray.size(); ++i)
+						{
+							vec3f& v3 = oSource.m_posArray[i];
+							stm >> v3.x; stm >> v3.y; stm >> v3.z;
+						}
+					}
+					else if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_TANGENT]) != std::string::npos)
+					{
+						oSource.m_tangentArray.resize(count);
+						for (auto& v3 : oSource.m_tangentArray)
+						{
+							stm >> v3.x; stm >> v3.y; stm >> v3.z;
+							v3.normalize();
+						}
+					}
+					else if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_BINORNAL]) != std::string::npos)
+					{
+						oSource.m_binormalArray.resize(count);
+						for (auto& v3 : oSource.m_binormalArray)
+						{
+							stm >> v3.x; stm >> v3.y; stm >> v3.z;
+							v3.normalize();
+						}
+					}
+					else if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_NORMAL]) != std::string::npos)
+					{
+						oSource.m_normalArray.resize(count);
+						for (auto& v3 : oSource.m_normalArray)
+						{
+							stm >> v3.x; stm >> v3.y; stm >> v3.z;
+							v3.normalize();
+						}
+					}
+					else if (type.find(srcStreams[COLLADA_SOURCE_STREAM_TYPE_TEXCOORD]) != std::string::npos)
+					{
+						oSource.m_uvArray.resize(count);
+						for (auto& v2 : oSource.m_uvArray)
+						{
+							stm >> v2.x; stm >> v2.y;
+
+							//--
+							if (stride == 3)
+							{
+								float temp = 0;
+								stm >> temp;
+							}
+
+							v2.y = 1.0f - v2.y;
+						}
 					}
 				}
 			}
@@ -504,12 +528,12 @@ namespace
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void loadSkinning(xml_node& node, const SkeletonSource& skeletonSource, SkinningSource& oSource)
+	void loadSkinning(const xml_node& node, const SkeletonSource& skeletonSource, SkinningSource& oSource)
 	{
 		auto  skin = node.child("skin");
 		oSource.m_bindShapeMatrix = readMatrix(skin.child("bind_shape_matrix").first_child().value());
 
-		for (auto source = skin.child("source"); source; source = source.next_sibling("source"))
+		for (auto source : skin.children("source"))
 		{
 			if (auto float_array = source.child("float_array"))
 			{
@@ -603,29 +627,24 @@ namespace
 
 	//----------------------------------------------------------------------------------------------
 	void gatherMeshSources(
-		xml_document& doc,
 		const MeshesInfo& iMeshesInfo,
 		const SkeletonSource& skeletonSource,
 		MeshSources& oMeshSources,
 		SkinningSources& oSkinningSources
 		)
 	{
-		auto lib_geoms = doc.document_element().child("library_geometries");
-		auto lib_ctrls = doc.document_element().child("library_controllers");
 		
 		//-- try to find all geometry's urls.
-		for (auto info = iMeshesInfo.cbegin(); info != iMeshesInfo.cend(); ++info)
+		for (const auto& info : iMeshesInfo)
 		{
 			MeshSource meshSource;
 			SkinningSource skinningSource;
 
 			//-- 1. load geometry.
-			auto geom_node = lib_geoms.find_child_by_attribute("geometry", "id", info->m_geomURL.c_str());
-			loadGeometry(geom_node, meshSource);
+			loadGeometry(info.m_geomURL, meshSource);
 
 			//-- 2. load joint indices and weights.
-			auto ctrl_node = lib_ctrls.find_child_by_attribute("controller", "id", info->m_ctrlURL.c_str());
-			loadSkinning(ctrl_node, skeletonSource, skinningSource);
+			loadSkinning(info.m_ctrlURL, skeletonSource, skinningSource);
 
 			oMeshSources.push_back(meshSource);
 			oSkinningSources.push_back(skinningSource);
@@ -643,7 +662,7 @@ namespace
 			//-- prepare data.
 			oAnimSrc.m_jointMatrices.resize(skelSrc.size());
 
-			for (auto source = animation.child("source"); source; source = source.next_sibling("source"))
+			for (auto source : animation.children("source"))
 			{
 				//-- check has this section animation data.
 				std::string id = source.attribute("id").value();
@@ -745,7 +764,7 @@ namespace
 					));
 				}
 
-				//-- now clam retrieved indices so on the output we will have only three joints
+				//-- now clamp retrieved indices so on the output we will have only three joints
 				//-- with the biggest influence on the vertex.
 
 				//-- 1. sort indices by weight descending.
@@ -781,15 +800,6 @@ namespace
 			oSkeleton[i].m_parent		= skeletonSource[i].m_parent;
 			oSkeleton[i].m_invBindPose	= skinningSources[0].m_invBindPosArray[i];
 			oSkeleton[i].m_matrix		= skeletonSource[i].m_matrix;
-
-			//-- convert position component of matrices to meters.
-			oSkeleton[i].m_invBindPose.m30	*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_invBindPose.m31	*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_invBindPose.m32	*= G_CONVERT_TO_METERS;
-
-			oSkeleton[i].m_matrix.m30		*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_matrix.m31		*= G_CONVERT_TO_METERS;
-			oSkeleton[i].m_matrix.m32		*= G_CONVERT_TO_METERS;
 		}
 
 		//-- make OY as up axis and invert z direction to be left handed coordinate system.
@@ -848,11 +858,6 @@ namespace
 			{
 				Animation::Transform&   t = transforms[j];
 				mat4f&					m = animSource.m_jointMatrices[j][i];
-
-				//-- convert position component of matrices to meters.
-				m.m30 *= G_CONVERT_TO_METERS;
-				m.m31 *= G_CONVERT_TO_METERS;
-				m.m32 *= G_CONVERT_TO_METERS;
 
 				vec3f scale;
 				decomposeMatrix(t.m_quat, scale, t.m_pos, m);
@@ -1159,12 +1164,12 @@ namespace brUGE
 
 		//-- gather skeleton source.
 		SkeletonSource skeletonSource;
-		gatherSkeletonSource(doc, meshesInfo, skeletonSource);
+		gatherSkeletonSource(meshesInfo, skeletonSource);
 
 		//-- gather mesh sources.
 		MeshSources		meshSources;
 		SkinningSources skinningSources;
-		gatherMeshSources(doc, meshesInfo, skeletonSource, meshSources, skinningSources);
+		gatherMeshSources(meshesInfo, skeletonSource, meshSources, skinningSources);
 
 		//-- now process meshes.
 		AABB aabb;
@@ -1189,12 +1194,12 @@ namespace brUGE
 
 		//-- gather skeleton source.
 		SkeletonSource skeletonSource;
-		gatherSkeletonSource(doc, meshesInfo, skeletonSource);
+		gatherSkeletonSource(meshesInfo, skeletonSource);
 
 		//-- gather mesh sources.
 		MeshSources		meshSources;
 		SkinningSources skinningSources;
-		gatherMeshSources(doc, meshesInfo, skeletonSource, meshSources, skinningSources);
+		gatherMeshSources(meshesInfo, skeletonSource, meshSources, skinningSources);
 
 		//-- gather mesh animation.
 		AnimationSource animSource;
