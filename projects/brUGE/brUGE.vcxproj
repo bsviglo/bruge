@@ -244,7 +244,10 @@
     <ClInclude Include="..\..\sources\console\TimingPanel.h" />
     <ClInclude Include="..\..\sources\console\WatchersPanel.h" />
     <ClInclude Include="..\..\sources\engine\Engine.h" />
+    <ClInclude Include="..\..\sources\engine\GameObject.hpp" />
+    <ClInclude Include="..\..\sources\engine\IComponent.hpp" />
     <ClInclude Include="..\..\sources\engine\IDemo.h" />
+    <ClInclude Include="..\..\sources\engine\ISystem.hpp" />
     <ClInclude Include="..\..\sources\physics\physic_world.hpp" />
     <ClInclude Include="..\..\sources\scene\game_world.hpp" />
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">

@@ -1,15 +1,49 @@
 #pragma once
 
 #include "prerequisites.hpp"
+#include "engine/ISystem.hpp"
 #include "utils/Data.hpp"
 #include "math/AABB.hpp"
 #include "math/Matrix4x4.hpp"
 #include "SDL/SDL_events.h"
 #include <vector>
-#include <memory>
 
 namespace brUGE
 {
+	class SceneSystem;
+	class SceneSystem::World;
+	typedef SceneSystem::World Scene;
+
+	//----------------------------------------------------------------------------------------------
+	class SceneSystem : public ISystem
+	{
+	public:
+
+		//----------------------------------------------------------------------------------------------
+		class World : public ISystem::IWorld
+		{
+		public:
+
+		private:
+			std::vector<std::shared_ptr<GameObject>> m_gameObjects;
+		};
+
+		//----------------------------------------------------------------------------------------------
+		class Context : public ISystem::IContext
+		{
+		};
+
+	public:
+		SceneSystem();
+		virtual ~SceneSystem() override;
+
+	private:
+		std::vector<std::unique_ptr<World>>		m_worlds;
+		std::vector<std::unique_ptr<Context>>	m_contexts;
+	};
+
+
+
 
 	//-- Exists for every node of every model.
 	//----------------------------------------------------------------------------------------------

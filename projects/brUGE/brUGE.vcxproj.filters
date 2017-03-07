@@ -326,6 +326,15 @@
     <ClInclude Include="..\..\sources\physics\physic_world.hpp">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sources\engine\GameObject.hpp">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\engine\IComponent.hpp">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\engine\ISystem.hpp">
+      <Filter>engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">

@@ -35,6 +35,20 @@ namespace brUGE
 	class Engine : public utils::Singleton<Engine>
 	{
 	public:
+		enum ESystemType
+		{
+			SYSTEM_SCENE = 0,
+			SYSTEM_TRANSFORM,
+			SYSTEM_RENDER,
+			SYSTEM_PHYSIC,
+			SYSTEM_CAMERA,
+			SYSTEM_ANIMATION,
+			SYSTEM_SCRIPT,
+			SYSTEM_INPUT,
+			SYSTEM_COUNT
+		};
+
+	public:
 		Engine();
 		~Engine();
 		
@@ -85,6 +99,9 @@ namespace brUGE
 		std::unique_ptr<render::RenderWorld>		m_renderWorld;
 		std::unique_ptr<physics::PhysicsWorld>		m_physicWorld;
 		std::unique_ptr<render::AnimationEngine>	m_animEngine;
+
+		//-- new
+		std::array<std::unique_ptr<ISystem>, SYSTEM_COUNT> m_systems;
 	};
 
 } // brUGE
