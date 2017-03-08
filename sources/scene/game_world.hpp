@@ -10,9 +10,6 @@
 
 namespace brUGE
 {
-	class SceneSystem;
-	class SceneSystem::World;
-	typedef SceneSystem::World Scene;
 
 	//----------------------------------------------------------------------------------------------
 	class SceneSystem : public ISystem
@@ -20,25 +17,46 @@ namespace brUGE
 	public:
 
 		//----------------------------------------------------------------------------------------------
-		class World : public ISystem::IWorld
+		class Scene
+		{
+		public:
+			Scene();
+			~Scene();
+
+			bool	init();
+
+			bool	load(const utils::ROData& iData);
+			bool	unload();
+
+			bool	createEntity(uint32 componentMask = IComponent::TYPE_TRANSFORM);
+			bool	createEntity(const utils::ROData& iData);
+
+		private:
+			std::vector<std::unique_ptr<GameObject>>							m_gameObjects;
+			std::array<std::shared_ptr<ISystem::IWorld>, Engine::SYSTEM_COUNT>	m_sytemWorlds;
+		};
+
+		//----------------------------------------------------------------------------------------------
+		class Context
 		{
 		public:
 
 		private:
-			std::vector<std::shared_ptr<GameObject>> m_gameObjects;
-		};
-
-		//----------------------------------------------------------------------------------------------
-		class Context : public ISystem::IContext
-		{
+			std::vector<std::unique_ptr<ISystem::IContext>> m_contexts;
 		};
 
 	public:
 		SceneSystem();
 		virtual ~SceneSystem() override;
 
+		virtual bool	init() override;
+
+		Handle			addScene();
+		Handle			addScene(const utils::ROData& iData);
+		bool			delScene(Handle handle);
+
 	private:
-		std::vector<std::unique_ptr<World>>		m_worlds;
+		std::vector<std::unique_ptr<Scene>>		m_worlds;
 		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 

@@ -54,6 +54,7 @@ namespace brUGE
 		virtual ~ISystem() = 0 { }
 
 		virtual bool init() = 0;
-		virtual void update(float updateTime, float renderTime) = 0;
+		virtual void update(IWorld* world) = 0;
+		virtual void process(IContext* context) = 0;
 	};
 }

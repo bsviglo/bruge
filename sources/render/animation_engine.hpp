@@ -13,6 +13,32 @@ namespace brUGE
 
 namespace render
 {
+
+	//----------------------------------------------------------------------------------------------
+	class AnimationControllerComponent : public IComponent
+	{
+	public:
+
+	};
+
+	//----------------------------------------------------------------------------------------------
+	class AnimationSystem : public ISystem
+	{
+	public:
+
+		class World : public ISystem::IWorld
+		{
+
+		};
+
+		class Context : public ISystem::IContext
+		{
+
+		};
+	};
+
+
+
 	struct MeshInstance;
 	
 

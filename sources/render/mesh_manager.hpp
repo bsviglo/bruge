@@ -73,6 +73,14 @@ namespace render
 		};
 
 	public:
+		MeshSystem();
+		virtual ~MeshSystem() override;
+
+		virtual bool init() override;
+		virtual void update(IWorld* world) override;
+		virtual void process(IContext* context) override;
+
+	public:
 		std::vector<std::unique_ptr<World>>		m_worlds;
 		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
