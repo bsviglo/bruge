@@ -68,6 +68,10 @@ namespace brUGE
 		physics::PhysicsWorld&		physicsWorld()		{ return *m_physicWorld.get();	}
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
+		//-- ToDo:
+		template<typename T>
+		T* system(ESystemType type) { return static_cast<T*>(m_systems[type]); }
+
 	private:
 
 		//-- declare console functions.

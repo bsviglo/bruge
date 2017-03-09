@@ -18,7 +18,11 @@ namespace render
 	class AnimationControllerComponent : public IComponent
 	{
 	public:
+		AnimationControllerComponent(Handle animCtrl) : IComponent(IComponent::TYPE_ANIMATION_CONTROLLER), m_animCtrl(animCtrl) { }
+		virtual ~AnimationControllerComponent() override { }
 
+	private:
+		Handle m_animCtrl;
 	};
 
 	//----------------------------------------------------------------------------------------------
@@ -26,15 +30,44 @@ namespace render
 	{
 	public:
 
+		//----------------------------------------------------------------------------------------------
 		class World : public ISystem::IWorld
 		{
+		public:
+			World() { }
+			virtual ~World() override { }
 
+			virtual bool						init() override;
+
+			virtual void						activate() override;
+			virtual void						deactivate() override;
+
+			virtual std::unique_ptr<IComponent>	createComponent() override;
+			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) override;
+
+			virtual bool						registerGameObject(Handle entity) override;
+			virtual bool						unregisterGameObject(Handle entity) override;
+
+		private:
+			std::vector<std::unique_ptr<AnimationController>>				m_animCtrls;
+			std::unordered_map<std::string, std::shared_ptr<Animation>>		m_animations;
+			std::vector<AnimationController*>								m_activeAnimCtrls;
+			AnimationBlender												m_animBlender;
+
+			std::vector<std::unique_ptr<AnimationControllerComponent>>		m_components;
 		};
 
+		//----------------------------------------------------------------------------------------------
 		class Context : public ISystem::IContext
 		{
+		public:
+
 
 		};
+
+	private:
+		std::vector<std::unique_ptr<World>>		m_worlds;
+		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 
 
@@ -120,7 +153,7 @@ namespace render
 			:	m_transform(desc.m_transform), m_meshInst(desc.m_meshInst),	m_wantsWorldPalette(true), m_physicsDriven(false) { }
 
 	public:
-		//-- do we need to calculate world space pallete.
+		//-- do we need to calculate world space palette.
 		bool				m_wantsWorldPalette;
 		//-- do this controller driven by physics. In this case stop animating it and use world transform given by the physics.
 		bool				m_physicsDriven;

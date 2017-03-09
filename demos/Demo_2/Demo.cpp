@@ -58,6 +58,18 @@ Demo::~Demo()
 //-------------------------------------------------------------------------------------------------
 bool Demo::init()
 {
+	auto sceneSystem = Engine::instance().system<SceneSystem>(Engine::SYSTEM_SCENE);
+
+	auto sceneID = sceneSystem->addScene(*os::FileSystem::instance().readFile("resources/scenes/scene01.xml").get());
+	auto scene = sceneSystem->scene(sceneID);
+
+	auto gameObjID = scene->createGameObject();
+	auto gameObj = scene->gameObject(gameObjID);
+
+
+
+
+
 	Engine&			 engine     = Engine::instance();
 	GameWorld&		 gameWorld  = engine.gameWorld();
 

@@ -18,6 +18,84 @@ using namespace brUGE::render;
 
 namespace brUGE
 {
+
+	//----------------------------------------------------------------------------------------------
+	Handle SceneSystem::addScene(const utils::ROData& iData)
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------------------
+	bool SceneSystem::Scene::init(const pugi::xml_node& data)
+	{
+		createGameObject()
+
+		for (auto type : components)
+		{
+			if (type == "Transform")
+			{
+				
+			}
+			else if (type == "Camera")
+			{
+
+			}
+			else if (type == "SaticMesh")
+			{
+
+			}
+			else if (type == "RigidBody")
+			{
+
+			}
+			else
+			{
+			}
+
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------
+	Handle SceneSystem::Scene::createGameObject(const pugi::xml_node& data)
+	{
+		if (auto components = data.child("components"))
+		{
+			for (auto component : components.children("component"))
+			{
+				auto type = std::string(component.attribute("name").value());
+
+				if (type == "Transform")
+				{
+
+				}
+				else if (type == "Camera")
+				{
+				}
+				else if (type == "RigidBody")
+				{
+				}
+				else if (type == "StaticMesh")
+				{
+				}
+				else if (type == "SkinnedMesh")
+				{
+				}
+			}
+		}
+		
+	}
+
+	//----------------------------------------------------------------------------------------------
+
+	//----------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 	//----------------------------------------------------------------------------------------------
 	GameWorld::GameWorld()
 	{

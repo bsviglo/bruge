@@ -6,6 +6,12 @@
 
 namespace brUGE
 {
+	//----------------------------------------------------------------------------------------------
+	struct DeltaTime
+	{
+		float m_renderTime = 0.0f;
+		float m_updateTime = 0.0f;
+	};
 
 	//-- Base class for all kind of the sub-systems in the engine. Each ISystem derived class corresponds
 	//-- to the unique IComponent::EType and processes only those components.
@@ -24,16 +30,17 @@ namespace brUGE
 			IWorld() { }
 			virtual ~IWorld() = 0 { }
 
-			virtual bool						init() = 0;
+			virtual bool	init() = 0;
 
-			virtual void						activate() = 0;
-			virtual void						deactivate() = 0;
+			virtual void	activate() = 0;
+			virtual void	deactivate() = 0;
 
-			virtual std::unique_ptr<IComponent>	createComponent() = 0;
-			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) = 0;
+			virtual Handle	createComponent() = 0;
+			virtual Handle	cloneComponent(Handle id) = 0;
+			virtual bool	removeComponent(Handle id) = 0;
 
-			virtual bool						registerGameObject(const std::shared_ptr<GameObject>& entity) = 0;
-			virtual bool						unregisterGameObject(const std::shared_ptr<GameObject>& entity) = 0;
+			virtual bool	registerGameObject(Handle entity) = 0;
+			virtual bool	unregisterGameObject(Handle entity) = 0;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -54,7 +61,12 @@ namespace brUGE
 		virtual ~ISystem() = 0 { }
 
 		virtual bool init() = 0;
-		virtual void update(IWorld* world) = 0;
+
+		//-- update the global state of the world
+		virtual void update(IWorld* world, const DeltaTime& dt) = 0;
+
+		//-- perform work while the world is the constant state. Here we may have multiple Context are working
+		//-- separately (even different threads) on the same constant world.
 		virtual void process(IContext* context) = 0;
 	};
 }

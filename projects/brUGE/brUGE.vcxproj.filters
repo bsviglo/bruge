@@ -67,6 +67,9 @@
     <Filter Include="physics">
       <UniqueIdentifier>{e05ca580-0d26-4cf7-b05a-0e6e002fa69a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{afe21e34-3150-4a32-b85e-5f93556e366c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp">
@@ -334,6 +337,15 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\engine\ISystem.hpp">
       <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\input\input_system.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\scene\transform_system.hpp">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\scene\camera_system.hpp">
+      <Filter>scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -248,8 +248,11 @@
     <ClInclude Include="..\..\sources\engine\IComponent.hpp" />
     <ClInclude Include="..\..\sources\engine\IDemo.h" />
     <ClInclude Include="..\..\sources\engine\ISystem.hpp" />
+    <ClInclude Include="..\..\sources\input\input_system.hpp" />
     <ClInclude Include="..\..\sources\physics\physic_world.hpp" />
+    <ClInclude Include="..\..\sources\scene\camera_system.hpp" />
     <ClInclude Include="..\..\sources\scene\game_world.hpp" />
+    <ClInclude Include="..\..\sources\scene\transform_system.hpp" />
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

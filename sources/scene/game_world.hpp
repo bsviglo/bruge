@@ -6,6 +6,7 @@
 #include "math/AABB.hpp"
 #include "math/Matrix4x4.hpp"
 #include "SDL/SDL_events.h"
+#include "pugixml/pugixml.hpp"
 #include <vector>
 
 namespace brUGE
@@ -23,13 +24,15 @@ namespace brUGE
 			Scene();
 			~Scene();
 
-			bool	init();
+			bool			init();
+			bool			init(const pugi::xml_node& data);
 
-			bool	load(const utils::ROData& iData);
-			bool	unload();
+			Handle			createGameObject(uint32 componentMask = IComponent::TYPE_TRANSFORM);
+			Handle			createGameObject(const pugi::xml_node& data);
+			Handle			cloneGameObject(Handle gameObj);
+			bool			removeGameObject(Handle gameObj);
 
-			bool	createEntity(uint32 componentMask = IComponent::TYPE_TRANSFORM);
-			bool	createEntity(const utils::ROData& iData);
+			GameObject*		gameObject(Handle id);
 
 		private:
 			std::vector<std::unique_ptr<GameObject>>							m_gameObjects;
@@ -50,13 +53,16 @@ namespace brUGE
 		virtual ~SceneSystem() override;
 
 		virtual bool	init() override;
+		virtual void	update(IWorld* world, const DeltaTime& dt) override;
+		virtual void	process(IContext* context) override;
 
 		Handle			addScene();
 		Handle			addScene(const utils::ROData& iData);
 		bool			delScene(Handle handle);
+		Scene*			scene(Handle handle) { return m_scenes[handle].get(); }
 
 	private:
-		std::vector<std::unique_ptr<Scene>>		m_worlds;
+		std::vector<std::unique_ptr<Scene>>		m_scenes;;
 		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 

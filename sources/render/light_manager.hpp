@@ -1,6 +1,8 @@
 #pragma once
 
 #include "prerequisites.hpp"
+#include "engine/ISystem.hpp"
+#include "engine/IComponent.hpp"
 #include "render_common.h"
 #include "Color.h"
 #include "materials.hpp"
@@ -13,6 +15,41 @@ namespace brUGE
 {
 namespace render
 {
+
+	//----------------------------------------------------------------------------------------------
+	class LightComponent : public IComponent
+	{
+	public:
+		LightComponent() : IComponent(IComponent::TYPE_LIGHT) { }
+		virtual ~LightComponent() override { }
+
+	private:
+		Handle m_light;
+	};
+
+	//----------------------------------------------------------------------------------------------
+	class LightSystem : public ISystem
+	{
+	public:
+
+		//----------------------------------------------------------------------------------------------
+		class World : public ISystem::IWorld
+		{
+
+		};
+
+		//----------------------------------------------------------------------------------------------
+		class Context : public ISystem::IContext
+		{
+
+		};
+
+	public:
+
+	private:
+
+	};
+
 
 	class Mesh;
 

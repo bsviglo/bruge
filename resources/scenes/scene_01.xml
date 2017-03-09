@@ -1,0 +1,16 @@
+<scene name="simple scene">
+	<gameObject>
+		<components>
+			<component type="StaticMesh">
+			</component>
+			<component type="RigidBody">
+			</component>
+			<component type="Transform">
+				<row0> 1 0 0 0 </row0>
+				<row1> 0 1 0 0 </row1>
+				<row2> 0 0 1 0 </row2>
+				<row3> 0 0 0 1 </row3>
+			</component>
+		</components>
+	</gameObject>
+</scene>

@@ -17,6 +17,93 @@ namespace brUGE
 namespace physics
 {
 
+	//----------------------------------------------------------------------------------------------
+	class RigidBodyComponent : public IComponent
+	{
+	public:
+		RigidBodyComponent(Handle rigidBody) : IComponent(IComponent::TYPE_RIGID_BODY), m_rigidBody(rigidBody) { }
+		virtual ~RigidBodyComponent() override { }
+
+	private:
+		Handle m_rigidBody;
+	};
+
+	//----------------------------------------------------------------------------------------------
+	class PhysicsSystem : public ISystem
+	{
+	public:
+
+		//----------------------------------------------------------------------------------------------
+		class World : public ISystem::IWorld
+		{
+		public:
+			World();
+			virtual ~World() override;
+
+			virtual bool						init() override;
+
+			virtual void						activate() override;
+			virtual void						deactivate() override;
+
+			virtual std::unique_ptr<IComponent>	createComponent() override;
+			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) override;
+
+			virtual bool						registerGameObject(const std::shared_ptr<GameObject>& entity) override;
+			virtual bool						unregisterGameObject(const std::shared_ptr<GameObject>& entity) override;
+
+			//-- other methods
+			void								makeKinematic(Handle physObj, bool flag);
+			void								addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
+
+		private:
+			physx::PxScene*														m_scene;
+			std::vector<std::unique_ptr<PhysicsObjectType::Instance>>			m_physObjs;
+			std::unordered_map<std::string, std::unique_ptr<PhysicsObjectType>>	m_physObjTypes;
+		};
+
+		//----------------------------------------------------------------------------------------------
+		class Context : public ISystem::IContext
+		{
+		public:
+			struct CollisionCallback
+			{
+				CollisionCallback() : m_distance(0.0f), m_gameObj(CONST_INVALID_HANDLE), m_physObj(CONST_INVALID_HANDLE), m_node(nullptr) { }
+
+				vec3f	m_wPos;
+				vec3f	m_wNormal;
+				float	m_distance;
+				Handle	m_gameObj;
+				Handle	m_physObj;
+				Node*	m_node;
+			};
+
+		public:
+			Context();
+			virtual ~Context() override;
+
+			virtual bool	init(ISystem* system, IWorld* world) override;
+
+			bool			collide(CollisionCallback& cc, const vec3f& start, const vec3f& end) const;
+		};
+
+	public:
+		PhysicsSystem();
+		virtual ~PhysicsSystem() override;
+
+		virtual bool init() override;
+		virtual void update(IWorld* world) override;
+		virtual void process(IContext* context) override;
+
+	private:
+		physx::PxFoundation*					m_foundation;
+		physx::PxPhysics*						m_physics;
+		physx::PxDefaultCpuDispatcher*			m_dispatcher;
+		physx::PxDefaultAllocator				m_allocator;
+		physx::PxDefaultErrorCallback			m_errorCallback;
+		physx::PxVisualDebuggerConnection*		m_debuggerConnection;
+	};
+
+
 	//-- Manages the range of instances of one particular physical object type loaded from *.phys file.
 	//----------------------------------------------------------------------------------------------
 	class PhysicsObjectType
