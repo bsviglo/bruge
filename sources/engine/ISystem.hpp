@@ -36,11 +36,12 @@ namespace brUGE
 			virtual void	deactivate() = 0;
 
 			virtual Handle	createComponent() = 0;
+			virtual Handle	createComponent(const pugi::xml_node& data) = 0;
 			virtual Handle	cloneComponent(Handle id) = 0;
 			virtual bool	removeComponent(Handle id) = 0;
 
-			virtual bool	registerGameObject(Handle entity) = 0;
-			virtual bool	unregisterGameObject(Handle entity) = 0;
+			virtual bool	registerGameObject(Handle gameObj) = 0;
+			virtual bool	unregisterGameObject(Handle gameObj) = 0;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -68,5 +69,9 @@ namespace brUGE
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
 		virtual void process(IContext* context) = 0;
+
+		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
+		//-- this particular system.
+		inline bool checkRequiredComponents(Handle /*gameObj*/) { return true; }
 	};
 }

@@ -35,6 +35,10 @@ namespace brUGE
 			GameObject*		gameObject(Handle id);
 
 		private:
+			template<typename T>
+			typename T::World* world(Engine::ESystemType type) { return static_cast<typename T::World*>(m_sytemWorlds[type]); }
+
+		private:
 			std::vector<std::unique_ptr<GameObject>>							m_gameObjects;
 			std::array<std::shared_ptr<ISystem::IWorld>, Engine::SYSTEM_COUNT>	m_sytemWorlds;
 		};

@@ -18,15 +18,18 @@ namespace brUGE
 		GameObject();
 		~GameObject();
 
-		bool	addChild(Handle gameObj);
-		bool	delChild(Handle gameObj);
+		bool						addChild(Handle gameObj);
+		bool						delChild(Handle gameObj);
+		const std::vector<Handle>&	children() const;
+		Handle						parent() const;
 
-		bool	addComponent(IComponent::EType type);
-		bool	addComponent(Handle component);
-		bool	delComponent(IComponent::EType type);
+		bool						addComponent(IComponent::EType type);
+		bool						addComponent(Handle component);
+		bool						delComponent(IComponent::EType type);
+		const std::vector<Handle>&	components() const;
 
-		Handle	findComponentByType(IComponent::EType type);
-		bool	hasComponentByType(IComponent::EType type);
+		Handle						findComponentByType(IComponent::EType type) const;
+		bool						hasComponentByType(IComponent::EType type) const;
 
 	private:
 		uint32				m_componentsMask;

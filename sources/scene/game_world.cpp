@@ -28,57 +28,64 @@ namespace brUGE
 	//----------------------------------------------------------------------------------------------
 	bool SceneSystem::Scene::init(const pugi::xml_node& data)
 	{
-		createGameObject()
-
-		for (auto type : components)
+		for (auto gameObjCfg : data.children("gameObject"))
 		{
-			if (type == "Transform")
-			{
-				
-			}
-			else if (type == "Camera")
-			{
-
-			}
-			else if (type == "SaticMesh")
-			{
-
-			}
-			else if (type == "RigidBody")
-			{
-
-			}
-			else
-			{
-			}
-
+			createGameObject(gameObjCfg);
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
 	Handle SceneSystem::Scene::createGameObject(const pugi::xml_node& data)
 	{
-		if (auto components = data.child("components"))
-		{
-			for (auto component : components.children("component"))
-			{
-				auto type = std::string(component.attribute("name").value());
+		auto gameObj = std::make_unique<GameObject>();
 
+		if (auto componentsCfg = data.child("components"))
+		{
+			for (auto componentCfg : componentsCfg.children("component"))
+			{
+				auto type = std::string(componentCfg.attribute("name").value());
+
+				//-- ToDo: Use factory here
 				if (type == "Transform")
 				{
-
+					auto component = world<TransformSystem>(Engine::SYSTEM_TRANSFORM)->createComponent(componentCfg);
+					gameObj->addComponent(component);
 				}
 				else if (type == "Camera")
 				{
+					auto component = world<CameraSystem>(Engine::SYSTEM_CAMERA)->createComponent(componentCfg);
+					gameObj->addComponent(component);
 				}
 				else if (type == "RigidBody")
 				{
+					auto component = world<PhysicsSystem>(Engine::SYSTEM_TRANSFORM)->createComponent(componentCfg);
+					gameObj->addComponent(component);
 				}
 				else if (type == "StaticMesh")
 				{
+					auto component = world<MeshSystem>(Engine::SYSTEM_TRANSFORM)->createComponent(componentCfg);
+					gameObj->addComponent(component);
 				}
 				else if (type == "SkinnedMesh")
 				{
+					auto component = world<MeshSystem>(Engine::SYSTEM_TRANSFORM)->createComponent(componentCfg);
+					gameObj->addComponent(component);
+				}
+				else
+				{
+					assert(false && "Invalid Component Type");
+				}
+
+				//-- check on validity
+
+				//-- register it in scene
+				m_gameObjects.push_back(std::move(gameObj));
+				Handle gameObjID = m_gameObjects.size() - 1;
+
+				//-- register it in the system worlds
+				for (auto& world : m_sytemWorlds)
+				{
+					world->registerGameObject(gameObjID);
 				}
 			}
 		}
@@ -86,9 +93,26 @@ namespace brUGE
 	}
 
 	//----------------------------------------------------------------------------------------------
+	bool SceneSystem::Scene::removeGameObject(Handle handle)
+	{
+		//-- unregister in in the system worlds
+		for (auto& world : m_sytemWorlds)
+		{
+			world->unregisterGameObject(handle);
+		}
+
+		//-- remove from the scene
+		m_gameObjects[handle].reset();
+	}
 
 	//----------------------------------------------------------------------------------------------
+	Handle SceneSystem::Scene::cloneGameObject(Handle handle)
+	{
+		auto gameObj = m_gameObjects[handle].get();
 
+		//-- ToDo:
+		gameObj->
+	}
 
 
 
