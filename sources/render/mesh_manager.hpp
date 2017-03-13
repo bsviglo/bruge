@@ -20,8 +20,13 @@ namespace render
 		StaticMeshComponent() : IComponent(TYPE_STATIC_MESH) { }
 		virtual ~StaticMeshComponent() override { }
 
+		
+		const std::string&	fileName() const { return m_fileName; }
+		void				fileName(const std::string& name) { m_fileName = name; }
+
 	private:
-		Handle m_instance;
+		std::string m_fileName;
+		Handle		m_instance;
 	};
 
 	//----------------------------------------------------------------------------------------------
@@ -31,8 +36,12 @@ namespace render
 		SkinnedMeshComponent() : IComponent(TYPE_SKINNED_MESH) { }
 		virtual ~SkinnedMeshComponent() override { }
 
+		const std::string&	fileName() const { return m_fileName; }
+		void				fileName(const std::string& name) { m_fileName = name; }
+
 	private:
-		Handle m_instance;
+		std::string	m_fileName;
+		Handle		m_instance;
 	};
 
 	//----------------------------------------------------------------------------------------------
@@ -59,7 +68,9 @@ namespace render
 			virtual bool						unregisterGameObject(const std::shared_ptr<GameObject>& entity) override;
 
 		private:
-			std::vector<std::unique_ptr<MeshInstance>> m_meshInstances;
+			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
+			std::vector<std::unique_ptr<SkinnedMeshComponent>>	m_skinnedMeshComponents;
+			std::vector<std::unique_ptr<MeshInstance>>			m_meshInstances;
 		};
 
 		//----------------------------------------------------------------------------------------------

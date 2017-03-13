@@ -35,10 +35,11 @@ namespace brUGE
 	class Engine : public utils::Singleton<Engine>
 	{
 	public:
-		enum ESystemType
+		enum ESystemType : int32
 		{
 			SYSTEM_SCENE = 0,
 			SYSTEM_TRANSFORM,
+			SYSTEM_RESOURCE,
 			SYSTEM_RENDER,
 			SYSTEM_PHYSIC,
 			SYSTEM_CAMERA,

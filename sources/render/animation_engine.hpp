@@ -65,6 +65,17 @@ namespace render
 
 		};
 
+	public:
+
+		virtual bool checkRequiredComponents(Handle handle) const override
+		{ 
+			GameObject* gameObj = nullptr;
+
+			return	gameObj->hasComponentByType(IComponent::TYPE_TRANSFORM) &&
+					gameObj->hasComponentByType(IComponent::TYPE_SKINNED_MESH) &&
+					gameObj->hasComponentByType(IComponent::TYPE_ANIMATION_CONTROLLER);
+		}
+
 	private:
 		std::vector<std::unique_ptr<World>>		m_worlds;
 		std::vector<std::unique_ptr<Context>>	m_contexts;

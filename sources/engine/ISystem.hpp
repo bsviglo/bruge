@@ -64,14 +64,15 @@ namespace brUGE
 		virtual bool init() = 0;
 
 		//-- update the global state of the world
-		virtual void update(IWorld* world, const DeltaTime& dt) = 0;
+		virtual void update(IWorld* world, const DeltaTime& dt) const = 0;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void process(IContext* context) = 0;
+		virtual void process(IContext* context) const = 0;
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
-		inline bool checkRequiredComponents(Handle /*gameObj*/) { return true; }
+		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
+		virtual bool checkRequiredComponents(Handle /*gameObj*/) const = 0;
 	};
 }

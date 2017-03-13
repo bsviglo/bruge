@@ -17,13 +17,44 @@ namespace render
 {
 
 	//----------------------------------------------------------------------------------------------
-	class LightComponent : public IComponent
+	class DirectionalLightComponent : public IComponent
 	{
 	public:
-		LightComponent() : IComponent(IComponent::TYPE_LIGHT) { }
-		virtual ~LightComponent() override { }
+		DirectionalLightComponent() : IComponent(IComponent::TYPE_DIRECTIONAL_LIGHT) { }
+		virtual ~DirectionalLightComponent() override { }
 
 	private:
+		Color m_color;
+
+		Handle m_light;
+	};
+
+	//----------------------------------------------------------------------------------------------
+	class SpotLightComponent : public IComponent
+	{
+	public:
+		SpotLightComponent() : IComponent(IComponent::TYPE_SPOT_LIGHT) { }
+		virtual ~SpotLightComponent() override { }
+
+	private:
+		vec2f m_intoutRadius;
+		Color m_color;
+
+		Handle m_light;
+	};
+
+	//----------------------------------------------------------------------------------------------
+	class OmniLightComponent : public IComponent
+	{
+	public:
+		OmniLightComponent() : IComponent(IComponent::TYPE_OMNI_LIGHT) { }
+		virtual ~OmniLightComponent() override { }
+
+	private:
+		vec2f m_inoutCosAngle;
+		vec2f m_startEndFading;
+		Color m_color;
+
 		Handle m_light;
 	};
 
@@ -35,7 +66,25 @@ namespace render
 		//----------------------------------------------------------------------------------------------
 		class World : public ISystem::IWorld
 		{
+		public:
+			World() { }
+			virtual ~World() override { }
 
+			virtual bool	init() override;
+
+			virtual void	activate() override;
+			virtual void	deactivate() override;
+
+			virtual Handle	createComponent() override;
+			virtual Handle	createComponent(const pugi::xml_node& data) override;
+			virtual Handle	cloneComponent(Handle id) override;
+			virtual bool	removeComponent(Handle id) override;
+
+			virtual bool	registerGameObject(Handle gameObj) override;
+			virtual bool	unregisterGameObject(Handle gameObj) override;
+
+		private:
+			std::vector<std::unique_ptr<DirectionalLightComponent>> m_directLightComponents;
 		};
 
 		//----------------------------------------------------------------------------------------------
@@ -45,6 +94,17 @@ namespace render
 		};
 
 	public:
+
+		virtual bool checkRequiredComponents(Handle handle) const override
+		{ 
+			GameObject* gameObj = nullptr;
+
+			return	gameObj->hasComponentByType(IComponent::TYPE_TRANSFORM) && (
+					gameObj->hasComponentByType(IComponent::TYPE_DIRECTIONAL_LIGHT) ||
+					gameObj->hasComponentByType(IComponent::TYPE_SPOT_LIGHT) ||
+					gameObj->hasComponentByType(IComponent::TYPE_OMNI_LIGHT)
+				);
+		}
 
 	private:
 

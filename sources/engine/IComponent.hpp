@@ -14,7 +14,7 @@ namespace brUGE
 	class IComponent
 	{
 	public:
-		enum EType
+		enum EType : int32
 		{
 			TYPE_UNKNOWN				= 0,
 			TYPE_TRANSFORM				= 1 << 0,
@@ -26,7 +26,9 @@ namespace brUGE
 			TYPE_INPUT_CONTROLLER		= 1 << 6,
 			TYPE_CAMERA					= 1 << 7,
 			TYPE_SCRIPT					= 1 << 8,
-			TYPE_LIGHT					= 1 << 9,
+			TYPE_DIRECTIONAL_LIGHT		= 1 << 9,
+			TYPE_SPOT_LIGHT				= 1 << 10,
+			TYPE_OMNI_LIGHT				= 1 << 11,
 		};
 
 	public:
