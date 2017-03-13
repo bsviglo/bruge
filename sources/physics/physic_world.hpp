@@ -17,16 +17,62 @@ namespace brUGE
 namespace physics
 {
 
-	//----------------------------------------------------------------------------------------------
-	class RigidBodyComponent : public IComponent
+	//------------------------------------------------------------------------------------------------------------------
+	class IPhysicsComponent : public IComponent
 	{
 	public:
-		RigidBodyComponent(Handle rigidBody) : IComponent(IComponent::TYPE_RIGID_BODY), m_rigidBody(rigidBody) { }
+
+		//--------------------------------------------------------------------------------------------------------------
+		enum EType : int32
+		{
+			TYPE_UNKNOWN				= 0,
+			TYPE_RIGID_BODY				= 1 << 1,
+			TYPE_BOX_COLLIDER			= 1 << 2,
+			TYPE_SPHERE_COLLIDER		= 1 << 3,
+		};
+
+	public:
+		IPhysicsComponent(EType type) : IComponent(IComponent::FAMILY_TYPE_PHYSICS), m_type(type) { }
+		virtual ~IPhysicsComponent() = 0 { }
+
+	protected:
+		EType m_type;
+	};
+
+
+	//------------------------------------------------------------------------------------------------------------------
+	class RigidBodyComponent : public IPhysicsComponent
+	{
+	public:
+		RigidBodyComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_RIGID_BODY){ }
 		virtual ~RigidBodyComponent() override { }
 
 	private:
 		Handle m_rigidBody;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	class BoxColliderComponent : public IPhysicsComponent
+	{
+	public:
+		BoxColliderComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_BOX_COLLIDER) { }
+		virtual ~BoxColliderComponent() override { }
+
+	private:
+		Handle m_boxCollider;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	class SphereColliderComponent : public IPhysicsComponent
+	{
+	public:
+		SphereColliderComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_SPHERE_COLLIDER) { }
+		virtual ~SphereColliderComponent() override { }
+
+	private:
+		Handle m_sphereCollider;
+	};
+
 
 	//----------------------------------------------------------------------------------------------
 	class PhysicsSystem : public ISystem
@@ -40,20 +86,22 @@ namespace physics
 			World();
 			virtual ~World() override;
 
-			virtual bool						init() override;
+			virtual bool	init() override;
 
-			virtual void						activate() override;
-			virtual void						deactivate() override;
+			virtual void	activate() override;
+			virtual void	deactivate() override;
 
-			virtual std::unique_ptr<IComponent>	createComponent() override;
-			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) override;
+			virtual Handle	createComponent() override;
+			virtual Handle	createComponent(const pugi::xml_node& data) override;
+			virtual Handle	cloneComponent(Handle id) override;
+			virtual bool	removeComponent(Handle id) override;
 
-			virtual bool						registerGameObject(const std::shared_ptr<GameObject>& entity) override;
-			virtual bool						unregisterGameObject(const std::shared_ptr<GameObject>& entity) override;
+			virtual bool	registerGameObject(Handle gameObj) override;
+			virtual bool	unregisterGameObject(Handle gameObj) override;
 
 			//-- other methods
-			void								makeKinematic(Handle physObj, bool flag);
-			void								addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
+			void			makeKinematic(Handle physObj, bool flag);
+			void			addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
 
 		private:
 			physx::PxScene*														m_scene;

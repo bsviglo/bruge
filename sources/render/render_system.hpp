@@ -1,6 +1,10 @@
 #pragma once
 
 #include "render_common.h"
+
+#include "engine/IComponent.hpp"
+#include "engine/ISystem.hpp"
+
 #include "utils/string_utils.h"
 #include "utils/Singleton.h"
 #include "render/IShader.h"
@@ -15,6 +19,118 @@ namespace brUGE
 {
 namespace render
 {
+
+	//------------------------------------------------------------------------------------------------------------------
+	class IRenderComponent : public IComponent
+	{
+	public:
+		enum EType : int32
+		{
+			TYPE_UNKNOWN				= 0,
+			TYPE_STATIC_MESH			= 1 << 1,
+			TYPE_SKINNED_MESH			= 1 << 2,
+			TYPE_DIRECTIONAL_LIGHT		= 1 << 3,
+			TYPE_SPOT_LIGHT				= 1 << 4,
+			TYPE_OMNI_LIGHT				= 1 << 5,
+			TYPE_DECAL					= 1 << 6,
+			TYPE_CAMERA					= 1 << 7,
+		};
+
+	public:
+		IRenderComponent(EType type = TYPE_UNKNOWN) : IComponent(IComponent::FAMILY_TYPE_RENDER), m_type(type) { }
+		virtual ~IRenderComponent() = 0 { };
+
+		inline const EType type() const { return m_type; }
+
+	private:
+		EType m_type;
+	};
+
+
+	//------------------------------------------------------------------------------------------------------------------
+	class RenderSystem : public ISystem
+	{
+	public:
+		enum ESystemType : int32
+		{
+			SYSTEM_SHADER = 0,
+			SYSTEM_MATERIAL,
+			SYSTEM_MESH,
+			SYSTEM_LIGHT,
+			SYSTEM_DECAL,
+			SYSTEM_CULLING,
+			SYSTEM_CAMERA,
+			SYSTEM_SHADOW,
+			SYSTEM_DEBUG_DRAW,
+			SYSTEM_COUNT
+		};
+
+	public:
+
+		//--------------------------------------------------------------------------------------------------------------
+		class World : public IWorld
+		{
+		public:
+			World() { }
+			virtual ~World() override { }
+
+			virtual bool	init() override;
+
+			virtual void	activate() override;
+			virtual void	deactivate() override;
+
+			virtual Handle	createComponent() override;
+			virtual Handle	createComponent(const pugi::xml_node& data) override;
+			virtual Handle	cloneComponent(Handle id) override;
+			virtual bool	removeComponent(Handle id) override;
+
+			virtual bool	registerGameObject(Handle gameObj) override;
+			virtual bool	unregisterGameObject(Handle gameObj) override;
+
+		private:
+			std::array<std::unique_ptr<IWorld>, SYSTEM_COUNT> m_worlds;
+		};
+
+		//--------------------------------------------------------------------------------------------------------------
+		class Context : public IContext
+		{
+		public:
+			Context() { }
+			virtual ~Context() override { }
+
+			virtual bool init(ISystem* system, IWorld* world) override;
+		private:
+			std::array<std::unique_ptr<IContext>, SYSTEM_COUNT> m_contexts;
+		};
+
+	public:
+		RenderSystem() { }
+		virtual ~RenderSystem() override { }
+
+		virtual bool init() override;
+
+		//-- update the global state of the world
+		virtual void update(IWorld* world, const DeltaTime& dt) const override;
+
+		//-- perform work while the world is the constant state. Here we may have multiple Context are working
+		//-- separately (even different threads) on the same constant world.
+		virtual void process(IContext* context) const override;
+
+		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
+		//-- this particular system.
+		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
+		virtual bool checkRequiredComponents(Handle /*gameObj*/) const override;
+
+	private:
+		std::array<std::unique_ptr<ISystem>, SYSTEM_COUNT>	m_systems;
+		std::vector<std::unique_ptr<World>>					m_worlds;
+		std::vector<std::unique_ptr<Context>>				m_contexts;
+	};
+
+
+	//-- ToDo: Legacy
+
+
 	class  Materials;
 	class  ShaderContext;
 	struct RenderFx;
@@ -22,7 +138,7 @@ namespace render
 	//-- ToDo: Make it much more generalized.
 	//-- ToDo: Compact it right after generalization.
 	//-- Represents the minimum quantum of the engine render system work.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct RenderOp
 	{
 		RenderOp()

@@ -6,7 +6,7 @@
 
 namespace brUGE
 {
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct DeltaTime
 	{
 		float m_renderTime = 0.0f;
@@ -17,13 +17,13 @@ namespace brUGE
 	//-- to the unique IComponent::EType and processes only those components.
 	//-- Each ISystem class may hold one or more IWorld instances to be able to have two spaces open
 	//-- at the same time and don't interact with each other.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class ISystem : public NonCopyable
 	{
 	public:
 		//-- Container of all of the components of a specific type on a particular scene. So you may have
 		//-- various scenes (IWorld instances) have been loaded at the same time and they won't interfere with each other.
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class IWorld
 		{
 		public:
@@ -47,7 +47,7 @@ namespace brUGE
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
 		//-- One instance of IWorld may have one or more IContext instances associated with it, on the other
 		//-- hand each instance of IContext may be associated only with one IWorld instance.
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class IContext
 		{
 		public:

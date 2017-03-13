@@ -11,7 +11,7 @@ namespace brUGE
 
 	//-- High level item of the game world. Holds various aspects about the game via components.
 	//-- This class also defines hierarchy of entities.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class GameObject
 	{
 	public:
