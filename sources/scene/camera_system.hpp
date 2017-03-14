@@ -37,12 +37,9 @@ namespace brUGE
 			virtual void	activate() override;
 			virtual void	deactivate() override;
 
-			virtual Handle	createComponent() override;
-			virtual Handle	cloneComponent(Handle id) override;
-			virtual bool	removeComponent(Handle id) override;
-
-			virtual bool	registerGameObject(Handle entity) override;
-			virtual bool	unregisterGameObject(Handle entity) override;
+			virtual Handle	createComponent(Handle gameObj) override;
+			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) override;
+			virtual bool	removeComponent(Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<CameraComponent>>	m_components;

@@ -79,13 +79,9 @@ namespace render
 			virtual void	activate() override;
 			virtual void	deactivate() override;
 
-			virtual Handle	createComponent() override;
-			virtual Handle	createComponent(const pugi::xml_node& data) override;
-			virtual Handle	cloneComponent(Handle id) override;
-			virtual bool	removeComponent(Handle id) override;
-
-			virtual bool	registerGameObject(Handle gameObj) override;
-			virtual bool	unregisterGameObject(Handle gameObj) override;
+			virtual Handle	createComponent(Handle gameObj) = 0;
+			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) = 0;
+			virtual bool	removeComponent(Handle component) = 0;
 
 		private:
 			std::array<std::unique_ptr<IWorld>, SYSTEM_COUNT> m_worlds;
@@ -107,19 +103,27 @@ namespace render
 		RenderSystem() { }
 		virtual ~RenderSystem() override { }
 
-		virtual bool init() override;
+		virtual bool		init() override;
 
 		//-- update the global state of the world
-		virtual void update(IWorld* world, const DeltaTime& dt) const override;
+		virtual void		update(IWorld* world, const DeltaTime& dt) const override;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void process(IContext* context) const override;
+		virtual void		process(IContext* context) const override;
+
+		//--
+		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;
+		virtual Handle		createContext(Handle world) override;
+		virtual void		removeWorld(Handle handle) override;
+		virtual void		removeContext(Handle handle) override;
+		virtual IWorld*		world(Handle handle) override;
+		virtual IContext*	context(Handle handle) override;
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
-		virtual bool checkRequiredComponents(Handle /*gameObj*/) const override;
+		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const override;
 
 	private:
 		std::array<std::unique_ptr<ISystem>, SYSTEM_COUNT>	m_systems;

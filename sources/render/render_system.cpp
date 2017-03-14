@@ -94,6 +94,22 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
+	Handle RenderSystem::World::createComponent(Handle gameObj, const pugi::xml_node& cfg)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	Handle RenderSystem::World::createComponent(Handle gameObj)
+	{
+		auto meshWorld = static_cast<MeshSystem::World>(m_worlds[SYSTEM_MESH]);
+
+		auto meshComponent = meshWorld->createComponent(gameObj);
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
 
 
 	//----------------------------------------------------------------------------------------------

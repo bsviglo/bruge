@@ -23,16 +23,15 @@ namespace brUGE
 		const std::vector<Handle>&	children() const;
 		Handle						parent() const;
 
-		bool						addComponent(IComponent::EType type);
-		bool						addComponent(Handle component);
-		bool						delComponent(IComponent::EType type);
+		bool						createComponent(int32 mask);
+		bool						removeComponent(Handle component);
 		const std::vector<Handle>&	components() const;
 
-		Handle						findComponentByType(IComponent::EType type) const;
-		bool						hasComponentByType(IComponent::EType type) const;
+		Handle						findComponentByFamilyType(IComponent::EFamilyType type) const;
+		bool						hasComponentByFamilyType(IComponent::EFamilyType type) const;
 
 	private:
-		uint32				m_componentsMask;
+		uint32				m_componentsFamilyMask;
 		Handle				m_parent;
 		std::vector<Handle>	m_components;
 		std::vector<Handle>	m_childs;

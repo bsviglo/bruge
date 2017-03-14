@@ -34,14 +34,27 @@ namespace brUGE
 
 			virtual void	activate() = 0;
 			virtual void	deactivate() = 0;
+		};
 
-			virtual Handle	createComponent() = 0;
-			virtual Handle	createComponent(const pugi::xml_node& data) = 0;
-			virtual Handle	cloneComponent(Handle id) = 0;
-			virtual bool	removeComponent(Handle id) = 0;
+		//--------------------------------------------------------------------------------------------------------------
+		class IComponentWorld : public IWorld
+		{
+		public:
+			virtual Handle	createComponent(Handle gameObj) = 0;
+			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) = 0;
+			virtual bool	removeComponent(Handle component) = 0;
+		};
 
-			virtual bool	registerGameObject(Handle gameObj) = 0;
-			virtual bool	unregisterGameObject(Handle gameObj) = 0;
+		//--------------------------------------------------------------------------------------------------------------
+		class ICacheWorld : public IWorld
+		{
+		public:
+
+			virtual void onGameObjectAdded(Handle gameObj) = 0;
+			virtual void onGameObjectRemoved(Handle gameObj) = 0;
+			virtual void onComponentAdded(Handle gameObj, Handle component) = 0;
+			virtual void onComponentUpdated(Handle gameObj, Handle component) = 0;
+			virtual void onComponentRemoved(Handle gameObj, Handle component) = 0;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -61,18 +74,26 @@ namespace brUGE
 		ISystem() { }
 		virtual ~ISystem() = 0 { }
 
-		virtual bool init() = 0;
+		virtual bool		init() = 0;
 
 		//-- update the global state of the world
-		virtual void update(IWorld* world, const DeltaTime& dt) const = 0;
+		virtual void		update(IWorld* world, const DeltaTime& dt) const = 0;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void process(IContext* context) const = 0;
+		virtual void		process(IContext* context) const = 0;
+
+		//--
+		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
+		virtual Handle		createContext(Handle world) = 0;
+		virtual void		removeWorld(Handle handle) = 0;
+		virtual void		removeContext(Handle handle) = 0;
+		virtual IWorld*		world(Handle handle) = 0;
+		virtual IContext*	context(Handle handle) = 0;
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
-		virtual bool checkRequiredComponents(Handle /*gameObj*/) const = 0;
+		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const = 0;
 	};
 }

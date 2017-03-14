@@ -28,7 +28,7 @@ namespace brUGE
 			bool			init(const pugi::xml_node& data);
 
 			Handle			createGameObject(uint32 componentMask = IComponent::TYPE_TRANSFORM);
-			Handle			createGameObject(const pugi::xml_node& data);
+			Handle			createGameObject(const pugi::xml_node& cfg);
 			Handle			cloneGameObject(Handle gameObj);
 			bool			removeGameObject(Handle gameObj);
 
@@ -60,8 +60,7 @@ namespace brUGE
 		virtual void	update(IWorld* world, const DeltaTime& dt) override;
 		virtual void	process(IContext* context) override;
 
-		Handle			addScene();
-		Handle			addScene(const utils::ROData& iData);
+		Handle			addScene(const pugi::xml_node* cfg = nullptr);
 		bool			delScene(Handle handle);
 		Scene*			scene(Handle handle) { return m_scenes[handle].get(); }
 

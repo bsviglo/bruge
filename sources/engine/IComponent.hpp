@@ -9,7 +9,8 @@ namespace brUGE
 
 	class GameObject;
 		
-	//-- Base class for all of the possible components in the engine
+	//-- Base class for all of the possible components in the engine.
+	//-- IComponent should provide default (empty) constructor to be able to create IComponent in the default state.
 	//------------------------------------------------------------------------------------------------------------------
 	class IComponent
 	{
@@ -18,24 +19,13 @@ namespace brUGE
 		//--------------------------------------------------------------------------------------------------------------
 		enum EFamilyType : int32
 		{
-			FAMILY_TYPE_UNKNOWN,
-			FAMILY_TYPE_RENDER,
-			FAMILY_TYPE_PHYSICS,
-			FAMILY_TYPE_AUDIO,
-			FAMILY_TYPE_SCRIPT
-		};
-
-		//--------------------------------------------------------------------------------------------------------------
-		enum EType : int32
-		{
-			TYPE_UNKNOWN				= 0,
-			TYPE_TRANSFORM				= 1 << 0,
-			TYPE_RIGID_BODY				= 1 << 1,
-			TYPE_COLLISION_BODY			= 1 << 2,
-			TYPE_ANIMATION_CONTROLLER	= 1 << 3,
-			TYPE_INPUT_CONTROLLER		= 1 << 4,
-			TYPE_CAMERA					= 1 << 5,
-			TYPE_SCRIPT					= 1 << 6,
+			FAMILY_TYPE_UNKNOWN		= 0,
+			FAMILY_TYPE_SYSTEM		= 1 << 0,
+			FAMILY_TYPE_RENDER		= 1 << 1,
+			FAMILY_TYPE_PHYSICS		= 1 << 2,
+			FAMILY_TYPE_AUDIO		= 1 << 3,
+			FAMILY_TYPE_SCRIPT		= 1 << 4,
+			FAMILY_TYPE_MISC		= 1 << 5,
 		};
 
 	public:
