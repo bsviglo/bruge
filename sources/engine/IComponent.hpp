@@ -1,48 +1,63 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include <vector>
-#include <array>
 
 namespace brUGE
 {
 
-	class GameObject;
-		
 	//-- Base class for all of the possible components in the engine.
 	//-- IComponent should provide default (empty) constructor to be able to create IComponent in the default state.
 	//------------------------------------------------------------------------------------------------------------------
 	class IComponent
 	{
 	public:
+		//-- Structure that holds unique ID of a IComponent derived class.
+		//-- Note: it is unique only across single execution of one application.It is NOT suitable for serialization.
+		//--------------------------------------------------------------------------------------------------------------
+		class TypeID
+		{
+		public:
+			static const uint32 C_MAX_COMPONENT_TYPES = 16;
+
+		public:
+			TypeID();
+
+			uint32 id() const		{ return m_id; }
+			operator uint32() const { return m_id; }
+
+		private:
+			uint32 m_id;
+		};
 
 		//--------------------------------------------------------------------------------------------------------------
-		enum EFamilyType : int32
+		class ID
 		{
-			FAMILY_TYPE_UNKNOWN		= 0,
-			FAMILY_TYPE_SYSTEM		= 1 << 0, //-- example of sub-systems TRANSFORM, RESOURCE, MEMORY, FILE etc.
-			FAMILY_TYPE_RENDER		= 1 << 1,
-			FAMILY_TYPE_PHYSICS		= 1 << 2,
-			FAMILY_TYPE_AUDIO		= 1 << 3,
-			FAMILY_TYPE_SCRIPT		= 1 << 4,
-			FAMILY_TYPE_ANIMATION	= 1 << 5,
-			FAMILY_TYPE_MISC		= 1 << 6,
+		public:
+			ID(TypeID typeID, ISystem::TypeID systemTypeID, Handle handle) : m_typeID(typeID), m_systemTypeID(systemTypeID), m_handle(handle) { }
+
+			uint32 typeID() const			{ return m_typeID; }
+			uint32 systemTypeID() const		{ return m_systemTypeID; }
+			Handle handle() const			{ return m_handle; }
+
+			//-- ToDo: provide other operations
+
+		private:
+			uint32 m_typeID			: 16;
+			uint32 m_systemTypeID	: 16;
+			Handle m_handle;
 		};
 
 	public:
-		IComponent(EFamilyType familyType = FAMILY_TYPE_UNKNOWN, Handle owner = CONST_INVALID_HANDLE)
-			: m_familyType(familyType), m_owner(owner) { }
-
+		IComponent(Handle owner = CONST_INVALID_HANDLE)	: m_owner(owner) { }
 		virtual ~IComponent() = 0 { }
 
-		virtual void serialize(pugi::xml_node& oData) const = 0;
-		virtual void deserialize(const pugi::xml_node& iData) = 0;
+		virtual void	serialize(pugi::xml_node& oData) const = 0;
+		virtual void	deserialize(const pugi::xml_node& iData) = 0;
 
-		inline EFamilyType	family() const	{ return m_familyType; }
-		inline Handle		owner() const	{ return m_owner; } 
+		//-- handle on the GameObject
+		inline Handle	owner() const	{ return m_owner; } 
 
 	protected:
-		EFamilyType		m_familyType;
-		Handle			m_owner;
+		Handle m_owner;
 	};
 }

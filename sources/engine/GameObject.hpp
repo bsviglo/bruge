@@ -3,7 +3,7 @@
 #include "prerequisites.hpp"
 #include "IComponent.hpp"
 #include <vector>
-#include <array>
+#include <unordered_map>
 
 namespace brUGE
 {
@@ -18,22 +18,21 @@ namespace brUGE
 		GameObject();
 		~GameObject();
 
-		bool						addChild(Handle gameObj);
-		bool						delChild(Handle gameObj);
-		const std::vector<Handle>&	children() const;
-		Handle						parent() const;
+		bool								addChild(Handle gameObj);
+		bool								delChild(Handle gameObj);
+		const std::vector<Handle>&			children() const;
+		Handle								parent() const;
 
-		bool						createComponent(int32 mask);
-		bool						removeComponent(Handle component);
-		const std::vector<Handle>&	components() const;
+		bool								createComponent(IComponent::TypeID typeID);
+		bool								removeComponent(Handle component);
+		const std::vector<IComponent::ID>&	components() const;
 
-		Handle						findComponentByFamilyType(IComponent::EFamilyType type) const;
-		bool						hasComponentByFamilyType(IComponent::EFamilyType type) const;
+		bool								hasComponent(IComponent::TypeID typeID) const;
+		IComponent::ID						getComponentByType(IComponent::TypeID typeID) const;
 
 	private:
-		uint32				m_componentsFamilyMask;
-		Handle				m_parent;
-		std::vector<Handle>	m_components;
-		std::vector<Handle>	m_childs;
+		Handle													m_parent;
+		std::unordered_map<IComponent::TypeID, IComponent::ID>	m_components;
+		std::vector<Handle>										m_childs;
 	};
 }

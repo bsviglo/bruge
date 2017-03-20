@@ -12,64 +12,7 @@
 namespace brUGE
 {
 
-	//------------------------------------------------------------------------------------------------------------------
-	class SceneSystem : public ISystem
-	{
-	public:
-
-		//--------------------------------------------------------------------------------------------------------------
-		class Scene
-		{
-		public:
-			Scene();
-			~Scene();
-
-			bool			init();
-			bool			init(const pugi::xml_node& data);
-
-			Handle			createGameObject(uint32 componentMask = IComponent::TYPE_TRANSFORM);
-			Handle			createGameObject(const pugi::xml_node& cfg);
-			Handle			cloneGameObject(Handle gameObj);
-			bool			removeGameObject(Handle gameObj);
-
-			GameObject*		gameObject(Handle id);
-
-		private:
-			ISystem::IWorld* world(Engine::ESystemType type) { return m_sytemWorlds[type].get(); }
-
-		private:
-			std::vector<std::unique_ptr<GameObject>>							m_gameObjects;
-			std::array<std::shared_ptr<ISystem::IWorld>, Engine::SYSTEM_COUNT>	m_sytemWorlds;
-		};
-
-		//--------------------------------------------------------------------------------------------------------------
-		class Context
-		{
-		public:
-
-		private:
-			std::vector<std::unique_ptr<ISystem::IContext>> m_contexts;
-		};
-
-	public:
-		SceneSystem();
-		virtual ~SceneSystem() override;
-
-		virtual bool	init() override;
-		virtual void	update(IWorld* world, const DeltaTime& dt) override;
-		virtual void	process(IContext* context) override;
-
-		Handle			addScene(const pugi::xml_node* cfg = nullptr);
-		bool			delScene(Handle handle);
-		Scene*			scene(Handle handle) { return m_scenes[handle].get(); }
-
-	private:
-		std::vector<std::unique_ptr<Scene>>		m_scenes;;
-		std::vector<std::unique_ptr<Context>>	m_contexts;
-	};
-
-
-
+	//-- ToDo:
 
 	//-- Exists for every node of every model.
 	//------------------------------------------------------------------------------------------------------------------

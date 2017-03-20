@@ -21,33 +21,6 @@ namespace render
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	class IRenderComponent : public IComponent
-	{
-	public:
-		enum EType : int32
-		{
-			TYPE_UNKNOWN				= 0,
-			TYPE_STATIC_MESH			= 1 << 1,
-			TYPE_SKINNED_MESH			= 1 << 2,
-			TYPE_DIRECTIONAL_LIGHT		= 1 << 3,
-			TYPE_SPOT_LIGHT				= 1 << 4,
-			TYPE_OMNI_LIGHT				= 1 << 5,
-			TYPE_DECAL					= 1 << 6,
-			TYPE_CAMERA					= 1 << 7,
-		};
-
-	public:
-		IRenderComponent(EType type = TYPE_UNKNOWN) : IComponent(IComponent::FAMILY_TYPE_RENDER), m_type(type) { }
-		virtual ~IRenderComponent() = 0 { };
-
-		inline const EType type() const { return m_type; }
-
-	private:
-		EType m_type;
-	};
-
-
-	//------------------------------------------------------------------------------------------------------------------
 	class RenderSystem : public ISystem
 	{
 	public:

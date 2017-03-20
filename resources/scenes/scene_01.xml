@@ -1,7 +1,8 @@
 <scene name="simple scene">
 	<gameObject>
 		<components>
-			<component familyType="Render" type="StaticMesh">
+			<component type="StaticMeshComponent">
+        <resource> some_static_mesh.staticmesh </resource>
 			</component>
 			<component familyType="Physics" type="RigidBody">
 			</component>

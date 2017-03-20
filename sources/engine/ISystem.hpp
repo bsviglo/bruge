@@ -21,6 +21,25 @@ namespace brUGE
 	class ISystem : public NonCopyable
 	{
 	public:
+		//-- Structure that holds unique ID of a ISystem derived class.
+		//-- Note: it is unique only across single execution of one application.It is NOT suitable for serialization.
+		//--------------------------------------------------------------------------------------------------------------
+		class TypeID
+		{
+		public:
+			static const uint32 C_MAX_SYSTEM_TYPES = 16;
+
+		public:
+			TypeID();
+
+			uint32 id() const		{ return m_id; }
+			operator uint32() const { return m_id; }
+
+		private:
+			uint32 m_id;
+		};
+
+	public:
 		//-- Container of all of the components of a specific type on a particular scene. So you may have
 		//-- various scenes (IWorld instances) have been loaded at the same time and they won't interfere with each other.
 		//--------------------------------------------------------------------------------------------------------------
@@ -40,9 +59,6 @@ namespace brUGE
 		class IComponentWorld : public IWorld
 		{
 		public:
-			virtual Handle	createComponent(Handle gameObj) = 0;
-			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) = 0;
-			virtual bool	removeComponent(Handle component) = 0;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -52,9 +68,9 @@ namespace brUGE
 
 			virtual void onGameObjectAdded(Handle gameObj) = 0;
 			virtual void onGameObjectRemoved(Handle gameObj) = 0;
-			virtual void onComponentAdded(Handle gameObj, Handle component) = 0;
-			virtual void onComponentUpdated(Handle gameObj, Handle component) = 0;
-			virtual void onComponentRemoved(Handle gameObj, Handle component) = 0;
+			virtual void onComponentAdded(Handle gameObj, IComponent::ID component) = 0;
+			virtual void onComponentUpdated(Handle gameObj, IComponent::ID component) = 0;
+			virtual void onComponentRemoved(Handle gameObj, IComponent::ID component) = 0;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.

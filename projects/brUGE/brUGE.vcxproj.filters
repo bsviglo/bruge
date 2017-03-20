@@ -177,6 +177,15 @@
     <ClCompile Include="..\..\sources\physics\physic_world.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\engine\IComponent.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\engine\ISystem.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\engine\scene_system.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h">
@@ -346,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\scene\camera_system.hpp">
       <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\engine\scene_system.hpp">
+      <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,39 +14,38 @@ namespace brUGE
 namespace render
 {
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class AnimationControllerComponent : public IComponent
 	{
 	public:
-		AnimationControllerComponent(Handle animCtrl) : IComponent(IComponent::TYPE_ANIMATION_CONTROLLER), m_animCtrl(animCtrl) { }
+		AnimationControllerComponent(Handle owner) : IComponent(owner), m_animCtrl(animCtrl) { }
 		virtual ~AnimationControllerComponent() override { }
 
 	private:
 		Handle m_animCtrl;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class AnimationSystem : public ISystem
 	{
 	public:
 
-		//----------------------------------------------------------------------------------------------
-		class World : public ISystem::IWorld
+		//--------------------------------------------------------------------------------------------------------------
+		class World : public ISystem::IComponentWorld
 		{
 		public:
 			World() { }
 			virtual ~World() override { }
 
-			virtual bool						init() override;
+			virtual bool			init() override;
 
-			virtual void						activate() override;
-			virtual void						deactivate() override;
+			virtual void			activate() override;
+			virtual void			deactivate() override;
 
-			virtual std::unique_ptr<IComponent>	createComponent() override;
-			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) override;
-
-			virtual bool						registerGameObject(Handle entity) override;
-			virtual bool						unregisterGameObject(Handle entity) override;
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::ID	cloneComponent (SceneSystem::Scene& scene, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool			removeComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::ID component) override;
 
 		private:
 			std::vector<std::unique_ptr<AnimationController>>				m_animCtrls;
@@ -57,7 +56,7 @@ namespace render
 			std::vector<std::unique_ptr<AnimationControllerComponent>>		m_components;
 		};
 
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class Context : public ISystem::IContext
 		{
 		public:
@@ -88,7 +87,7 @@ namespace render
 
 	//-- For each particular animation we have only one instance of this class. It contains only
 	//-- static information of animation (multi threading friendly)
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class Animation
 	{
 	public:
@@ -133,7 +132,7 @@ namespace render
 	};
 
 	//-- Represents one particular layer of an animation.
-	//------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct AnimLayer
 	{
 		AnimLayer() : m_looped(false), m_paused(false), m_blend(0.0f) { }
@@ -149,7 +148,7 @@ namespace render
 	//-- Consists of the arbitrary number of the animation layers. The all layers are blended 
 	//-- together and make the final animation of the mesh. Each layer may be configured with the
 	//-- own list of options.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct AnimationController
 	{
 		struct Desc
@@ -177,7 +176,7 @@ namespace render
 
 	//-- ToDo: Maybe it will be better to create one AnimationBlender per skeleton.
 	//-- Blends two or more animation together and produce a new blended animation on the output.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class AnimationBlender
 	{
 	public:
@@ -197,7 +196,7 @@ namespace render
 	//-- The main purpose of the AnimationEngine is to provide uniform and optimal way of doing
 	//-- animation on the arbitrary geometry set and to hide complexity of this task inside his
 	//-- implementation.
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class AnimationEngine : public NonCopyable
 	{
 	public:

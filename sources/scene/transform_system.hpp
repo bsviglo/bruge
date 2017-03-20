@@ -42,23 +42,25 @@ namespace brUGE
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
-	class ISystemComponent : public IComponent
-	{
-
-	};
-
-
-	//------------------------------------------------------------------------------------------------------------------
-	class TransformComponent : public ISystemComponent
+	class TransformComponent : public IComponent
 	{
 	public:
-		TransformComponent() : ISystemComponent(IComponent::TYPE_TRANSFORM) { }
+		struct Parameters
+		{
+			mat4f m_transform;
+		};
+
+	public:
+		TransformComponent(Handle owner) : IComponent(owner) { }
 		virtual ~TransformComponent() override { }
 
+		static TypeID		typeID()		{ return m_typeID; }
+		const Parameters&	params() const	{ return m_params; }
+
 	private:
+		Parameters			 m_params;
 
-		mat4f m_transform;
-
+		static const TypeID	 m_typeID;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -78,12 +80,9 @@ namespace brUGE
 			virtual void	activate() override;
 			virtual void	deactivate() override;
 
-			virtual Handle	createComponent() override;
-			virtual Handle	cloneComponent(Handle id) override;
-			virtual bool	removeComponent(Handle id) override;
-
-			virtual bool	registerGameObject(Handle entity) override;
-			virtual bool	unregisterGameObject(Handle entity) override;
+			virtual Handle	createComponent(Handle gameObj) override;
+			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) override;
+			virtual bool	removeComponent(Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<TransformComponent>>	m_components;
@@ -96,7 +95,15 @@ namespace brUGE
 		};
 
 	public:
+		TransformSystem();
+		virtual ~TransformSystem() override;
+
+		virtual bool	init() override;
+		virtual void	update(IWorld* world,  const DeltaTime& dt) const override;
+		virtual void	process(IContext* context) const override;
+		static TypeID	typeID() { return m_typeID; }
 	
 	private:
+		static const TypeID	m_typeID;
 	};
 }

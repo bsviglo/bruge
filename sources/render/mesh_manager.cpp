@@ -31,15 +31,21 @@ namespace brUGE
 	{
 		registration::class_<StaticMeshComponent>("render::StaticMeshComponent")
 			.constructor<>()
-			.property("resource", &StaticMeshComponent::fileName, &StaticMeshComponent::fileName);
+			.property_readonly("typeID", StaticMeshComponent::typeID)
+			.property_readonly("systemTypeID", MeshSystem::typeID);
 
 		registration::class_<SkinnedMeshComponent>("render::SkinnedMeshComponent")
 			.constructor<>()
-			.property("resource", &StaticMeshComponent::fileName, &StaticMeshComponent::fileName);
+			.property_readonly("typeID", SkinnedMeshComponent::typeID)
+			.property_readonly("systemTypeID", MeshSystem::typeID);
 	}
 
 namespace render
 {
+	const IComponent::TypeID StaticMeshComponent::m_typeID;
+	const IComponent::TypeID SkinnedMeshComponent::m_typeID;
+
+	const ISystem::TypeID MeshSystem::m_typeID;
 
 	//------------------------------------------------------------------------------------------------------------------
 	MeshSystem::MeshSystem()
@@ -47,8 +53,46 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
+	Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
+	{
+
+	}
 
 	//------------------------------------------------------------------------------------------------------------------
+	Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
+	{
+		//-- ToDo:
+		ResourcesManager& rm = ResourcesManager::instance();
+		auto mInst = std::make_unique<MeshInstance>();
+
+		if (typeID == StaticMeshComponent::typeID())
+		{
+			auto resourceName = std::string(cfg.find_child("resource").text().as_string());
+
+			auto mesh = rm.loadMesh(resourceName.c_str());
+			if (!mesh)
+			{
+				return CONST_INVALID_HANDLE;
+			}
+
+			mInst->m_mesh	   = mesh;
+			mInst->m_transform = transform;
+
+			transform->m_localBounds = mesh->bounds();
+			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
+		}
+		else if (typeID == SkinnedMeshComponent::typeID())
+		{
+
+		}
+		else
+		{
+			assert(false && "Invalid TypeID of the component");
+		}
+	}
+
+
+	//-- ToDo: legacy
 
 
 	//----------------------------------------------------------------------------------------------
