@@ -17,34 +17,46 @@ namespace render
 	class StaticMeshComponent : public IComponent
 	{
 	public:
-		StaticMeshComponent() : IComponent(TYPE_STATIC_MESH) { }
+		struct Parameters
+		{
+			std::string	m_resource;
+		};
+
+	public:
+		StaticMeshComponent(Handle owner) : IComponent(owner) { }
 		virtual ~StaticMeshComponent() override { }
 
-		
-		const std::string&	fileName() const { return m_fileName; }
-		void				fileName(const std::string& name) { m_fileName = name; }
-
-		//-- ToDo:
-		StaticMeshComponent
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
 
 	private:
-		std::string m_fileName;
-		Handle		m_instance;
+		Parameters			m_params;
+		Handle				m_instance;
+		static const TypeID	m_typeID;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
 	class SkinnedMeshComponent : public IComponent
 	{
 	public:
-		SkinnedMeshComponent() : IComponent(TYPE_SKINNED_MESH) { }
+		struct Parameters
+		{
+			std::string m_resource;
+		};
+
+	public:
+		SkinnedMeshComponent(Handle owner) : IComponent(owner) { }
 		virtual ~SkinnedMeshComponent() override { }
 
-		const std::string&	fileName() const { return m_fileName; }
-		void				fileName(const std::string& name) { m_fileName = name; }
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
+
 
 	private:
-		std::string	m_fileName;
-		Handle		m_instance;
+		Parameters			m_params;
+		Handle				m_instance;
+
+		static const TypeID	m_typeID;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -64,9 +76,9 @@ namespace render
 			virtual void	activate() override;
 			virtual void	deactivate() override;
 
-			virtual Handle	createComponent(Handle gameObj) override;
-			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) override;
-			virtual bool	removeComponent(Handle component) override;
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual bool			removeComponent(SceneSystem::Scene& scene, IComponent::ID component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
@@ -88,13 +100,15 @@ namespace render
 		MeshSystem();
 		virtual ~MeshSystem() override;
 
-		virtual bool init() override;
-		virtual void update(IWorld* world) override;
-		virtual void process(IContext* context) override;
-
+		virtual bool	init() override;
+		virtual void	update(IWorld* world,  const DeltaTime& dt) const override;
+		virtual void	process(IContext* context) const override;
+		static TypeID	typeID() { return m_typeID; }
+				
 	public:
 		std::vector<std::unique_ptr<World>>		m_worlds;
 		std::vector<std::unique_ptr<Context>>	m_contexts;
+		static const TypeID						m_typeID;
 	};
 
 

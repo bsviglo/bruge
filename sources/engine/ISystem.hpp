@@ -59,6 +59,10 @@ namespace brUGE
 		class IComponentWorld : public IWorld
 		{
 		public:
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) = 0;
+			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
+			virtual IComponent::ID	cloneComponent (SceneSystem::Scene& scene, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
+			virtual bool			removeComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::ID component) = 0;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
