@@ -9,7 +9,7 @@ namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	class SceneSystem : public ISystem
+	class SceneSystem
 	{
 	public:
 
@@ -49,11 +49,9 @@ namespace brUGE
 
 	public:
 		SceneSystem();
-		virtual ~SceneSystem() override;
+		~SceneSystem();;
 
-		virtual bool	init() override;
-		virtual void	update(IWorld* world, const DeltaTime& dt) const override;
-		virtual void	process(IContext* context) const override;
+		virtual bool	init();
 
 		Handle			addScene(const pugi::xml_node* cfg = nullptr);
 		bool			delScene(Handle handle);
