@@ -1,11 +1,11 @@
 <scene name="simple scene">
 	<gameObject>
 		<components>
-			<component type="StaticMesh">
+			<component familyType="Render" type="StaticMesh">
 			</component>
-			<component type="RigidBody">
+			<component familyType="Physics" type="RigidBody">
 			</component>
-			<component type="Transform">
+			<component familyType="System" type="Transform">
 				<row0> 1 0 0 0 </row0>
 				<row1> 0 1 0 0 </row1>
 				<row2> 0 0 1 0 </row2>

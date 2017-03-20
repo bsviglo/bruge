@@ -4,6 +4,7 @@
 #include "DebugDrawer.h"
 #include "utils/string_utils.h"
 #include "loader/ResourcesManager.h"
+#include "rttr/registration"
 
 using namespace brUGE::utils;
 using namespace brUGE::math;
@@ -22,8 +23,33 @@ namespace
 
 namespace brUGE
 {
+
+	using namespace rttr;
+	using namespace render;
+
+	RTTR_REGISTRATION
+	{
+		registration::class_<StaticMeshComponent>("render::StaticMeshComponent")
+			.constructor<>()
+			.property("resource", &StaticMeshComponent::fileName, &StaticMeshComponent::fileName);
+
+		registration::class_<SkinnedMeshComponent>("render::SkinnedMeshComponent")
+			.constructor<>()
+			.property("resource", &StaticMeshComponent::fileName, &StaticMeshComponent::fileName);
+	}
+
 namespace render
 {
+
+	//------------------------------------------------------------------------------------------------------------------
+	MeshSystem::MeshSystem()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------------------------
+
 
 	//----------------------------------------------------------------------------------------------
 	MeshManager::MeshManager() : m_meshCollector(new MeshCollector)

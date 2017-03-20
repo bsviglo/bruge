@@ -94,6 +94,6 @@ namespace brUGE
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
-		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const = 0;
+		virtual bool		requiredComponents(Handle /*gameObj*/) const = 0;
 	};
 }

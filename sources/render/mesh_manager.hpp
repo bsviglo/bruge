@@ -13,7 +13,7 @@ namespace brUGE
 namespace render
 {
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class StaticMeshComponent : public IComponent
 	{
 	public:
@@ -24,12 +24,15 @@ namespace render
 		const std::string&	fileName() const { return m_fileName; }
 		void				fileName(const std::string& name) { m_fileName = name; }
 
+		//-- ToDo:
+		StaticMeshComponent
+
 	private:
 		std::string m_fileName;
 		Handle		m_instance;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class SkinnedMeshComponent : public IComponent
 	{
 	public:
@@ -44,28 +47,26 @@ namespace render
 		Handle		m_instance;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class MeshSystem : public ISystem
 	{
 	public:
 
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class World : public ISystem::IWorld
 		{
 		public:
 			World();
 			virtual ~World() override;
 
-			virtual bool						init() override;
+			virtual bool	init() override;
 
-			virtual void						activate() override;
-			virtual void						deactivate() override;
+			virtual void	activate() override;
+			virtual void	deactivate() override;
 
-			virtual std::unique_ptr<IComponent>	createComponent() override;
-			virtual std::unique_ptr<IComponent> cloneComponent(const std::unique_ptr<IComponent>& c) override;
-
-			virtual bool						registerGameObject(const std::shared_ptr<GameObject>& entity) override;
-			virtual bool						unregisterGameObject(const std::shared_ptr<GameObject>& entity) override;
+			virtual Handle	createComponent(Handle gameObj) override;
+			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) override;
+			virtual bool	removeComponent(Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;

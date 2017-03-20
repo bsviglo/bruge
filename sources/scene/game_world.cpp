@@ -11,6 +11,8 @@
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
 
+#include "rttr/type"
+
 using namespace brUGE::math;
 using namespace brUGE::utils;
 using namespace brUGE::os;
@@ -39,17 +41,39 @@ namespace brUGE
 	{
 		auto gameObj = std::make_unique<GameObject>();
 
+		//-- register it in scene
+		m_gameObjects.push_back(std::move(gameObj));
+		Handle gameObjID = m_gameObjects.size() - 1;
+
 		if (auto componentsCfg = data.child("components"))
 		{
 			for (auto componentCfg : componentsCfg.children("component"))
 			{
-				auto type = std::string(componentCfg.attribute("name").value());
+				auto familyType	= std::string(componentsCfg.attribute("familyType").value());
+				auto type		= std::string(componentCfg.attribute("type").value());
+
+				if (familyType == "Render")
+				{
+					world(Engine::.createComponent(gameObjID, componentCfg);
+				}
+				else if (familyType == "System")
+				{
+
+				}
+				else if (familyType == "Animation")
+				{
+
+				}
+				else if (familyType == "Physics")
+				{
+				}
+
+				ISystem::IComponentWorld* world = nullptr;
 
 				//-- ToDo: Use factory here
 				if (type == "Transform")
 				{
-					auto component = world<TransformSystem>(Engine::SYSTEM_TRANSFORM)->createComponent(componentCfg);
-					gameObj->addComponent(component);
+					world = world(Engine::SYSTEM_TRANSFORM);
 				}
 				else if (type == "Camera")
 				{

@@ -49,13 +49,16 @@ namespace brUGE
 
 
 	//------------------------------------------------------------------------------------------------------------------
-	class TransformComponent : public IComponent
+	class TransformComponent : public ISystemComponent
 	{
 	public:
-		TransformComponent() : IComponent(IComponent::TYPE_TRANSFORM) { }
+		TransformComponent() : ISystemComponent(IComponent::TYPE_TRANSFORM) { }
 		virtual ~TransformComponent() override { }
 
 	private:
+
+		mat4f m_transform;
+
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
