@@ -465,7 +465,7 @@ namespace render
 			{
 				AABB aabb;
 				meshManager.gatherROPs(
-					RenderSystem::PASS_SHADOW_CAST, false,
+					Renderer::PASS_SHADOW_CAST, false,
 					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj, &aabb
 					);
 
@@ -498,7 +498,7 @@ namespace render
 			else
 			{
 				meshManager.gatherROPs(
-					RenderSystem::PASS_SHADOW_CAST, false,
+					Renderer::PASS_SHADOW_CAST, false,
 					m_castROPs, g_useCullingMatrix ? cullingVPMat : curCam.m_viewProj
 					);
 			}
@@ -511,7 +511,7 @@ namespace render
 			//-- draw ROPs into the particular shadow map.
 			{
 				const vec4ui& curViewPort = m_shadowViewPorts[i];
-				rs().beginPass(RenderSystem::PASS_SHADOW_CAST);
+				rs().beginPass(Renderer::PASS_SHADOW_CAST);
 				rd()->setRenderTarget(nullptr, m_shadowMaps.get());
 				rd()->setViewPort(curViewPort.x, curViewPort.y, curViewPort.z, curViewPort.w);
 				rs().setCamera(&curCam);
@@ -548,7 +548,7 @@ namespace render
 			shader->setTexture("g_noiseMap", m_noiseMap.get(), m_noiseMapSml);
 		}
 
-		rs().beginPass(RenderSystem::PASS_SHADOW_RECEIVE);
+		rs().beginPass(Renderer::PASS_SHADOW_RECEIVE);
 		rs().setCamera(rCam);
 		rs().shaderContext().updatePerFrameViewConstants();
 		rs().addImmediateROPs(m_receiveROPs);

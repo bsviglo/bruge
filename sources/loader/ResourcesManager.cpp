@@ -68,7 +68,7 @@ namespace brUGE
 		if (!result)
 		{
 			FileSystem&   fs = FileSystem::instance();
-			RenderSystem& rs = RenderSystem::instance();
+			Renderer& rs = Renderer::instance();
 
 			RODataPtr data = fs.readFile(makeStr("%sshaders/%s.%s",
 				m_resPath.c_str(), name, (rs.gapi() == RENDER_API_GL3) ? "glsl" : "hlsl"

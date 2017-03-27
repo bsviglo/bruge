@@ -46,7 +46,7 @@ namespace render
 		bool init();
 		bool temporal_hardcoded_load();
 		//bool load(const pugi::xml_node& section);
-		uint gatherROPs(RenderSystem::EPassType pass, RenderOps& rops, const mat4f& viewPort, const vec3f& camPos);
+		uint gatherROPs(Renderer::EPassType pass, RenderOps& rops, const mat4f& viewPort, const vec3f& camPos);
 
 		//-- ToDo: reconsider interface to physics intercommunications.
 

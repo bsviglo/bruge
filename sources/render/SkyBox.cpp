@@ -37,7 +37,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	uint SkyBox::gatherROPs(RenderOps& rops) const
 	{
-		return m_skybox->gatherROPs(RenderSystem::PASS_MAIN_COLOR, false, rops);
+		return m_skybox->gatherROPs(Renderer::PASS_MAIN_COLOR, false, rops);
 	}
 	
 } //-- render

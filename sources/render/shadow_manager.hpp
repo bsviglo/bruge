@@ -12,6 +12,59 @@ namespace brUGE
 
 namespace render
 {
+
+	//------------------------------------------------------------------------------------------------------------------
+	class CSMShadowComponent : public IComponent
+	{
+	public:
+		struct Parameters
+		{
+			Parameters() : m_autoSplitSheme(true), m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_bias(1.0f), m_slopeScaleBias(4.0f), m_splitCount(4) { }
+
+			bool	m_autoSplitSheme;
+			uint	m_shadowMapRes;
+			float	m_splitShemeLambda;
+			float	m_bias;
+			float	m_slopeScaleBias;
+			uint	m_splitCount;
+		};
+
+	public:
+		CSMShadowComponent(::Handle owner) : IComponent(owner) { }
+		virtual ~CSMShadowComponent() override { }
+
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
+
+	private:
+		Parameters			m_params;
+		::Handle			m_instance;
+		static const TypeID	m_typeID;
+	};
+
+
+	//------------------------------------------------------------------------------------------------------------------
+	class ShadowSystem : public ISystem
+	{
+	public:
+
+		//--------------------------------------------------------------------------------------------------------------
+		class World : public IWorld
+		{
+
+		};
+
+		//--------------------------------------------------------------------------------------------------------------
+		class Context : public IContext
+		{
+		};
+
+	private:
+	};
+
+
+	//-- ToDo: Legacy
+
 	class  LightsManager;
 	class  MeshManager;
 	struct DirectionLight;

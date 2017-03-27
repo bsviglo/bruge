@@ -50,7 +50,7 @@ namespace brUGE
 
 		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
 		render::RenderWorld&		renderWorld()		{ return *m_renderWorld.get();	}
-		render::RenderSystem&		renderSystem()		{ return m_renderSys;			}
+		render::Renderer&		renderSystem()		{ return m_renderSys;			}
 		physics::PhysicsWorld&		physicsWorld()		{ return *m_physicWorld.get();	}
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
@@ -82,7 +82,7 @@ namespace brUGE
 		std::unique_ptr<TimingPanel>				m_timingPanel;
 		std::unique_ptr<ui::System>					m_uiSystem;
 		render::VideoMode	 						m_videoMode;
-		render::RenderSystem 						m_renderSys;
+		render::Renderer 						m_renderSys;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;

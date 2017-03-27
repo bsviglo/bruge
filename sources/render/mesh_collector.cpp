@@ -40,7 +40,7 @@ namespace render
 	}
 
 	//----------------------------------------------------------------------------------------------
-	void MeshCollector::begin(RenderSystem::EPassType pass)
+	void MeshCollector::begin(Renderer::EPassType pass)
 	{
 		m_pass = pass;
 

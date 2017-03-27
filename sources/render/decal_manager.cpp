@@ -89,7 +89,7 @@ namespace render
 			//-- create rops for drawing.
 			RenderOps rops;
 			//-- ToDo: reconsider.
-			m_unitCube->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
+			m_unitCube->gatherROPs(Renderer::PASS_Z_ONLY, false, rops);
 			{
 				RenderOp& op  = rops[0];
 

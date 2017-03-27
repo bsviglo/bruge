@@ -71,14 +71,20 @@ namespace render
 			World();
 			virtual ~World() override;
 
-			virtual bool	init() override;
+			virtual bool				init() override;
 
-			virtual void	activate() override;
-			virtual void	deactivate() override;
+			virtual void				activate() override;
+			virtual void				deactivate() override;
 
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) override;
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual bool			removeComponent(SceneSystem::Scene& scene, IComponent::ID component) override;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
+
+			virtual void				onGameObjectAdded(Universe::World& world, Handle gameObj) override;
+			virtual void				onGameObjectRemoved(Universe::World& world, Handle gameObj) override;
+			virtual void				onComponentAdded(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
+			virtual void				onComponentRemoved(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
@@ -90,6 +96,10 @@ namespace render
 		class Context : public ISystem::IContext
 		{
 		public:
+			Context() { }
+			virtual ~Context() override;
+
+			virtual bool init(ISystem* system, IWorld* world) override;
 
 		private:
 			std::unique_ptr<MeshCollector>	m_meshCollector;
@@ -98,7 +108,7 @@ namespace render
 
 	public:
 		MeshSystem();
-		virtual ~MeshSystem() override;
+		virtual ~MeshSystem() override { }
 
 		virtual bool	init() override;
 		virtual void	update(IWorld* world,  const DeltaTime& dt) const override;
@@ -140,7 +150,7 @@ namespace render
 
 		bool				init();
 		void				update(float dt);
-		uint				gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& rops, const mat4f& viewPort, AABB* aabb = nullptr);
+		uint				gatherROPs(Renderer::EPassType pass, bool instanced, RenderOps& rops, const mat4f& viewPort, AABB* aabb = nullptr);
 
 		//-- models.
 		Handle				createMeshInstance(const MeshInstance::Desc& desc, Transform* transform);

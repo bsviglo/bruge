@@ -3,9 +3,13 @@
 #include "prerequisites.hpp"
 #include "IComponent.hpp"
 #include "GameObject.hpp"
+#include <array>
 
 namespace brUGE
 {
+	class Universe;
+	class Universe::World;
+
 	//------------------------------------------------------------------------------------------------------------------
 	struct DeltaTime
 	{
@@ -27,7 +31,9 @@ namespace brUGE
 		class TypeID
 		{
 		public:
-			static const uint32 C_MAX_SYSTEM_TYPES = 16;
+			static const uint32 C_MAX_SYSTEM_TYPES		= 16;
+			static const uint32 C_MAX_SYSTEM_HIERARCHY	= 3;
+			static const TypeID C_INVALID;
 
 		public:
 			TypeID();
@@ -36,8 +42,12 @@ namespace brUGE
 			operator uint32() const { return m_id; }
 
 		private:
+			TypeID(uint32 ivalidID) : m_id(0) { }
+
 			uint32 m_id;
 		};
+
+		typedef std::array<TypeID, TypeID::C_MAX_SYSTEM_HIERARCHY> TypeIDPath;
 
 	public:
 		//-- Container of all of the components of a specific type on a particular scene. So you may have
@@ -49,32 +59,20 @@ namespace brUGE
 			IWorld() { }
 			virtual ~IWorld() = 0 { }
 
-			virtual bool	init() = 0;
+			virtual bool				init() = 0;
 
-			virtual void	activate() = 0;
-			virtual void	deactivate() = 0;
-		};
+			virtual void				activate() = 0;
+			virtual void				deactivate() = 0;
 
-		//--------------------------------------------------------------------------------------------------------------
-		class IComponentWorld : public IWorld
-		{
-		public:
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) = 0;
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
-			virtual IComponent::ID	cloneComponent (SceneSystem::Scene& scene, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
-			virtual bool			removeComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::ID component) = 0;
-		};
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) = 0;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
+			virtual IComponent::Handle	cloneComponent(Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
+			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
 
-		//--------------------------------------------------------------------------------------------------------------
-		class ICacheWorld : public IWorld
-		{
-		public:
-
-			virtual void onGameObjectAdded(Handle gameObj) = 0;
-			virtual void onGameObjectRemoved(Handle gameObj) = 0;
-			virtual void onComponentAdded(Handle gameObj, IComponent::ID component) = 0;
-			virtual void onComponentUpdated(Handle gameObj, IComponent::ID component) = 0;
-			virtual void onComponentRemoved(Handle gameObj, IComponent::ID component) = 0;
+			virtual void				onGameObjectAdded(Universe::World& world, Handle gameObj) = 0;
+			virtual void				onGameObjectRemoved(Universe::World& world, Handle gameObj) = 0;
+			virtual void				onComponentAdded(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
+			virtual void				onComponentRemoved(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -105,15 +103,30 @@ namespace brUGE
 
 		//--
 		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
-		virtual Handle		createContext(Handle world) = 0;
 		virtual void		removeWorld(Handle handle) = 0;
+
+		virtual Handle		createContext(Handle world) = 0;
 		virtual void		removeContext(Handle handle) = 0;
-		virtual IWorld*		world(Handle handle) = 0;
-		virtual IContext*	context(Handle handle) = 0;
+
+		IWorld*				world(Handle handle) const;
+		IContext*			context(Handle handle) const;
+
+		//-- hierarchy
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
 		virtual bool		requiredComponents(Handle /*gameObj*/) const = 0;
+
+		private:
+			std::vector<std::unique_ptr<IWorld>>	m_worlds;
+			std::vector<std::unique_ptr<IContext>>	m_contexts;
+	};
+
+
+	//-- ToDo:
+	//------------------------------------------------------------------------------------------------------------------
+	class IAggregationSystem : public ISystem
+	{
 	};
 }

@@ -183,8 +183,11 @@
     <ClCompile Include="..\..\sources\engine\ISystem.cpp">
       <Filter>engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\engine\scene_system.cpp">
+    <ClCompile Include="..\..\sources\engine\Universe.cpp">
       <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\Renderer.cpp">
+      <Filter>render\framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -356,8 +359,11 @@
     <ClInclude Include="..\..\sources\scene\camera_system.hpp">
       <Filter>scene</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\engine\scene_system.hpp">
+    <ClInclude Include="..\..\sources\engine\Universe.hpp">
       <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\Renderer.hpp">
+      <Filter>render\framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

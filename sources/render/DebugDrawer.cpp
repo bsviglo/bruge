@@ -455,7 +455,7 @@ namespace render
 					if (!cache.empty())
 					{
 						//-- ToDo: reconsider.
-						m_meshes[type]->gatherROPs(RenderSystem::PASS_Z_ONLY, false, rops);
+						m_meshes[type]->gatherROPs(Renderer::PASS_Z_ONLY, false, rops);
 
 						rops.back().m_material		= m_solidMaterial->renderFx();
 						rops.back().m_instanceTB	= m_instancingTB.get();
@@ -466,10 +466,10 @@ namespace render
 				}
 
 				//-- retrieve desired render pass and draw it.
-				const RenderSystem::EPassType renderPasses[] = {
-					RenderSystem::PASS_DEBUG_SOLID,
-					RenderSystem::PASS_DEBUG_TRANSPARENT,
-					RenderSystem::PASS_DEBUG_OVERRIDE
+				const Renderer::EPassType renderPasses[] = {
+					Renderer::PASS_DEBUG_SOLID,
+					Renderer::PASS_DEBUG_TRANSPARENT,
+					Renderer::PASS_DEBUG_OVERRIDE
 				};
 
 				rs().beginPass(renderPasses[pass]);
@@ -495,7 +495,7 @@ namespace render
 			//-- update some rop's information.
 			m_wireROPs[0].m_indicesCount = m_vertices.size();
 
-			rs().beginPass(RenderSystem::PASS_DEBUG_WIRE);
+			rs().beginPass(Renderer::PASS_DEBUG_WIRE);
 			rs().addROPs(m_wireROPs);
 			rs().endPass();
 

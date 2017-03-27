@@ -1,8 +1,7 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include "render_common.h"
-#include "render_system.hpp"
+#include "Renderer.hpp"
 
 namespace brUGE
 {
@@ -23,7 +22,7 @@ namespace render
 		~MeshCollector();
 
 		bool init();
-		void begin(RenderSystem::EPassType pass);
+		void begin(Renderer::EPassType pass);
 		bool addMeshInstance(const MeshInstance& instance);
 		void end();
 		uint gatherROPs(RenderOps& rops);
@@ -38,7 +37,7 @@ namespace render
 		};
 
 		std::vector<Instance>		m_instances;
-		RenderSystem::EPassType		m_pass;
+		Renderer::EPassType			m_pass;
 		std::shared_ptr<IBuffer>	m_instanceTB;
 	};
 

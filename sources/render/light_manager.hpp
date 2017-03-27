@@ -16,81 +16,110 @@ namespace brUGE
 namespace render
 {
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class DirectionalLightComponent : public IComponent
 	{
 	public:
-		DirectionalLightComponent() : IComponent(IComponent::TYPE_DIRECTIONAL_LIGHT) { }
+		struct Parameters
+		{
+			Color m_color;
+		};
+
+	public:
+		DirectionalLightComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~DirectionalLightComponent() override { }
 
-	private:
-		Color m_color;
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
 
-		Handle m_light;
+	private:
+		Parameters			m_params;
+		::Handle			m_light;
+		static const TypeID	m_typeID;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class SpotLightComponent : public IComponent
 	{
 	public:
-		SpotLightComponent() : IComponent(IComponent::TYPE_SPOT_LIGHT) { }
+		struct Parameters
+		{
+			vec2f m_intoutRadius;
+			Color m_color;
+		};
+
+	public:
+		SpotLightComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~SpotLightComponent() override { }
 
-	private:
-		vec2f m_intoutRadius;
-		Color m_color;
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
 
-		Handle m_light;
+	private:
+		Parameters			m_params;
+		::Handle			m_light;
+		static const TypeID	m_typeID;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class OmniLightComponent : public IComponent
 	{
 	public:
-		OmniLightComponent() : IComponent(IComponent::TYPE_OMNI_LIGHT) { }
+		struct Parameters
+		{
+			vec2f m_inoutCosAngle;
+			vec2f m_startEndFading;
+			Color m_color;
+		};
+
+	public:
+		OmniLightComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~OmniLightComponent() override { }
 
-	private:
-		vec2f m_inoutCosAngle;
-		vec2f m_startEndFading;
-		Color m_color;
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
 
-		Handle m_light;
+	private:
+		Parameters			m_params;
+		::Handle			m_light;
+		static const TypeID	m_typeID;
 	};
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class LightSystem : public ISystem
 	{
 	public:
 
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class World : public ISystem::IWorld
 		{
 		public:
 			World() { }
 			virtual ~World() override { }
 
-			virtual bool	init() override;
 
-			virtual void	activate() override;
-			virtual void	deactivate() override;
+			virtual bool				init() override;
 
-			virtual Handle	createComponent() override;
-			virtual Handle	createComponent(const pugi::xml_node& data) override;
-			virtual Handle	cloneComponent(Handle id) override;
-			virtual bool	removeComponent(Handle id) override;
+			virtual void				activate() override;
+			virtual void				deactivate() override;
 
-			virtual bool	registerGameObject(Handle gameObj) override;
-			virtual bool	unregisterGameObject(Handle gameObj) override;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<DirectionalLightComponent>> m_directLightComponents;
 		};
 
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class Context : public ISystem::IContext
 		{
+		public:
+			Context() { }
+			virtual ~Context() override { }
 
+			virtual bool init(ISystem* system, IWorld* world) override;
 		};
 
 	public:
@@ -113,7 +142,7 @@ namespace render
 
 	class Mesh;
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct DirectionLight
 	{
 		vec3f m_dir;

@@ -161,7 +161,7 @@ namespace render
 	}
 	
 	//----------------------------------------------------------------------------------------------
-	uint Mesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
+	uint Mesh::gatherROPs(Renderer::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 
@@ -348,7 +348,7 @@ namespace render
 	}
 	
 	//----------------------------------------------------------------------------------------------
-	uint SkinnedMesh::gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const
+	uint SkinnedMesh::gatherROPs(Renderer::EPassType pass, bool instanced, RenderOps& ops) const
 	{
 		RenderOp op;
 

@@ -468,7 +468,7 @@ namespace render
 
 	//----------------------------------------------------------------------------------------------
 	uint TerrainSystem::gatherROPs(
-		RenderSystem::EPassType pass, RenderOps& rops, const mat4f& viewPort, const vec3f& camPos)
+		Renderer::EPassType pass, RenderOps& rops, const mat4f& viewPort, const vec3f& camPos)
 	{
 		//-- ToDo:
 		if (!m_loaded)

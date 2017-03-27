@@ -9,16 +9,16 @@ namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	class SceneSystem
+	class Universe
 	{
 	public:
 
 		//--------------------------------------------------------------------------------------------------------------
-		class Scene
+		class World
 		{
 		public:
-			Scene();
-			~Scene();
+			World();
+			~World();
 
 			bool			init();
 			bool			init(const pugi::xml_node& data);
@@ -35,7 +35,7 @@ namespace brUGE
 
 		private:
 			std::vector<std::unique_ptr<GameObject>>								m_gameObjects;
-			std::unordered_map<ISystem::TypeID, std::unique_ptr<ISystem::IWorld>>	m_systemWorlds;
+			std::unordered_map<ISystem::TypeID, std::unique_ptr<ISystem::IWorld>>	m_worlds;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -48,17 +48,17 @@ namespace brUGE
 		};
 
 	public:
-		SceneSystem();
-		~SceneSystem();;
+		Universe();
+		~Universe();;
 
 		virtual bool	init();
 
-		Handle			addScene(const pugi::xml_node* cfg = nullptr);
-		bool			delScene(Handle handle);
-		Scene*			scene(Handle handle) { return m_scenes[handle].get(); }
+		Handle			addWorld(const pugi::xml_node* cfg = nullptr);
+		bool			delWorld(Handle handle);
+		World*			world(Handle handle) const { return m_worlds[handle].get(); }
 
 	private:
-		std::vector<std::unique_ptr<Scene>>		m_scenes;;
+		std::vector<std::unique_ptr<World>>		m_worlds;
 		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 

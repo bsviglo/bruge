@@ -12,7 +12,7 @@ namespace brUGE
 		m_renderCam.m_projInfo = projection;
 		
 		vec3f pos(0.0f ,0.0f, 0.0f);
-		ScreenResolution screen = RenderSystem::instance().screenRes();
+		ScreenResolution screen = Renderer::instance().screenRes();
 
 		m_renderCam.m_proj.setPerspectiveProj(
 			projection.fov,	screen.width / screen.height,

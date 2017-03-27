@@ -1,4 +1,4 @@
-#include "scene_system.hpp"
+#include "universe.hpp"
 
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
@@ -14,13 +14,13 @@ namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle SceneSystem::addScene(const utils::ROData& iData)
+	Handle Universe::addWorld(const utils::ROData& iData)
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool SceneSystem::Scene::init(const pugi::xml_node& data)
+	bool Universe::World::init(const pugi::xml_node& data)
 	{
 		for (auto gameObjCfg : data.children("gameObject"))
 		{
@@ -29,7 +29,7 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle SceneSystem::Scene::createGameObject(const pugi::xml_node& data)
+	Handle Universe::World::createGameObject(const pugi::xml_node& data)
 	{
 		auto gameObj = std::make_unique<GameObject>();
 
@@ -44,26 +44,26 @@ namespace brUGE
 				auto typeName = std::string(componentCfg.attribute("type").value());
 
 				//-- find out the appropriate world for the component type to create in.
-				auto type			= rttr::type::get_by_name(typeName);
-				auto typeID			= type.get_property_value("typeID").get_value<uint32>();
-				auto systemTypeID	= type.get_property_value("systemTypeID").get_value<uint32>();
-				auto world			= static_cast<ISystem::IComponentWorld*>(m_systemWorlds[systemTypeID].get());
+				auto type				= rttr::type::get_by_name(typeName);
+				auto typeID				= type.get_property_value("typeID").get_value<uint32>();
+				auto systemTypeIDPath	= type.get_property_value("systemTypeIDPath").get_value<ISystem::TypeIDPath>();
+				auto world				= m_worlds[systemTypeIDPath[0]].get();
 
 				//-- create new component in desired system's world
-				world->createComponent(gameObjID, typeID, componentCfg);
+				world->createComponent(&this, gameObjID, typeID, componentCfg);
 			}
 		}
 		
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool SceneSystem::Scene::removeGameObject(Handle handle)
+	bool Universe::World::removeGameObject(Handle handle)
 	{
 		removeGameObjectRecursively(handle);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle SceneSystem::Scene::cloneGameObject(Handle handle)
+	Handle Universe::World::cloneGameObject(Handle handle)
 	{
 		auto gameObj = m_gameObjects[handle].get();
 
@@ -71,7 +71,7 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool SceneSystem::Scene::removeGameObjectRecursively(Handle handle)
+	bool Universe::World::removeGameObjectRecursively(Handle handle)
 	{
 		//-- 
 		auto gameObj = std::move(m_gameObjects[handle]);
@@ -91,7 +91,7 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle SceneSystem::Scene::cloneGameObjectRecursively(Handle hanle)
+	Handle Universe::World::cloneGameObjectRecursively(Handle hanle)
 	{
 
 	}

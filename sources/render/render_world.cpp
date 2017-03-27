@@ -87,19 +87,19 @@ namespace render
 				{
 					SCOPED_TIME_MEASURER_EX("meshes")
 					m_meshManager->gatherROPs(
-						RenderSystem::PASS_Z_ONLY, false, ops, m_camera->renderCam().m_viewProj
+						Renderer::PASS_Z_ONLY, false, ops, m_camera->renderCam().m_viewProj
 						);
 				}
 				{
 					SCOPED_TIME_MEASURER_EX("terrain")
 					m_terrainSystem->gatherROPs(
-						RenderSystem::PASS_Z_ONLY, ops, m_camera->renderCam().m_viewProj,
+						Renderer::PASS_Z_ONLY, ops, m_camera->renderCam().m_viewProj,
 						m_camera->renderCam().m_invView.applyToOrigin()
 						);
 				}
 			}
 			
-			rs().beginPass(RenderSystem::PASS_Z_ONLY);
+			rs().beginPass(Renderer::PASS_Z_ONLY);
 			rs().setCamera(&m_camera->renderCam());
 			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
@@ -113,7 +113,7 @@ namespace render
 			RenderOps ops;
 			m_decalManager->gatherRenderOps(ops);
 
-			rs().beginPass(RenderSystem::PASS_DECAL);
+			rs().beginPass(Renderer::PASS_DECAL);
 			rs().setCamera(&m_camera->renderCam());
 			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
@@ -127,7 +127,7 @@ namespace render
 			RenderOps ops;
 			m_lightsManager->gatherROPs(ops);
 
-			rs().beginPass(RenderSystem::PASS_LIGHT);
+			rs().beginPass(Renderer::PASS_LIGHT);
 			rs().setCamera(&m_camera->renderCam());
 			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
@@ -160,19 +160,19 @@ namespace render
 				{
 					SCOPED_TIME_MEASURER_EX("meshes")
 						m_meshManager->gatherROPs(
-						RenderSystem::PASS_MAIN_COLOR, false, ops, m_camera->renderCam().m_viewProj
+						Renderer::PASS_MAIN_COLOR, false, ops, m_camera->renderCam().m_viewProj
 						);
 				}
 				{
 					SCOPED_TIME_MEASURER_EX("terrain")
 						m_terrainSystem->gatherROPs(
-						RenderSystem::PASS_MAIN_COLOR, ops, m_camera->renderCam().m_viewProj,
+						Renderer::PASS_MAIN_COLOR, ops, m_camera->renderCam().m_viewProj,
 						m_camera->renderCam().m_invView.applyToOrigin()
 						);
 				}
 			}
 
-			rs().beginPass(RenderSystem::PASS_MAIN_COLOR);
+			rs().beginPass(Renderer::PASS_MAIN_COLOR);
 			rs().setCamera(&m_camera->renderCam());
 			rs().shaderContext().updatePerFrameViewConstants();
 			rs().addROPs(ops);
@@ -183,7 +183,7 @@ namespace render
 		{
 			SCOPED_TIME_MEASURER_EX("post-processing")
 
-			rs().beginPass(RenderSystem::PASS_POST_PROCESSING);
+			rs().beginPass(Renderer::PASS_POST_PROCESSING);
 			rs().addROPs(RenderOps());
 			rs().setCamera(&m_camera->renderCam());
 			rs().shaderContext().updatePerFrameViewConstants();

@@ -1,4 +1,5 @@
 #include "mesh_manager.hpp"
+#include "render_system.hpp"
 #include "mesh_collector.hpp"
 #include "scene/game_world.hpp"
 #include "DebugDrawer.h"
@@ -9,8 +10,7 @@
 using namespace brUGE::utils;
 using namespace brUGE::math;
 
-//-- start unnamed namespace.
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 namespace
 {
 	//-- console variables.
@@ -18,9 +18,8 @@ namespace
 	bool g_showVisibilityBoxes = false;
 	bool g_enableInstancing = true;
 }
-//--------------------------------------------------------------------------------------------------
-//-- end unnamed namespace.
 
+//----------------------------------------------------------------------------------------------------------------------
 namespace brUGE
 {
 
@@ -32,14 +31,22 @@ namespace brUGE
 		registration::class_<StaticMeshComponent>("render::StaticMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", StaticMeshComponent::typeID)
-			.property_readonly("systemTypeID", MeshSystem::typeID);
+			.property_readonly("systemTypeID", MeshSystem::typeID)
+			.property_readonly("systemTypeIDPath", []() -> ISystem::TypeIDPath { return { RenderSystem::typeID(), MeshSystem::typeID() }; } );
 
 		registration::class_<SkinnedMeshComponent>("render::SkinnedMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", SkinnedMeshComponent::typeID)
-			.property_readonly("systemTypeID", MeshSystem::typeID);
+			.property_readonly("systemTypeID", MeshSystem::typeID)
+			.property_readonly("systemTypeIDPath", []() -> ISystem::TypeIDPath { return { RenderSystem::typeID(), MeshSystem::typeID() }; } );
+
+		registration::class_<MeshSystem>("render::MeshSystem")
+			.constructor<>()
+			.property_readonly("typeID", MeshSystem::typeID)
+			.property_readonly("rootTypeID", MeshSystem::typeID);
 	}
 
+//----------------------------------------------------------------------------------------------------------------------
 namespace render
 {
 	const IComponent::TypeID StaticMeshComponent::m_typeID;
@@ -125,7 +132,7 @@ namespace render
 
 	//----------------------------------------------------------------------------------------------
 	uint MeshManager::gatherROPs(
-		RenderSystem::EPassType pass, bool instanced, RenderOps& rops,
+		Renderer::EPassType pass, bool instanced, RenderOps& rops,
 		const mat4f& viewPort, AABB* aabb)
 	{
 		m_meshCollector->begin(pass);

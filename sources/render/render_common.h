@@ -21,7 +21,7 @@ namespace render
 {
 	//-- predeclaration.
 	class DebugDrawer;
-	class RenderSystem;
+	class Renderer;
 
 	class IRenderDevice;
 	class IBuffer;

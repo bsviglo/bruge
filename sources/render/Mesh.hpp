@@ -3,7 +3,7 @@
 #include "prerequisites.hpp"
 #include "render_common.h"
 #include "render/IRenderDevice.h"
-#include "render/render_system.hpp"
+#include "render/Renderer.hpp"
 #include "render/materials.hpp"
 #include "math/math_all.hpp"
 #include "utils/Data.hpp"
@@ -58,7 +58,7 @@ namespace render
 		bool		load(const utils::ROData& data, const std::string& name);
 		int			instancingID() const { return m_instacingID; }
 		const AABB& bounds() const { return m_aabb; }
-		uint		gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
+		uint		gatherROPs(Renderer::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
 		SubMeshes m_submeshes;
@@ -127,7 +127,7 @@ namespace render
 		const AABB&			 bounds() const			{ return m_aabb; }
 		const Skeleton&		 skeleton() const		{ return m_skeleton; }
 		const MatrixPalette& invBindPose() const	{ return m_invBindPose; }
-		uint				 gatherROPs(RenderSystem::EPassType pass, bool instanced, RenderOps& ops) const;
+		uint				 gatherROPs(Renderer::EPassType pass, bool instanced, RenderOps& ops) const;
 
 	private:
 		SubMeshes	  m_submeshes;	

@@ -10,7 +10,7 @@ namespace brUGE
 {
 namespace render
 {
-	class  RenderSystem;
+	class  Renderer;
 	struct DepthStencilStateDesc;
 	struct RasterizerStateDesc;
 	struct BlendStateDesc;
@@ -73,7 +73,7 @@ namespace render
 	//----------------------------------------------------------------------------------------------
 	class IRenderDevice
 	{
-		friend class RenderSystem;
+		friend class Renderer;
 
 	public:
 		

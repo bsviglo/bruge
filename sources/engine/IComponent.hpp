@@ -30,34 +30,34 @@ namespace brUGE
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
-		class ID
+		class Handle
 		{
 		public:
-			ID(TypeID typeID, ISystem::TypeID systemTypeID, Handle handle) : m_typeID(typeID), m_systemTypeID(systemTypeID), m_handle(handle) { }
+			Handle(TypeID typeID, ISystem::TypeID systemTypeID, ::Handle handle) : m_typeID(typeID), m_systemTypeID(systemTypeID), m_handle(handle) { }
 
-			uint32 typeID() const			{ return m_typeID; }
-			uint32 systemTypeID() const		{ return m_systemTypeID; }
-			Handle handle() const			{ return m_handle; }
+			uint32		typeID() const			{ return m_typeID; }
+			uint32		systemTypeID() const	{ return m_systemTypeID; }
+			::Handle	handle() const			{ return m_handle; }
 
 			//-- ToDo: provide other operations
 
 		private:
-			uint32 m_typeID			: 16;
-			uint32 m_systemTypeID	: 16;
-			Handle m_handle;
+			uint32		m_typeID			: 16;
+			uint32		m_systemTypeID	: 16;
+			::Handle	m_handle;
 		};
 
 	public:
-		IComponent(Handle owner = CONST_INVALID_HANDLE)	: m_owner(owner) { }
+		IComponent(::Handle owner = CONST_INVALID_HANDLE)	: m_owner(owner) { }
 		virtual ~IComponent() = 0 { }
 
-		virtual void	serialize(pugi::xml_node& oData) const = 0;
-		virtual void	deserialize(const pugi::xml_node& iData) = 0;
+		virtual void		serialize(pugi::xml_node& oData) const = 0;
+		virtual void		deserialize(const pugi::xml_node& iData) = 0;
 
 		//-- handle on the GameObject
-		inline Handle	owner() const	{ return m_owner; } 
+		inline ::Handle		owner() const	{ return m_owner; } 
 
 	protected:
-		Handle m_owner;
+		::Handle m_owner;
 	};
 }

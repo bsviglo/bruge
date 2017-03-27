@@ -58,6 +58,13 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::init(HINSTANCE, IDemo* demo)
 	{
+
+		//-- ToDo: old
+
+
+
+
+
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
 
 		//-- ToDo: load this values from config
