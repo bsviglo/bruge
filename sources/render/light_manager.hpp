@@ -86,7 +86,7 @@ namespace render
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
-	class LightSystem : public ISystem
+	class LightSystem : public IRenderSystem
 	{
 	public:
 

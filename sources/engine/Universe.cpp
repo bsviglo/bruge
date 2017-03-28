@@ -14,18 +14,24 @@ namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle Universe::addWorld(const utils::ROData& iData)
-	{
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------
 	bool Universe::World::init(const pugi::xml_node& data)
 	{
 		for (auto gameObjCfg : data.children("gameObject"))
 		{
 			createGameObject(gameObjCfg);
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	Handle Universe::createWorld(const pugi::xml_node& cfg)
+	{
+		return C_INVALID_HANDLE;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool Universe::removeWorld(Handle handle)
+	{
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -50,7 +56,7 @@ namespace brUGE
 				auto world				= m_worlds[systemTypeIDPath[0]].get();
 
 				//-- create new component in desired system's world
-				world->createComponent(&this, gameObjID, typeID, componentCfg);
+				world->createComponent(*this, gameObjID, typeID, componentCfg);
 			}
 		}
 		

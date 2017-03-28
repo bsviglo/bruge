@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Renderer.hpp"
+
 #include "engine/IComponent.hpp"
 #include "engine/ISystem.hpp"
 
@@ -10,6 +12,16 @@ namespace brUGE
 {
 namespace render
 {
+
+	//-- All of the render sub-system should be derived from it to be able to correctly response on various rendering
+	//-- related events.
+	//------------------------------------------------------------------------------------------------------------------
+	class IRenderSystem : public ISystem
+	{
+	public:
+		virtual void onVideoModeChanged(const VideoMode& mode) = 0;
+	};
+
 
 	//------------------------------------------------------------------------------------------------------------------
 	class RenderSystem : public ISystem
@@ -44,9 +56,14 @@ namespace render
 			Context() { }
 			virtual ~Context() override { }
 
-			virtual bool init(ISystem* system, IWorld* world) override;
+			virtual bool init() override;
+
+			template<typename SystemType>
+			typename System::Context& context() const { return m_contexts[typename SystemType::typeID()]; }
 
 		private:
+			RenderOps m_ops;
+
 			std::unordered_map<ISystem::TypeID, std::unique_ptr<IContext>> m_contexts;
 		};
 
@@ -77,7 +94,11 @@ namespace render
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
 		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const override;
 
+		template<typename SystemType>
+		inline SystemType& system() const { return static_cast<SystemType&>(*m_systems[typename SystemType::typeID()].get()); }
+
 	private:
+		std::unique_ptr<Renderer>										m_renderer;
 		std::unordered_map<ISystem::TypeID, std::unique_ptr<ISystem>>	m_systems;
 		static const TypeID												m_typeID;
 	};

@@ -82,10 +82,17 @@ namespace brUGE
 		class IContext
 		{
 		public:
-			IContext() { }
+			IContext(const ISystem& system, const IWorld& world) : m_system(system), m_world(m_world) { }
 			virtual ~IContext() = 0 { }
 
-			virtual bool init(ISystem* system, IWorld* world) = 0;
+			virtual bool init() = 0;
+
+			inline  const ISystem&	system() const	{ return m_system; }
+			inline  const IWorld&	world() const	{ return m_world; }
+
+		private:
+			const ISystem& m_system;
+			const IWorld&  m_world;
 		};
 
 	public:
@@ -118,9 +125,9 @@ namespace brUGE
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
 		virtual bool		requiredComponents(Handle /*gameObj*/) const = 0;
 
-		private:
-			std::vector<std::unique_ptr<IWorld>>	m_worlds;
-			std::vector<std::unique_ptr<IContext>>	m_contexts;
+	protected:
+		std::vector<std::unique_ptr<IWorld>>	m_worlds;
+		std::vector<std::unique_ptr<IContext>>	m_contexts;
 	};
 
 

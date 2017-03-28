@@ -53,8 +53,8 @@ namespace brUGE
 
 		virtual bool	init();
 
-		Handle			addWorld(const pugi::xml_node* cfg = nullptr);
-		bool			delWorld(Handle handle);
+		Handle			createWorld(const pugi::xml_node& cfg = pugi::xml_node());
+		bool			removeWorld(Handle handle);
 		World*			world(Handle handle) const { return m_worlds[handle].get(); }
 
 	private:

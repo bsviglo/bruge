@@ -255,6 +255,7 @@
     <ClInclude Include="..\..\sources\engine\Universe.hpp" />
     <ClInclude Include="..\..\sources\input\input_system.hpp" />
     <ClInclude Include="..\..\sources\physics\physic_world.hpp" />
+    <ClInclude Include="..\..\sources\render\culling_system.hpp" />
     <ClInclude Include="..\..\sources\render\Renderer.hpp" />
     <ClInclude Include="..\..\sources\scene\camera_system.hpp" />
     <ClInclude Include="..\..\sources\scene\game_world.hpp" />

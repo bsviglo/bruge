@@ -51,7 +51,19 @@ namespace render
 		//--------------------------------------------------------------------------------------------------------------
 		class World : public IWorld
 		{
+		public:
+			World() { }
+			virtual ~World() override { }
 
+			virtual bool				init() override;
+
+			virtual void				activate() override;
+			virtual void				deactivate() override;
+
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -60,6 +72,7 @@ namespace render
 		};
 
 	private:
+
 	};
 
 

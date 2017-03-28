@@ -365,6 +365,9 @@
     <ClInclude Include="..\..\sources\render\Renderer.hpp">
       <Filter>render\framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sources\render\culling_system.hpp">
+      <Filter>render\framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\sources\loader\LwoLoader.h">

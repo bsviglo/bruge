@@ -8,11 +8,13 @@
 
 namespace brUGE
 {
+namespace render
+{
 	//------------------------------------------------------------------------------------------------------------------
 	class CameraComponent : public IComponent
 	{
 	public:
-		CameraComponent() : IComponent(IComponent::TYPE_CAMERA) { }
+		CameraComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~CameraComponent() override { }
 
 	private:
@@ -65,4 +67,5 @@ namespace brUGE
 		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 
+}
 }

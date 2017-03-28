@@ -60,7 +60,7 @@ namespace render
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
-	class MeshSystem : public ISystem
+	class MeshSystem : public IRenderSystem
 	{
 	public:
 
