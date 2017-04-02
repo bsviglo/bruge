@@ -42,7 +42,7 @@ namespace brUGE
 			//-- ToDo: provide other operations
 
 		private:
-			uint32		m_typeID			: 16;
+			uint32		m_typeID		: 16;
 			uint32		m_systemTypeID	: 16;
 			::Handle	m_handle;
 		};

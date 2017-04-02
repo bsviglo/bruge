@@ -9,7 +9,7 @@ namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	class Universe
+	class Universe : public NonCopyable
 	{
 	public:
 

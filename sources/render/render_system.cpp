@@ -49,14 +49,25 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	void RenderSystem::update(IWorld* world, const DeltaTime& dt)
+	void RenderSystem::update(Handle world, const DeltaTime& dt) const
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	void RenderSystem::process(IContext* context)
+	void RenderSystem::process(Handle context) const
 	{
+		CameraSystem::Context cameraContext;
+		ShadowSystem::Context shadowContext;
+		CullingSystem::Context cullingContext;
+		PostProcessingSystem::Context ppContext;
+		MeshSystem::Context meshContext;
+		LightSystem::Context lightContext;
+
+
+
+
+
 		auto c = static_cast<Context*>(context);
 
 		//-- passes (main pass)

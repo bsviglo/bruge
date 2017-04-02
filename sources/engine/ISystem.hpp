@@ -102,11 +102,11 @@ namespace brUGE
 		virtual bool		init() = 0;
 
 		//-- update the global state of the world
-		virtual void		update(IWorld* world, const DeltaTime& dt) const = 0;
+		virtual void		update(Handle world, const DeltaTime& dt) const = 0;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void		process(IContext* context) const = 0;
+		virtual void		process(Handle context) const = 0;
 
 		//--
 		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
@@ -115,8 +115,14 @@ namespace brUGE
 		virtual Handle		createContext(Handle world) = 0;
 		virtual void		removeContext(Handle handle) = 0;
 
-		IWorld*				world(Handle handle) const;
-		IContext*			context(Handle handle) const;
+		inline IWorld*		world(Handle handle) const;
+		inline IContext*	context(Handle handle) const;
+
+		template<typename WorldType>
+		WorldType*			world(Handle handle) const { return static_cast<WorldType*>(world(handle)); }
+
+		template<typename ContextType>
+		ContextType*		context(Handle handle) const { return static_cast<ContextType*>(context(handle)); }
 
 		//-- hierarchy
 

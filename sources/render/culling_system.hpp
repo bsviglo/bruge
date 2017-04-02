@@ -48,19 +48,18 @@ namespace render
 		public:
 			virtual bool	init(const Config& cfg) override;
 
-			virtual void	update(IWorld* world, const DeltaTime& dt) const override;
-			virtual void	process(IContext* context) const override;
-
 		private:
 			Config			m_cfg;
 			VisibilitySet	m_visibilitySet;
 		};
 
 	public:
-
+		virtual void	update(Handle world, const DeltaTime& dt) const override;
+		virtual void	process(Handle context) const override;
 
 	private:
 	};
 
 }
 }
+

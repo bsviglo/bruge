@@ -74,18 +74,18 @@ namespace render
 		virtual bool		init() override;
 
 		//-- update the global state of the world
-		virtual void		update(IWorld* world, const DeltaTime& dt) const override;
+		virtual void		update(Handle world, const DeltaTime& dt) const override;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void		process(IContext* context) const override;
+		virtual void		process(Handle context) const override;
 
 		//--
 		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;
-		virtual void		removeWorld(Handle handle) override;
+		virtual void		removeWorld(Handle world) override;
 
 		virtual Handle		createContext(Handle world) override;
-		virtual void		removeContext(Handle handle) override;
+		virtual void		removeContext(Handle context) override;
 
 		static TypeID		typeID() { return m_typeID; }
 

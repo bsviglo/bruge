@@ -23,7 +23,7 @@ namespace render
 		};
 
 	public:
-		StaticMeshComponent(Handle owner) : IComponent(owner) { }
+		StaticMeshComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~StaticMeshComponent() override { }
 
 		static TypeID		typeID() { return m_typeID; }
@@ -31,7 +31,7 @@ namespace render
 
 	private:
 		Parameters			m_params;
-		Handle				m_instance;
+		::Handle			m_instance;
 		static const TypeID	m_typeID;
 	};
 
@@ -45,7 +45,7 @@ namespace render
 		};
 
 	public:
-		SkinnedMeshComponent(Handle owner) : IComponent(owner) { }
+		SkinnedMeshComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~SkinnedMeshComponent() override { }
 
 		static TypeID		typeID() { return m_typeID; }
@@ -54,7 +54,7 @@ namespace render
 
 	private:
 		Parameters			m_params;
-		Handle				m_instance;
+		::Handle			m_instance;
 
 		static const TypeID	m_typeID;
 	};
@@ -96,12 +96,12 @@ namespace render
 		class Context : public ISystem::IContext
 		{
 		public:
-			Context() { }
 			virtual ~Context() override;
 
-			virtual bool init(ISystem* system, IWorld* world) override;
+			virtual bool init() override;
 
 		private:
+			CullingSystem::VisibilitySet	m_visibilitySet;
 			std::unique_ptr<MeshCollector>	m_meshCollector;
 			RenderOps						m_rops;
 		};
@@ -111,8 +111,9 @@ namespace render
 		virtual ~MeshSystem() override { }
 
 		virtual bool	init() override;
-		virtual void	update(IWorld* world,  const DeltaTime& dt) const override;
-		virtual void	process(IContext* context) const override;
+		virtual void	update(Handle world,  const DeltaTime& dt) const override;
+		virtual void	process(Handle context) const override;
+
 		static TypeID	typeID() { return m_typeID; }
 				
 	public:

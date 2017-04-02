@@ -12,6 +12,22 @@ namespace brUGE
 namespace render
 {
 
+	class PostProcessingSystem : public IRenderSystem
+	{
+	public:
+
+		class World : public IWorld
+		{
+		};
+
+		class Context : public IContext
+		{
+		};
+	};
+
+
+	//-- ToDo: Legacy
+
 	//-- Post-processing framework.
 	//-- Provides not only interface to apply post-effects, but also UI to create and tune them.
 	//-- UI was implemented as an independent module. So if doesn't need it we almost not have any

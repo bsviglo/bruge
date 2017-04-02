@@ -226,6 +226,47 @@ namespace brUGE
 namespace render
 {
 
+	//------------------------------------------------------------------------------------------------------------------
+	void ShadowSystem::process(IContext* context) const
+	{
+		//-- access to CameraSystem, MeshSystem, CullingSystem, LightSystem
+		CullingSystem::Context cullingContext;
+		MeshSystem::Context meshContext;
+		CameraSystem::Context cameraContext;
+		LightSystem::Context lightContext;
+
+
+		//-- setup 
+		cameraContext.init();
+		CameraSystem::process(cameraContext);
+
+		cullingContext.init(cameraContext);
+		CullingSystem::process(cullingContext);
+
+		meshContext.init(cullingContext.m_visibilitySet);
+		MeshSystem::process(meshContext);
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool ShadowSystem::Context::init()
+	{
+		//-- create contexts.
+		
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------------------------
+
+
+
+	//-- ToDo: legacy
+
+
+
 	//----------------------------------------------------------------------------------------------
 	ShadowManager::ShadowManager()
 		:	m_shadowMapRes(2048), m_splitShemeLambda(0.85f), m_splitCount(4), m_uiEnabled(false),

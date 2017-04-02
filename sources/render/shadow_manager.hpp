@@ -69,10 +69,36 @@ namespace render
 		//--------------------------------------------------------------------------------------------------------------
 		class Context : public IContext
 		{
+		public:
+			virtual ~Context() override { }
+
+			virtual bool init() override;
+		private:
+			RenderOps												m_rops;
+			std::unordered_map<ISystem::TypeID, ISystem::IContext>	m_contexts;
 		};
 
-	private:
+	public:
+		ShadowSystem() { }
+		virtual ~ShadowSystem() { }
 
+		virtual bool		init() override;
+
+		//-- update the global state of the world
+		virtual void		update(IWorld* world, const DeltaTime& dt) const override;
+
+		//-- perform work while the world is the constant state. Here we may have multiple Context are working
+		//-- separately (even different threads) on the same constant world.
+		virtual void		process(IContext* context) const override;
+
+		//--
+		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;
+		virtual void		removeWorld(Handle handle) override;
+
+		virtual Handle		createContext(Handle world) override;
+		virtual void		removeContext(Handle handle) override;
+
+	private:
 	};
 
 
