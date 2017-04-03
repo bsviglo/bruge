@@ -113,11 +113,11 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	void MeshSystem::process(Handle contextHandle) const
 	{
-		auto c = *context<Context>(contextHandle);
+		auto& c = *context<Context>(contextHandle);
 
 		for (auto instHandle : c.m_visibilitySet.m_buckets[MeshSystem::typeID()])
 		{
-			auto inst = c.m_world.m_meshInstances[instHandle].get();
+			auto inst = c.world().m_meshInstances[instHandle].get();
 
 			//-- 2. gather render operations.
 			if (inst->m_mesh)
@@ -125,20 +125,19 @@ namespace render
 				//-- if mesh collector doesn't want to get this instance then process it as usual.
 				if (!g_enableInstancing || (g_enableInstancing && !c.m_meshCollector->addMeshInstance(*inst.get())))
 				{
-					uint count = inst->m_mesh->gatherROPs(pass, instanced, rops);
-					for (uint i = rops.size() - count; i < rops.size(); ++i)
+					uint count = inst->m_mesh->gatherROPs(pass, instanced, c.m_rops);
+					for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
 					{
-						RenderOp& rop = rops[i];
-						rop.m_worldMat = &inst->m_transform->m_worldMat;
+						c.m_rops[i].m_worldMat = &inst->m_transform->m_worldMat;
 					}
 				}
 			}
 			else if (inst->m_skinnedMesh)
 			{
-				uint count = inst->m_skinnedMesh->gatherROPs(pass, instanced, rops);
-				for (uint i = rops.size() - count; i < rops.size(); ++i)
+				uint count = inst->m_skinnedMesh->gatherROPs(pass, instanced, c.m_rops);
+				for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
 				{
-					RenderOp& rop = rops[i];
+					auto& rop = c.m_rops[i];
 
 					rop.m_worldMat = &inst->m_transform->m_worldMat;
 					rop.m_matrixPalette = &inst->m_worldPalette[0];
@@ -147,13 +146,9 @@ namespace render
 			}
 		}
 
-		m_meshCollector->gatherROPs(rops);
-		m_meshCollector->end();
-
-		return rops.size();
-		}
+		c.m_meshCollector->gatherROPs(c.m_rops);
+		c.m_meshCollector->end();
 	}
-
 
 	//------------------------------------------------------------------------------------------------------------------
 

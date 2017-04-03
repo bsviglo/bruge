@@ -78,6 +78,10 @@ namespace brUGE
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
 		//-- One instance of IWorld may have one or more IContext instances associated with it, on the other
 		//-- hand each instance of IContext may be associated only with one IWorld instance.
+		//--
+		//-- Note: In terms of Render System into IContext should be moved all the resources associated with each particular
+		//-- camera view. For example Shadow System may hold in a IContext instance all of the data associated with
+		//-- this camera.
 		//--------------------------------------------------------------------------------------------------------------
 		class IContext
 		{

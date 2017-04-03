@@ -90,6 +90,8 @@ namespace render
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
 			std::vector<std::unique_ptr<SkinnedMeshComponent>>	m_skinnedMeshComponents;
 			std::vector<std::unique_ptr<MeshInstance>>			m_meshInstances;
+
+			friend MeshSystem;
 		};
 
 		//----------------------------------------------------------------------------------------------
@@ -101,9 +103,11 @@ namespace render
 			virtual bool init() override;
 
 		private:
-			CullingSystem::VisibilitySet	m_visibilitySet;
+			CullingSystem::Context			m_cullingContext;
 			std::unique_ptr<MeshCollector>	m_meshCollector;
 			RenderOps						m_rops;
+
+			friend MeshSystem;
 		};
 
 	public:
@@ -117,9 +121,7 @@ namespace render
 		static TypeID	typeID() { return m_typeID; }
 				
 	public:
-		std::vector<std::unique_ptr<World>>		m_worlds;
-		std::vector<std::unique_ptr<Context>>	m_contexts;
-		static const TypeID						m_typeID;
+		static const TypeID m_typeID;
 	};
 
 

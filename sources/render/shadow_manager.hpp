@@ -74,8 +74,18 @@ namespace render
 
 			virtual bool init() override;
 		private:
-			RenderOps												m_rops;
-			std::unordered_map<ISystem::TypeID, ISystem::IContext>	m_contexts;
+			RenderOps									m_rops;
+			std::unordered_map<ISystem::TypeID, Handle>	m_contexts;
+
+			//-- information for rendering.
+			bool										m_autoSplitSheme;
+			float										m_splitShemeLambda;
+			vec2f										m_cameraFarNearDist;
+			uint										m_splitCount;
+			std::shared_ptr<ITexture>					m_shadowMaps;
+			std::vector<RenderCamera>					m_shadowCameras;
+			std::vector<vec4ui>							m_shadowViewPorts;
+			std::vector<float>							m_splitPlanes;
 		};
 
 	public:
@@ -85,11 +95,11 @@ namespace render
 		virtual bool		init() override;
 
 		//-- update the global state of the world
-		virtual void		update(IWorld* world, const DeltaTime& dt) const override;
+		virtual void		update(Handle world, const DeltaTime& dt) const override;
 
 		//-- perform work while the world is the constant state. Here we may have multiple Context are working
 		//-- separately (even different threads) on the same constant world.
-		virtual void		process(IContext* context) const override;
+		virtual void		process(Handle context) const override;
 
 		//--
 		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;

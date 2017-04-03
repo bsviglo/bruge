@@ -32,8 +32,8 @@ namespace render
 		class World : public IWorld
 		{
 		public:
-			World() { }
-			virtual ~World() override { }
+			World();
+			virtual ~World() override;
 
 			virtual bool				init() override;
 
@@ -45,26 +45,36 @@ namespace render
 			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
 
+			template<typename SystemType>
+			 Handle						world() const { return m_worlds[typename SystemType::typeID()]; }
+
 		private:
-			std::unordered_map<ISystem::TypeID, std::unique_ptr<IWorld>> m_worlds;
+			template<typename SystemType>
+			bool initSubWorld() { m_worlds[typename SystemType::typeID()] = m_systems[typename SystemType::typeID()]->createWorld(); return true; }
+
+		private:
+			std::unordered_map<ISystem::TypeID, Handle> m_worlds;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
 		class Context : public IContext
 		{
 		public:
-			Context() { }
-			virtual ~Context() override { }
+			Context();
+			virtual ~Context() override;
 
 			virtual bool init() override;
 
 			template<typename SystemType>
-			typename System::Context& context() const { return m_contexts[typename SystemType::typeID()]; }
+			Handle		context() const { return m_contexts[typename SystemType::typeID()]; }
+
+		private:
+			template<typename SystemType>
+			bool initSubContext() { m_contexs[typename SystemType::typeID()] = m_systems[typename SystemType::typeID()]->createWorld(); return true; }
 
 		private:
 			RenderOps m_ops;
-
-			std::unordered_map<ISystem::TypeID, std::unique_ptr<IContext>> m_contexts;
+			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 		};
 
 	public:
@@ -95,7 +105,15 @@ namespace render
 		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const override;
 
 		template<typename SystemType>
-		inline SystemType& system() const { return static_cast<SystemType&>(*m_systems[typename SystemType::typeID()].get()); }
+		inline SystemType&	system() const { return static_cast<SystemType&>(*m_systems[typename SystemType::typeID()].get()); }
+
+	private:
+		template<typename SystemType>
+		bool initSubSystem()
+		{
+			m_systems[typename SystemType::typeID()] = std::make_unique<SystemType>();
+			return true;
+		}
 
 	private:
 		std::unique_ptr<Renderer>										m_renderer;

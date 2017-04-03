@@ -29,10 +29,10 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	RenderSystem::RenderSystem()
 	{
-		m_systems[MeshSystem::typeID()]    = std::make_unique<MeshSystem>();
-		m_systems[LightSystem::typeID()]   = std::make_unique<LightSystem>();
-		m_systems[ShadowSystem::typeID()]  = std::make_unique<ShadowSystem>();
-		m_systems[CullingSystem::typeID()] = std::make_unique<CullingSystem>();
+		initSubSystem<MeshSystem>();
+		initSubSystem<LightSystem>();
+		initSubSystem<ShadowSystem>();
+		initSubSystem<CullingSystem>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -55,8 +55,14 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	void RenderSystem::process(Handle context) const
+	void RenderSystem::process(Handle handle) const
 	{
+		auto& c = *context(handle);
+
+		//-- process shadows
+		system<ShadowSystem>().process(c.m_contexts[ShadowSystem::typeID()]);
+
+
 		CameraSystem::Context cameraContext;
 		ShadowSystem::Context shadowContext;
 		CullingSystem::Context cullingContext;
@@ -252,9 +258,49 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool RenderSystem::Context::init(ISystem* system, IWorld* world)
+	RenderSystem::World::World()
+	{
+		
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	RenderSystem::World::~World()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool RenderSystem::World::init()
+	{
+		bool ok = true;
+
+		ok &= initSubWorld<CullingSystem>();
+		ok &= initSubWorld<ShadowSystem>();
+		ok &= initSubWorld<MeshSystem>();
+		ok &= initSubWorld<LightSystem>();
+
+		return ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	RenderSystem::Context::Context()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	RenderSystem::Context::~Context()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool RenderSystem::Context::init()
 	{
 		//-- create all nested contexts.
+		initSubContext<CullingSystem>();
+		initSubContext<ShadowSystem>();
+		initSubContext<MeshSystem>();
+		initSubContext<LightSystem>();
 	}
 
 

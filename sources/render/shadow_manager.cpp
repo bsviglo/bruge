@@ -229,6 +229,14 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	void ShadowSystem::process(IContext* context) const
 	{
+
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool ShadowSystem::Context::init()
+	{
 		//-- access to CameraSystem, MeshSystem, CullingSystem, LightSystem
 		CullingSystem::Context cullingContext;
 		MeshSystem::Context meshContext;
@@ -244,16 +252,7 @@ namespace render
 		CullingSystem::process(cullingContext);
 
 		meshContext.init(cullingContext.m_visibilitySet);
-		MeshSystem::process(meshContext);
-
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------
-	bool ShadowSystem::Context::init()
-	{
-		//-- create contexts.
-		
+		MeshSystem::process(meshContext);		
 
 	}
 
