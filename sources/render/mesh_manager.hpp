@@ -103,7 +103,8 @@ namespace render
 			virtual bool init() override;
 
 		private:
-			CullingSystem::Context			m_cullingContext;
+			RenderCamera*					m_renderCamera;
+			VisibilitySet*					m_visibilitySet;
 			std::unique_ptr<MeshCollector>	m_meshCollector;
 			RenderOps						m_rops;
 
@@ -114,7 +115,7 @@ namespace render
 		MeshSystem();
 		virtual ~MeshSystem() override { }
 
-		virtual bool	init() override;
+		virtual bool	init(const pugi::xml_node& cfg) override;
 		virtual void	update(Handle world,  const DeltaTime& dt) const override;
 		virtual void	process(Handle context) const override;
 

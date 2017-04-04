@@ -29,20 +29,17 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	RenderSystem::RenderSystem()
 	{
-		initSubSystem<MeshSystem>();
-		initSubSystem<LightSystem>();
-		initSubSystem<ShadowSystem>();
-		initSubSystem<CullingSystem>();
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool RenderSystem::init()
+	bool RenderSystem::init(const pugi::xml_node& cfg)
 	{
 		bool ok = true;
 
-		for (auto& system : m_systems)
+		for (auto typeID : m_systemInitializationOrder)
 		{
-			ok &= system.second->init();
+			ok &= m_ownedSystems[typeID]->init(cfg);
 		}
 
 		return ok;
@@ -274,10 +271,10 @@ namespace render
 	{
 		bool ok = true;
 
-		ok &= initSubWorld<CullingSystem>();
-		ok &= initSubWorld<ShadowSystem>();
-		ok &= initSubWorld<MeshSystem>();
-		ok &= initSubWorld<LightSystem>();
+		for (auto typeID : m_system.m_systemInitializationOrder)
+		{
+			ok &= m_ownedworlds[typeID]->init(cfg);
+		}
 
 		return ok;
 	}
@@ -296,11 +293,12 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	bool RenderSystem::Context::init()
 	{
-		//-- create all nested contexts.
-		initSubContext<CullingSystem>();
-		initSubContext<ShadowSystem>();
-		initSubContext<MeshSystem>();
-		initSubContext<LightSystem>();
+		bool ok = true;
+
+		for (auto typeID : m_system.m_systemInitializationOrder)
+		{
+			ok &= m_dependentContexts[typeID]->init();
+		}
 	}
 
 

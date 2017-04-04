@@ -227,7 +227,7 @@ namespace render
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	void ShadowSystem::process(IContext* context) const
+	void ShadowSystem::process(Handle context) const
 	{
 
 

@@ -6,12 +6,20 @@
 #include "engine/ISystem.hpp"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace brUGE
 {
 namespace render
 {
+
+	//--------------------------------------------------------------------------------------------------------------
+	class VisibilitySet
+	{
+	private:
+		std::unordered_map<ISystem::TypeID, std::vector<IComponent::Handle>> m_buckets;
+	};
+
 
 	//-- All of the render sub-system should be derived from it to be able to correctly response on various rendering
 	//-- related events.
@@ -44,16 +52,8 @@ namespace render
 			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
 			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
-
-			template<typename SystemType>
-			 Handle						world() const { return m_worlds[typename SystemType::typeID()]; }
-
+		
 		private:
-			template<typename SystemType>
-			bool initSubWorld() { m_worlds[typename SystemType::typeID()] = m_systems[typename SystemType::typeID()]->createWorld(); return true; }
-
-		private:
-			std::unordered_map<ISystem::TypeID, Handle> m_worlds;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -65,23 +65,15 @@ namespace render
 
 			virtual bool init() override;
 
-			template<typename SystemType>
-			Handle		context() const { return m_contexts[typename SystemType::typeID()]; }
-
-		private:
-			template<typename SystemType>
-			bool initSubContext() { m_contexs[typename SystemType::typeID()] = m_systems[typename SystemType::typeID()]->createWorld(); return true; }
-
 		private:
 			RenderOps m_ops;
-			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 		};
 
 	public:
 		RenderSystem() { }
 		virtual ~RenderSystem() override { }
 
-		virtual bool		init() override;
+		virtual bool		init(const pugi::xml_node& cfg) override;
 
 		//-- update the global state of the world
 		virtual void		update(Handle world, const DeltaTime& dt) const override;
@@ -99,26 +91,9 @@ namespace render
 
 		static TypeID		typeID() { return m_typeID; }
 
-		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
-		//-- this particular system.
-		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
-		virtual bool		checkRequiredComponents(Handle /*gameObj*/) const override;
-
-		template<typename SystemType>
-		inline SystemType&	system() const { return static_cast<SystemType&>(*m_systems[typename SystemType::typeID()].get()); }
-
 	private:
-		template<typename SystemType>
-		bool initSubSystem()
-		{
-			m_systems[typename SystemType::typeID()] = std::make_unique<SystemType>();
-			return true;
-		}
-
-	private:
-		std::unique_ptr<Renderer>										m_renderer;
-		std::unordered_map<ISystem::TypeID, std::unique_ptr<ISystem>>	m_systems;
-		static const TypeID												m_typeID;
+		std::unique_ptr<Renderer>	m_renderer;
+		static const TypeID			m_typeID;
 	};
 
 } // render

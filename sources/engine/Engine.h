@@ -54,11 +54,19 @@ namespace brUGE
 		physics::PhysicsWorld&		physicsWorld()		{ return *m_physicWorld.get();	}
 		render::AnimationEngine&	animationEngine()	{ return *m_animEngine.get();	}
 
-		//-- ToDo:
-		template<typename T>
-		T* system(ESystemType type) { return static_cast<T*>(m_systems[type]); }
-
 	private:
+
+		template<typename SystemType>
+		SystemType& create()
+		{
+			auto& s = m_systems[SystemType::typeID()];
+			assert(!s);
+			s.reset(new SystemType());
+			return static_cast<SystemType*>(*s);
+		}
+
+		template<typename SystemType>
+		ISystem* system() { return m_systems[SystemType::typeID()].get(); }
 
 		//-- declare console functions.
 		int _exit();

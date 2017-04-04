@@ -16,15 +16,6 @@ namespace render
 	class CullingSystem : public ISystem
 	{
 	public:
-
-		//--------------------------------------------------------------------------------------------------------------
-		class VisibilitySet
-		{
-		private:
-			std::unordered_map<ISystem::TypeID, std::vector<Handle>> m_buckets;
-		};
-
-	public:
 		
 		//--------------------------------------------------------------------------------------------------------------
 		class World : public IWorld

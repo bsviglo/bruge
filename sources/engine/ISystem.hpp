@@ -31,8 +31,7 @@ namespace brUGE
 		class TypeID
 		{
 		public:
-			static const uint32 C_MAX_SYSTEM_TYPES		= 16;
-			static const uint32 C_MAX_SYSTEM_HIERARCHY	= 3;
+			static const uint32 C_MAX_SYSTEM_TYPES = 16;
 			static const TypeID C_INVALID;
 
 		public:
@@ -47,8 +46,6 @@ namespace brUGE
 			uint32 m_id;
 		};
 
-		typedef std::array<TypeID, TypeID::C_MAX_SYSTEM_HIERARCHY> TypeIDPath;
-
 	public:
 		//-- Container of all of the components of a specific type on a particular scene. So you may have
 		//-- various scenes (IWorld instances) have been loaded at the same time and they won't interfere with each other.
@@ -56,10 +53,10 @@ namespace brUGE
 		class IWorld
 		{
 		public:
-			IWorld() { }
+			IWorld(const ISystem& system) : m_system(system) { }
 			virtual ~IWorld() = 0 { }
 
-			virtual bool				init() = 0;
+			virtual bool				init(const pugi::xml_node& cfg) = 0;
 
 			virtual void				activate() = 0;
 			virtual void				deactivate() = 0;
@@ -73,6 +70,11 @@ namespace brUGE
 			virtual void				onGameObjectRemoved(Universe::World& world, Handle gameObj) = 0;
 			virtual void				onComponentAdded(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
 			virtual void				onComponentRemoved(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
+
+		protected:
+			std::array<IWorld*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_ownedworlds;
+			std::array<IWorld*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_dependentWorlds;
+			const ISystem&												m_system;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -94,16 +96,19 @@ namespace brUGE
 			inline  const ISystem&	system() const	{ return m_system; }
 			inline  const IWorld&	world() const	{ return m_world; }
 
-		private:
-			const ISystem& m_system;
-			const IWorld&  m_world;
+		protected:
+			std::array<IContext*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_ownedContexts;
+			std::array<IContext*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_dependentContexts;
+			const ISystem&												m_system;
+			const IWorld&												m_world;
 		};
 
 	public:
 		ISystem() { }
 		virtual ~ISystem() = 0 { }
 
-		virtual bool		init() = 0;
+		virtual bool		init(const pugi::xml_node& cfg) = 0;
+		virtual void		fini() = 0;
 
 		//-- update the global state of the world
 		virtual void		update(Handle world, const DeltaTime& dt) const = 0;
@@ -129,6 +134,15 @@ namespace brUGE
 		ContextType*		context(Handle handle) const { return static_cast<ContextType*>(context(handle)); }
 
 		//-- hierarchy
+		template<typename SystemType>
+		void				assign(SystemType& system)
+		{
+			m_systemInitializationOrder.push_back(SystemType::typeID());
+			m_ownedSystems[SystemType::typeID()] = &system;
+		}
+
+		template<typename SystemType>
+		void				link(SystemType& system)	 { m_dependentSystems[SystemType::typeID()] = &system;  }
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
@@ -136,14 +150,11 @@ namespace brUGE
 		virtual bool		requiredComponents(Handle /*gameObj*/) const = 0;
 
 	protected:
-		std::vector<std::unique_ptr<IWorld>>	m_worlds;
-		std::vector<std::unique_ptr<IContext>>	m_contexts;
-	};
+		std::vector<std::unique_ptr<IWorld>>								m_worlds;
+		std::vector<std::unique_ptr<IContext>>								m_contexts;
 
-
-	//-- ToDo:
-	//------------------------------------------------------------------------------------------------------------------
-	class IAggregationSystem : public ISystem
-	{
+		std::array<ISystem::TypeID, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_systemInitializationOrder;
+		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_ownedSystems;
+		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_dependentSystems;
 	};
 }

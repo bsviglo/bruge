@@ -30,6 +30,13 @@ namespace
 
 namespace brUGE
 {
+
+	class RootSystem : public ISystem
+	{
+
+	};
+
+
 	DEFINE_SINGLETON(Engine)
 
 	//--------------------------------------------------------------------------------------------------
@@ -58,11 +65,54 @@ namespace brUGE
 	//--------------------------------------------------------------------------------------------------
 	void Engine::init(HINSTANCE, IDemo* demo)
 	{
+		//-- init system.
+		auto& rootSystem = create<RootSystem>();
+		{
+			auto& resourceSystem	= create<ResourceSystem>();
+			auto& physicsSystem		= create<PhysicsSystem>();
+			auto& animationSystem	= create<AnimationSystem>();
+			auto& renderSystem		= create<render::RenderSystem>();
+
+			rootSystem.assign(resourceSystem);
+			rootSystem.assign(physicsSystem);
+			rootSystem.assign(animationSystem);
+			rootSystem.assign(renderSystem);
+			{
+				auto& cameraSystem	= create<render::CameraSystem>();
+				auto& cullingSystem = create<render::CullingSystem>();
+				auto& meshSystem	= create<render::MeshSystem>();
+				auto& shadowSystem	= create<render::ShadowSystem>();
+				auto& lightSystem	= create<render::LightSystem>();
+
+				renderSystem.assign(cameraSystem);
+				renderSystem.assign(cullingSystem);
+				renderSystem.assign(meshSystem);
+				renderSystem.assign(shadowSystem);
+				renderSystem.assign(lightSystem);
+				renderSystem.link(resourceSystem);
+
+				meshSystem.link(cullingSystem);
+				meshSystem.link(cameraSystem);
+				meshSystem.link(resourceSystem);
+
+				shadowSystem.link(cullingSystem);
+				shadowSystem.link(cameraSystem);
+				shadowSystem.link(resourceSystem);
+				shadowSystem.link(meshSystem);
+				shadowSystem.link(lightSystem);		
+			}
+		}
+		
+		//-- initialize hierarchically preserving order
+		rootSystem.init();
+
+		{
+	
+		}
+
+
 
 		//-- ToDo: old
-
-
-
 
 
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);

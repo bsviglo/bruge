@@ -74,10 +74,10 @@ namespace render
 
 			virtual bool init() override;
 		private:
-			RenderOps									m_rops;
-			std::unordered_map<ISystem::TypeID, Handle>	m_contexts;
 
-			//-- information for rendering.
+
+			//--
+			RenderOps									m_rops;
 			bool										m_autoSplitSheme;
 			float										m_splitShemeLambda;
 			vec2f										m_cameraFarNearDist;
