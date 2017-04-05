@@ -34,8 +34,8 @@ namespace brUGE
 			Handle			cloneGameObjectRecursively(Handle gameObj);
 
 		private:
-			std::vector<std::unique_ptr<GameObject>>								m_gameObjects;
-			std::unordered_map<ISystem::TypeID, std::unique_ptr<ISystem::IWorld>>	m_worlds;
+			std::vector<std::unique_ptr<GameObject>>	m_gameObjects;
+			std::unordered_map<ISystem::TypeID, Handle>	m_worlds;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -44,12 +44,12 @@ namespace brUGE
 		public:
 
 		private:
-			std::vector<std::unique_ptr<ISystem::IContext>> m_contexts;
+			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 		};
 
 	public:
 		Universe();
-		~Universe();;
+		~Universe();
 
 		virtual bool	init();
 

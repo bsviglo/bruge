@@ -1,7 +1,6 @@
 #pragma once
 
 #include "prerequisites.hpp"
-#include "utils/Singleton.h"
 #include "console/WatchersPanel.h"
 #include "console/TimingPanel.h"
 #include "loader/ResourcesManager.h"
@@ -32,22 +31,21 @@ namespace brUGE
 
 	//-- Entry point of the brUGE.
 	//--------------------------------------------------------------------------------------------------
-	class Engine : public utils::Singleton<Engine>
+	class Engine : public NonCopyable
 	{
 	public:
 		Engine();
 		~Engine();
 		
-		void						init(HINSTANCE hInstance, IDemo* demo);
+		bool						init(HINSTANCE hInstance, IDemo* demo);
 		void						shutdown();
 		
 		//-- entry point of engine.
 		int							run();
 		void						stop();
 		
-		render::VideoMode&			getVideoMode()    { return m_videoMode; }
-		void						setVideoMode(const render::VideoMode& mode) { m_videoMode = mode; }
 
+		//-- ToDo: old
 		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
 		render::RenderWorld&		renderWorld()		{ return *m_renderWorld.get();	}
 		render::Renderer&			renderSystem()		{ return m_renderSys;			}
@@ -90,7 +88,7 @@ namespace brUGE
 		std::unique_ptr<TimingPanel>				m_timingPanel;
 		std::unique_ptr<ui::System>					m_uiSystem;
 		render::VideoMode	 						m_videoMode;
-		render::Renderer 						m_renderSys;
+		render::Renderer 							m_renderSys;
 	
 		std::unique_ptr<ResourcesManager>			m_resManager;
 		std::unique_ptr<GameWorld>					m_gameWorld;
@@ -99,7 +97,8 @@ namespace brUGE
 		std::unique_ptr<render::AnimationEngine>	m_animEngine;
 
 		//-- new
-		std::array<std::unique_ptr<ISystem>, ISystem::TypeID::C_MAX_SYSTEM_TYPES> m_systems;
+		std::unique_ptr<Universe>													m_universe;
+		std::array<std::unique_ptr<ISystem>, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_systems;
 	};
 
 } // brUGE

@@ -63,7 +63,7 @@ namespace brUGE
 	}
 
 	//--------------------------------------------------------------------------------------------------
-	void Engine::init(HINSTANCE, IDemo* demo)
+	bool Engine::init(HINSTANCE, IDemo* demo)
 	{
 		//-- init system.
 		auto& rootSystem = create<RootSystem>();
@@ -105,6 +105,8 @@ namespace brUGE
 		
 		//-- initialize hierarchically preserving order
 		rootSystem.init();
+
+		//--
 
 		{
 	

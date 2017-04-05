@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include "prerequisites.hpp"
 #include "Exception.h"

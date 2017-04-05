@@ -77,15 +77,15 @@ namespace render
 
 
 			//--
-			RenderOps									m_rops;
-			bool										m_autoSplitSheme;
-			float										m_splitShemeLambda;
-			vec2f										m_cameraFarNearDist;
-			uint										m_splitCount;
-			std::shared_ptr<ITexture>					m_shadowMaps;
-			std::vector<RenderCamera>					m_shadowCameras;
-			std::vector<vec4ui>							m_shadowViewPorts;
-			std::vector<float>							m_splitPlanes;
+			RenderOps					m_rops;
+			bool						m_autoSplitSheme;
+			float						m_splitShemeLambda;
+			vec2f						m_cameraFarNearDist;
+			uint						m_splitCount;
+			std::shared_ptr<ITexture>	m_shadowMaps;
+			std::vector<RenderCamera>	m_shadowCameras;
+			std::vector<vec4ui>			m_shadowViewPorts;
+			std::vector<float>			m_splitPlanes;
 		};
 
 	public:
