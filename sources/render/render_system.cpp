@@ -37,9 +37,9 @@ namespace render
 	{
 		bool ok = true;
 
-		for (auto typeID : m_systemInitializationOrder)
+		for (auto typeID : m_childSystemInitOrder)
 		{
-			ok &= m_ownedSystems[typeID]->init(cfg);
+			ok &= m_childSystems[typeID]->init(cfg);
 		}
 
 		return ok;
@@ -271,9 +271,9 @@ namespace render
 	{
 		bool ok = true;
 
-		for (auto typeID : m_system.m_systemInitializationOrder)
+		for (auto typeID : m_system.m_childSystemInitOrder)
 		{
-			ok &= m_ownedworlds[typeID]->init(cfg);
+			ok &= m_childWorlds[typeID]->init(cfg);
 		}
 
 		return ok;
@@ -295,10 +295,12 @@ namespace render
 	{
 		bool ok = true;
 
-		for (auto typeID : m_system.m_systemInitializationOrder)
+		for (auto typeID : m_system.m_childSystemInitOrder)
 		{
-			ok &= m_dependentContexts[typeID]->init();
+			ok &= m_childContexts[typeID]->init();
 		}
+
+
 	}
 
 

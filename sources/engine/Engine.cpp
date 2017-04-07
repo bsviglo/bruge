@@ -73,10 +73,10 @@ namespace brUGE
 			auto& animationSystem	= create<AnimationSystem>();
 			auto& renderSystem		= create<render::RenderSystem>();
 
-			rootSystem.assign(resourceSystem);
-			rootSystem.assign(physicsSystem);
-			rootSystem.assign(animationSystem);
-			rootSystem.assign(renderSystem);
+			rootSystem.child(resourceSystem);
+			rootSystem.child(physicsSystem);
+			rootSystem.child(animationSystem);
+			rootSystem.child(renderSystem);
 			{
 				auto& cameraSystem	= create<render::CameraSystem>();
 				auto& cullingSystem = create<render::CullingSystem>();
@@ -84,11 +84,11 @@ namespace brUGE
 				auto& shadowSystem	= create<render::ShadowSystem>();
 				auto& lightSystem	= create<render::LightSystem>();
 
-				renderSystem.assign(cameraSystem);
-				renderSystem.assign(cullingSystem);
-				renderSystem.assign(meshSystem);
-				renderSystem.assign(shadowSystem);
-				renderSystem.assign(lightSystem);
+				renderSystem.child(cameraSystem);
+				renderSystem.child(cullingSystem);
+				renderSystem.child(meshSystem);
+				renderSystem.child(shadowSystem);
+				renderSystem.child(lightSystem);
 				renderSystem.link(resourceSystem);
 
 				meshSystem.link(cullingSystem);

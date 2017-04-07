@@ -31,19 +31,16 @@ namespace brUGE
 		registration::class_<StaticMeshComponent>("render::StaticMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", StaticMeshComponent::typeID)
-			.property_readonly("systemTypeID", MeshSystem::typeID)
-			.property_readonly("systemTypeIDPath", []() -> ISystem::TypeIDPath { return { RenderSystem::typeID(), MeshSystem::typeID() }; } );
-
+			.property_readonly("systemTypeID", MeshSystem::typeID);
+			
 		registration::class_<SkinnedMeshComponent>("render::SkinnedMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", SkinnedMeshComponent::typeID)
-			.property_readonly("systemTypeID", MeshSystem::typeID)
-			.property_readonly("systemTypeIDPath", []() -> ISystem::TypeIDPath { return { RenderSystem::typeID(), MeshSystem::typeID() }; } );
+			.property_readonly("systemTypeID", MeshSystem::typeID);
 
 		registration::class_<MeshSystem>("render::MeshSystem")
 			.constructor<>()
-			.property_readonly("typeID", MeshSystem::typeID)
-			.property_readonly("rootTypeID", MeshSystem::typeID);
+			.property_readonly("typeID", MeshSystem::typeID);
 	}
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -115,7 +112,7 @@ namespace render
 	{
 		auto& c = *context<Context>(contextHandle);
 
-		for (auto instHandle : c.m_visibilitySet.m_buckets[MeshSystem::typeID()])
+		for (auto instHandle : c->m_visibilitySet.m_buckets[MeshSystem::typeID()])
 		{
 			auto inst = c.world().m_meshInstances[instHandle].get();
 

@@ -76,15 +76,15 @@ namespace render
 			virtual void				activate() override;
 			virtual void				deactivate() override;
 
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) override;
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent (Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) override;
 
-			virtual void				onGameObjectAdded(Universe::World& world, Handle gameObj) override;
-			virtual void				onGameObjectRemoved(Universe::World& world, Handle gameObj) override;
-			virtual void				onComponentAdded(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
-			virtual void				onComponentRemoved(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
+			virtual void				onGameObjectAdded(Handle gameObj) override;
+			virtual void				onGameObjectRemoved(Handle gameObj) override;
+			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) override;
+			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
@@ -103,8 +103,6 @@ namespace render
 			virtual bool init() override;
 
 		private:
-			RenderCamera*					m_renderCamera;
-			VisibilitySet*					m_visibilitySet;
 			std::unique_ptr<MeshCollector>	m_meshCollector;
 			RenderOps						m_rops;
 
@@ -124,6 +122,12 @@ namespace render
 	public:
 		static const TypeID m_typeID;
 	};
+
+
+
+	//-- ToDo: legacy
+
+
 
 
 	class MeshCollector;

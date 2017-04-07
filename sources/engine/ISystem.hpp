@@ -7,9 +7,6 @@
 
 namespace brUGE
 {
-	class Universe;
-	class Universe::World;
-
 	//------------------------------------------------------------------------------------------------------------------
 	struct DeltaTime
 	{
@@ -53,7 +50,7 @@ namespace brUGE
 		class IWorld
 		{
 		public:
-			IWorld(const ISystem& system) : m_system(system) { }
+			IWorld(const ISystem& system, Handle universeWorld) : m_system(system), m_universeWorld(universeWorld) { }
 			virtual ~IWorld() = 0 { }
 
 			virtual bool				init(const pugi::xml_node& cfg) = 0;
@@ -61,20 +58,20 @@ namespace brUGE
 			virtual void				activate() = 0;
 			virtual void				deactivate() = 0;
 
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) = 0;
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
-			virtual IComponent::Handle	cloneComponent(Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
-			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) = 0;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
+			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) = 0;
 
-			virtual void				onGameObjectAdded(Universe::World& world, Handle gameObj) = 0;
-			virtual void				onGameObjectRemoved(Universe::World& world, Handle gameObj) = 0;
-			virtual void				onComponentAdded(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
-			virtual void				onComponentRemoved(Universe::World& world, Handle gameObj, IComponent::Handle component) = 0;
+			virtual void				onGameObjectAdded(Handle gameObj) = 0;
+			virtual void				onGameObjectRemoved(Handle gameObj) = 0;
+			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) = 0;
+			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) = 0;
 
 		protected:
-			std::array<IWorld*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_ownedworlds;
-			std::array<IWorld*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_dependentWorlds;
-			const ISystem&												m_system;
+			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childWorlds;
+			const ISystem&											m_system;
+			const Handle											m_universeWorld;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -97,10 +94,9 @@ namespace brUGE
 			inline  const IWorld&	world() const	{ return m_world; }
 
 		protected:
-			std::array<IContext*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_ownedContexts;
-			std::array<IContext*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_dependentContexts;
-			const ISystem&												m_system;
-			const IWorld&												m_world;
+			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childContexts;
+			const ISystem&											m_system;
+			const IWorld&											m_world;
 		};
 
 	public:
@@ -135,10 +131,10 @@ namespace brUGE
 
 		//-- hierarchy
 		template<typename SystemType>
-		void				assign(SystemType& system)
+		void				child(SystemType& system)
 		{
-			m_systemInitializationOrder.push_back(SystemType::typeID());
-			m_ownedSystems[SystemType::typeID()] = &system;
+			m_childSystemInitOrder.push_back(SystemType::typeID());
+			m_childSystems[SystemType::typeID()] = &system;
 		}
 
 		template<typename SystemType>
@@ -153,8 +149,8 @@ namespace brUGE
 		std::vector<std::unique_ptr<IWorld>>								m_worlds;
 		std::vector<std::unique_ptr<IContext>>								m_contexts;
 
-		std::array<ISystem::TypeID, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_systemInitializationOrder;
-		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_ownedSystems;
+		std::array<ISystem::TypeID, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childSystemInitOrder;
+		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_childSystems;
 		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_dependentSystems;
 	};
 }
