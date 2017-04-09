@@ -55,7 +55,6 @@ namespace render
 	private:
 		Parameters			m_params;
 		::Handle			m_instance;
-
 		static const TypeID	m_typeID;
 	};
 
@@ -94,7 +93,7 @@ namespace render
 			friend MeshSystem;
 		};
 
-		//----------------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------------------------------
 		class Context : public ISystem::IContext
 		{
 		public:
@@ -103,8 +102,15 @@ namespace render
 			virtual bool init() override;
 
 		private:
-			std::unique_ptr<MeshCollector>	m_meshCollector;
+			//-- input
+			VisibilitySet::Bucket*			m_visibilitySet;
+			RenderCamera*					m_renderCamera;
+
+			//-- output
 			RenderOps						m_rops;
+
+			//-- intermediate
+			std::unique_ptr<MeshCollector>	m_meshCollector;
 
 			friend MeshSystem;
 		};
@@ -132,7 +138,7 @@ namespace render
 
 	class MeshCollector;
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	struct MeshInstance
 	{
 		struct Desc

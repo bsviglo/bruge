@@ -60,10 +60,15 @@ namespace render
 			virtual void				activate() override;
 			virtual void				deactivate() override;
 
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID) override;
-			virtual IComponent::Handle	createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual IComponent::Handle	cloneComponent (Universe::World& world, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool				removeComponent(Universe::World& world, Handle gameObj, IComponent::Handle component) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) override;
+
+			virtual void				onGameObjectAdded(Handle gameObj) override;
+			virtual void				onGameObjectRemoved(Handle gameObj) override;
+			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) override;
+			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) override;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -73,19 +78,20 @@ namespace render
 			virtual ~Context() override { }
 
 			virtual bool init() override;
-		private:
 
+		private:
+			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 
 			//--
-			RenderOps					m_rops;
-			bool						m_autoSplitSheme;
-			float						m_splitShemeLambda;
-			vec2f						m_cameraFarNearDist;
-			uint						m_splitCount;
-			std::shared_ptr<ITexture>	m_shadowMaps;
-			std::vector<RenderCamera>	m_shadowCameras;
-			std::vector<vec4ui>			m_shadowViewPorts;
-			std::vector<float>			m_splitPlanes;
+			RenderOps									m_rops;
+			bool										m_autoSplitSheme;
+			float										m_splitShemeLambda;
+			vec2f										m_cameraFarNearDist;
+			uint										m_splitCount;
+			std::shared_ptr<ITexture>					m_shadowMaps;
+			std::vector<RenderCamera>					m_shadowCameras;
+			std::vector<vec4ui>							m_shadowViewPorts;
+			std::vector<float>							m_splitPlanes;
 		};
 
 	public:

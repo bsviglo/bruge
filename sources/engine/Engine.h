@@ -10,6 +10,9 @@
 
 namespace brUGE
 {
+	class Universe;
+
+
 	class IDemo;
 	class GameWorld;
 
@@ -44,6 +47,11 @@ namespace brUGE
 		int							run();
 		void						stop();
 		
+		//-- access to
+		template<typename T>
+		T&							system() const { return static_cast<T&>(*m_systems[T::typeID()].get()); }
+		Universe&					universe() const { return *m_universe.get(); }
+
 
 		//-- ToDo: old
 		GameWorld&					gameWorld()			{ return *m_gameWorld.get();	}
@@ -63,8 +71,7 @@ namespace brUGE
 			return static_cast<SystemType*>(*s);
 		}
 
-		template<typename SystemType>
-		ISystem* system() { return m_systems[SystemType::typeID()].get(); }
+
 
 		//-- declare console functions.
 		int _exit();

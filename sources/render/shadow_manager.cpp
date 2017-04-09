@@ -227,16 +227,39 @@ namespace render
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	void ShadowSystem::process(Handle context) const
+	void ShadowSystem::process(Handle contextHandle) const
 	{
+		auto& c = context<ShadowSystem>(contextHandle);
 
+		c.m_contexts[CullingSystem::typeID()];
 
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
+	Handle ShadowSystem::createContext(Handle world)
+	{
+
+	}
+
+
+	//------------------------------------------------------------------------------------------------------------------
 	bool ShadowSystem::Context::init()
 	{
+		auto cullingContext		= Engine::system<CullingSystem>().createContext(m_world.m_universeWorld.world(CullingSystem::typeID()));
+		auto meshContext		= Engine::system<MeshSystem>().createContext(m_world.m_universeWorld.world(MeshSystem::typeID()));
+		auto lightContext		= Engine::system<LightSystem>().createContext(m_world.m_universeWorld.world(LightSystem::typeID()));
+		auto cameraContext		= Engine::system<CameraSystem>().createContext(m_world.m_universeWorld.world(CameraSystem::typeID()));
+
+
+
+		auto context = cullSystem.createContext(Engine::universe().world(m_world::world(m_world.m_universeWorld).m_worlds[CullingSystem::typeID()]);
+
+
+
+
+
+
 		//-- access to CameraSystem, MeshSystem, CullingSystem, LightSystem
 		CullingSystem::Context cullingContext;
 		MeshSystem::Context meshContext;

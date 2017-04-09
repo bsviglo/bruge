@@ -65,6 +65,13 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
 	{
+		auto& universeWorld = Engine::universe().world(m_universeWorld);
+
+		universeWorld.world(ResourceSystem::typeID());
+		universeWorld.world(TransformSystem::typeID());
+
+
+
 		//-- ToDo:
 		ResourcesManager& rm = ResourcesManager::instance();
 		auto mInst = std::make_unique<MeshInstance>();

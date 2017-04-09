@@ -16,8 +16,9 @@ namespace render
 	//--------------------------------------------------------------------------------------------------------------
 	class VisibilitySet
 	{
-	private:
-		std::unordered_map<ISystem::TypeID, std::vector<IComponent::Handle>> m_buckets;
+	public:
+		typedef std::vector<IComponent::Handle> Bucket;
+		std::unordered_map<ISystem::TypeID, Bucket> m_buckets;
 	};
 
 

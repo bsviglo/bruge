@@ -5,6 +5,8 @@
 #include "ISystem.hpp"
 #include "GameObject.hpp"
 
+#include <array>
+
 namespace brUGE
 {
 
@@ -27,15 +29,16 @@ namespace brUGE
 			Handle			cloneGameObject(Handle gameObj);
 			bool			removeGameObject(Handle gameObj);
 
-			GameObject*		gameObject(Handle id);
+			GameObject*		gameObject(Handle id) const;
+			Handle			world(ISystem::TypeID typeID) const;		
 
 		private:
 			bool			removeGameObjectRecursively(Handle gameObj);
 			Handle			cloneGameObjectRecursively(Handle gameObj);
 
 		private:
-			std::vector<std::unique_ptr<GameObject>>	m_gameObjects;
-			std::unordered_map<ISystem::TypeID, Handle>	m_worlds;
+			std::vector<std::unique_ptr<GameObject>>				m_gameObjects;
+			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_worlds;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -44,7 +47,7 @@ namespace brUGE
 		public:
 
 		private:
-			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
+			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_contexts;
 		};
 
 	public:
@@ -55,7 +58,7 @@ namespace brUGE
 
 		Handle			createWorld(const pugi::xml_node& cfg = pugi::xml_node());
 		bool			removeWorld(Handle handle);
-		World*			world(Handle handle) const { return m_worlds[handle].get(); }
+		World&			world(Handle handle) const { return *m_worlds[handle].get(); }
 
 	private:
 		std::vector<std::unique_ptr<World>>		m_worlds;
