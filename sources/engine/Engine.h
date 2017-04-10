@@ -34,7 +34,7 @@ namespace brUGE
 	}
 
 	//-- Entry point of the brUGE.
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class Engine : public utils::Singleton<Engine>
 	{
 	public:
@@ -121,5 +121,8 @@ namespace brUGE
 		Systems							m_systems;
 		std::vector<ISystem::TypeID>	m_systemInitOrder;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	inline Engine& engine() { return Engine::instance(); }
 
 } // brUGE

@@ -1,11 +1,12 @@
 #include "mesh_manager.hpp"
+
+#include "mesh_collector.hpp"
+
 #include "engine/Engine.h"
 #include "render_system.hpp"
-#include "mesh_collector.hpp"
-#include "scene/game_world.hpp"
-#include "DebugDrawer.h"
-#include "utils/string_utils.h"
 #include "loader/ResourcesManager.h"
+#include "scene/transform_system.hpp"
+
 #include "rttr/registration"
 
 using namespace brUGE::utils;
@@ -29,17 +30,17 @@ namespace brUGE
 
 	RTTR_REGISTRATION
 	{
-		registration::class_<StaticMeshComponent>("render::StaticMeshComponent")
+		registration::class_<StaticMeshComponent>("StaticMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", StaticMeshComponent::typeID)
 			.property_readonly("systemTypeID", MeshSystem::typeID);
 			
-		registration::class_<SkinnedMeshComponent>("render::SkinnedMeshComponent")
+		registration::class_<SkinnedMeshComponent>("SkinnedMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", SkinnedMeshComponent::typeID)
 			.property_readonly("systemTypeID", MeshSystem::typeID);
 
-		registration::class_<MeshSystem>("render::MeshSystem")
+		registration::class_<MeshSystem>("MeshSystem")
 			.constructor<>()
 			.property_readonly("typeID", MeshSystem::typeID);
 	}
@@ -49,64 +50,22 @@ namespace render
 {
 	const IComponent::TypeID StaticMeshComponent::m_typeID;
 	const IComponent::TypeID SkinnedMeshComponent::m_typeID;
-
 	const ISystem::TypeID MeshSystem::m_typeID;
 
 	//------------------------------------------------------------------------------------------------------------------
 	MeshSystem::MeshSystem()
 	{
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
+	MeshSystem::~MeshSystem()
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
-	{
-		auto& universeWorld = Engine::instance().universe().world(m_universeWorld);
-
-		auto& resourceWorld = *Engine::instance().system<ResourceSystem>().world(universeWorld.world(ResourceSystem::typeID()));
-
-
-		universeWorld.world(TransformSystem::typeID());
-
-
-
-		//-- ToDo:
-		ResourcesManager& rm = ResourcesManager::instance();
-		auto mInst = std::make_unique<MeshInstance>();
-
-		if (typeID == StaticMeshComponent::typeID())
-		{
-			auto resourceName = std::string(cfg.find_child("resource").text().as_string());
-
-			auto mesh = resourceWorld.loadMesh(resourceName.c_str());
-			if (!mesh)
-			{
-				return CONST_INVALID_HANDLE;
-			}
-
-			mInst->m_mesh	   = mesh;
-			mInst->m_transform = transform;
-
-			transform->m_localBounds = mesh->bounds();
-			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
-		}
-		else if (typeID == SkinnedMeshComponent::typeID())
-		{
-
-		}
-		else
-		{
-			assert(false && "Invalid TypeID of the component");
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------
-	bool MeshSystem::init()
+	bool MeshSystem::init(const pugi::xml_node& cfg)
 	{
 		return true;
 	}
@@ -156,6 +115,55 @@ namespace render
 		c.m_meshCollector->gatherROPs(c.m_rops);
 		c.m_meshCollector->end();
 	}
+
+
+	//------------------------------------------------------------------------------------------------------------------
+	MeshSystem::World::World()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	MeshSystem::World::~World()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
+	{
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
+	{
+		auto& uWorld = engine().universe().world(m_universeWorld);
+		auto& resourceWorld  = static_cast<ResourceSystem::World&>(engine().system<ResourceSystem>().world(uWorld.world(ResourceSystem::typeID())));
+		auto& transformWorld = static_cast<TransformSystem::World&>(engine().system<TransformSystem>().world(uWorld.world(TransformSystem::typeID())));
+
+		auto mInst = std::make_unique<MeshInstance>();
+
+		if (typeID == StaticMeshComponent::typeID())
+		{
+			mInst->m_mesh	   = resourceWorld.loadMesh(cfg.find_child("resource").text().as_string());
+			mInst->m_transform = transform;
+
+			transform->m_localBounds = mesh->bounds();
+			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
+		}
+		else if (typeID == SkinnedMeshComponent::typeID())
+		{
+
+		}
+		else
+		{
+			assert(false && "Invalid TypeID of the component");
+		}
+	}
+
+
 
 	//------------------------------------------------------------------------------------------------------------------
 

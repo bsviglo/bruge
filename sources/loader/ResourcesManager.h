@@ -13,6 +13,10 @@
 namespace brUGE
 {
 
+	//-- Manages resources in the system.
+	//-- Every resource kind (texture, mesh, animation, sound, etc.) should support "resource not found" place holder
+	//-- to be not crash the application in case of missing resource. Only in case if system place holder is also missing
+	//-- application may report an error and exit.
 	//------------------------------------------------------------------------------------------------------------------
 	class ResourceSystem : public ISystem
 	{
@@ -71,7 +75,7 @@ namespace brUGE
 
 		bool init();
 
-		//-- ToDo:
+		//--
 		//std::shared_ptr<render::Model>		loadModel  		(const char* name, bool loadCollision = true);
 		std::shared_ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
 		std::shared_ptr<render::ITexture>		loadTexture		(const char* name);

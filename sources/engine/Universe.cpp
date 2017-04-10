@@ -1,49 +1,66 @@
 #include "universe.hpp"
 #include "Engine.h"
-
-//-- http://pugixml.org/
-#include "pugixml/pugixml.hpp"
-
 #include "rttr/type"
-
-using namespace brUGE::math;
-using namespace brUGE::utils;
-using namespace brUGE::os;
-using namespace brUGE::render;
 
 namespace brUGE
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool Universe::World::init(const pugi::xml_node& data)
+	Handle Universe::createWorld(const pugi::xml_node& cfg)
 	{
-		for (auto gameObjCfg : data.children("gameObject"))
+		auto   world = std::make_unique<World>();
+		Handle handle = m_worlds.size();
+
+		if (world->init(handle, cfg))
 		{
-			createGameObject(gameObjCfg);
+			m_worlds.push_back(std::move(world));
+			return handle;
+		}
+		else
+		{
+			return CONST_INVALID_HANDLE;
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle Universe::createWorld(const pugi::xml_node& cfg)
+	void Universe::removeWorld(Handle handle)
 	{
-		auto uWorld = std::make_unique<World>();
-
-		//-- register it in universe
-		m_worlds.push_back(std::move(uWorld));
-		Handle uWorldHandle = m_worlds.size() - 1;
-
-
-
-		//--
-		m_worlds.
-
-		return uWorldHandle;
+		m_worlds[handle].reset();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool Universe::removeWorld(Handle handle)
+	Universe::World::World() : m_worlds{ CONST_INVALID_HANDLE }
 	{
-		return false;
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	Universe::World::~World()
+	{
+		//-- delete all related worlds
+		for (auto s = engine().systemOrderList().rbegin(); s != engine().systemOrderList().rend(); ++s)
+			engine().system(*s).removeWorld(m_worlds[*s]);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool Universe::World::init(Handle self, const pugi::xml_node& cfg)
+	{
+		bool ok = true;
+
+		//-- create all related worlds in other sub-systems
+		for (auto typeID : Engine::instance().systemOrderList())
+		{
+			m_worlds[typeID] = Engine::instance().system(typeID).createWorld(self, cfg);
+			ok &= (m_worlds[typeID] != CONST_INVALID_HANDLE);
+		}
+
+		//-- load game objects
+		for (auto gameObjCfg : cfg.children("gameObject"))
+		{
+			createGameObject(gameObjCfg);
+		}
+
+		return ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -62,13 +79,14 @@ namespace brUGE
 				auto typeName = std::string(componentCfg.attribute("type").value());
 
 				//-- find out the appropriate world for the component type to create in.
-				auto type	= rttr::type::get_by_name(typeName);
-				auto typeID	= type.get_property_value("typeID").get_value<uint32>();
-				auto system	= Engine::instance().system(typeID);
-				auto world	= system.world(m_worlds[typeID]);
+				auto  type			= rttr::type::get_by_name(typeName);
+				auto  typeID		= type.get_property_value("typeID").get_value<IComponent::TypeID>();
+				auto  systemTypeID	= type.get_property_value("systemTypeID").get_value<ISystem::TypeID>();
+				auto& system		= engine().system(systemTypeID);
+				auto& world			= system.world(m_worlds[systemTypeID]);
 
 				//-- create new component in desired system's world
-				auto component = world.createComponent(*this, gameObjHandle, typeID, componentCfg);
+				auto component = world.createComponent(gameObjHandle, typeID, componentCfg);
 				
 				gameObj->addComponent(component);
 			}
@@ -78,7 +96,7 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool Universe::World::removeGameObject(Handle handle)
+	void Universe::World::removeGameObject(Handle handle)
 	{
 		removeGameObjectRecursively(handle);
 	}
@@ -92,7 +110,7 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool Universe::World::removeGameObjectRecursively(Handle handle)
+	void Universe::World::removeGameObjectRecursively(Handle handle)
 	{
 		//-- 
 		auto gameObj = std::move(m_gameObjects[handle]);
@@ -100,8 +118,8 @@ namespace brUGE
 		//-- remove all the components associated with this game object
 		for (auto& component : gameObj->components())
 		{
-			auto systemTypeID	= component.systemTypeID();
-			auto system			= Engine::instance().system(systemTypeID);
+			auto systemTypeID	= static_cast<ISystem::TypeID>(component.systemTypeID());
+			auto system			= engine().system(systemTypeID);
 			auto world			= system.world(m_worlds[systemTypeID]);
 
 			world.removeComponent(component);

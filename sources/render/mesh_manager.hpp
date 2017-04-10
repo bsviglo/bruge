@@ -64,26 +64,26 @@ namespace render
 	public:
 
 		//--------------------------------------------------------------------------------------------------------------
-		class World : public ISystem::IWorld
+		class World : public IWorld
 		{
 		public:
 			World();
 			virtual ~World() override;
 
-			virtual bool				init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
 
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual IComponent::Handle	cloneComponent (Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 
 			virtual void				onGameObjectAdded(Handle gameObj) override;
 			virtual void				onGameObjectRemoved(Handle gameObj) override;
-			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) override;
-			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) override;
+			virtual void				onComponentAdded(IComponent::Handle component) override;
+			virtual void				onComponentRemoved(IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMehComponets;
@@ -94,7 +94,7 @@ namespace render
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
-		class Context : public ISystem::IContext
+		class Context : public IContext
 		{
 		public:
 			virtual ~Context() override;

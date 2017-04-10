@@ -60,12 +60,12 @@ namespace brUGE
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) = 0;
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
-			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) = 0;
+			virtual bool				removeComponent(IComponent::Handle component) = 0;
 
 			virtual void				onGameObjectAdded(Handle gameObj) = 0;
 			virtual void				onGameObjectRemoved(Handle gameObj) = 0;
-			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) = 0;
-			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) = 0;
+			virtual void				onComponentAdded(IComponent::Handle component) = 0;
+			virtual void				onComponentRemoved(IComponent::Handle component) = 0;
 
 		protected:
 			const ISystem&	m_system;
@@ -117,8 +117,8 @@ namespace brUGE
 		virtual Handle		createContext(Handle world) = 0;
 		virtual void		removeContext(Handle handle) = 0;
 
-		inline IWorld*		world(Handle handle) const;
-		inline IContext*	context(Handle handle) const;
+		inline IWorld&		world(Handle handle) const;
+		inline IContext&	context(Handle handle) const;
 
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.

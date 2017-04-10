@@ -4,6 +4,7 @@
 #include "IComponent.hpp"
 #include "ISystem.hpp"
 #include "GameObject.hpp"
+#include "pugixml/pugixml.hpp"
 
 #include <array>
 
@@ -19,21 +20,23 @@ namespace brUGE
 		//--------------------------------------------------------------------------------------------------------------
 		class World
 		{
+			friend Universe;
+
 		public:
 			World();
 			~World();
 
-			bool			init(const pugi::xml_node& cfg = pugi::xml_node());
-
 			Handle			createGameObject(const pugi::xml_node& cfg);
 			Handle			cloneGameObject(Handle gameObj);
-			bool			removeGameObject(Handle gameObj);
+			void			removeGameObject(Handle gameObj);
 
 			GameObject*		gameObject(Handle id) const;
 			Handle			world(ISystem::TypeID typeID) const;		
 
 		private:
-			bool			removeGameObjectRecursively(Handle gameObj);
+			bool			init(Handle self, const pugi::xml_node& cfg);
+
+			void			removeGameObjectRecursively(Handle gameObj);
 			Handle			cloneGameObjectRecursively(Handle gameObj);
 
 		private:
@@ -60,11 +63,11 @@ namespace brUGE
 
 		virtual bool	init();
 
-		Handle			createWorld(const pugi::xml_node& cfg = pugi::xml_node());
-		bool			removeWorld(Handle handle);
+		Handle			createWorld(const pugi::xml_node& cfg);
+		void			removeWorld(Handle handle);
 
 		Handle			createContext(Handle world);
-		bool			removeContext(Handle context);
+		void			removeContext(Handle context);
 
 		World&			world(Handle handle) const		{ return *m_worlds[handle].get(); }
 		Context&		context(Handle handle) const	{ return *m_contexts[handle].get(); }

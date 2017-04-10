@@ -6,7 +6,7 @@ namespace brUGE
 {
 
 	//-- Base class for all of the possible components in the engine.
-	//-- IComponent should provide default (empty) constructor to be able to create IComponent in the default state.
+	//-- Note: IComponent should provide default (empty) constructor to be able to create IComponent in the default state.
 	//------------------------------------------------------------------------------------------------------------------
 	class IComponent
 	{
@@ -14,7 +14,7 @@ namespace brUGE
 		//-- Structure that holds unique ID of a IComponent derived class.
 		//-- Note: it is unique only across single execution of one application.It is NOT suitable for serialization.
 		//--------------------------------------------------------------------------------------------------------------
-		class TypeID
+		class TypeID final
 		{
 		public:
 			static const uint32 C_MAX_COMPONENT_TYPES = 16;
@@ -30,7 +30,7 @@ namespace brUGE
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
-		class Handle
+		class Handle final
 		{
 		public:
 			Handle(TypeID typeID, ISystem::TypeID systemTypeID, ::Handle handle) : m_typeID(typeID), m_systemTypeID(systemTypeID), m_handle(handle) { }
