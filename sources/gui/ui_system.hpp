@@ -12,11 +12,11 @@ namespace ui
 
 	//-- Implements imgui interface.
 	//----------------------------------------------------------------------------------------------
-	class System : public NonCopyable
+	class UISystem : public ISystem
 	{
 	public:
-		System();
-		~System();
+		UISystem();
+		~UISystem();
 
 		bool	init(const render::VideoMode& videoMode);
 		void	tick(float dt);

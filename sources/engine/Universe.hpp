@@ -10,6 +10,7 @@
 namespace brUGE
 {
 
+	//-- The entry point of the all game specific stuff
 	//------------------------------------------------------------------------------------------------------------------
 	class Universe : public NonCopyable
 	{
@@ -22,8 +23,7 @@ namespace brUGE
 			World();
 			~World();
 
-			bool			init();
-			bool			init(const pugi::xml_node& data);
+			bool			init(const pugi::xml_node& cfg = pugi::xml_node());
 
 			Handle			createGameObject(const pugi::xml_node& cfg);
 			Handle			cloneGameObject(Handle gameObj);
@@ -51,6 +51,10 @@ namespace brUGE
 		};
 
 	public:
+		typedef std::vector<std::unique_ptr<World>>		Worlds;
+		typedef std::vector<std::unique_ptr<Context>>	Contexts;
+
+	public:
 		Universe();
 		~Universe();
 
@@ -58,11 +62,18 @@ namespace brUGE
 
 		Handle			createWorld(const pugi::xml_node& cfg = pugi::xml_node());
 		bool			removeWorld(Handle handle);
-		World&			world(Handle handle) const { return *m_worlds[handle].get(); }
+
+		Handle			createContext(Handle world);
+		bool			removeContext(Handle context);
+
+		World&			world(Handle handle) const		{ return *m_worlds[handle].get(); }
+		Context&		context(Handle handle) const	{ return *m_contexts[handle].get(); }
+
+		Contexts&		contexts()						{ return m_contexts; }
 
 	private:
-		std::vector<std::unique_ptr<World>>		m_worlds;
-		std::vector<std::unique_ptr<Context>>	m_contexts;
+		Worlds		m_worlds;
+		Contexts	m_contexts;
 	};
 
 }

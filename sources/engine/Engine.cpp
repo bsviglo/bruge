@@ -8,7 +8,18 @@
 #include "render/render_world.hpp"
 #include "render/animation_engine.hpp"
 #include "scene/game_world.hpp"
+
+#include "Universe.hpp"
+
+//--
+#include "input/input_system.hpp"
+#include "loader/ResourcesManager.h"
 #include "physics/physic_world.hpp"
+#include "render/render_system.hpp"
+#include "render/mesh_manager.hpp"
+#include "render/light_manager.hpp"
+#include "render/culling_system.hpp"
+#include "render/shadow_manager.hpp"
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_syswm.h"
@@ -39,84 +50,53 @@ namespace brUGE
 
 	DEFINE_SINGLETON(Engine)
 
-	//--------------------------------------------------------------------------------------------------
-	Engine::Engine() : 
-		m_logManager("log", true, false),
-		m_watchersPanel(new WatchersPanel()),
-		m_timingPanel(new TimingPanel()),
-		m_gameWorld(new GameWorld()),
-		m_animEngine(new AnimationEngine()),
-		m_renderWorld(new RenderWorld()),
-		m_resManager(new ResourcesManager()),
-		m_physicWorld(new PhysicsWorld()),
-		m_uiSystem(new ui::System())
+	//------------------------------------------------------------------------------------------------------------------
+	Engine::Engine() 
 	{
-		//-- register console commands.
-		REGISTER_CONSOLE_METHOD("exit",			 _exit,		 Engine);
+
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	Engine::~Engine()
 	{
-		shutdown();
+		//-- reverse de-initialization
+		for (auto s = m_systemInitOrder.rbegin(); s != m_systemInitOrder.rend(); ++s)
+			m_systems[*s].reset();
+
 		SDL_Quit();
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	bool Engine::init(HINSTANCE, IDemo* demo)
 	{
-		//-- init system.
-		auto& rootSystem = create<RootSystem>();
+		bool ok = true;
+
+		//-- init systems
+		auto& fileSystem		= create<FileSystem>();
+		auto& resourceSystem	= create<ResourceSystem>();
+		auto& inputSystem		= create<InputSystem>();
+		auto& physicsSystem		= create<PhysicsSystem>();
+		auto& animationSystem	= create<AnimationSystem>();
+		auto& uiSystem			= create<ui::UISystem()>();
+
+		auto& renderSystem		= create<render::RenderSystem>();
+		auto& cameraSystem		= create<render::CameraSystem>();
+		auto& cullingSystem		= create<render::CullingSystem>();
+		auto& meshSystem		= create<render::MeshSystem>();
+		auto& shadowSystem		= create<render::ShadowSystem>();
+		auto& lightSystem		= create<render::LightSystem>();
+
+		//-- actual order dependent init
+		for (auto typeID : m_systemInitOrder)
 		{
-			auto& resourceSystem	= create<ResourceSystem>();
-			auto& physicsSystem		= create<PhysicsSystem>();
-			auto& animationSystem	= create<AnimationSystem>();
-			auto& renderSystem		= create<render::RenderSystem>();
-
-			rootSystem.child(resourceSystem);
-			rootSystem.child(physicsSystem);
-			rootSystem.child(animationSystem);
-			rootSystem.child(renderSystem);
-			{
-				auto& cameraSystem	= create<render::CameraSystem>();
-				auto& cullingSystem = create<render::CullingSystem>();
-				auto& meshSystem	= create<render::MeshSystem>();
-				auto& shadowSystem	= create<render::ShadowSystem>();
-				auto& lightSystem	= create<render::LightSystem>();
-
-				renderSystem.child(cameraSystem);
-				renderSystem.child(cullingSystem);
-				renderSystem.child(meshSystem);
-				renderSystem.child(shadowSystem);
-				renderSystem.child(lightSystem);
-				renderSystem.link(resourceSystem);
-
-				meshSystem.link(cullingSystem);
-				meshSystem.link(cameraSystem);
-				meshSystem.link(resourceSystem);
-
-				shadowSystem.link(cullingSystem);
-				shadowSystem.link(cameraSystem);
-				shadowSystem.link(resourceSystem);
-				shadowSystem.link(meshSystem);
-				shadowSystem.link(lightSystem);		
-			}
-		}
-		
-		//-- initialize hierarchically preserving order
-		rootSystem.init();
-
-		//--
-
-		{
-	
+			ok &= m_systems[typeID]->init();
 		}
 
+		//-- init universe
+		m_universe = std::make_unique<Universe>();
 
 
-		//-- ToDo: old
-
-
+		//-- ToDo: consider moving SDL init + window management into separate system.
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
 
 		//-- ToDo: load this values from config
@@ -139,96 +119,10 @@ namespace brUGE
 			m_videoMode.height = h;
 		}
 		
-		//--
-		ConError(g_engineName);
-
-		if (!m_resManager->init())
-		{
-			BR_EXCEPT("Can't init resource system.");
-		}
-		INFO_MSG("Init resource system ... completed.");
-
-		//-- init render sub-system.	
-		if (!m_renderSys.init(g_renderAPI, m_hWnd, m_videoMode))
-		{
-			BR_EXCEPT("Can't init render system.");
-		}
-		INFO_MSG("Init render system ... completed.");
-
-		if (!m_uiSystem->init(m_videoMode))
-		{
-			BR_EXCEPT("Can't init ui system.");
-		}
-		INFO_MSG("Init ui system ... completed.");
-		
-		//-- init timing panel.
-		if (!m_timingPanel->init())
-		{
-			BR_EXCEPT("Can't init timing panel.");
-		}
-		INFO_MSG("Init timing panel ... completed.");
-
-		//-- init watchers panel.
-		if (!m_watchersPanel->init())
-		{
-			BR_EXCEPT("Can't init watchers panel.");
-		}
-		INFO_MSG("Init watchers panel ... completed.");
-
-		if (!m_physicWorld->init())
-		{
-			BR_EXCEPT("Can't init physic world.");
-		}
-
-		if (!m_renderWorld->init())
-		{
-			BR_EXCEPT("Can't init render world.");
-		}
-
-		if (!m_animEngine->init())
-		{
-			BR_EXCEPT("Can't init animation engine.");
-		}
-
-		if (!m_gameWorld->init())
-		{
-			BR_EXCEPT("Can't init game world.");
-		}
-
-		//-- init demo.
-		m_demo.reset(demo);
-		if (!m_demo->init())
-		{
-			BR_EXCEPT("Can't load a demo.");
-		}
-		INFO_MSG("Init demo ... completed.");
-
-		INFO_MSG("Starting Message Loop...");
+		return ok;
 	}
 
-	//--------------------------------------------------------------------------------------------------
-	void Engine::shutdown()
-	{
-		//-- release demo first, because it may contain render resources.
-		if (m_demo.get())
-		{
-			m_demo->shutdown();
-			m_demo.reset();
-		}
-		
-		m_uiSystem.reset();
-		m_watchersPanel.reset();
-		m_timingPanel.reset();
-		m_gameWorld.reset();
-		m_animEngine.reset();
-		m_renderWorld.reset();
-		m_physicWorld.reset();
-		m_resManager.reset();
-
-		m_renderSys.shutDown();
-	}
-
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	int Engine::run()
 	{
 		uint64 newTime = SDL_GetPerformanceCounter();
@@ -242,6 +136,7 @@ namespace brUGE
 			float dt = max<float>(0.0001f, (static_cast<float>(newTime - prevTime) / SDL_GetPerformanceFrequency()));
 			prevTime = newTime;
 
+			//-- ToDo: consider moving this stuff into WindowSystem
 			SDL_Event event;
 			while (SDL_PollEvent(&event))
 			{
@@ -285,74 +180,31 @@ namespace brUGE
 			}
 
 			//--
-			m_uiSystem->tick(dt);
-
-			m_timingPanel->start();
+			for (auto& context : m_universe->contexts())
 			{
-				//-- do tick.
-				{
-					SCOPED_TIME_MEASURER_EX("update")
-
-					//-- update timing panel.
-					m_timingPanel->update(dt);
-
-					//-- update demo module first
-					m_demo->update(dt);
-
-					m_gameWorld->beginUpdate(dt);
-
-					//-- do pre-animation.
-					{
-						SCOPED_TIME_MEASURER_EX("pre-animation")
-						m_animEngine->preAnimate(dt);
-					}
-
-					{
-						SCOPED_TIME_MEASURER_EX("animation")
-						m_animEngine->animate();
-					}
-
-					//-- simulate physics.
-					{
-						SCOPED_TIME_MEASURER_EX("physic")
-						m_physicWorld->simulate(dt);
-					}
-
-					{
-						SCOPED_TIME_MEASURER_EX("post-animation")
-						m_animEngine->postAnimate();
-					}
-
-					m_renderWorld->update(dt);
-					m_watchersPanel->update(dt);
-					m_gameWorld->endUpdate();
-				}
-
-				//-- do draw.
-				{
-					SCOPED_TIME_MEASURER_EX("draw")
-
-					m_renderSys.beginFrame();
-					m_renderWorld->draw();
-					m_demo->render(dt);
-					displayStatistics(dt);
-					m_uiSystem->draw();
-					m_renderSys.endFrame();
-				}
+				process(*context.get());
 			}
-			m_timingPanel->stop();
 		}
 
 		return 0;
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
+	void Engine::process(Universe::Context& context)
+	{
+		//-- ToDo: process each individual context of the universe. Each context may be associated with one world.
+		//--	   So here we may have number of different world to be processed.
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::stop()
 	{
 		isRunning = false;
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::handleMouseButtonEvent(const SDL_MouseButtonEvent& e)
 	{
 		m_uiSystem->handleMouseButtonEvent(e);
@@ -360,7 +212,7 @@ namespace brUGE
 		m_demo->handleMouseButtonEvent(e);
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::handleMouseMotionEvent(const SDL_MouseMotionEvent& e)
 	{
 		m_uiSystem->handleMouseMotionEvent(e);
@@ -368,7 +220,7 @@ namespace brUGE
 		m_demo->handleMouseMotionEvent(e);
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::handleMouseWheelEvent(const SDL_MouseWheelEvent& e)
 	{
 		m_uiSystem->handleMouseWheelEvent(e);
@@ -376,7 +228,7 @@ namespace brUGE
 		m_demo->handleMouseWheelEvent(e);
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::handleKeyboardEvent(const SDL_KeyboardEvent& e)
 	{
 		//if (e.keysym.sym == SDLK_BACKQUOTE && e.state == SDL_PRESSED)
@@ -404,21 +256,13 @@ namespace brUGE
 		m_demo->handleKeyboardEvent(e);
 	}
 
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::handleTextInputEvent(const SDL_TextInputEvent& e)
 	{
 		m_uiSystem->handleTextInputEvent(e);
 	}
 
-	//--------------------------------------------------------------------------------------------------
-	int Engine::_exit()
-	{
-		ConPrint("Bye!");
-		isRunning = false;
-		return 0;
-	}
-
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	void Engine::displayStatistics(float dt)
 	{
 		bool enabled = true;

@@ -2,7 +2,6 @@
 
 #include "prerequisites.hpp"
 #include "IComponent.hpp"
-#include "GameObject.hpp"
 #include <array>
 
 namespace brUGE
@@ -23,7 +22,7 @@ namespace brUGE
 	{
 	public:
 		//-- Structure that holds unique ID of a ISystem derived class.
-		//-- Note: it is unique only across single execution of one application.It is NOT suitable for serialization.
+		//-- Note: it is unique only across single execution of one application. It is NOT suitable for serialization.
 		//--------------------------------------------------------------------------------------------------------------
 		class TypeID
 		{
@@ -69,9 +68,8 @@ namespace brUGE
 			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) = 0;
 
 		protected:
-			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childWorlds;
-			const ISystem&											m_system;
-			const Handle											m_universeWorld;
+			const ISystem&	m_system;
+			const Handle	m_universeWorld;
 		};
 
 		//-- Acts as a container for the intermediate data during processing of an IWorld instance.
@@ -94,16 +92,15 @@ namespace brUGE
 			inline  const IWorld&	world() const	{ return m_world; }
 
 		protected:
-			std::array<Handle, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childContexts;
-			const ISystem&											m_system;
-			const IWorld&											m_world;
+			const ISystem&	m_system;
+			const IWorld&	m_world;
 		};
 
 	public:
 		ISystem() { }
 		virtual ~ISystem() = 0 { }
 
-		virtual bool		init(const pugi::xml_node& cfg) = 0;
+		virtual bool		init(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
 		virtual void		fini() = 0;
 
 		//-- update the global state of the world
@@ -114,7 +111,7 @@ namespace brUGE
 		virtual void		process(Handle context) const = 0;
 
 		//--
-		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
+		virtual Handle		createWorld(Handle universeWorld, const pugi::xml_node& cfg = pugi::xml_node()) = 0;
 		virtual void		removeWorld(Handle handle) = 0;
 
 		virtual Handle		createContext(Handle world) = 0;
@@ -123,34 +120,13 @@ namespace brUGE
 		inline IWorld*		world(Handle handle) const;
 		inline IContext*	context(Handle handle) const;
 
-		template<typename WorldType>
-		WorldType*			world(Handle handle) const { return static_cast<WorldType*>(world(handle)); }
-
-		template<typename ContextType>
-		ContextType*		context(Handle handle) const { return static_cast<ContextType*>(context(handle)); }
-
-		//-- hierarchy
-		template<typename SystemType>
-		void				child(SystemType& system)
-		{
-			m_childSystemInitOrder.push_back(SystemType::typeID());
-			m_childSystems[SystemType::typeID()] = &system;
-		}
-
-		template<typename SystemType>
-		void				link(SystemType& system)	 { m_dependentSystems[SystemType::typeID()] = &system;  }
-
 		//-- Functionality to check a game object on the fact that it has all required components and dependencies for
 		//-- this particular system.
 		//-- For example AnimationSystem requires you to have these components TYPE_SKINNED_MESH and TYPE_TRANSFORM
 		virtual bool		requiredComponents(Handle /*gameObj*/) const = 0;
 
 	protected:
-		std::vector<std::unique_ptr<IWorld>>								m_worlds;
-		std::vector<std::unique_ptr<IContext>>								m_contexts;
-
-		std::array<ISystem::TypeID, ISystem::TypeID::C_MAX_SYSTEM_TYPES>	m_childSystemInitOrder;
-		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_childSystems;
-		std::array<ISystem*, ISystem::TypeID::C_MAX_SYSTEM_TYPES>			m_dependentSystems;
+		std::vector<std::unique_ptr<IWorld>>	m_worlds;
+		std::vector<std::unique_ptr<IContext>>	m_contexts;
 	};
 }

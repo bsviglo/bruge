@@ -1,4 +1,5 @@
 #include "universe.hpp"
+#include "Engine.h"
 
 //-- http://pugixml.org/
 #include "pugixml/pugixml.hpp"
@@ -25,7 +26,18 @@ namespace brUGE
 	//------------------------------------------------------------------------------------------------------------------
 	Handle Universe::createWorld(const pugi::xml_node& cfg)
 	{
-		return C_INVALID_HANDLE;
+		auto uWorld = std::make_unique<World>();
+
+		//-- register it in universe
+		m_worlds.push_back(std::move(uWorld));
+		Handle uWorldHandle = m_worlds.size() - 1;
+
+
+
+		//--
+		m_worlds.
+
+		return uWorldHandle;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -41,7 +53,7 @@ namespace brUGE
 
 		//-- register it in scene
 		m_gameObjects.push_back(std::move(gameObj));
-		Handle gameObjID = m_gameObjects.size() - 1;
+		Handle gameObjHandle = m_gameObjects.size() - 1;
 
 		if (auto componentsCfg = data.child("components"))
 		{
@@ -50,16 +62,19 @@ namespace brUGE
 				auto typeName = std::string(componentCfg.attribute("type").value());
 
 				//-- find out the appropriate world for the component type to create in.
-				auto type				= rttr::type::get_by_name(typeName);
-				auto typeID				= type.get_property_value("typeID").get_value<uint32>();
-				auto systemTypeIDPath	= type.get_property_value("systemTypeIDPath").get_value<ISystem::TypeIDPath>();
-				auto world				= m_worlds[systemTypeIDPath[0]].get();
+				auto type	= rttr::type::get_by_name(typeName);
+				auto typeID	= type.get_property_value("typeID").get_value<uint32>();
+				auto system	= Engine::instance().system(typeID);
+				auto world	= system.world(m_worlds[typeID]);
 
 				//-- create new component in desired system's world
-				world->createComponent(*this, gameObjID, typeID, componentCfg);
+				auto component = world.createComponent(*this, gameObjHandle, typeID, componentCfg);
+				
+				gameObj->addComponent(component);
 			}
 		}
-		
+
+		return gameObjHandle;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -85,8 +100,11 @@ namespace brUGE
 		//-- remove all the components associated with this game object
 		for (auto& component : gameObj->components())
 		{
-			auto systemTypeID = component.systemTypeID();
-			static_cast<ISystem::IComponentWorld*>(m_systemWorlds[systemTypeID].get())->removeComponent(component);
+			auto systemTypeID	= component.systemTypeID();
+			auto system			= Engine::instance().system(systemTypeID);
+			auto world			= system.world(m_worlds[systemTypeID]);
+
+			world.removeComponent(component);
 		}
 
 		//-- now iterate over the all child game object and remove them
@@ -99,7 +117,7 @@ namespace brUGE
 	//------------------------------------------------------------------------------------------------------------------
 	Handle Universe::World::cloneGameObjectRecursively(Handle hanle)
 	{
-
+		//-- ToDo: implement
 	}
 
 }

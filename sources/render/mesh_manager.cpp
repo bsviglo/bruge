@@ -1,4 +1,5 @@
 #include "mesh_manager.hpp"
+#include "engine/Engine.h"
 #include "render_system.hpp"
 #include "mesh_collector.hpp"
 #include "scene/game_world.hpp"
@@ -57,17 +58,19 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
+	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
+	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
 	{
-		auto& universeWorld = Engine::universe().world(m_universeWorld);
+		auto& universeWorld = Engine::instance().universe().world(m_universeWorld);
 
-		universeWorld.world(ResourceSystem::typeID());
+		auto& resourceWorld = *Engine::instance().system<ResourceSystem>().world(universeWorld.world(ResourceSystem::typeID()));
+
+
 		universeWorld.world(TransformSystem::typeID());
 
 
@@ -80,7 +83,7 @@ namespace render
 		{
 			auto resourceName = std::string(cfg.find_child("resource").text().as_string());
 
-			auto mesh = rm.loadMesh(resourceName.c_str());
+			auto mesh = resourceWorld.loadMesh(resourceName.c_str());
 			if (!mesh)
 			{
 				return CONST_INVALID_HANDLE;

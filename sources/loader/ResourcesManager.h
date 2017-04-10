@@ -12,8 +12,6 @@
 
 namespace brUGE
 {
-	//------------------------------------------------------------------------------------------------------------------
-	typedef std::shared_ptr<utils::ROData> RODataPtr;
 
 	//------------------------------------------------------------------------------------------------------------------
 	class ResourceSystem : public ISystem
@@ -49,7 +47,14 @@ namespace brUGE
 
 		};
 
+
+	public:
+
+		static TypeID	typeID() { return m_typeID; }
+
 	private:
+
+		static const TypeID m_typeID;
 	};
 		
 
