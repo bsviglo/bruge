@@ -2,6 +2,8 @@
 
 #include "prerequisites.hpp"
 #include "IComponent.hpp"
+#include "pugixml/pugixml.hpp"
+
 #include <array>
 
 namespace brUGE
@@ -60,12 +62,12 @@ namespace brUGE
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) = 0;
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
-			virtual bool				removeComponent(IComponent::Handle component) = 0;
+			virtual void				removeComponent(IComponent::Handle component) = 0;
 
-			virtual void				onGameObjectAdded(Handle gameObj) = 0;
-			virtual void				onGameObjectRemoved(Handle gameObj) = 0;
-			virtual void				onComponentAdded(IComponent::Handle component) = 0;
-			virtual void				onComponentRemoved(IComponent::Handle component) = 0;
+			virtual void				onGameObjectAdded(Handle gameObj)					{ }
+			virtual void				onGameObjectRemoved(Handle gameObj)					{ }
+			virtual void				onComponentAdded(IComponent::Handle component)		{ }
+			virtual void				onComponentRemoved(IComponent::Handle component)	{ }
 
 		protected:
 			const ISystem&	m_system;

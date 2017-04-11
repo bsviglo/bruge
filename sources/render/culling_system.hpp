@@ -20,7 +20,27 @@ namespace render
 		//--------------------------------------------------------------------------------------------------------------
 		class World : public IWorld
 		{
+		public:
+			World(const ISystem& system, Handle universeWorld);
+			virtual ~World() override;
+
+			virtual bool				init(const pugi::xml_node& cfg) override;
+
+			virtual void				activate() override;
+			virtual void				deactivate() override;
+
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
+
+			virtual void				onGameObjectAdded(Handle gameObj) override;
+			virtual void				onGameObjectRemoved(Handle gameObj) override;
+			virtual void				onComponentAdded(IComponent::Handle component) override;
+			virtual void				onComponentRemoved(IComponent::Handle component) override;
+
 		private:
+			//-- ToDo: substitute with more advanced acceleration structure (BVH, Octo-tree, Quat-tree, etc.)
 			std::vector<std::tuple<IComponent::Handle, AABB>> m_objects;
 		};
 
@@ -33,10 +53,13 @@ namespace render
 			struct Config
 			{
 				bool			m_gatherAABB;
-				RenderCamera	m_camera;
+				RenderCamera*	m_camera;
 			};
 
 		public:
+			Context(const ISystem& system, const IWorld& world);
+			virtual ~Context() override;
+
 			virtual bool	init(const Config& cfg) override;
 
 		private:

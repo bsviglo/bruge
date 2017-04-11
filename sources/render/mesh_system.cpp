@@ -1,4 +1,4 @@
-#include "mesh_manager.hpp"
+#include "mesh_system.hpp"
 
 #include "mesh_collector.hpp"
 
@@ -121,7 +121,7 @@ namespace render
 
 
 	//------------------------------------------------------------------------------------------------------------------
-	MeshSystem::World::World()
+	MeshSystem::World::World(const ISystem& system, Handle universeWorld) : IWorld(system, universeWorld)
 	{
 
 	}
@@ -130,6 +130,25 @@ namespace render
 	MeshSystem::World::~World()
 	{
 
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool MeshSystem::World::init(const pugi::xml_node& cfg)
+	{
+		//-- ToDo:
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	void MeshSystem::World::activate()
+	{
+		//-- ToDo:
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	void MeshSystem::World::deactivate()
+	{
+		//-- ToDo:
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -200,6 +219,31 @@ namespace render
 			m_skinnedMeshInstances.push_back(std::move(mInst));
 
 			return IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_skinnedMeshComponents.size() - 1);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	IComponent::Handle MeshSystem::World::cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID)
+	{
+		//-- ToDo:
+		return IComponent::Handle(typeID, MeshSystem::typeID(), CONST_INVALID_HANDLE);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	void MeshSystem::World::removeComponent(IComponent::Handle component)
+	{
+		assert(component.systemTypeID() == MeshSystem::typeID());
+		assert(component.handle() != CONST_INVALID_HANDLE);
+
+		if (component.typeID() == SkinnedMeshComponent::typeID())
+		{
+			m_skinnedMeshComponents[component.handle()].reset();
+			m_skinnedMeshInstances[component.handle()].reset();
+		}
+		else
+		{
+			m_staticMeshComponets[component.handle()].reset();
+			m_staticMeshInstances[component.handle()].reset();
 		}
 	}
 

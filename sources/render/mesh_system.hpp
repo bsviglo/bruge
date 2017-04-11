@@ -13,6 +13,8 @@ namespace brUGE
 namespace render
 {
 
+	class MeshCollector;
+
 	//------------------------------------------------------------------------------------------------------------------
 	struct MeshInstance
 	{
@@ -78,7 +80,7 @@ namespace render
 		class World : public IWorld
 		{
 		public:
-			World();
+			World(const ISystem& system, Handle universeWorld);
 			virtual ~World() override;
 
 			virtual bool				init(const pugi::xml_node& cfg) override;
@@ -90,11 +92,6 @@ namespace render
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual void				removeComponent(IComponent::Handle component) override;
-
-			virtual void				onGameObjectAdded(Handle gameObj) override;
-			virtual void				onGameObjectRemoved(Handle gameObj) override;
-			virtual void				onComponentAdded(IComponent::Handle component) override;
-			virtual void				onComponentRemoved(IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<StaticMeshComponent>>	m_staticMeshComponets;

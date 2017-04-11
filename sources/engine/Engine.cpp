@@ -16,7 +16,7 @@
 #include "loader/ResourcesManager.h"
 #include "physics/physic_world.hpp"
 #include "render/render_system.hpp"
-#include "render/mesh_manager.hpp"
+#include "render/mesh_system.hpp"
 #include "render/light_manager.hpp"
 #include "render/culling_system.hpp"
 #include "render/shadow_manager.hpp"

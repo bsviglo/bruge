@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\sources\loader\TextureLoader.cpp" />
     <ClCompile Include="..\..\sources\os\FileSystem.cpp" />
     <ClCompile Include="..\..\sources\physics\physic_world.cpp" />
+    <ClCompile Include="..\..\sources\render\culling_system.cpp" />
     <ClCompile Include="..\..\sources\render\CursorCamera.cpp" />
     <ClCompile Include="..\..\sources\render\decal_manager.cpp" />
     <ClCompile Include="..\..\sources\render\FreeCamera.cpp" />
@@ -227,7 +228,7 @@
     <ClCompile Include="..\..\sources\render\materials.cpp" />
     <ClCompile Include="..\..\sources\render\Mesh.cpp" />
     <ClCompile Include="..\..\sources\render\mesh_collector.cpp" />
-    <ClCompile Include="..\..\sources\render\mesh_manager.cpp" />
+    <ClCompile Include="..\..\sources\render\mesh_system.cpp" />
     <ClCompile Include="..\..\sources\render\post_processing.cpp" />
     <ClCompile Include="..\..\sources\render\Renderer.cpp" />
     <ClCompile Include="..\..\sources\render\render_system.cpp" />
@@ -290,7 +291,7 @@
     <ClInclude Include="..\..\sources\render\materials.hpp" />
     <ClInclude Include="..\..\sources\render\mesh_collector.hpp" />
     <ClInclude Include="..\..\sources\render\mesh_formats.hpp" />
-    <ClInclude Include="..\..\sources\render\mesh_manager.hpp" />
+    <ClInclude Include="..\..\sources\render\mesh_system.hpp" />
     <ClInclude Include="..\..\sources\render\post_processing.hpp" />
     <ClInclude Include="..\..\sources\render\render_common.h" />
     <ClInclude Include="..\..\sources\render\shader_context.hpp" />

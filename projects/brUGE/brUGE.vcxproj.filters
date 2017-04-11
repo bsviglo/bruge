@@ -132,9 +132,6 @@
     <ClCompile Include="..\..\sources\render\light_manager.cpp">
       <Filter>render\framework\lights</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sources\render\mesh_manager.cpp">
-      <Filter>render\framework\meshes</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\sources\render\Mesh.cpp">
       <Filter>render\framework\meshes</Filter>
     </ClCompile>
@@ -187,6 +184,12 @@
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\Renderer.cpp">
+      <Filter>render\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\mesh_system.cpp">
+      <Filter>render\framework\meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\render\culling_system.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
   </ItemGroup>
@@ -281,9 +284,6 @@
     <ClInclude Include="..\..\sources\render\shadow_manager.hpp">
       <Filter>render\framework\shadows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sources\render\mesh_manager.hpp">
-      <Filter>render\framework\meshes</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sources\prerequisites.hpp">
       <Filter>common</Filter>
     </ClInclude>
@@ -367,6 +367,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\culling_system.hpp">
       <Filter>render\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\render\mesh_system.hpp">
+      <Filter>render\framework\meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
