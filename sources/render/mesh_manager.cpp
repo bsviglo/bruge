@@ -79,41 +79,44 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	void MeshSystem::process(Handle contextHandle) const
 	{
-		auto& c = *context<Context>(contextHandle);
+		auto&		c = static_cast<Context&>(context(contextHandle));
+		const auto& w = static_cast<const World&>(c.world());
 
-		for (auto instHandle : c->m_visibilitySet.m_buckets[MeshSystem::typeID()])
+		//-- process static meshes
+		for (auto& h : c.m_visibilitySet->m_buckets[StaticMeshComponent::typeID()])
 		{
-			auto inst = c.world().m_meshInstances[instHandle].get();
+			auto& inst = w.m_staticMeshInstances[h.handle()];
 
-			//-- 2. gather render operations.
-			if (inst->m_mesh)
+			//-- if mesh collector doesn't want to get this instance then process it as usual.
+			if (!c.m_meshCollector->addMeshInstance(*inst.get()))
 			{
-				//-- if mesh collector doesn't want to get this instance then process it as usual.
-				if (!g_enableInstancing || (g_enableInstancing && !c.m_meshCollector->addMeshInstance(*inst.get())))
-				{
-					uint count = inst->m_mesh->gatherROPs(pass, instanced, c.m_rops);
-					for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
-					{
-						c.m_rops[i].m_worldMat = &inst->m_transform->m_worldMat;
-					}
-				}
-			}
-			else if (inst->m_skinnedMesh)
-			{
-				uint count = inst->m_skinnedMesh->gatherROPs(pass, instanced, c.m_rops);
+				uint count = inst->m_mesh->gatherROPs(c.m_passType, c.m_useInstancing, c.m_rops);
 				for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
 				{
-					auto& rop = c.m_rops[i];
-
-					rop.m_worldMat = &inst->m_transform->m_worldMat;
-					rop.m_matrixPalette = &inst->m_worldPalette[0];
-					rop.m_matrixPaletteCount = inst->m_worldPalette.size();
+					c.m_rops[i].m_worldMat = &inst->m_transform->m_worldMat;
 				}
 			}
 		}
 
+		//-- 
 		c.m_meshCollector->gatherROPs(c.m_rops);
 		c.m_meshCollector->end();
+
+		//-- process skinned meshes
+		for (auto& h : c.m_visibilitySet->m_buckets[SkinnedMeshComponent::typeID()])
+		{
+			auto& inst = w.m_skinnedMeshInstances[h.handle()];
+
+			uint count = inst->m_skinnedMesh->gatherROPs(c.m_passType, c.m_useInstancing, c.m_rops);
+			for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
+			{
+				auto& rop = c.m_rops[i];
+
+				rop.m_worldMat = &inst->m_transform->m_worldMat;
+				rop.m_matrixPalette = &inst->m_worldPalette[0];
+				rop.m_matrixPaletteCount = inst->m_worldPalette.size();
+			}
+		}
 	}
 
 
@@ -132,204 +135,93 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
 	{
-
-
+		return createComponent(gameObj, typeID, pugi::xml_node());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
 	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
 	{
-		auto& uWorld = engine().universe().world(m_universeWorld);
-		auto& resourceWorld  = static_cast<ResourceSystem::World&>(engine().system<ResourceSystem>().world(uWorld.world(ResourceSystem::typeID())));
-		auto& transformWorld = static_cast<TransformSystem::World&>(engine().system<TransformSystem>().world(uWorld.world(TransformSystem::typeID())));
+		//-- retrieve Worlds for TransformSystem and ResourceSystem
+		auto& uWorld			 = engine().universe().world(m_universeWorld);
+		auto& resourceWorld		 = static_cast<ResourceSystem::World&>(engine().system<ResourceSystem>().world(uWorld.world(ResourceSystem::typeID())));
+		auto& transformWorld	 = static_cast<TransformSystem::World&>(engine().system<TransformSystem>().world(uWorld.world(TransformSystem::typeID())));
+
+		//-- retrieve TransformComponent from GameObject
+		auto  transformComponent = uWorld.gameObject(gameObj)->getComponent<TransformComponent>();
+		auto& transform			 = transformWorld.component(transformComponent);
 
 		auto mInst = std::make_unique<MeshInstance>();
 
 		if (typeID == StaticMeshComponent::typeID())
 		{
-			mInst->m_mesh	   = resourceWorld.loadMesh(cfg.find_child("resource").text().as_string());
-			mInst->m_transform = transform;
-
-			transform->m_localBounds = mesh->bounds();
-			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
+			mInst->m_mesh = resourceWorld.loadMesh(cfg.find_child("resource").text().as_string());
 		}
 		else if (typeID == SkinnedMeshComponent::typeID())
 		{
+			mInst->m_skinnedMesh = resourceWorld.loadSkinnedMesh(cfg.find_child("resource").text().as_string());
 
+			//-- resize mesh world palette to match the bones count in the skinned mesh.
+			mInst->m_worldPalette.resize(mInst->m_skinnedMesh->skeleton().size());
+
+			//-- initialize nodes. 
+			for (uint i = 0; i < mInst->m_worldPalette.size(); ++i)
+			{
+				const Joint& joint   = mInst->m_skinnedMesh->skeleton()[i];
+				mat4f&		 nodeMat = mInst->m_worldPalette[i];
+
+				//-- set default initial value.
+				nodeMat.setIdentity();
+				mInst->m_transform->m_nodes.push_back(std::make_unique<Node>(joint.m_name, nodeMat));
+			}
 		}
 		else
 		{
 			assert(false && "Invalid TypeID of the component");
 		}
-	}
 
+		//-- common params
+		mInst->m_transform		= &transform.transform();
+		mInst->m_localBounds	= mInst->m_mesh->bounds();
+		mInst->m_worldBounds	= mInst->m_mesh->bounds().getTranformed(mInst->m_transform->m_worldMat);
 
-
-	//------------------------------------------------------------------------------------------------------------------
-
-
-
-	//-- ToDo: legacy
-
-
-	//----------------------------------------------------------------------------------------------
-	MeshManager::MeshManager() : m_meshCollector(new MeshCollector)
-	{
-
-	}
-
-	//----------------------------------------------------------------------------------------------
-	MeshManager::~MeshManager()
-	{
-
-	}
-
-	//----------------------------------------------------------------------------------------------
-	bool MeshManager::init()
-	{
-		REGISTER_CONSOLE_VALUE("r_showVisibilityBoxes",		bool, g_showVisibilityBoxes);
-		REGISTER_CONSOLE_VALUE("r_enableVisibilityCulling",	bool, g_enableCulling);
-		REGISTER_CONSOLE_VALUE("r_enableInstancing",		bool, g_enableInstancing);
-
-		return m_meshCollector->init();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	void MeshManager::update(float /*dt*/)
-	{
-
-	}
-
-	//----------------------------------------------------------------------------------------------
-	uint MeshManager::gatherROPs(
-		Renderer::EPassType pass, bool instanced, RenderOps& rops,
-		const mat4f& viewPort, AABB* aabb)
-	{
-		m_meshCollector->begin(pass);
-
-		for (const auto& inst : m_meshInstances)
+		//--
+		if (typeID == StaticMeshComponent::typeID())
 		{
-			if (!inst)
-				continue;
+			auto component = std::make_unique<StaticMeshComponent>(gameObj, *mInst.get());
+			m_staticMeshComponets.push_back(std::move(component));
+			m_staticMeshInstances.push_back(std::move(mInst));
 
-			//-- 1. cull frustum against AABB.
-			if (g_enableCulling && inst->m_transform->m_worldBounds.calculateOutcode(viewPort) != 0)
-			{
-				continue;
-			}
-			else if (g_showVisibilityBoxes)
-			{
-				DebugDrawer::instance().drawAABB(inst->m_transform->m_worldBounds, Color(1,0,0,0));
-			}
-			
-			if (aabb)
-			{
-				aabb->combine(inst->m_transform->m_worldBounds);
-			}
-
-			//-- 2. gather render operations.
-			if (inst->m_mesh)
-			{
-				//-- if mesh collector doesn't want to get this instance then process it as usual.
-				if (!g_enableInstancing || (g_enableInstancing && !m_meshCollector->addMeshInstance(*inst.get())))
-				{
-					uint count = inst->m_mesh->gatherROPs(pass, instanced, rops);
-					for (uint i = rops.size() - count; i < rops.size(); ++i)
-					{
-						RenderOp& rop = rops[i];
-						rop.m_worldMat = &inst->m_transform->m_worldMat;
-					}
-				}
-			}
-			else if (inst->m_skinnedMesh)
-			{
-				uint count = inst->m_skinnedMesh->gatherROPs(pass, instanced, rops);
-				for (uint i = rops.size() - count; i < rops.size(); ++i)
-				{
-					RenderOp& rop = rops[i];
-
-					rop.m_worldMat			 = &inst->m_transform->m_worldMat;
-					rop.m_matrixPalette		 = &inst->m_worldPalette[0];
-					rop.m_matrixPaletteCount = inst->m_worldPalette.size();
-				}
-			}
+			return IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_staticMeshComponets.size() - 1);
 		}
-
-		m_meshCollector->gatherROPs(rops);
-		m_meshCollector->end();
-
-		return rops.size();
-	}
-
-	//----------------------------------------------------------------------------------------------
-	Handle MeshManager::createMeshInstance(const MeshInstance::Desc& desc, Transform* transform)
-	{
-		ResourcesManager& rm = ResourcesManager::instance();
-		auto mInst = std::make_unique<MeshInstance>();
-
-		//-- 1. load skinned mesh.
-		if (getFileExt(desc.fileName) == "skinnedmesh")
-		{
-			auto mesh = rm.loadSkinnedMesh(desc.fileName);
-			if (!mesh)
-			{
-				return CONST_INVALID_HANDLE;
-			}
-
-			mInst->m_skinnedMesh = mesh;
-			mInst->m_transform   = transform;
-
-			transform->m_localBounds = mesh->bounds();
-			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
-		}
-		//-- 2. load static mesh.
 		else
 		{
-			auto mesh = rm.loadMesh(desc.fileName);
-			if (!mesh)
-			{
-				return CONST_INVALID_HANDLE;
-			}
+			auto component = std::make_unique<SkinnedMeshComponent>(gameObj, *mInst.get());
+			m_skinnedMeshComponents.push_back(std::move(component));
+			m_skinnedMeshInstances.push_back(std::move(mInst));
 
-			mInst->m_mesh	   = mesh;
-			mInst->m_transform = transform;
-
-			transform->m_localBounds = mesh->bounds();
-			transform->m_worldBounds = mesh->bounds().getTranformed(transform->m_worldMat);
+			return IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_skinnedMeshComponents.size() - 1);
 		}
-
-		//-- 3. setup nodes bucket in case if mesh is skinned.
-		if (SkinnedMesh* skMesh = mInst->m_skinnedMesh.get())
-		{
-			//-- 3.1. resize mesh world palette to match the bones count in the skinned mesh.
-			mInst->m_worldPalette.resize(skMesh->skeleton().size());
-
-			//-- 3.2. initialize nodes. 
-			for (uint i = 0; i < mInst->m_worldPalette.size(); ++i)
-			{
-				const Joint& joint   = skMesh->skeleton()[i];
-				mat4f&		 nodeMat = mInst->m_worldPalette[i];
-
-				//-- set default initial value.
-				nodeMat.setIdentity();
-				transform->m_nodes.push_back(std::make_unique<Node>(joint.m_name, nodeMat));
-			}
-		}
-
-		m_meshInstances.push_back(std::move(mInst));
-		return m_meshInstances.size() - 1;
-	}
-	
-	//----------------------------------------------------------------------------------------------
-	void MeshManager::removeMeshInstance(Handle handle)
-	{
-		m_meshInstances[handle].reset();
 	}
 
-	//----------------------------------------------------------------------------------------------
-	MeshInstance& MeshManager::getMeshInstance(Handle handle)
+	//------------------------------------------------------------------------------------------------------------------
+	MeshSystem::Context::Context(const ISystem& system, const IWorld& world)
+		:	IContext(system, world), m_visibilitySet(nullptr), m_renderCamera(nullptr),
+			m_useInstancing(false), m_passType(Renderer::PASS_MAIN_COLOR)
 	{
-		return *m_meshInstances[handle].get();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	MeshSystem::Context::~Context()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool MeshSystem::Context::init()
+	{
+		m_meshCollector = std::make_unique<MeshCollector>();
+
+		return true;
 	}
 
 } //-- render

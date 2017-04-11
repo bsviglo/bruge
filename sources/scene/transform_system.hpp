@@ -35,8 +35,6 @@ namespace brUGE
 		Transform();
 		~Transform();
 
-		AABB  m_localBounds;
-		AABB  m_worldBounds;
 		mat4f m_worldMat;
 		Nodes m_nodes;
 	};
@@ -51,14 +49,16 @@ namespace brUGE
 		};
 
 	public:
-		TransformComponent(Handle owner) : IComponent(owner) { }
+		TransformComponent(::Handle owner, Transform& transform) : IComponent(owner), m_transform(transform) { }
 		virtual ~TransformComponent() override { }
 
 		static TypeID		typeID()		{ return m_typeID; }
 		const Parameters&	params() const	{ return m_params; }
+		Transform&			transform()		{ return m_transform; }
 
 	private:
 		Parameters			 m_params;
+		Transform&			 m_transform;
 
 		static const TypeID	 m_typeID;
 	};
@@ -85,9 +85,11 @@ namespace brUGE
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual void				removeComponent(IComponent::Handle component) override;
 
+			TransformComponent&			component(IComponent::Handle handle) { return *m_components[handle.handle()].get(); }
+
 		private:
 			std::vector<std::unique_ptr<TransformComponent>>	m_components;
-			std::vector<Transform>								m_transforms;
+			std::vector<std::unique_ptr<Transform>>				m_transforms;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------

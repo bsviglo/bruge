@@ -21,7 +21,7 @@ namespace render
 		class World : public IWorld
 		{
 		private:
-			std::vector<std::tuple<ISystem::TypeID, AABB, Handle>> m_objects;
+			std::vector<std::tuple<IComponent::Handle, AABB>> m_objects;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------

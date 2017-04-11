@@ -18,7 +18,7 @@ namespace render
 	{
 	public:
 		typedef std::vector<IComponent::Handle> Bucket;
-		std::unordered_map<ISystem::TypeID, Bucket> m_buckets;
+		std::unordered_map<IComponent::TypeID, Bucket> m_buckets;
 	};
 
 
