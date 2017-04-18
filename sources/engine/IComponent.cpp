@@ -11,4 +11,7 @@ namespace brUGE
 		m_id = next.fetch_add(1, std::memory_order_relaxed);
 		assert(m_id < C_MAX_COMPONENT_TYPES);
 	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	const IComponent::TypeID IComponent::TypeID::C_INVALID(0);
 }

@@ -38,7 +38,6 @@ namespace render
 
 	private:
 		Parameters			m_params;
-		::Handle			m_instance;
 		static const TypeID	m_typeID;
 	};
 
@@ -63,19 +62,15 @@ namespace render
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) override;
-
-			virtual void				onGameObjectAdded(Handle gameObj) override;
-			virtual void				onGameObjectRemoved(Handle gameObj) override;
-			virtual void				onComponentAdded(Handle gameObj, IComponent::Handle component) override;
-			virtual void				onComponentRemoved(Handle gameObj, IComponent::Handle component) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
 		class Context : public IContext
 		{
 		public:
-			virtual ~Context() override { }
+			Context(const ISystem& system, const IWorld& world);
+			virtual ~Context() override;
 
 			virtual bool init() override;
 
@@ -95,26 +90,17 @@ namespace render
 		};
 
 	public:
-		ShadowSystem() { }
-		virtual ~ShadowSystem() { }
+		ShadowSystem();
+		virtual ~ShadowSystem() override;
 
-		virtual bool		init() override;
+		virtual bool	init(const pugi::xml_node& cfg) override;
+		virtual void	update(Handle world,  const DeltaTime& dt) const override;
+		virtual void	process(Handle context) const override;
 
-		//-- update the global state of the world
-		virtual void		update(Handle world, const DeltaTime& dt) const override;
-
-		//-- perform work while the world is the constant state. Here we may have multiple Context are working
-		//-- separately (even different threads) on the same constant world.
-		virtual void		process(Handle context) const override;
-
-		//--
-		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;
-		virtual void		removeWorld(Handle handle) override;
-
-		virtual Handle		createContext(Handle world) override;
-		virtual void		removeContext(Handle handle) override;
-
-	private:
+		static TypeID	typeID() { return m_typeID; }
+				
+	public:
+		static const TypeID m_typeID;
 	};
 
 

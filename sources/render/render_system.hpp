@@ -13,15 +13,6 @@ namespace brUGE
 namespace render
 {
 
-	//--------------------------------------------------------------------------------------------------------------
-	class VisibilitySet
-	{
-	public:
-		typedef std::vector<IComponent::Handle> Bucket;
-		std::unordered_map<IComponent::TypeID, Bucket> m_buckets;
-	};
-
-
 	//-- All of the render sub-system should be derived from it to be able to correctly response on various rendering
 	//-- related events.
 	//------------------------------------------------------------------------------------------------------------------

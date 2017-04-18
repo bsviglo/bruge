@@ -18,6 +18,7 @@ namespace brUGE
 		{
 		public:
 			static const uint32 C_MAX_COMPONENT_TYPES = 16;
+			static const TypeID C_INVALID;
 
 		public:
 			TypeID();
@@ -26,6 +27,8 @@ namespace brUGE
 			operator uint32() const { return m_id; }
 
 		private:
+			TypeID(uint32 ivalidID) : m_id(0) { }
+
 			uint32 m_id;
 		};
 
@@ -33,11 +36,13 @@ namespace brUGE
 		class Handle final
 		{
 		public:
+			Handle() : m_typeID(TypeID::C_INVALID), m_systemTypeID(ISystem::TypeID::C_INVALID), m_handle(CONST_INVALID_HANDLE) { }
 			Handle(TypeID typeID, ISystem::TypeID systemTypeID, ::Handle handle) : m_typeID(typeID), m_systemTypeID(systemTypeID), m_handle(handle) { }
 
 			uint32		typeID() const			{ return m_typeID; }
 			uint32		systemTypeID() const	{ return m_systemTypeID; }
 			::Handle	handle() const			{ return m_handle; }
+			bool		valid() const			{ return m_handle != CONST_INVALID_HANDLE; }
 
 			//-- ToDo: provide other operations
 

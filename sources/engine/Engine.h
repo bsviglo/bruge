@@ -61,7 +61,7 @@ namespace brUGE
 		Universe&						universe() const { return *m_universe.get(); }
 
 		template<typename T>
-		T&								word(Handle universeWorld) const
+		T&								world(Handle universeWorld) const
 		{
 			return static_cast<T&>(m_systems[T::typeID()]->world(m_universe->world(universeWorld).world(T::typeID())));
 		}

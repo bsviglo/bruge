@@ -6,6 +6,7 @@
 #include "render_system.hpp"
 #include "loader/ResourcesManager.h"
 #include "scene/transform_system.hpp"
+#include "render/culling_system.hpp"
 
 #include "rttr/registration"
 
@@ -161,12 +162,12 @@ namespace render
 	IComponent::Handle MeshSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
 	{
 		//-- retrieve Worlds for TransformSystem and ResourceSystem
-		auto& uWorld			 = engine().universe().world(m_universeWorld);
-		auto& resourceWorld		 = static_cast<ResourceSystem::World&>(engine().system<ResourceSystem>().world(uWorld.world(ResourceSystem::typeID())));
-		auto& transformWorld	 = static_cast<TransformSystem::World&>(engine().system<TransformSystem>().world(uWorld.world(TransformSystem::typeID())));
+		auto& resourceWorld		= engine().world<ResourceSystem::World>(m_universeWorld);
+		auto& transformWorld	= engine().world<TransformSystem::World>(m_universeWorld);
+		auto& cullingWorld		= engine().world<CullingSystem::World>(m_universeWorld);
 
 		//-- retrieve TransformComponent from GameObject
-		auto  transformComponent = uWorld.gameObject(gameObj)->getComponent<TransformComponent>();
+		auto  transformComponent = engine().universe().world(m_universeWorld).gameObject(gameObj)->getComponent<TransformComponent>();
 		auto& transform			 = transformWorld.component(transformComponent);
 
 		auto mInst = std::make_unique<MeshInstance>();
@@ -203,6 +204,9 @@ namespace render
 		mInst->m_localBounds	= mInst->m_mesh->bounds();
 		mInst->m_worldBounds	= mInst->m_mesh->bounds().getTranformed(mInst->m_transform->m_worldMat);
 
+		const auto&		   aabb = mInst->m_worldBounds;
+		IComponent::Handle oHandle;
+
 		//--
 		if (typeID == StaticMeshComponent::typeID())
 		{
@@ -210,7 +214,7 @@ namespace render
 			m_staticMeshComponets.push_back(std::move(component));
 			m_staticMeshInstances.push_back(std::move(mInst));
 
-			return IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_staticMeshComponets.size() - 1);
+			oHandle = IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_staticMeshComponets.size() - 1);
 		}
 		else
 		{
@@ -218,8 +222,13 @@ namespace render
 			m_skinnedMeshComponents.push_back(std::move(component));
 			m_skinnedMeshInstances.push_back(std::move(mInst));
 
-			return IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_skinnedMeshComponents.size() - 1);
+			oHandle = IComponent::Handle(StaticMeshComponent::typeID(), MeshSystem::typeID(), m_skinnedMeshComponents.size() - 1);
 		}
+
+		//-- register in culling System
+		cullingWorld.add(oHandle, aabb);
+
+		return oHandle;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
