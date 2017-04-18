@@ -118,8 +118,8 @@ namespace render
 			Renderer::EPassType				m_passType;
 			bool							m_useInstancing;
 
-			//-- output
-			RenderOps						m_rops;
+			//-- input/output
+			RenderOps*						m_rops;
 
 			//-- intermediate
 			std::unique_ptr<MeshCollector>	m_meshCollector;

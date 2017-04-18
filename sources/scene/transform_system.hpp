@@ -72,10 +72,10 @@ namespace brUGE
 		class World : public IWorld
 		{
 		public:
-			World() { }
-			virtual ~World() override { }
+			World();
+			virtual ~World() override;
 
-			virtual bool				init(const pugi::xml_node& cfg) override;
+			virtual bool				init() override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
@@ -84,8 +84,6 @@ namespace brUGE
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual void				removeComponent(IComponent::Handle component) override;
-
-			TransformComponent&			component(IComponent::Handle handle) { return *m_components[handle.handle()].get(); }
 
 		private:
 			std::vector<std::unique_ptr<TransformComponent>>	m_components;

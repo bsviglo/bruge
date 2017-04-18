@@ -247,33 +247,28 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	void ShadowSystem::process(Handle cHandle) const
 	{
+		//-- ToDo: reconsider access to the worlds\contexts\systems
 		auto&		c = static_cast<Context&>(context(cHandle));
 		const auto& w = static_cast<const World&>(c.world());
 
-		auto& camContext = engine().system<CameraSystem>.context(c.m_contexts[CameraSystem::typeID()]);
-		auto& meshContext = engine().system<MeshSystem>.context(c.m)
+		auto& camContext   = engine().system<CameraSystem>.context(c.m_contexts[CameraSystem::typeID()]);
+		auto& meshContext  = engine().system<MeshSystem>.context(c.m_contexts[MeshSystem::typeID()]);
+		auto& lightContext = engine().system<LightSystem>.context(c.m_contexts[LightSystem::typeID()]);
+		auto& cullContext  = engine().system<CullingSystem>.context(c.m_contexts[CullingSystem::typeID()]);
 
 
+		auto& renderCam = camContext.m_camera;
+		auto& sunLight  = lightContext.m_sun;
+		
+		cullContext.m_camera = renderCam;
 
-		auto context = cullSystem.createContext(Engine::universe().world(m_world::world(m_world.m_universeWorld).m_worlds[CullingSystem::typeID()]);
+		engine().system<CullingSystem>.process(cullContext);
 
-		//-- access to CameraSystem, MeshSystem, CullingSystem, LightSystem
-		CullingSystem::Context cullingContext;
-		MeshSystem::Context meshContext;
-		CameraSystem::Context cameraContext;
-		LightSystem::Context lightContext;
+		meshContext.m_pass			= Renderer::PASS_SHADOW_CAST;
+		meshContext.m_visibilitySet = cullContext.m_visibilitySet;
+		meshContext.m_rops			= &c.m_rops;
 
-
-		//-- setup 
-		cameraContext.init();
-		CameraSystem::process(cameraContext);
-
-		cullingContext.init(cameraContext);
-		CullingSystem::process(cullingContext);
-
-		meshContext.init(cullingContext.m_visibilitySet);
-		MeshSystem::process(meshContext);	
-
+		engine().system<MeshSystem>.process(meshContext);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------

@@ -83,6 +83,8 @@ namespace render
 		auto&		c = static_cast<Context&>(context(contextHandle));
 		const auto& w = static_cast<const World&>(c.world());
 
+		auto&		r = *c.m_rops;
+
 		//-- process static meshes
 		for (auto& h : c.m_visibilitySet->m_buckets[StaticMeshComponent::typeID()])
 		{
@@ -91,16 +93,16 @@ namespace render
 			//-- if mesh collector doesn't want to get this instance then process it as usual.
 			if (!c.m_meshCollector->addMeshInstance(*inst.get()))
 			{
-				uint count = inst->m_mesh->gatherROPs(c.m_passType, c.m_useInstancing, c.m_rops);
-				for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
+				uint count = inst->m_mesh->gatherROPs(c.m_passType, c.m_useInstancing, r);
+				for (uint i = r.size() - count; i < r.size(); ++i)
 				{
-					c.m_rops[i].m_worldMat = &inst->m_transform->m_worldMat;
+					r[i].m_worldMat = &inst->m_transform->m_worldMat;
 				}
 			}
 		}
 
 		//-- 
-		c.m_meshCollector->gatherROPs(c.m_rops);
+		c.m_meshCollector->gatherROPs(r);
 		c.m_meshCollector->end();
 
 		//-- process skinned meshes
@@ -108,10 +110,10 @@ namespace render
 		{
 			auto& inst = w.m_skinnedMeshInstances[h.handle()];
 
-			uint count = inst->m_skinnedMesh->gatherROPs(c.m_passType, c.m_useInstancing, c.m_rops);
-			for (uint i = c.m_rops.size() - count; i < c.m_rops.size(); ++i)
+			uint count = inst->m_skinnedMesh->gatherROPs(c.m_passType, c.m_useInstancing, r);
+			for (uint i = r.size() - count; i < r.size(); ++i)
 			{
-				auto& rop = c.m_rops[i];
+				auto& rop = r[i];
 
 				rop.m_worldMat = &inst->m_transform->m_worldMat;
 				rop.m_matrixPalette = &inst->m_worldPalette[0];

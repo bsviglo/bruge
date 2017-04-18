@@ -14,11 +14,22 @@ namespace render
 	class CameraComponent : public IComponent
 	{
 	public:
+		struct Parameters
+		{
+			Projection			m_projection;
+			ScreenResolution	m_screenResolution;
+		};
+
+	public:
 		CameraComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~CameraComponent() override { }
 
+		static TypeID		typeID() { return m_typeID; }
+		const Parameters&	params() const { return m_params; }
+
 	private:
-		Handle m_camera;
+		Parameters			m_params;
+		static const TypeID	m_typeID;
 	};
 
 
@@ -31,17 +42,18 @@ namespace render
 		class World : public ISystem::IWorld
 		{
 		public:
-			World() { }
-			virtual ~World() override { }
+			World();
+			virtual ~World() override;
 
-			virtual bool	init() override;
+			virtual bool				init() override;
 
-			virtual void	activate() override;
-			virtual void	deactivate() override;
+			virtual void				activate() override;
+			virtual void				deactivate() override;
 
-			virtual Handle	createComponent(Handle gameObj) override;
-			virtual Handle	createComponent(Handle gameObj, const pugi::xml_node& cfg) override;
-			virtual bool	removeComponent(Handle component) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<CameraComponent>>	m_components;

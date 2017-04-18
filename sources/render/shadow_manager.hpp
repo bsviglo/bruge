@@ -51,8 +51,8 @@ namespace render
 		class World : public IWorld
 		{
 		public:
-			World() { }
-			virtual ~World() override { }
+			World();
+			virtual ~World() override;
 
 			virtual bool				init() override;
 
@@ -63,6 +63,12 @@ namespace render
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
 			virtual void				removeComponent(IComponent::Handle component) override;
+
+		private:
+			//-- this component acts like a config override for default shadows parameters.
+			std::unique_ptr<CSMShadowComponent> m_component;
+
+			friend ShadowSystem;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -87,6 +93,8 @@ namespace render
 			std::vector<RenderCamera>					m_shadowCameras;
 			std::vector<vec4ui>							m_shadowViewPorts;
 			std::vector<float>							m_splitPlanes;
+
+			friend ShadowSystem;
 		};
 
 	public:
