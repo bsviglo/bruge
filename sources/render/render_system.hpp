@@ -35,15 +35,15 @@ namespace render
 			World();
 			virtual ~World() override;
 
-			virtual bool				init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
 
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual IComponent::Handle	cloneComponent (Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool				removeComponent(Handle gameObj, IComponent::Handle component) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 		
 		private:
 		};
@@ -52,7 +52,7 @@ namespace render
 		class Context : public IContext
 		{
 		public:
-			Context();
+			Context(const ISystem& system, const IWorld& world);
 			virtual ~Context() override;
 
 			virtual bool init() override;
@@ -62,26 +62,14 @@ namespace render
 		};
 
 	public:
-		RenderSystem() { }
-		virtual ~RenderSystem() override { }
+		RenderSystem();
+		virtual ~RenderSystem() override;
 
-		virtual bool		init(const pugi::xml_node& cfg) override;
+		virtual bool	init(const pugi::xml_node& cfg) override;
+		virtual void	update(Handle world,  const DeltaTime& dt) const override;
+		virtual void	process(Handle context) const override;
 
-		//-- update the global state of the world
-		virtual void		update(Handle world, const DeltaTime& dt) const override;
-
-		//-- perform work while the world is the constant state. Here we may have multiple Context are working
-		//-- separately (even different threads) on the same constant world.
-		virtual void		process(Handle context) const override;
-
-		//--
-		virtual Handle		createWorld(const pugi::xml_node& cfg = pugi::xml_node()) override;
-		virtual void		removeWorld(Handle world) override;
-
-		virtual Handle		createContext(Handle world) override;
-		virtual void		removeContext(Handle context) override;
-
-		static TypeID		typeID() { return m_typeID; }
+		static TypeID	typeID() { return m_typeID; }
 
 	private:
 		std::unique_ptr<Renderer>	m_renderer;
