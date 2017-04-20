@@ -12,6 +12,12 @@ namespace brUGE
 {
 namespace render
 {
+	//------------------------------------------------------------------------------------------------------------------
+	class RenderPipelineComponent : IComponent
+	{
+
+	};
+
 
 	//-- All of the render sub-system should be derived from it to be able to correctly response on various rendering
 	//-- related events.
@@ -46,6 +52,7 @@ namespace render
 			virtual void				removeComponent(IComponent::Handle component) override;
 		
 		private:
+			std::unique_ptr<RenderPipelineComponent> m_renderPipeline;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------
@@ -58,7 +65,7 @@ namespace render
 			virtual bool init() override;
 
 		private:
-			RenderOps m_ops;
+			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 		};
 
 	public:

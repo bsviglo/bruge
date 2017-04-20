@@ -111,7 +111,7 @@ namespace render
 
 			virtual bool init() override;
 
-		private:
+		public:
 			//-- input
 			VisibilitySet*					m_visibilitySet;
 			RenderCamera*					m_renderCamera;

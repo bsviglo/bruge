@@ -1,7 +1,7 @@
 #include "render_system.hpp"
 
 //-- rename *_manager -> *_system
-#include "mesh_manager.hpp"
+#include "mesh_system.hpp"
 #include "light_manager.hpp"
 #include "shadow_manager.hpp"
 
@@ -18,9 +18,7 @@ namespace brUGE
 	{
 		registration::class_<RenderSystem>("render::RenderSystem")
 			.constructor<>()
-			.property_readonly("typeID", RenderSystem::typeID)
-			.property_readonly("TypeIDPath", []()-> ISystem::TypeIDPath { return { ISystem::TypeID::C_INVALID }; } );
-
+			.property_readonly("typeID", RenderSystem::typeID);
 	}
 
 namespace render
@@ -28,6 +26,12 @@ namespace render
 
 	//------------------------------------------------------------------------------------------------------------------
 	RenderSystem::RenderSystem()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	RenderSystem::~RenderSystem()
 	{
 
 	}
@@ -52,36 +56,53 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	void RenderSystem::process(Handle handle) const
+	void RenderSystem::process(Handle cHandle) const
 	{
-		auto& c = *context(handle);
+		//-- ToDo: reconsider access to the worlds\contexts\systems
+		auto&		c = static_cast<Context&>(context(cHandle));
+		const auto& w = static_cast<const World&>(c.world());
+
+		auto& camContext    = engine().system<CameraSystem>.context(c.m_contexts[CameraSystem::typeID()]);
+		auto& meshContext   = engine().system<MeshSystem>.context(c.m_contexts[MeshSystem::typeID()]);
+		auto& lightContext  = engine().system<LightSystem>.context(c.m_contexts[LightSystem::typeID()]);
+		auto& cullContext   = engine().system<CullingSystem>.context(c.m_contexts[CullingSystem::typeID()]);
+		auto& shadowContext = engine().system<ShadowSystem>.context(c.m_contexts[ShadowSystem::typeID()]);
+
+		//-- gather visible objects for main pass
+		{
+			cullContext.m_camera = &camContext.m_camera;
+			engine().system<CullingSystem>().process(c.m_contexts[CullingSystem::typeID()]);
+		}
+
+		//-- gather z-only rops and execute them
+		{
+			RenderOps ops;
+
+			meshContext.m_visibilitySet = &cullContext.m_visibilitySet;
+			meshContext.m_camera		= &camContext.m_camera;
+			meshContext.m_pass			= Renderer::PASS_Z_ONLY;
+			meshContext.m_useInstancing = true;
+
+			engine().system<MeshSystem>().process(c.m_contexts[MeshSystem::typeID()]);
+
+			//-- ToDo:
+			rs().beginPass(Renderer::PASS_Z_ONLY);
+			rs().setCamera(&m_camera->renderCam());
+			rs().shaderContext().updatePerFrameViewConstants();
+			rs().addROPs(ops);
+			rs().endPass();
+		}
 
 		//-- process shadows
-		system<ShadowSystem>().process(c.m_contexts[ShadowSystem::typeID()]);
+		{
+			//-- seems like changin process to cast and receive maybe more robust
+			engine().system<ShadowSystem>().process(c.m_contexts[ShadowSystem::typeID()]);
 
+			//-- ToDo: execute draw commands
+		}
 
-		CameraSystem::Context cameraContext;
-		ShadowSystem::Context shadowContext;
-		CullingSystem::Context cullingContext;
-		PostProcessingSystem::Context ppContext;
-		MeshSystem::Context meshContext;
-		LightSystem::Context lightContext;
+		//-- 
 
-
-
-
-
-		auto c = static_cast<Context*>(context);
-
-		//-- passes (main pass)
-
-		//-- cull render objects
-		system<CullingSystem>().process(c->context<CullingSystem>());
-		system<MeshSystem>().process(c->context<MeshSystem>());
-
-
-
-		c->context<CullingSystem>();
 
 		//-- 1. z-only pass.
 		{
@@ -217,41 +238,27 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle RenderSystem::createWorld(const pugi::xml_node& cfg)
-	{
-		auto world = std::make_unique<World>(*this);
-
-		world->init(cfg);
-
-		m_worlds.emplace_back(std::move(world));
-
-		return m_worlds.size() - 1;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------
-	Handle RenderSystem::createContext(Handle world)
+	IComponent::Handle RenderSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID)
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool RenderSystem::checkRequiredComponents(Handle handle) const
+	IComponent::Handle RenderSystem::World::createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
 	{
-		GameObject* gameObj = nullptr;
+		
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	IComponent::Handle RenderSystem::World::createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID)
+	IComponent::Handle RenderSystem::World::cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID)
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	IComponent::Handle RenderSystem::World::createComponent(Universe::World& world, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg)
+	void RenderSystem::World::removeComponent(IComponent::Handle component)
 	{
-		auto meshWorld = static_cast<MeshSystem::World>(m_worlds[SYSTEM_MESH]);
 
-		auto meshComponent = meshWorld->createComponent(gameObj);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -280,7 +287,8 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	RenderSystem::Context::Context()
+	RenderSystem::Context::Context(const ISystem& system, const IWorld& world)
+		:	IContext(system, world)
 	{
 
 	}
@@ -293,14 +301,23 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	bool RenderSystem::Context::init()
 	{
+		auto& uWorld = engine().universe().world(m_world.m_universeWorld);
+
+		m_contexts[CullingSystem::typeID()]	= engine().system<CullingSystem>().createContext(uWorld.world(CullingSystem::typeID()));
+		m_contexts[MeshSystem::typeID()]	= engine().system<MeshSystem>().createContext(uWorld.world(MeshSystem::typeID()));
+		m_contexts[LightSystem::typeID()]	= engine().system<LightSystem>().createContext(uWorld.world(LightSystem::typeID()));
+		m_contexts[CameraSystem::typeID()]	= engine().system<CameraSystem>().createContext(uWorld.world(CameraSystem::typeID()));
+		m_contexts[ShadowSystem::typeID()]	= engine().system<ShadowSystem>().createContext(uWorld.world(ShadowSystem::typeID()));
+
 		bool ok = true;
 
-		for (auto typeID : m_system.m_childSystemInitOrder)
+		//-- init
+		for (auto& c : m_contexts)
 		{
-			ok &= m_childContexts[typeID]->init();
+			
 		}
 
-
+		return ok;
 	}
 
 

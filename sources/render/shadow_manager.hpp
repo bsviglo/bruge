@@ -80,7 +80,7 @@ namespace render
 
 			virtual bool init() override;
 
-		private:
+		public:
 			std::unordered_map<ISystem::TypeID, Handle> m_contexts;
 
 			//--

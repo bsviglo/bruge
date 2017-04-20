@@ -63,7 +63,7 @@ namespace render
 
 			virtual bool init() override;
 
-		private:
+		public:
 			//-- input
 			RenderCamera*	m_camera;
 
