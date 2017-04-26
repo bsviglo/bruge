@@ -102,6 +102,10 @@ namespace render
 		virtual ~ShadowSystem() override;
 
 		virtual bool	init(const pugi::xml_node& cfg) override;
+
+		void			cast(Context& context);
+		void			receive(Context& context);
+
 		virtual void	update(Handle world,  const DeltaTime& dt) const override;
 		virtual void	process(Handle context) const override;
 

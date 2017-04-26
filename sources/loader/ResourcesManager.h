@@ -32,6 +32,7 @@ namespace brUGE
 			std::shared_ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
 			//std::shared_ptr<render::Animation>	loadAnimation	(const char* name);
 
+			//-- ToDo: to be removed
 			bool makeSharedShaderConstants(const char* name, const std::shared_ptr<render::IBuffer>& newBuffer);
 
 		private:

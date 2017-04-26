@@ -132,6 +132,10 @@ namespace render
 		virtual ~MeshSystem() override { }
 
 		virtual bool	init(const pugi::xml_node& cfg) override;
+
+		void			gatherROPs(std::shared_ptr<Context>& c);
+
+		//-- ToDo:
 		virtual void	update(Handle world,  const DeltaTime& dt) const override;
 		virtual void	process(Handle context) const override;
 

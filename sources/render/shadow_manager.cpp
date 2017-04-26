@@ -269,6 +269,10 @@ namespace render
 		meshContext.m_rops			= &c.m_rops;
 
 		engine().system<MeshSystem>.process(meshContext);
+
+		//-- ToDo: perform generation of shadow maps
+
+		//-- ToDo: perform resolving of shadows into screen space
 	}
 
 	//------------------------------------------------------------------------------------------------------------------

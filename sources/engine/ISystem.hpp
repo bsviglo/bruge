@@ -63,7 +63,8 @@ namespace brUGE
 			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) = 0;
 			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) = 0;
 			virtual void				removeComponent(IComponent::Handle component) = 0;
-
+			
+			//-- ToDo: reconsider. Will be substituted by event system
 			virtual void				onGameObjectAdded(Handle gameObj)					{ }
 			virtual void				onGameObjectRemoved(Handle gameObj)					{ }
 			virtual void				onComponentAdded(IComponent::Handle component)		{ }

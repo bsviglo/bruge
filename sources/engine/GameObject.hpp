@@ -21,19 +21,21 @@ namespace brUGE
 
 		bool									addChild(Handle gameObj);
 		bool									delChild(Handle gameObj);
-		const std::vector<Handle>&				children() const;
-		Handle									parent() const;
+		const std::vector<Handle>&				children() const	{ return m_childs; }
+
+		bool									changeParent(Handle newParent);
+		Handle									parent() const		{ return m_parent; }
 
 		bool									addComponent(IComponent::Handle handle);
 		bool									createComponent(IComponent::TypeID typeID);
-		bool									removeComponent(Handle component);
+		void									removeComponent(IComponent::Handle component);
 		const std::vector<IComponent::Handle>&	components() const;
 
 		template<typename ComponentType>
-		bool									hasComponent() const { return false; }
+		bool									hasComponent() const;
 
 		template<typename ComponentType>
-		IComponent::Handle						getComponent() const { return m_components[ComponentType::typeID()]; }
+		IComponent::Handle						getComponent() const;
 
 	private:
 		Handle														m_parent;
@@ -42,9 +44,16 @@ namespace brUGE
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
-	bool GameObject::addComponent(IComponent::Handle handle)
+	template<typename ComponentType>
+	bool GameObject::hasComponent() const
 	{
-		m_components[handle.typeID()] = handle;
-		return true;
+		m_components
 	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	template<typename ComponentType>
+	IComponent::Handle GameObject::getComponent() const
+	{
+	}
+
 }
