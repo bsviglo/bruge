@@ -1,0 +1,18 @@
+<gameObject prefab="Zombie">
+  <components>
+    <component type="SkinnedMeshComponent">
+       <resource> some_static_mesh.staticmesh </resource>
+		</component>
+     <component type="AnimationControllerComponent">
+     </component>
+     <component type="TransformComponent">
+       <matrix> 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 </matrix>
+     </component>
+     <component type="CapsuleColliderComponent">
+     </component>
+     <component type="RigidBodyComponent">
+     </component>
+     <component type="ZombieBehaviorComponent">
+     </component>
+	</components>
+</gameObject>

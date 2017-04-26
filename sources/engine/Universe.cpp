@@ -46,7 +46,7 @@ namespace brUGE
 	bool Universe::World::temporal_hardcoded_init()
 	{
 		//-- Zombie
-
+		createGameObjectFromPrefab("prefabs/zombie.xml");
 
 		return true;
 	}
@@ -56,10 +56,10 @@ namespace brUGE
 	{
 		bool ok = true;
 
-		//-- create all related worlds in other sub-systems
-		for (auto typeID : Engine::instance().systemOrderList())
+		//-- create all related worlds in all engine's sub-systems
+		for (auto typeID : engine().systemOrderList())
 		{
-			m_worlds[typeID] = Engine::instance().system(typeID).createWorld(self, cfg);
+			m_worlds[typeID] = engine().system(typeID).createWorld(self, cfg);
 			ok &= (m_worlds[typeID] != CONST_INVALID_HANDLE);
 		}
 
@@ -70,6 +70,12 @@ namespace brUGE
 		}
 
 		return ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	Handle Universe::World::createGameObjectFromPrefab(const std::string& prefab)
+	{
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -147,4 +153,21 @@ namespace brUGE
 		//-- ToDo: implement
 	}
 
+	//------------------------------------------------------------------------------------------------------------------
+	Universe::Context::Context()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	Universe::Context::~Context()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	bool Universe::Context::init()
+	{
+		return true;
+	}
 }

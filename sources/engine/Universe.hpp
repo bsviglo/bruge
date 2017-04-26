@@ -23,6 +23,7 @@ namespace brUGE
 			friend Universe;
 
 		public:
+			//-- create game object from prefab
 			Handle			createGameObject(const pugi::xml_node& cfg);
 			Handle			cloneGameObject(Handle gameObj);
 			void			removeGameObject(Handle gameObj);
@@ -34,8 +35,10 @@ namespace brUGE
 			World();
 			~World();
 			bool			init(Handle self, const pugi::xml_node& cfg);
+
 			bool			temporal_hardcoded_init();
 
+			Handle			createGameObjectFromPrefab(const std::string& prefab);
 			void			removeGameObjectRecursively(Handle gameObj);
 			Handle			cloneGameObjectRecursively(Handle gameObj);
 

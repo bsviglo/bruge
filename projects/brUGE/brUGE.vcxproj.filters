@@ -198,6 +198,9 @@
     <ClCompile Include="..\..\sources\scene\camera_system.cpp">
       <Filter>scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\engine\GameObject.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h">

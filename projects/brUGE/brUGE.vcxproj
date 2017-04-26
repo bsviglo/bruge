@@ -193,6 +193,7 @@
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
     <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
     <ClCompile Include="..\..\sources\engine\Engine.cpp" />
+    <ClCompile Include="..\..\sources\engine\GameObject.cpp" />
     <ClCompile Include="..\..\sources\engine\IComponent.cpp" />
     <ClCompile Include="..\..\sources\engine\ISystem.cpp" />
     <ClCompile Include="..\..\sources\engine\Universe.cpp" />
