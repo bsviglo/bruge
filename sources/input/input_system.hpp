@@ -35,7 +35,6 @@ namespace input
 		InputSystem();
 		virtual ~InputSystem() override;
 
-
 		virtual bool init() override;
 		virtual void update(IWorld* world) override;
 		virtual void process(IContext* context) override;

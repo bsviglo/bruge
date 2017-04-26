@@ -43,6 +43,15 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
+	bool Universe::World::temporal_hardcoded_init()
+	{
+		//-- Zombie
+
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
 	bool Universe::World::init(Handle self, const pugi::xml_node& cfg)
 	{
 		bool ok = true;

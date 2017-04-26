@@ -12,6 +12,7 @@
 #include "Universe.hpp"
 
 //--
+#include "scene/transform_system.hpp"
 #include "input/input_system.hpp"
 #include "loader/ResourcesManager.h"
 #include "physics/physic_world.hpp"
@@ -41,13 +42,6 @@ namespace
 
 namespace brUGE
 {
-
-	class RootSystem : public ISystem
-	{
-
-	};
-
-
 	DEFINE_SINGLETON(Engine)
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -75,6 +69,7 @@ namespace brUGE
 		auto& fileSystem		= create<FileSystem>();
 		auto& resourceSystem	= create<ResourceSystem>();
 		auto& inputSystem		= create<InputSystem>();
+		auto& transformSystem	= create<TransformSystem>();
 		auto& physicsSystem		= create<PhysicsSystem>();
 		auto& animationSystem	= create<AnimationSystem>();
 		auto& uiSystem			= create<ui::UISystem()>();

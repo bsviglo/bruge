@@ -54,7 +54,7 @@ namespace render
 			World();
 			virtual ~World() override;
 
-			virtual bool				init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
@@ -166,8 +166,8 @@ namespace render
 
 	private:
 
-		//-- UI represents visual acces to the many configuration parameters of shadow manager.
-		//-- It does that throught direct access to the ShadowManager class.
+		//-- UI represents visual access to the many configuration parameters of shadow manager.
+		//-- It does that through direct access to the ShadowManager class.
 		//------------------------------------------------------------------------------------------
 		class UI : public NonCopyable
 		{

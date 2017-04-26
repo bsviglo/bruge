@@ -75,7 +75,7 @@ namespace brUGE
 			World();
 			virtual ~World() override;
 
-			virtual bool				init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
@@ -99,9 +99,7 @@ namespace brUGE
 		TransformSystem();
 		virtual ~TransformSystem() override;
 
-		virtual bool	init() override;
-		virtual void	update(IWorld* world,  const DeltaTime& dt) const override;
-		virtual void	process(IContext* context) const override;
+		virtual bool	init(const pugi::xml_node& cfg = pugi::xml_node()) override;
 		static TypeID	typeID() { return m_typeID; }
 	
 	private:

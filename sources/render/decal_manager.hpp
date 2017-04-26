@@ -12,10 +12,31 @@ namespace brUGE
 
 namespace render
 {
+
+	//------------------------------------------------------------------------------------------------------------------
+	class DecalComponent : public IComponent
+	{
+
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	class DecalSystem : public ISystem
+	{
+	public:
+		DecalSystem();
+		virtual ~DecalSystem() override;
+
+		virtual bool init(const pugi::xml_node& cfg) override;
+	};
+
+
+	//-- ToDo: legacy
+
+
 	class Mesh;
 	class Material;
 
-	//----------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------
 	class DecalManager : public NonCopyable
 	{
 	public:

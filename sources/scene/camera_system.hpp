@@ -10,6 +10,7 @@ namespace brUGE
 {
 namespace render
 {
+
 	//------------------------------------------------------------------------------------------------------------------
 	class CameraComponent : public IComponent
 	{
@@ -45,7 +46,7 @@ namespace render
 			World();
 			virtual ~World() override;
 
-			virtual bool				init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
 			virtual void				activate() override;
 			virtual void				deactivate() override;
@@ -70,13 +71,13 @@ namespace render
 		CameraSystem() { }
 		virtual ~CameraSystem() override { }
 
-		virtual bool init() override;
+		virtual bool init(const pugi::xml_node& cfg = pugi::xml_node()) override;
+
+		//--
 		virtual void update(IWorld* world, const DeltaTime& dt) override;
 		virtual void process(IContext* context) override;
 
 	private:
-		std::vector<std::unique_ptr<World>>		m_worlds;
-		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 
 }

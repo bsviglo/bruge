@@ -192,6 +192,12 @@
     <ClCompile Include="..\..\sources\render\culling_system.cpp">
       <Filter>render\framework</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\scene\transform_system.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\scene\camera_system.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h">

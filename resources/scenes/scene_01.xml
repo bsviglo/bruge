@@ -1,17 +1,27 @@
-<scene name="simple scene">
+<scene name="simple zombie game demo">
 	<gameObject>
 		<components>
-			<component type="StaticMeshComponent">
+			<component type="SkinnedMeshComponent">
         <resource> some_static_mesh.staticmesh </resource>
 			</component>
-			<component familyType="Physics" type="RigidBody">
-			</component>
-			<component familyType="System" type="Transform">
-				<row0> 1 0 0 0 </row0>
-				<row1> 0 1 0 0 </row1>
-				<row2> 0 0 1 0 </row2>
-				<row3> 0 0 0 1 </row3>
-			</component>
+      <component type="AnimationControllerComponent">
+        
+      </component>
+      <component type="TransformComponent">
+        <row0> 1 0 0 0 </row0>
+        <row1> 0 1 0 0 </row1>
+        <row2> 0 0 1 0 </row2>
+        <row3> 0 0 0 1 </row3>
+      </component>
+      <component type="CapsuleColliderComponent">
+        
+      </component>
+      <component type="RigidBodyComponent">
+        
+      </component>
+      <component type="ZombieBehaviorComponent">
+        
+      </component>
 		</components>
 	</gameObject>
 </scene>

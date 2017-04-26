@@ -242,7 +242,9 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\terrain_system.cpp" />
     <ClCompile Include="..\..\sources\render\vertex_declarations.cpp" />
+    <ClCompile Include="..\..\sources\scene\camera_system.cpp" />
     <ClCompile Include="..\..\sources\scene\game_world.cpp" />
+    <ClCompile Include="..\..\sources\scene\transform_system.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h" />

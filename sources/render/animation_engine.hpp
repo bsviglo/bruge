@@ -18,11 +18,11 @@ namespace render
 	class AnimationControllerComponent : public IComponent
 	{
 	public:
-		AnimationControllerComponent(Handle owner) : IComponent(owner), m_animCtrl(animCtrl) { }
+		AnimationControllerComponent(::Handle owner, ::Handle animCtrl) : IComponent(owner), m_animCtrl(animCtrl) { }
 		virtual ~AnimationControllerComponent() override { }
 
 	private:
-		Handle m_animCtrl;
+		::Handle m_animCtrl;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -31,21 +31,21 @@ namespace render
 	public:
 
 		//--------------------------------------------------------------------------------------------------------------
-		class World : public ISystem::IComponentWorld
+		class World : public IWorld
 		{
 		public:
-			World() { }
-			virtual ~World() override { }
+			World();
+			virtual ~World() override;
 
-			virtual bool			init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
-			virtual void			activate() override;
-			virtual void			deactivate() override;
+			virtual void				activate() override;
+			virtual void				deactivate() override;
 
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID) override;
-			virtual IComponent::ID	createComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
-			virtual IComponent::ID	cloneComponent (SceneSystem::Scene& scene, Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
-			virtual bool			removeComponent(SceneSystem::Scene& scene, Handle gameObj, IComponent::ID component) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 
 		private:
 			std::vector<std::unique_ptr<AnimationController>>				m_animCtrls;
@@ -65,19 +65,20 @@ namespace render
 		};
 
 	public:
+		AnimationSystem();
+		virtual ~AnimationSystem() override { }
 
-		virtual bool checkRequiredComponents(Handle handle) const override
-		{ 
-			GameObject* gameObj = nullptr;
+		virtual bool	init(const pugi::xml_node& cfg) override;
 
-			return	gameObj->hasComponentByType(IComponent::TYPE_TRANSFORM) &&
-					gameObj->hasComponentByType(IComponent::TYPE_SKINNED_MESH) &&
-					gameObj->hasComponentByType(IComponent::TYPE_ANIMATION_CONTROLLER);
-		}
+		//-- calculate only bounds for the animated model, but not matrix local palette.
+		void			preAnimate(const DeltaTime& dt);
+		//-- calculate matrix world palette only for visible or desired models.
+		void			animate();
+		//-- pre-multiply each joint matrix for correct skinning. This method called after physics 
+		//-- update step.
+		void			postAnimate();
 
 	private:
-		std::vector<std::unique_ptr<World>>		m_worlds;
-		std::vector<std::unique_ptr<Context>>	m_contexts;
 	};
 
 

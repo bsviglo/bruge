@@ -103,7 +103,6 @@ namespace brUGE
 		virtual ~ISystem() = 0 { }
 
 		virtual bool		init(const pugi::xml_node& cfg = pugi::xml_node()) = 0;
-		virtual void		fini() = 0;
 
 		//-- update the global state of the world
 		virtual void		update(Handle world, const DeltaTime& dt) const = 0;

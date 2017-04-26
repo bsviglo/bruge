@@ -91,7 +91,7 @@ namespace render
 	public:
 
 		//--------------------------------------------------------------------------------------------------------------
-		class World : public ISystem::IWorld
+		class World : public IWorld
 		{
 		public:
 			World() { }

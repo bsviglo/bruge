@@ -39,14 +39,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------
 	bool RenderSystem::init(const pugi::xml_node& cfg)
 	{
-		bool ok = true;
 
-		for (auto typeID : m_childSystemInitOrder)
-		{
-			ok &= m_childSystems[typeID]->init(cfg);
-		}
-
-		return ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -93,7 +86,7 @@ namespace render
 			rs().endPass();
 		}
 
-		//-- process shadows
+		//-- process shadows (may be easily moved into separate thread)
 		{
 			//-- seems like changin process to cast and receive maybe more robust
 			engine().system<ShadowSystem>().process(c.m_contexts[ShadowSystem::typeID()]);
@@ -101,7 +94,9 @@ namespace render
 			//-- ToDo: execute draw commands
 		}
 
-		//-- 
+
+
+		//-- ToDo: legacy
 
 
 		//-- 1. z-only pass.

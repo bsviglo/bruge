@@ -18,33 +18,10 @@ namespace physics
 {
 
 	//------------------------------------------------------------------------------------------------------------------
-	class IPhysicsComponent : public IComponent
+	class RigidBodyComponent : public IComponent
 	{
 	public:
-
-		//--------------------------------------------------------------------------------------------------------------
-		enum EType : int32
-		{
-			TYPE_UNKNOWN				= 0,
-			TYPE_RIGID_BODY				= 1 << 1,
-			TYPE_BOX_COLLIDER			= 1 << 2,
-			TYPE_SPHERE_COLLIDER		= 1 << 3,
-		};
-
-	public:
-		IPhysicsComponent(EType type) : IComponent(IComponent::FAMILY_TYPE_PHYSICS), m_type(type) { }
-		virtual ~IPhysicsComponent() = 0 { }
-
-	protected:
-		EType m_type;
-	};
-
-
-	//------------------------------------------------------------------------------------------------------------------
-	class RigidBodyComponent : public IPhysicsComponent
-	{
-	public:
-		RigidBodyComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_RIGID_BODY){ }
+		RigidBodyComponent(::Handle owner, Handle instance) : IComponent(owner), m_rigidBody(instance) { }
 		virtual ~RigidBodyComponent() override { }
 
 	private:
@@ -52,25 +29,34 @@ namespace physics
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
-	class BoxColliderComponent : public IPhysicsComponent
+	class CapsuleColliderComponent : public IComponent
 	{
 	public:
-		BoxColliderComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_BOX_COLLIDER) { }
+		CapsuleColliderComponent(::Handle owner) : IComponent(owner) { }
+
+	private:
+
+	};
+
+	//-- ToDo: implement
+	//------------------------------------------------------------------------------------------------------------------
+	class BoxColliderComponent : public IComponent
+	{
+	public:
+		BoxColliderComponent(::Handle owner) : IComponent(owner) { }
 		virtual ~BoxColliderComponent() override { }
 
 	private:
 		Handle m_boxCollider;
 	};
 
+	//-- ToDo: implement
 	//------------------------------------------------------------------------------------------------------------------
-	class SphereColliderComponent : public IPhysicsComponent
+	class TerrainColliderComponent : public IComponent
 	{
 	public:
-		SphereColliderComponent(IPhysicsComponent::EType type) : IPhysicsComponent(IPhysicsComponent::TYPE_SPHERE_COLLIDER) { }
-		virtual ~SphereColliderComponent() override { }
-
-	private:
-		Handle m_sphereCollider;
+		TerrainColliderComponent(::Handle owner) : IComponent(owner) { }
+		virtual ~TerrainColliderComponent() override { }
 	};
 
 
@@ -80,28 +66,25 @@ namespace physics
 	public:
 
 		//----------------------------------------------------------------------------------------------
-		class World : public ISystem::IWorld
+		class World : public IWorld
 		{
 		public:
-			World();
+			World(const ISystem& system, Handle universeWorld);
 			virtual ~World() override;
 
-			virtual bool	init() override;
+			virtual bool				init(const pugi::xml_node& cfg) override;
 
-			virtual void	activate() override;
-			virtual void	deactivate() override;
+			virtual void				activate() override;
+			virtual void				deactivate() override;
 
-			virtual Handle	createComponent() override;
-			virtual Handle	createComponent(const pugi::xml_node& data) override;
-			virtual Handle	cloneComponent(Handle id) override;
-			virtual bool	removeComponent(Handle id) override;
-
-			virtual bool	registerGameObject(Handle gameObj) override;
-			virtual bool	unregisterGameObject(Handle gameObj) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID) override;
+			virtual IComponent::Handle	createComponent(Handle gameObj, IComponent::TypeID typeID, const pugi::xml_node& cfg) override;
+			virtual IComponent::Handle	cloneComponent(Handle srcGameObj, Handle dstGameObj, IComponent::TypeID typeID) override;
+			virtual void				removeComponent(IComponent::Handle component) override;
 
 			//-- other methods
-			void			makeKinematic(Handle physObj, bool flag);
-			void			addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
+			void						makeKinematic(Handle physObj, bool flag);
+			void						addImpulse(Handle physObj, const vec3f& impulse, const vec3f& worldPos);
 
 		private:
 			physx::PxScene*														m_scene;
@@ -110,7 +93,7 @@ namespace physics
 		};
 
 		//----------------------------------------------------------------------------------------------
-		class Context : public ISystem::IContext
+		class Context : public IContext
 		{
 		public:
 			struct CollisionCallback
@@ -138,9 +121,8 @@ namespace physics
 		PhysicsSystem();
 		virtual ~PhysicsSystem() override;
 
-		virtual bool init() override;
-		virtual void update(IWorld* world) override;
-		virtual void process(IContext* context) override;
+		virtual bool	init(const pugi::xml_node& cfg) override;
+		void			simulate(const DeltaTime& dt);
 
 	private:
 		physx::PxFoundation*					m_foundation;
@@ -150,6 +132,11 @@ namespace physics
 		physx::PxDefaultErrorCallback			m_errorCallback;
 		physx::PxVisualDebuggerConnection*		m_debuggerConnection;
 	};
+
+
+
+	//-- ToDo: legacy
+
 
 
 	//-- Manages the range of instances of one particular physical object type loaded from *.phys file.
