@@ -4,6 +4,7 @@
 #include "engine/ISystem.hpp"
 #include "render/render_common.h"
 #include "render/Mesh.hpp"
+#include "animation/animation.hpp"
 #include "TextureLoader.h"
 
 #include <string>
@@ -26,11 +27,11 @@ namespace brUGE
 		class World : public IWorld
 		{
 		public:
-			std::shared_ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = NULL, uint macrosCount = 0);
+			std::shared_ptr<render::IShader>		loadShader 		(const char* name, const render::ShaderMacro* macros = nullptr, uint macrosCount = 0);
 			std::shared_ptr<render::ITexture>		loadTexture		(const char* name);
 			std::shared_ptr<render::Mesh>			loadMesh   		(const char* name, bool simpleMaterial = false);
 			std::shared_ptr<render::SkinnedMesh>	loadSkinnedMesh (const char* name);
-			//std::shared_ptr<render::Animation>	loadAnimation	(const char* name);
+			std::shared_ptr<Animation>				loadAnimation	(const char* name);
 
 			//-- ToDo: to be removed
 			bool makeSharedShaderConstants(const char* name, const std::shared_ptr<render::IBuffer>& newBuffer);
@@ -43,7 +44,7 @@ namespace brUGE
 			std::unordered_map<std::string, render::IShader>  		m_shadersCache;
 			std::unordered_map<std::string, render::Mesh>			m_meshesCache;
 			std::unordered_map<std::string, render::SkinnedMesh>	m_skinnedMeshesCache;
-			//std::unordered_map<std::string, render::Animation>	m_animationsCashe;
+			std::unordered_map<std::string, Animation>				m_animationsCashe;
 		};
 
 		//--------------------------------------------------------------------------------------------------------------

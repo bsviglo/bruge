@@ -133,9 +133,9 @@ namespace brUGE
 		//-- remove all the components associated with this game object
 		for (auto& component : gameObj->components())
 		{
-			auto systemTypeID	= static_cast<ISystem::TypeID>(component.systemTypeID());
-			auto system			= engine().system(systemTypeID);
-			auto world			= system.world(m_worlds[systemTypeID]);
+			auto  systemTypeID	= static_cast<ISystem::TypeID>(component.systemTypeID());
+			auto& system		= engine().system(systemTypeID);
+			auto& world			= system.world(m_worlds[systemTypeID]);
 
 			world.removeComponent(component);
 		}

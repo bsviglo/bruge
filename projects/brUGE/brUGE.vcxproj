@@ -190,6 +190,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\sources\animation\animation.cpp" />
+    <ClCompile Include="..\..\sources\animation\animation_system.cpp" />
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp" />
     <ClCompile Include="..\..\sources\console\WatchersPanel.cpp" />
     <ClCompile Include="..\..\sources\engine\Engine.cpp" />
@@ -234,7 +236,6 @@
     <ClCompile Include="..\..\sources\render\Renderer.cpp" />
     <ClCompile Include="..\..\sources\render\render_system.cpp" />
     <ClCompile Include="..\..\sources\render\render_world.cpp" />
-    <ClCompile Include="..\..\sources\render\animation_engine.cpp" />
     <ClCompile Include="..\..\sources\render\shader_context.cpp" />
     <ClCompile Include="..\..\sources\render\shadow_manager.cpp" />
     <ClCompile Include="..\..\sources\render\SkyBox.cpp">
@@ -248,6 +249,8 @@
     <ClCompile Include="..\..\sources\scene\transform_system.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sources\animation\animation.hpp" />
+    <ClInclude Include="..\..\sources\animation\animation_system.hpp" />
     <ClInclude Include="..\..\sources\console\Functors.h" />
     <ClInclude Include="..\..\sources\console\TimingPanel.h" />
     <ClInclude Include="..\..\sources\console\WatchersPanel.h" />
@@ -310,7 +313,6 @@
     <ClInclude Include="..\..\sources\render\render_dll_Interface.h" />
     <ClInclude Include="..\..\sources\render\render_system.hpp" />
     <ClInclude Include="..\..\sources\render\render_world.hpp" />
-    <ClInclude Include="..\..\sources\render\animation_engine.hpp" />
     <ClInclude Include="..\..\sources\build_time.h" />
     <ClInclude Include="..\..\sources\Exception.h" />
     <ClInclude Include="..\..\sources\prerequisites.hpp" />

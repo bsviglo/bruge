@@ -22,9 +22,6 @@
     <Filter Include="render\framework">
       <UniqueIdentifier>{a9a07619-6458-4208-809c-295c47946504}</UniqueIdentifier>
     </Filter>
-    <Filter Include="render\framework\animation">
-      <UniqueIdentifier>{49e52257-81b3-48fc-8940-0adaeae3c79d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common">
       <UniqueIdentifier>{c43b6593-0e01-4773-a28b-ee97341581e1}</UniqueIdentifier>
     </Filter>
@@ -70,6 +67,9 @@
     <Filter Include="input">
       <UniqueIdentifier>{afe21e34-3150-4a32-b85e-5f93556e366c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="animation">
+      <UniqueIdentifier>{49e52257-81b3-48fc-8940-0adaeae3c79d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sources\console\TimingPanel.cpp">
@@ -113,9 +113,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sources\render\render_world.cpp">
       <Filter>render\framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sources\render\animation_engine.cpp">
-      <Filter>render\framework\animation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sources\render\decal_manager.cpp">
       <Filter>render\framework\decals</Filter>
@@ -201,6 +198,12 @@
     <ClCompile Include="..\..\sources\engine\GameObject.cpp">
       <Filter>engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sources\animation\animation.cpp">
+      <Filter>animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sources\animation\animation_system.cpp">
+      <Filter>animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sources\console\Functors.h">
@@ -265,9 +268,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\render_world.hpp">
       <Filter>render\framework</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\sources\render\animation_engine.hpp">
-      <Filter>render\framework\animation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sources\build_time.h">
       <Filter>common</Filter>
@@ -379,6 +379,12 @@
     </ClInclude>
     <ClInclude Include="..\..\sources\render\mesh_system.hpp">
       <Filter>render\framework\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\animation\animation.hpp">
+      <Filter>animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sources\animation\animation_system.hpp">
+      <Filter>animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

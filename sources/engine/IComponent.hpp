@@ -8,7 +8,7 @@ namespace brUGE
 	//-- Base class for all of the possible components in the engine.
 	//-- Note: IComponent should provide default (empty) constructor to be able to create IComponent in the default state.
 	//------------------------------------------------------------------------------------------------------------------
-	class IComponent
+	class IComponent : public NonCopyable
 	{
 	public:
 		//-- Structure that holds unique ID of a IComponent derived class.
