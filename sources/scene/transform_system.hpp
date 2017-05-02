@@ -1,16 +1,20 @@
 #pragma once
 
 #include "prerequisites.hpp"
+#include "engine/IComponent.hpp"
 #include "engine/ISystem.hpp"
 #include "utils/Data.hpp"
 #include "math/AABB.hpp"
 #include "math/Matrix4x4.hpp"
-#include "SDL/SDL_events.h"
+
+#include "pugixml/pugixml.hpp"
 #include <vector>
 
 namespace brUGE
 {
-	//-- Exists for every node of every model.
+	//-- The class represents name and the reference on the matrix for every node of animated model or every hard point
+	//-- of static model. Every object has at lest one node, called "root" and it's actually a global world transform
+	//-- of the entity and all associated with it components.
 	//------------------------------------------------------------------------------------------------------------------
 	class Node : public NonCopyable
 	{
@@ -32,8 +36,8 @@ namespace brUGE
 	//------------------------------------------------------------------------------------------------------------------
 	struct Transform : public NonCopyable
 	{
-		Transform();
-		~Transform();
+		Transform()  { m_worldMat.setIdentity(); }
+		~Transform() { }
 
 		mat4f m_worldMat;
 		Nodes m_nodes;
@@ -93,6 +97,7 @@ namespace brUGE
 		//--------------------------------------------------------------------------------------------------------------
 		class Context : public IContext
 		{
+
 		};
 
 	public:

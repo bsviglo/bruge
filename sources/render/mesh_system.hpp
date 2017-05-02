@@ -6,6 +6,9 @@
 #include "render_system.hpp"
 #include "Mesh.hpp"
 
+#include "pugixml/pugixml.hpp"
+#include <vector>
+
 namespace brUGE
 {
 	struct Transform;

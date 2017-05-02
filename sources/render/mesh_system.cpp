@@ -26,22 +26,21 @@ namespace
 namespace brUGE
 {
 
-	using namespace rttr;
 	using namespace render;
 
 	RTTR_REGISTRATION
 	{
-		registration::class_<StaticMeshComponent>("StaticMeshComponent")
+		rttr::registration::class_<StaticMeshComponent>("StaticMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", StaticMeshComponent::typeID)
 			.property_readonly("systemTypeID", MeshSystem::typeID);
 			
-		registration::class_<SkinnedMeshComponent>("SkinnedMeshComponent")
+		rttr::registration::class_<SkinnedMeshComponent>("SkinnedMeshComponent")
 			.constructor<>()
 			.property_readonly("typeID", SkinnedMeshComponent::typeID)
 			.property_readonly("systemTypeID", MeshSystem::typeID);
 
-		registration::class_<MeshSystem>("MeshSystem")
+		rttr::registration::class_<MeshSystem>("MeshSystem")
 			.constructor<>()
 			.property_readonly("typeID", MeshSystem::typeID);
 	}
@@ -49,9 +48,9 @@ namespace brUGE
 //----------------------------------------------------------------------------------------------------------------------
 namespace render
 {
-	const IComponent::TypeID StaticMeshComponent::m_typeID;
-	const IComponent::TypeID SkinnedMeshComponent::m_typeID;
-	const ISystem::TypeID MeshSystem::m_typeID;
+	const IComponent::TypeID	StaticMeshComponent::m_typeID;
+	const IComponent::TypeID	SkinnedMeshComponent::m_typeID;
+	const ISystem::TypeID		MeshSystem::m_typeID;
 
 	//------------------------------------------------------------------------------------------------------------------
 	MeshSystem::MeshSystem()

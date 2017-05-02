@@ -225,7 +225,7 @@ namespace brUGE
 				}
 			}
 
-			//-- calculate world space palette.
+			//-- calculate palette for GPU execution.
 			for (uint j = 0; j < palette.size(); ++j)
 			{
 				palette[j].preMultiply(invBindPose[j]);
