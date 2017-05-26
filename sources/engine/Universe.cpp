@@ -73,13 +73,13 @@ namespace brUGE
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle Universe::World::createGameObjectFromPrefab(const std::string& prefab)
+	Handle Universe::World::createGameObject(const pugi::xml_node& cfg)
 	{
-
+		return createGameObjectRecursively(cfg);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	Handle Universe::World::createGameObject(const pugi::xml_node& data)
+	Handle Universe::World::createGameObjectRecursively(const pugi::xml_node& cfg)
 	{
 		auto gameObj = std::make_unique<GameObject>();
 
@@ -87,7 +87,7 @@ namespace brUGE
 		m_gameObjects.push_back(std::move(gameObj));
 		Handle gameObjHandle = m_gameObjects.size() - 1;
 
-		if (auto componentsCfg = data.child("components"))
+		if (auto componentsCfg = cfg.child("components"))
 		{
 			for (auto componentCfg : componentsCfg.children("component"))
 			{
@@ -105,6 +105,13 @@ namespace brUGE
 				
 				gameObj->addComponent(component);
 			}
+		}
+
+		//--
+		for (auto childCfg : cfg.children("gameObject"))
+		{
+			auto childHandle = createGameObjectRecursively(childCfg);
+			gameObj->addChild(childHandle);
 		}
 
 		return gameObjHandle;

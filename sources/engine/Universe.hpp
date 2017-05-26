@@ -38,7 +38,7 @@ namespace brUGE
 
 			bool			temporal_hardcoded_init();
 
-			Handle			createGameObjectFromPrefab(const std::string& prefab);
+			Handle			createGameObjectRecursively(const pugi::xml_node& cfg);
 			void			removeGameObjectRecursively(Handle gameObj);
 			Handle			cloneGameObjectRecursively(Handle gameObj);
 

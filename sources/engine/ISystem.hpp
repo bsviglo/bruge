@@ -5,6 +5,7 @@
 #include "pugixml/pugixml.hpp"
 
 #include <array>
+#include <vector>
 
 namespace brUGE
 {

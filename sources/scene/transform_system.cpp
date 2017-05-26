@@ -10,7 +10,8 @@ namespace brUGE
 		rttr::registration::class_<TransformComponent>("TransformComponent")
 			.constructor<>()
 			.property_readonly("typeID", TransformComponent::typeID)
-			.property_readonly("systemTypeID", TransformSystem::typeID);
+			.property_readonly("systemTypeID", TransformSystem::typeID)
+			.property("transform", TransformComponent::m_params.m_transform);
 			
 		rttr::registration::class_<TransformSystem>("TransformSystem")
 			.constructor<>()

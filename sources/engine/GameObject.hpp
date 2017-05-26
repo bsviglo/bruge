@@ -16,15 +16,8 @@ namespace brUGE
 	class GameObject final
 	{
 	public:
-		GameObject() { }
-		~GameObject() { }
-
-		bool									addChild(Handle gameObj);
-		bool									delChild(Handle gameObj);
-		const std::vector<Handle>&				children() const	{ return m_childs; }
-
-		bool									changeParent(Handle newParent);
-		Handle									parent() const		{ return m_parent; }
+		GameObject() = default;
+		~GameObject() = default;
 
 		bool									addComponent(IComponent::Handle handle);
 		bool									createComponent(IComponent::TypeID typeID);
@@ -38,9 +31,7 @@ namespace brUGE
 		IComponent::Handle						getComponent() const;
 
 	private:
-		Handle														m_parent;
 		std::unordered_map<IComponent::TypeID, IComponent::Handle>	m_components;
-		std::vector<Handle>											m_childs;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
