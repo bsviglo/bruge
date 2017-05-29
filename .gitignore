@@ -35,9 +35,11 @@
 *.manifest.res
 *.db
 *.opendb
+.vs
 /demos/*/Debug
 /demos/*/Release
 /converter/*/Debug
 /converter/*/Release
 /converter/*/*/Debug
 /converter/*/*/Release
+
